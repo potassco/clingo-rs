@@ -1,0 +1,19 @@
+[package]
+name = "clingo-rs"
+version = "0.1.0"
+authors = ["sthiele <sthiele78@gmail.com>"]
+description = "Rust bindings to clingo C API"
+build = "build.rs"
+links = "gringo"
+
+[lib]
+name = "clingo"
+path = "src/lib.rs"
+
+[[bin]]
+name = "version"
+path = "src/version.rs"
+
+[dependencies]
+libc = "0.2.0"
+
