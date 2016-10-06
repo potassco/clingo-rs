@@ -2,13 +2,13 @@
 Rust bindings to clingo C API
 
 # Dependencies
-scons, gcc, re2c, bison.
-For details see clingo/INSTALL Requirements
+Rust, scons, gcc, re2c, bison.
+For details see [clingo/INSTALL](https://github.com/sthiele/clingo/blob/master/INSTALL) Requirements.
  
 # Compile & Test
-cd libclingo-rs/clingo
-scons --duild-dir=release
-cd ..
-cargo build
-cargo test
-cargo run
+    cd libclingo-rs/clingo
+    scons --build-dir=release
+    cd ..
+    cargo build
+    cargo test
+    cargo run
