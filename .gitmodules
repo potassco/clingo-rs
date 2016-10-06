@@ -1,0 +1,3 @@
+[submodule "clingo"]
+	path = clingo
+	url = https://github.com/sthiele/clingo
