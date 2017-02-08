@@ -10,11 +10,13 @@ links = "clingo"
 name = "clingo"
 path = "src/lib.rs"
 
-[[bin]]
-# name = "version"
-# path = "src/version.rs"
+[[example]]
+name = "version"
+path = "src/examples/version.rs"
+
+[[example]]
 name = "control"
-path = "src/control.rs"
+path = "src/examples/control.rs"
 
 [dependencies]
 libc = "0.2.20"
