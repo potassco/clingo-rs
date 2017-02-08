@@ -4,16 +4,21 @@ version = "0.1.0"
 authors = ["sthiele <sthiele78@gmail.com>"]
 description = "Rust bindings to clingo C API"
 build = "build.rs"
-links = "gringo"
+links = "clingo"
 
 [lib]
 name = "clingo"
 path = "src/lib.rs"
 
 [[bin]]
-name = "version"
-path = "src/version.rs"
+# name = "version"
+# path = "src/version.rs"
+name = "control"
+path = "src/control.rs"
 
 [dependencies]
-libc = "0.2.0"
+libc = "0.2.20"
 
+[build-dependencies]
+bindgen = "0.20"
+gcc = "0.3"
