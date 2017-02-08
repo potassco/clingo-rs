@@ -24,8 +24,8 @@ fn main() {
         .file("clingo/libgringo/src/ground/literals.cc")
         .file("clingo/libgringo/src/ground/instantiation.cc")       
         .file("clingo/libgringo/src/input/groundtermparser.cc")
-        .file("clingo/build/release/libgringo/src/input/nongroundgrammar/grammar.cc")
-        .file("clingo/build/release/libgringo/src/input/groundtermgrammar/grammar.cc") //
+        .file("generated/input/nongroundgrammar/grammar.cc")
+        .file("generated/input/groundtermgrammar/grammar.cc") //
         .file("clingo/libgringo/src/input/nongroundparser.cc")
         .file("clingo/libgringo/src/input/aggregate.cc")
         .file("clingo/libgringo/src/input/aggregates.cc")
@@ -44,7 +44,7 @@ fn main() {
         .file("clingo/libgringo/src/output/literal.cc")
         .file("clingo/libgringo/src/output/theory.cc")
         .include("clingo/libgringo")
-        .include("clingo/build/release/libgringo/src")
+        .include("generated")
         .include("clingo/liblp")     
         .include("clingo/libreify")
         .compile("libgringo.a");
