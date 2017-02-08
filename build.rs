@@ -6,11 +6,9 @@ use std::path::PathBuf;
 
 fn main() {
 
-// ar rc build/release/libgringo.a build/release/libgringo/src/control.o build/release/libgringo/src/term.o build/release/libgringo/src/symbol.o build/release/libgringo/src/primes.o build/release/libgringo/src/backend.o build/release/libgringo/src/lua.o build/release/libgringo/src/scripts.o build/release/libgringo/src/python.o build/release/libgringo/src/terms.o build/release/libgringo/src/ground/statements.o build/release/libgringo/src/ground/literals.o build/release/libgringo/src/ground/instantiation.o build/release/libgringo/src/ground/program.o build/release/libgringo/src/input/groundtermgrammar/grammar.o build/release/libgringo/src/input/aggregate.o build/release/libgringo/src/input/literals.o build/release/libgringo/src/input/groundtermparser.o build/release/libgringo/src/input/nongroundgrammar/grammar.o build/release/libgringo/src/input/nongroundparser.o build/release/libgringo/src/input/aggregates.o build/release/libgringo/src/input/program.o build/release/libgringo/src/input/programbuilder.o build/release/libgringo/src/input/statement.o build/release/libgringo/src/input/literal.o build/release/libgringo/src/input/theory.o build/release/libgringo/src/output/statements.o build/release/libgringo/src/output/literals.o build/release/libgringo/src/output/aggregates.o build/release/libgringo/src/output/output.o build/release/libgringo/src/output/statement.o build/release/libgringo/src/output/literal.o build/release/libgringo/src/output/theory.o
-
-  gcc::Config::new()
+    gcc::Config::new()
         .cpp(true)
-        .define("NDEBUG",Some("1"))
+        .define("NDEBUG", Some("1"))
         .file("clingo/libgringo/src/control.cc")
         .file("clingo/libgringo/src/term.cc")
         .file("clingo/libgringo/src/symbol.cc")
@@ -22,17 +20,17 @@ fn main() {
         .file("clingo/libgringo/src/terms.cc")
         .file("clingo/libgringo/src/ground/statements.cc")
         .file("clingo/libgringo/src/ground/literals.cc")
-        .file("clingo/libgringo/src/ground/instantiation.cc")       
+        .file("clingo/libgringo/src/ground/instantiation.cc")
         .file("clingo/libgringo/src/input/groundtermparser.cc")
         .file("generated/input/nongroundgrammar/grammar.cc")
-        .file("generated/input/groundtermgrammar/grammar.cc") //
+        .file("generated/input/groundtermgrammar/grammar.cc")
         .file("clingo/libgringo/src/input/nongroundparser.cc")
         .file("clingo/libgringo/src/input/aggregate.cc")
         .file("clingo/libgringo/src/input/aggregates.cc")
         .file("clingo/libgringo/src/input/program.cc")
-        .file("clingo/libgringo/src/ground/program.cc") //
+        .file("clingo/libgringo/src/ground/program.cc")
         .file("clingo/libgringo/src/input/programbuilder.cc")
-        .file("clingo/libgringo/src/input/literals.cc") //
+        .file("clingo/libgringo/src/input/literals.cc")
         .file("clingo/libgringo/src/input/statement.cc")
         .file("clingo/libgringo/src/input/literal.cc")
         .file("clingo/libgringo/src/input/theory.cc")
@@ -45,15 +43,13 @@ fn main() {
         .file("clingo/libgringo/src/output/theory.cc")
         .include("clingo/libgringo")
         .include("generated")
-        .include("clingo/liblp")     
+        .include("clingo/liblp")
         .include("clingo/libreify")
         .compile("libgringo.a");
 
-// ar rc build/release/libprogram_opts.a build/release/libprogram_opts/src/application.o build/release/libprogram_opts/src/alarm.o build/release/libprogram_opts/src/program_options.o build/release/libprogram_opts/src/string_convert.o build/release/libprogram_opts/src/value_store.o
-
-  gcc::Config::new()
+    gcc::Config::new()
         .cpp(true)
-        .define("NDEBUG",Some("1"))
+        .define("NDEBUG", Some("1"))
         .file("clingo/libprogram_opts/src/application.cpp")
         .file("clingo/libprogram_opts/src/alarm.cpp")
         .file("clingo/libprogram_opts/src/program_options.cpp")
@@ -62,21 +58,18 @@ fn main() {
         .include("clingo/libprogram_opts")
         .compile("libprogram_opts.a");
 
-
-  gcc::Config::new()
+    gcc::Config::new()
         .cpp(true)
-        .define("NDEBUG",Some("1"))
+        .define("NDEBUG", Some("1"))
         .file("clingo/libreify/src/program.cc")
         .include("clingo/libreify")
-        .include("clingo/liblp")     
+        .include("clingo/liblp")
         .include("clingo/libgringo")
         .compile("libreify.a");
 
-// ar rc build/release/liblp.a build/release/liblp/src/aspif.o build/release/liblp/src/clingo.o build/release/liblp/src/theory_data.o build/release/liblp/src/smodels.o build/release/liblp/src/convert.o build/release/liblp/src/rule_utils.o build/release/liblp/src/match_basic_types.o build/release/liblp/src/aspif_text.o
-
-  gcc::Config::new()
+    gcc::Config::new()
         .cpp(true)
-        .define("NDEBUG",Some("1"))
+        .define("NDEBUG", Some("1"))
         .file("clingo/liblp/src/aspif.cpp")
         .file("clingo/liblp/src/clingo.cpp")
         .file("clingo/liblp/src/theory_data.cpp")
@@ -88,13 +81,10 @@ fn main() {
         .include("clingo/liblp")
         .compile("liblp.a");
 
-
-// ar rc build/release/libclingo.a build/release/libclingo/src/clingocontrol.o
-
-  gcc::Config::new()
+    gcc::Config::new()
         .cpp(true)
-        .define("NDEBUG",Some("1"))
-        .define("WITH_THREADS",Some("0"))
+        .define("NDEBUG", Some("1"))
+        .define("WITH_THREADS", Some("0"))
         .file("clingo/libclingo/src/clingocontrol.cc")
         .include("clingo/libclingo")
         .include("clingo/libgringo")
@@ -103,10 +93,10 @@ fn main() {
         .include("clingo/libprogram_opts")
         .compile("libclingo.a");
 
-  gcc::Config::new()
+    gcc::Config::new()
         .cpp(true)
-        .define("NDEBUG",Some("1"))
-        .define("WITH_THREADS",Some("0"))
+        .define("NDEBUG", Some("1"))
+        .define("WITH_THREADS", Some("0"))
         .file("clingo/libclasp/src/parallel_solve.cpp")
         .file("clingo/libclasp/src/solver_types.cpp")
         .file("clingo/libclasp/src/solver_strategies.cpp")
@@ -142,9 +132,8 @@ fn main() {
         .include("clingo/libprogram_opts")
         .compile("libclasp.a");
 
-        
 
-    println!("cargo:rustc-link-lib=clingo");        
+    println!("cargo:rustc-link-lib=clingo");
 
     let out_dir = env::var("OUT_DIR").unwrap();
 
@@ -155,13 +144,10 @@ fn main() {
         .generate()
         .expect("Unable to generate bindings");
 
-
     let out_path = PathBuf::from(out_dir);
 
-    bindings
-        .write_to_file(out_path.join("bindings.rs"))
+    bindings.write_to_file(out_path.join("bindings.rs"))
         .expect("Couldn't write bindings!");
 
 
 }
-
