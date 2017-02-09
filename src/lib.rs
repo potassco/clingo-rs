@@ -4,11 +4,7 @@
 
 include!("bindings.rs");
 
-
-use std::env;
-use std::iter;
 use std::ffi::CStr;
-use std::slice;
 
 pub fn safe_clingo_version() -> (i32, i32, i32) {
     let mut m1 = 0;
@@ -95,7 +91,7 @@ pub fn safe_clingo_control_add(control: *mut clingo_control_t,
                                name: &str,
                                parameters: Vec<&str>,
                                program: &str)
-                               -> u8 {
+                               -> bool {
 
     let mname = CString::new(name).unwrap();
     let mprogram = CString::new(program).unwrap();
@@ -111,7 +107,7 @@ pub fn safe_clingo_control_add(control: *mut clingo_control_t,
                            mname.as_ptr(),
                            c_args.as_ptr(),
                            parameters_size,
-                           mprogram.as_ptr())
+                           mprogram.as_ptr()) == 1
     }
 }
 
@@ -193,17 +189,17 @@ pub fn safe_clingo_model_symbols(model: *mut clingo_model_t,
     unsafe {
         let err1 = clingo_model_symbols_size(model, ishow, size_p);
         if err1 == 0 {
-            return Err(err1);
+            Err(err1)
         } else {
             let mut a1 = Vec::<clingo_symbol_t>::with_capacity(size);
             let slice = a1.as_mut_slice();
             let symbols = slice.as_ptr() as *mut clingo_symbol_t;
             let err2 = clingo_model_symbols(model, ishow, symbols, size);
             if err2 == 0 {
-                return Err(err2);
+                Err(err2)
             } else {
                 let res = Vec::from_raw_parts(symbols, size, size);
-                return Ok(res);
+                Ok(res)
             }
         }
     }
@@ -216,14 +212,22 @@ pub fn safe_clingo_symbol_to_string(symbol: &clingo_symbol_t) -> std::result::Re
     unsafe {
         let sym = *symbol as clingo_symbol_t;
         let err1 = clingo_symbol_to_string_size(sym, size_p);
-        let mut a1 = Vec::<u8>::new();//with_capacity(size);
-        for i in 1..size {
-            a1.push(1);
-        }
-        let mut string = CString::from_vec_unchecked(a1);
+        if err1 == 0 {
+            Err(err1)
+        } else {
+            let mut a1 = Vec::<u8>::new();//with_capacity(size);
+            for i in 1..size {
+                a1.push(1);
+            }
+            let string = CString::from_vec_unchecked(a1);
 
-        let err2 = clingo_symbol_to_string(sym, string.as_ptr() as *mut i8, size);
-        return Ok(string);
+            let err2 = clingo_symbol_to_string(sym, string.as_ptr() as *mut i8, size);
+            if err2 == 0 {
+                Err(err2)
+            } else {
+                Ok(string)
+            }
+        }
     }
 }
 

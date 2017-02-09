@@ -32,13 +32,15 @@ fn main() {
     // create a control object and pass command line arguments
     let logger: clingo_logger_t = None;
     let logger_data: *mut c_void = std::ptr::null_mut();
-    let control = safe_clingo_control_new(env::args(), logger, logger_data, 20).expect("Failed creating clingo_control");
-    //   if ctlref2==None { return error_main(); }
+    let control = safe_clingo_control_new(env::args(), logger, logger_data, 20)
+        .expect("Failed creating clingo_control");
 
     // add a logic program to the base part
     let parameters: Vec<&str> = Vec::new();
-
-    safe_clingo_control_add(control, "base", parameters, "a :- not b. b :- not a.");
+    if !safe_clingo_control_add(control, "base", parameters, "a :- not b. b :- not a.") {
+        return error_main();
+    }
+    println!("");
 
     // ground the base part
     let part = safe_clingo_part {
