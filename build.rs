@@ -13,6 +13,7 @@ fn main() {
 
     Command::new("git")
         .args(&["checkout", "tags/v5.0.0"])
+        .current_dir("./clingo")
         .status()
         .unwrap();
 
