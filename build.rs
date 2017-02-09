@@ -1,10 +1,20 @@
+use std::env;
+use std::path::PathBuf;
+use std::process::Command;
 extern crate bindgen;
 extern crate gcc;
 
-use std::env;
-use std::path::PathBuf;
-
 fn main() {
+
+    Command::new("git")
+        .args(&["clone", "https://github.com/potassco/clingo.git"])
+        .status()
+        .unwrap();
+
+    Command::new("git")
+        .args(&["checkout", "tags/v5.0.0"])
+        .status()
+        .unwrap();
 
     gcc::Config::new()
         .cpp(true)
