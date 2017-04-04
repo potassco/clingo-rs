@@ -1,7 +1,4 @@
-use std::env;
-use std::path::PathBuf;
 use std::process::Command;
-extern crate bindgen;
 extern crate gcc;
 
 fn main() {
@@ -12,7 +9,7 @@ fn main() {
         .unwrap();
 
     Command::new("git")
-        .args(&["checkout", "tags/v5.0.0"])
+        .args(&["checkout", "tags/v5.1.0"])
         .current_dir("./clingo")
         .status()
         .unwrap();
@@ -144,21 +141,14 @@ fn main() {
         .compile("libclasp.a");
 
 
-    println!("cargo:rustc-link-lib=clingo");
-
-    let out_dir = env::var("OUT_DIR").unwrap();
-
-    let bindings = bindgen::builder()
-        .no_unstable_rust()
-        .header("clingo/libgringo/clingo.h")
-        .use_core()
-        .generate()
-        .expect("Unable to generate bindings");
-
-    let out_path = PathBuf::from(out_dir);
-
-    bindings.write_to_file(out_path.join("bindings.rs"))
-        .expect("Couldn't write bindings!");
-
-
+    println!("cargo:rustc-link-lib=static=clingo");
+    println!("cargo:rustc-link-lib=static=clasp");
+    println!("cargo:rustc-link-lib=static=program_opts");
+    println!("cargo:rustc-link-lib=static=lp");
+    println!("cargo:rustc-link-lib=static=reify");
+    println!("cargo:rustc-link-lib=static=gringo");
+    
+//     println!("cargo:rustc-link-lib=python3.6m");
+//     -DWITH_PYTHON=1 -I/usr/include/python3.6m
+    
 }

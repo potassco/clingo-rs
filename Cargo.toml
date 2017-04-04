@@ -18,9 +18,12 @@ path = "src/examples/version.rs"
 name = "control"
 path = "src/examples/control.rs"
 
+[[example]]
+name = "symbolic-atoms"
+path = "src/examples/symbolic-atoms.rs"
+
 [dependencies]
 libc = "0.2.20"
 
 [build-dependencies]
-bindgen = "0.20"
 gcc = "0.3"
