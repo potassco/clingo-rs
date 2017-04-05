@@ -14,7 +14,7 @@ extern "C" fn on_model(model: *mut clingo_model_t, data: *mut c_void, goon: *mut
 
     println!("Model:");
     for atom in &atoms {
-        // retrieve the symbol's string
+        // retrieve and print the symbol's string
         let atom_string = safe_clingo_symbol_to_string(atom).unwrap();
         println!(" {}", atom_string.to_str().unwrap());
     }
@@ -32,12 +32,12 @@ fn main() {
     // create a control object and pass command line arguments
     let logger: clingo_logger_t = None;
     let logger_data: *mut c_void = std::ptr::null_mut();
-    let control = safe_clingo_control_new(env::args(), logger, logger_data, 20)
+    let ctl = safe_clingo_control_new(env::args(), logger, logger_data, 20)
         .expect("Failed creating clingo_control");
 
     // add a logic program to the base part
     let parameters: Vec<&str> = Vec::new();
-    if !safe_clingo_control_add(control, "base", parameters, "a :- not b. b :- not a.") {
+    if !safe_clingo_control_add(ctl, "base", parameters, "a :- not b. b :- not a.") {
         return error_main();
     }
     println!("");
@@ -52,7 +52,7 @@ fn main() {
     let ground_callback: clingo_ground_callback_t = None;
     let ground_callback_data: *mut c_void = std::ptr::null_mut();
 
-    if !safe_clingo_control_ground(control, parts, ground_callback, ground_callback_data) {
+    if !safe_clingo_control_ground(ctl, parts, ground_callback, ground_callback_data) {
         return error_main();
     }
 
@@ -63,7 +63,7 @@ fn main() {
     let solve_callback_data: *mut c_void = std::ptr::null_mut();
     let assumptions = vec![];
 
-    if !safe_clingo_control_solve(control,
+    if !safe_clingo_control_solve(ctl,
                                   solve_callback,
                                   solve_callback_data,
                                   assumptions,
@@ -71,5 +71,5 @@ fn main() {
         return error_main();
     }
 
-    //   safe_clingo_control_free(control);
+    //     safe_clingo_control_free(ctl);
 }
