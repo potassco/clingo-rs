@@ -2,8 +2,10 @@
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
 
-include!("bindings.rs");
-
+// mod clingo {
+  include!("bindings.rs");
+// }
+// use clingo;
 use std::ffi::CStr;
 
 pub fn safe_clingo_version() -> (i32, i32, i32) {
@@ -64,25 +66,27 @@ pub fn safe_clingo_control_new(arguments: std::env::Args,
                                message_limit: ::std::os::raw::c_uint)
                                -> std::option::Option<*mut clingo_control_t> {
 
-    let mut ctl = std::ptr::null_mut() as *mut clingo_control_t;
-    let control = &mut ctl as *mut *mut clingo_control_t;
     let arguments_size = arguments.len() - 1;
     // create a vector of zero terminated strings
     let args = arguments.map(|arg| CString::new(arg).unwrap()).collect::<Vec<CString>>();
+    // drop first element
+    let (_, tail) = args.split_first().unwrap();
     // convert the strings to raw pointers
-    let c_args = args.iter().map(|arg| arg.as_ptr()).collect::<Vec<*const c_char>>();
-
+    let c_args = tail.iter().map(|arg| arg.as_ptr()).collect::<Vec<*const c_char>>();
+    
+    let mut ctl = std::ptr::null_mut() as *mut clingo_control_t;
+ 
     unsafe {
         let ret = clingo_control_new(c_args.as_ptr(),
                                      arguments_size,
                                      logger,
                                      logger_data,
                                      message_limit,
-                                     control);
+                                     &mut ctl);
         if ret == 0 {
             None
         } else {
-            Some(*control)
+            Some(ctl)
         }
     }
 }
@@ -227,6 +231,20 @@ pub fn safe_clingo_symbol_to_string(symbol: &clingo_symbol_t) -> std::result::Re
             } else {
                 Ok(string)
             }
+        }
+    }
+}
+
+pub fn safe_clingo_control_symbolic_atoms(control: *mut clingo_control_t,
+                                         )
+                                        -> std::result::Result<*mut clingo_symbolic_atoms_t, u8> {
+    unsafe {
+        let mut ato = std::ptr::null_mut() as *mut clingo_symbolic_atoms_t;
+        let err = clingo_control_symbolic_atoms(control, &mut ato);
+        if err == 0 {
+            Err(err)
+        } else {
+            Ok(ato)
         }
     }
 }
