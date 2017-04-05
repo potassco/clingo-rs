@@ -3,7 +3,7 @@
 #![allow(non_snake_case)]
 
 // mod clingo {
-  include!("bindings.rs");
+include!("bindings.rs");
 // }
 // use clingo;
 use std::ffi::CStr;
@@ -34,8 +34,7 @@ pub fn safe_clingo_version() -> (i32, i32, i32) {
 //                               )
 //                               -> std::option::Option< &mut clingo_control_t> {
 //
-//     let mut ctl = std::ptr::null_mut() as *mut clingo_control_t;
-//     let control = &mut ctl as *mut *mut clingo_control_t;
+//     let mut control = std::ptr::null_mut() as *mut clingo_control_t;
 //     let arguments_size = arguments.len()-1;
 //     // create a vector of zero terminated strings
 //     let args = arguments.map(|arg| CString::new(arg).unwrap() ).collect::<Vec<CString>>();
@@ -43,20 +42,20 @@ pub fn safe_clingo_version() -> (i32, i32, i32) {
 //     let c_args = args.iter().map(|arg| arg.as_ptr()).collect::<Vec<*const c_char>>();
 //
 //     unsafe {
-//              println!("x1{:?}",control);
-//              println!("x2{:?}",*control);
+//              println!("x1{:?}",&control);
+//              println!("x2{:?}",control);
 //              let ret = clingo_control_new(c_args.as_ptr(),
 //                                           arguments_size,
 //                                           logger,
 //                                           logger_data,
 //                                           message_limit,
-//                                           control);
+//                                           &mut control);
 //
-//              println!("y1{:?}",control);
-//              println!("y2{:?}",*control);
+//              println!("y1{:?}",&control);
+//              println!("y2{:?}",control);
 //
 //              if ret == 0 { None }
-//              else { Some(*control) }
+//              else { Some(control) }
 //    }
 // }
 
@@ -73,20 +72,20 @@ pub fn safe_clingo_control_new(arguments: std::env::Args,
     let (_, tail) = args.split_first().unwrap();
     // convert the strings to raw pointers
     let c_args = tail.iter().map(|arg| arg.as_ptr()).collect::<Vec<*const c_char>>();
-    
-    let mut ctl = std::ptr::null_mut() as *mut clingo_control_t;
- 
+
+    let mut control = std::ptr::null_mut() as *mut clingo_control_t;
+
     unsafe {
         let ret = clingo_control_new(c_args.as_ptr(),
                                      arguments_size,
                                      logger,
                                      logger_data,
                                      message_limit,
-                                     &mut ctl);
+                                     &mut control);
         if ret == 0 {
             None
         } else {
-            Some(ctl)
+            Some(control)
         }
     }
 }
@@ -219,10 +218,7 @@ pub fn safe_clingo_symbol_to_string(symbol: &clingo_symbol_t) -> std::result::Re
         if err1 == 0 {
             Err(err1)
         } else {
-            let mut a1 = Vec::<u8>::new();//with_capacity(size);
-            for i in 1..size {
-                a1.push(1);
-            }
+            let a1 = vec![1; size];
             let string = CString::from_vec_unchecked(a1);
 
             let err2 = clingo_symbol_to_string(sym, string.as_ptr() as *mut i8, size);
@@ -235,9 +231,9 @@ pub fn safe_clingo_symbol_to_string(symbol: &clingo_symbol_t) -> std::result::Re
     }
 }
 
-pub fn safe_clingo_control_symbolic_atoms(control: *mut clingo_control_t,
-                                         )
-                                        -> std::result::Result<*mut clingo_symbolic_atoms_t, u8> {
+pub fn safe_clingo_control_symbolic_atoms
+    (control: *mut clingo_control_t)
+     -> std::result::Result<*mut clingo_symbolic_atoms_t, u8> {
     unsafe {
         let mut ato = std::ptr::null_mut() as *mut clingo_symbolic_atoms_t;
         let err = clingo_control_symbolic_atoms(control, &mut ato);
@@ -248,6 +244,108 @@ pub fn safe_clingo_control_symbolic_atoms(control: *mut clingo_control_t,
         }
     }
 }
+
+pub fn safe_clingo_symbolic_atoms_begin
+    (atoms: *mut clingo_symbolic_atoms_t,
+     signature: *const clingo_signature_t)
+     -> std::result::Result<clingo_symbolic_atom_iterator_t, u8> {
+    unsafe {
+        let mut iterator = 0 as clingo_symbolic_atom_iterator_t;
+        let err = clingo_symbolic_atoms_begin(atoms, signature, &mut iterator);
+        if err == 0 {
+            Err(err)
+        } else {
+            Ok(iterator)
+        }
+    }
+}
+
+pub fn safe_clingo_symbolic_atoms_end
+    (atoms: *mut clingo_symbolic_atoms_t)
+     -> std::result::Result<clingo_symbolic_atom_iterator_t, u8> {
+    unsafe {
+        let mut iterator = 0 as clingo_symbolic_atom_iterator_t;
+        let err = clingo_symbolic_atoms_end(atoms, &mut iterator);
+        if err == 0 {
+            Err(err)
+        } else {
+            Ok(iterator)
+        }
+    }
+}
+
+pub fn safe_clingo_symbolic_atoms_iterator_is_equal_to(atoms: *mut clingo_symbolic_atoms_t,
+                                                       a: clingo_symbolic_atom_iterator_t,
+                                                       b: clingo_symbolic_atom_iterator_t)
+                                                       -> std::result::Result<bool, u8> {
+    unsafe {
+        let mut equal = 0;
+        let err = clingo_symbolic_atoms_iterator_is_equal_to(atoms, a, b, &mut equal);
+        if err == 0 {
+            Err(err)
+        } else {
+            Ok(equal == 1)
+        }
+    }
+}
+
+pub fn safe_clingo_symbolic_atoms_symbol(atoms: *mut clingo_symbolic_atoms_t,
+                                         iterator: clingo_symbolic_atom_iterator_t)
+                                         -> std::result::Result<clingo_symbol_t, u8> {
+    unsafe {
+        let mut symbol = 0 as clingo_symbol_t;
+        let err = clingo_symbolic_atoms_symbol(atoms, iterator, &mut symbol);
+        if err == 0 {
+            Err(err)
+        } else {
+            Ok(symbol)
+        }
+    }
+}
+
+pub fn safe_clingo_symbolic_atoms_is_fact(atoms: *mut clingo_symbolic_atoms_t,
+                                          iterator: clingo_symbolic_atom_iterator_t)
+                                          -> std::result::Result<bool, u8> {
+    unsafe {
+        let mut fact = 0;
+        let err = clingo_symbolic_atoms_is_fact(atoms, iterator, &mut fact);
+        if err == 0 {
+            Err(err)
+        } else {
+            Ok(fact == 1)
+        }
+    }
+}
+
+pub fn safe_clingo_symbolic_atoms_is_external(atoms: *mut clingo_symbolic_atoms_t,
+                                              iterator: clingo_symbolic_atom_iterator_t)
+                                              -> std::result::Result<bool, u8> {
+    unsafe {
+        let mut external = 0;
+        let err = clingo_symbolic_atoms_is_external(atoms, iterator, &mut external);
+        if err == 0 {
+            Err(err)
+        } else {
+            Ok(external == 1)
+        }
+    }
+}
+
+pub fn safe_clingo_symbolic_atoms_next
+    (atoms: *mut clingo_symbolic_atoms_t,
+     iterator: clingo_symbolic_atom_iterator_t)
+     -> std::result::Result<clingo_symbolic_atom_iterator_t, u8> {
+    unsafe {
+        let mut next = 0 as clingo_symbolic_atom_iterator_t;
+        let err = clingo_symbolic_atoms_next(atoms, iterator, &mut next);
+        if err == 0 {
+            Err(err)
+        } else {
+            Ok(next)
+        }
+    }
+}
+
 
 #[cfg(test)]
 mod tests {
