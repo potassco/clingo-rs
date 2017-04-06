@@ -50,9 +50,9 @@ fn main() {
     let mut it_a = safe_clingo_symbolic_atoms_begin(ato, sig_ptr).unwrap();
     let ie_a = safe_clingo_symbolic_atoms_end(ato).unwrap();
 
-    let mut equal = safe_clingo_symbolic_atoms_iterator_is_equal_to(ato, it_a, ie_a).unwrap();
-    while !equal {
-
+    loop {
+        let equal = safe_clingo_symbolic_atoms_iterator_is_equal_to(ato, it_a, ie_a).unwrap();
+        if equal { break; }
         let symbol = safe_clingo_symbolic_atoms_symbol(ato, it_a).unwrap();
         let atom_string = safe_clingo_symbol_to_string(&symbol).unwrap();
         print!("  {}", atom_string.to_str().unwrap());
@@ -67,8 +67,7 @@ fn main() {
             print!(", external");
         }
         println!("");
-        it_a = safe_clingo_symbolic_atoms_next(ato, it_a).unwrap();
 
-        equal = safe_clingo_symbolic_atoms_iterator_is_equal_to(ato, it_a, ie_a).unwrap();
+        it_a = safe_clingo_symbolic_atoms_next(ato, it_a).unwrap();
     }
 }
