@@ -346,6 +346,105 @@ pub fn safe_clingo_symbolic_atoms_next
     }
 }
 
+pub fn safe_clingo_symbol_create_number(number: c_int) -> clingo_symbol_t {
+    unsafe {
+        let mut symbol = 0 as clingo_symbol_t;
+        clingo_symbol_create_number(number, &mut symbol);
+        symbol
+    }
+}
+
+pub fn safe_clingo_symbol_create_id(name: &str,
+                                    positive: bool)
+                                    -> std::result::Result<clingo_symbol_t, u8> {
+    unsafe {
+        let mut symbol = 0 as clingo_symbol_t;
+        if positive {
+            let err = clingo_symbol_create_id(CString::new(name).unwrap().as_ptr(), 1, &mut symbol);
+            if err == 0 {
+                Err(err)
+            } else {
+                Ok(symbol)
+            }
+        } else {
+            let err = clingo_symbol_create_id(CString::new(name).unwrap().as_ptr(), 0, &mut symbol);
+            if err == 0 {
+                Err(err)
+            } else {
+                Ok(symbol)
+            }
+        }
+    }
+}
+
+pub fn safe_clingo_symbol_create_function(name: &str,
+                                          arguments: &[&clingo_symbol_t],
+                                          arguments_size: size_t,
+                                          positive: bool)
+                                          -> std::result::Result<clingo_symbol_t, u8> {
+    unsafe {
+        let mut symbol = 0 as clingo_symbol_t;
+        if positive {
+            let err = clingo_symbol_create_function(CString::new(name).unwrap().as_ptr(),
+                                                    *(arguments.as_ptr()),
+                                                    arguments_size,
+                                                    1,
+                                                    &mut symbol);
+            if err == 0 {
+                Err(err)
+            } else {
+                Ok(symbol)
+            }
+        } else {
+            let err = clingo_symbol_create_function(CString::new(name).unwrap().as_ptr(),
+                                                    *(arguments.as_ptr()),
+                                                    arguments_size,
+                                                    0,
+                                                    &mut symbol);
+            if err == 0 {
+                Err(err)
+            } else {
+                Ok(symbol)
+            }
+        }
+    }
+}
+
+pub fn safe_clingo_symbol_hash(symbol: &clingo_symbol_t) -> size_t {
+    unsafe { clingo_symbol_hash(*symbol) }
+}
+
+
+pub fn safe_clingo_symbol_arguments(symbol: &clingo_symbol_t)
+                                    -> std::result::Result<Vec<&clingo_symbol_t>, u8> {
+    unsafe {
+        let mut a_ptr = std::ptr::null() as *const clingo_symbol_t;
+        let mut size: usize = 0;
+        let err = clingo_symbol_arguments(*symbol, &mut a_ptr, &mut size);
+        if err == 0 {
+            Err(err)
+        } else {
+
+            let mut a1 = Vec::<&clingo_symbol_t>::with_capacity(size);
+            for i in 0..size {
+                let symbol_ref = a_ptr.offset(i as isize)
+                    .as_ref()
+                    .unwrap();
+                a1.push(symbol_ref);
+            }
+            Ok(a1)
+        }
+    }
+}
+
+pub fn safe_clingo_symbol_is_equal_to(a: &clingo_symbol_t, b: &clingo_symbol_t) -> bool {
+    unsafe { clingo_symbol_is_equal_to(*a, *b) == 1 }
+}
+
+pub fn safe_clingo_symbol_is_less_than(a: &clingo_symbol_t, b: &clingo_symbol_t) -> bool {
+    unsafe { clingo_symbol_is_less_than(*a, *b) == 1 }
+}
+
 
 #[cfg(test)]
 mod tests {
