@@ -42,12 +42,12 @@ extern "C" fn on_model(model: *mut clingo_model_t, data: *mut c_void, goon: *mut
         clingo_model_type_stable_model => type_string = "Stable model",
         clingo_model_type_brave_consequences => type_string = "Brave consequences", 
         clingo_model_type_cautious_consequences => type_string = "Cautious consequences",
-    }
+    };
 
     // get running number of model
     let number = safe_clingo_model_number(model).unwrap();
 
-    println!("{} : {}", type_string, number);
+    println!("{}: {}", type_string, number);
 
     print_model(model,
                 data,
@@ -84,15 +84,13 @@ fn main() {
     // create a control object and pass command line arguments
     let logger = None;
     let logger_data = std::ptr::null_mut();
-    let ctl = safe_clingo_control_new(env::args(), logger, logger_data, 20)
+    let mut ctl = SafeClingoControl::new(env::args(), logger, logger_data, 20)
         .expect("Failed creating clingo_control");
 
     // add a logic program to the base part
     let parameters: Vec<&str> = Vec::new();
-    if !safe_clingo_control_add(ctl,
-                                "base",
-                                parameters,
-                                "1 {a; b} 1. #show c : b. #show a/0.") {
+    let err1 = ctl.add("base", parameters, "1 {a; b} 1. #show c : b. #show a/0.");
+    if err1 == 0 {
         return error_main();
     }
     println!("");
@@ -106,8 +104,8 @@ fn main() {
     let parts = vec![part];
     let ground_callback = None;
     let ground_callback_data = std::ptr::null_mut();
-
-    if !safe_clingo_control_ground(ctl, parts, ground_callback, ground_callback_data) {
+    let err2 = ctl.ground(parts, ground_callback, ground_callback_data);
+    if err2 == 0 {
         return error_main();
     }
 
@@ -115,9 +113,7 @@ fn main() {
     let solve_callback: clingo_model_callback_t = Some(on_model);
     let solve_callback_data = std::ptr::null_mut();
     let assumptions = vec![];
-
-    let solve_result =
-        safe_clingo_control_solve(ctl, solve_callback, solve_callback_data, assumptions)
-            .expect("Failed while solving");
+    let solve_result = ctl.solve(solve_callback, solve_callback_data, assumptions)
+        .expect("Failed while solving");
 
 }

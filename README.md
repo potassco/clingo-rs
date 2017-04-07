@@ -10,3 +10,4 @@ Rust bindings to clingo C API
     cargo run --example=symbolic-atoms 0
     cargo run --example=symbol 0
     cargo run --example=model 0    
+    cargo run --example=configuration    

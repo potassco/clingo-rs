@@ -26,94 +26,6 @@ pub fn safe_clingo_version() -> (i32, i32, i32) {
     (major, minor, revision)
 }
 
-
-// pub fn safe_clingo_control_new2(arguments: std::env::Args,
-//                                logger: clingo_logger_t,
-//                                logger_data: *mut c_void,
-//                                message_limit: ::std::os::raw::c_uint
-//                               )
-//                               -> std::option::Option< &mut clingo_control_t> {
-//
-//     let mut control = std::ptr::null_mut() as *mut clingo_control_t;
-//     let arguments_size = arguments.len()-1;
-//     // create a vector of zero terminated strings
-//     let args = arguments.map(|arg| CString::new(arg).unwrap() ).collect::<Vec<CString>>();
-//     // convert the strings to raw pointers
-//     let c_args = args.iter().map(|arg| arg.as_ptr()).collect::<Vec<*const c_char>>();
-//
-//     unsafe {
-//              println!("x1{:?}",&control);
-//              println!("x2{:?}",control);
-//              let ret = clingo_control_new(c_args.as_ptr(),
-//                                           arguments_size,
-//                                           logger,
-//                                           logger_data,
-//                                           message_limit,
-//                                           &mut control);
-//
-//              println!("y1{:?}",&control);
-//              println!("y2{:?}",control);
-//
-//              if ret == 0 { None }
-//              else { Some(control) }
-//    }
-// }
-
-pub fn safe_clingo_control_new(arguments: std::env::Args,
-                               logger: clingo_logger_t,
-                               logger_data: *mut c_void,
-                               message_limit: ::std::os::raw::c_uint)
-                               -> std::option::Option<*mut clingo_control_t> {
-
-    let arguments_size = arguments.len() - 1;
-    // create a vector of zero terminated strings
-    let args = arguments.map(|arg| CString::new(arg).unwrap()).collect::<Vec<CString>>();
-    // drop first element
-    let (_, tail) = args.split_first().unwrap();
-    // convert the strings to raw pointers
-    let c_args = tail.iter().map(|arg| arg.as_ptr()).collect::<Vec<*const c_char>>();
-
-    let mut control = std::ptr::null_mut() as *mut clingo_control_t;
-
-    unsafe {
-        let ret = clingo_control_new(c_args.as_ptr(),
-                                     arguments_size,
-                                     logger,
-                                     logger_data,
-                                     message_limit,
-                                     &mut control);
-        if ret == 0 {
-            None
-        } else {
-            Some(control)
-        }
-    }
-}
-
-pub fn safe_clingo_control_add(control: *mut clingo_control_t,
-                               name: &str,
-                               parameters: Vec<&str>,
-                               program: &str)
-                               -> bool {
-
-    let mname = CString::new(name).unwrap();
-    let mprogram = CString::new(program).unwrap();
-    let parameters_size = parameters.len();
-    // create a vector of zero terminated strings
-    let args =
-        parameters.into_iter().map(|arg| CString::new(arg).unwrap()).collect::<Vec<CString>>();
-    // convert the strings to raw pointers
-    let c_args = args.iter().map(|arg| arg.as_ptr()).collect::<Vec<*const c_char>>();
-
-    unsafe {
-        clingo_control_add(control,
-                           mname.as_ptr(),
-                           c_args.as_ptr(),
-                           parameters_size,
-                           mprogram.as_ptr()) == 1
-    }
-}
-
 pub struct safe_clingo_part {
     pub params: clingo_symbol_t,
     pub size: size_t,
@@ -125,48 +37,6 @@ fn from_clingo_part(spart: &safe_clingo_part) -> clingo_part {
         params: &spart.params,
         size: spart.size,
     }
-}
-
-pub fn safe_clingo_control_ground(control: *mut clingo_control_t,
-                                  sparts: Vec<safe_clingo_part>,
-                                  ground_callback: clingo_ground_callback_t,
-                                  ground_callback_data: *mut c_void)
-                                  -> bool {
-
-    let parts = sparts.iter().map(|arg| from_clingo_part(arg)).collect::<Vec<clingo_part>>();
-    let parts_size = parts.len();
-
-    unsafe {
-        clingo_control_ground(control,
-                              parts.as_ptr(),
-                              parts_size,
-                              ground_callback,
-                              ground_callback_data) == 1
-    }
-}
-pub fn safe_clingo_control_solve(control: *mut clingo_control_t,
-                                 model_callback: clingo_model_callback_t,
-                                 model_callback_data: *mut c_void,
-                                 assumptions: Vec<clingo_symbolic_literal_t>)
-                                 -> std::result::Result<clingo_solve_result_bitset_t, u8> {
-    let assumptions_size = assumptions.len();
-    let mut solve_result = 0 as clingo_solve_result_bitset_t;//::std::os::raw::c_uint;
-    unsafe {
-        let err = clingo_control_solve(control,
-                                       model_callback,
-                                       model_callback_data,
-                                       assumptions.as_ptr(),
-                                       assumptions_size,
-                                       &mut solve_result);
-        if err == 0 {
-            Err(err)
-        } else {
-            Ok(solve_result)
-        }
-    }
-}
-pub fn safe_clingo_control_free(control: *mut *mut clingo_control_t) {
-    unsafe { clingo_control_free(*control) }
 }
 pub fn safe_clingo_error_code() -> clingo_error_t {
     unsafe { clingo_error_code() }
@@ -230,20 +100,6 @@ pub fn safe_clingo_symbol_to_string(symbol: &clingo_symbol_t) -> std::result::Re
             } else {
                 Ok(string)
             }
-        }
-    }
-}
-
-pub fn safe_clingo_control_symbolic_atoms
-    (control: *mut clingo_control_t)
-     -> std::result::Result<*mut clingo_symbolic_atoms_t, u8> {
-    unsafe {
-        let mut ato = std::ptr::null_mut() as *mut clingo_symbolic_atoms_t;
-        let err = clingo_control_symbolic_atoms(control, &mut ato);
-        if err == 0 {
-            Err(err)
-        } else {
-            Ok(ato)
         }
     }
 }
@@ -474,6 +330,190 @@ pub fn safe_clingo_model_number(model: *mut clingo_model_t) -> std::result::Resu
         }
     }
 }
+
+
+
+pub fn safe_clingo_configuration_root(configuration: *mut clingo_configuration_t)
+                                      -> std::result::Result<clingo_id_t, u8> {
+    unsafe {
+        let mut root_key = 0 as clingo_id_t;
+        let err = clingo_configuration_root(configuration, &mut root_key);
+        if err == 0 {
+            Err(err)
+        } else {
+            Ok(root_key)
+        }
+    }
+}
+
+pub fn safe_clingo_configuration_map_at(configuration: *mut clingo_configuration_t,
+                                        key: clingo_id_t,
+                                        name: &str)
+                                        -> std::result::Result<clingo_id_t, u8> {
+    unsafe {
+        let mut nkey = 0 as clingo_id_t;
+        let err = clingo_configuration_map_at(configuration,
+                                              key,
+                                              CString::new(name).unwrap().as_ptr(),
+                                              &mut nkey);
+
+        if err == 0 {
+            Err(err)
+        } else {
+            Ok(nkey)
+        }
+    }
+}
+
+pub fn safe_clingo_configuration_value_set(configuration: *mut clingo_configuration_t,
+                                           key: clingo_id_t,
+                                           value: &str)
+                                           -> u8 {
+    unsafe {
+        clingo_configuration_value_set(configuration, key, CString::new(value).unwrap().as_ptr())
+    }
+}
+
+
+
+pub fn safe_clingo_configuration_array_at(configuration: *mut clingo_configuration_t,
+                                          key: clingo_id_t,
+                                          offset: size_t)
+                                          -> std::result::Result<clingo_id_t, u8> {
+    unsafe {
+        let mut nkey = 0 as clingo_id_t;
+        // configure the first solver to use the berkmin heuristic
+        let err = clingo_configuration_array_at(configuration, key, offset, &mut nkey);
+        if err == 0 {
+            Err(err)
+        } else {
+            Ok(nkey)
+        }
+    }
+}
+
+
+pub struct SafeClingoControl {
+    control: *mut clingo_control_t,
+}
+impl Drop for SafeClingoControl {
+    fn drop(&mut self) {
+        //         println!("Here I should delete a clingo_control_t object");
+        unsafe { clingo_control_free(self.control) }
+
+    }
+}
+impl SafeClingoControl {
+    pub fn new(arguments: std::env::Args,
+               logger: clingo_logger_t,
+               logger_data: *mut c_void,
+               message_limit: ::std::os::raw::c_uint)
+               -> std::result::Result<SafeClingoControl, u8> {
+        let arguments_size = arguments.len() - 1;
+        // create a vector of zero terminated strings
+        let args = arguments.map(|arg| CString::new(arg).unwrap()).collect::<Vec<CString>>();
+        // drop first element
+        let (_, tail) = args.split_first().unwrap();
+        // convert the strings to raw pointers
+        let c_args = tail.iter().map(|arg| arg.as_ptr()).collect::<Vec<*const c_char>>();
+
+        let mut ctl = std::ptr::null_mut() as *mut clingo_control_t;
+
+        unsafe {
+            let err = clingo_control_new(c_args.as_ptr(),
+                                         arguments_size,
+                                         logger,
+                                         logger_data,
+                                         message_limit,
+                                         &mut ctl);
+            if err == 0 {
+                Err(err)
+            } else {
+                Ok(SafeClingoControl { control: ctl })
+            }
+        }
+    }
+    pub fn add(&mut self, name: &str, parameters: Vec<&str>, program: &str) -> u8 {
+
+        let mname = CString::new(name).unwrap();
+        let mprogram = CString::new(program).unwrap();
+        let parameters_size = parameters.len();
+        // create a vector of zero terminated strings
+        let args =
+            parameters.into_iter().map(|arg| CString::new(arg).unwrap()).collect::<Vec<CString>>();
+        // convert the strings to raw pointers
+        let c_args = args.iter().map(|arg| arg.as_ptr()).collect::<Vec<*const c_char>>();
+
+        unsafe {
+            clingo_control_add(self.control,
+                               mname.as_ptr(),
+                               c_args.as_ptr(),
+                               parameters_size,
+                               mprogram.as_ptr())
+        }
+    }
+    pub fn ground(&mut self,
+                  sparts: Vec<safe_clingo_part>,
+                  ground_callback: clingo_ground_callback_t,
+                  ground_callback_data: *mut c_void)
+                  -> u8 {
+
+        let parts = sparts.iter().map(|arg| from_clingo_part(arg)).collect::<Vec<clingo_part>>();
+        let parts_size = parts.len();
+
+        unsafe {
+            clingo_control_ground(self.control,
+                                  parts.as_ptr(),
+                                  parts_size,
+                                  ground_callback,
+                                  ground_callback_data)
+        }
+    }
+    pub fn solve(&mut self,
+                 model_callback: clingo_model_callback_t,
+                 model_callback_data: *mut c_void,
+                 assumptions: Vec<clingo_symbolic_literal_t>)
+                 -> std::result::Result<clingo_solve_result_bitset_t, u8> {
+        let assumptions_size = assumptions.len();
+        let mut solve_result = 0 as clingo_solve_result_bitset_t;//::std::os::raw::c_uint;
+        unsafe {
+            let err = clingo_control_solve(self.control,
+                                           model_callback,
+                                           model_callback_data,
+                                           assumptions.as_ptr(),
+                                           assumptions_size,
+                                           &mut solve_result);
+            if err == 0 {
+                Err(err)
+            } else {
+                Ok(solve_result)
+            }
+        }
+    }
+    pub fn configuration(&self) -> std::result::Result<*mut clingo_configuration_t, u8> {
+        unsafe {
+            let mut conf = std::ptr::null_mut() as *mut clingo_configuration_t;
+            let err = clingo_control_configuration(self.control, &mut conf);
+            if err == 0 {
+                Err(err)
+            } else {
+                Ok(conf)
+            }
+        }
+    }
+    pub fn symbolic_atoms(&self) -> std::result::Result<*mut clingo_symbolic_atoms_t, u8> {
+        unsafe {
+            let mut ato = std::ptr::null_mut() as *mut clingo_symbolic_atoms_t;
+            let err = clingo_control_symbolic_atoms(self.control, &mut ato);
+            if err == 0 {
+                Err(err)
+            } else {
+                Ok(ato)
+            }
+        }
+    }
+}
+
 
 
 #[cfg(test)]

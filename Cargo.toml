@@ -30,6 +30,10 @@ path = "src/examples/symbol.rs"
 name = "model"
 path = "src/examples/model.rs"
 
+[[example]]
+name = "configuration"
+path = "src/examples/configuration.rs"
+
 [dependencies]
 libc = "0.2.20"
 
