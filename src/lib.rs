@@ -147,17 +147,22 @@ pub fn safe_clingo_control_ground(control: *mut clingo_control_t,
 pub fn safe_clingo_control_solve(control: *mut clingo_control_t,
                                  model_callback: clingo_model_callback_t,
                                  model_callback_data: *mut c_void,
-                                 assumptions: Vec<clingo_symbolic_literal_t>,
-                                 result: *mut clingo_solve_result_bitset_t)
-                                 -> bool {
+                                 assumptions: Vec<clingo_symbolic_literal_t>)
+                                 -> std::result::Result<clingo_solve_result_bitset_t, u8> {
     let assumptions_size = assumptions.len();
+    let mut solve_result = 0 as clingo_solve_result_bitset_t;//::std::os::raw::c_uint;
     unsafe {
-        clingo_control_solve(control,
-                             model_callback,
-                             model_callback_data,
-                             assumptions.as_ptr(),
-                             assumptions_size,
-                             result) == 1
+        let err = clingo_control_solve(control,
+                                       model_callback,
+                                       model_callback_data,
+                                       assumptions.as_ptr(),
+                                       assumptions_size,
+                                       &mut solve_result);
+        if err == 0 {
+            Err(err)
+        } else {
+            Ok(solve_result)
+        }
     }
 }
 pub fn safe_clingo_control_free(control: *mut *mut clingo_control_t) {
@@ -183,21 +188,19 @@ pub fn safe_clingo_error_message() -> &'static str {
 }
 
 pub fn safe_clingo_model_symbols(model: *mut clingo_model_t,
-                                 show: clingo_show_type)
+                                 show: clingo_show_type_bitset_t)
                                  -> std::result::Result<Vec<clingo_symbol_t>, u8> {
-
-    let ishow = show as u32;
     let mut size: usize = 0;
     let size_p = &mut size as *mut usize;
     unsafe {
-        let err1 = clingo_model_symbols_size(model, ishow, size_p);
+        let err1 = clingo_model_symbols_size(model, show, size_p);
         if err1 == 0 {
             Err(err1)
         } else {
             let mut a1 = Vec::<clingo_symbol_t>::with_capacity(size);
             let slice = a1.as_mut_slice();
             let symbols = slice.as_ptr() as *mut clingo_symbol_t;
-            let err2 = clingo_model_symbols(model, ishow, symbols, size);
+            let err2 = clingo_model_symbols(model, show, symbols, size);
             if err2 == 0 {
                 Err(err2)
             } else {
@@ -443,6 +446,33 @@ pub fn safe_clingo_symbol_is_equal_to(a: &clingo_symbol_t, b: &clingo_symbol_t) 
 
 pub fn safe_clingo_symbol_is_less_than(a: &clingo_symbol_t, b: &clingo_symbol_t) -> bool {
     unsafe { clingo_symbol_is_less_than(*a, *b) == 1 }
+}
+
+pub fn safe_clingo_model_type(model: *mut clingo_model_t)
+                              -> std::result::Result<clingo_model_type_t, u8> {
+    unsafe {
+
+        let mut mtype = 0 as clingo_model_type_t;
+        let err = clingo_model_type(model, &mut mtype);
+        if err == 0 {
+            Err(err)
+        } else {
+            Ok(mtype)
+        }
+    }
+}
+
+pub fn safe_clingo_model_number(model: *mut clingo_model_t) -> std::result::Result<uint64_t, u8> {
+
+    unsafe {
+        let mut number = 0;
+        let err = clingo_model_number(model, &mut number);
+        if err == 0 {
+            Err(err)
+        } else {
+            Ok(number)
+        }
+    }
 }
 
 

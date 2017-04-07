@@ -26,6 +26,10 @@ path = "src/examples/symbolic-atoms.rs"
 name = "symbol"
 path = "src/examples/symbol.rs"
 
+[[example]]
+name = "model"
+path = "src/examples/model.rs"
+
 [dependencies]
 libc = "0.2.20"
 

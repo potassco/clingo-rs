@@ -9,7 +9,7 @@ use std::ffi::CString;
 extern "C" fn on_model(model: *mut clingo_model_t, data: *mut c_void, goon: *mut u8) -> u8 {
 
     // retrieve the symbols in the model
-    let atoms = safe_clingo_model_symbols(model, clingo_show_type::clingo_show_type_shown)
+    let atoms = safe_clingo_model_symbols(model, clingo_show_type::clingo_show_type_shown as clingo_show_type_bitset_t)
         .expect("Failed to retrieve symbols in the model");
 
     println!("Model:");
@@ -30,8 +30,8 @@ fn error_main() {
 fn main() {
 
     // create a control object and pass command line arguments
-    let logger: clingo_logger_t = None;
-    let logger_data: *mut c_void = std::ptr::null_mut();
+    let logger = None;
+    let logger_data = std::ptr::null_mut();
     let ctl = safe_clingo_control_new(env::args(), logger, logger_data, 20)
         .expect("Failed creating clingo_control");
 
@@ -49,27 +49,21 @@ fn main() {
         name: CString::new("base").unwrap(),
     };
     let parts = vec![part];
-    let ground_callback: clingo_ground_callback_t = None;
-    let ground_callback_data: *mut c_void = std::ptr::null_mut();
+    let ground_callback = None;
+    let ground_callback_data = std::ptr::null_mut();
 
     if !safe_clingo_control_ground(ctl, parts, ground_callback, ground_callback_data) {
         return error_main();
     }
 
     // solve using a model callback
-    let mut sret = 0 as ::std::os::raw::c_uint;
-    let solve_ret: *mut clingo_solve_result_bitset_t = &mut sret;
     let solve_callback: clingo_model_callback_t = Some(on_model);
-    let solve_callback_data: *mut c_void = std::ptr::null_mut();
+    let solve_callback_data = std::ptr::null_mut();
     let assumptions = vec![];
 
-    if !safe_clingo_control_solve(ctl,
-                                  solve_callback,
-                                  solve_callback_data,
-                                  assumptions,
-                                  solve_ret) {
-        return error_main();
-    }
+    let solve_result =
+        safe_clingo_control_solve(ctl, solve_callback, solve_callback_data, assumptions)
+            .expect("Failed while solving");
 
     //     safe_clingo_control_free(ctl);
 }
