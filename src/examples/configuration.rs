@@ -37,23 +37,26 @@ fn main() {
         .expect("Failed creating clingo_control");
 
     // get the configuration object and its root key
-    let conf = ctl.configuration().unwrap();;
-    let root_key = conf.configuration_root().unwrap();
+    {
+//         let mut conf = ctl.configuration().unwrap();
+        let conf = ctl.configuration().unwrap();
+        let root_key = conf.configuration_root().unwrap();
 
-    // configure to enumerate all models
-    let mut sub_key = conf.configuration_map_at(root_key, "solve.models").unwrap();
-    let err1 = conf.configuration_value_set(sub_key, "0");
-    if err1 == 0 {
-        return error_main();
-    }
-    sub_key = conf.configuration_map_at(root_key, "solver").unwrap();
+        // configure to enumerate all models
+        let mut sub_key = conf.configuration_map_at(root_key, "solve.models").unwrap();
+        let err1 = conf.configuration_value_set(sub_key, "0");
+        if err1 == 0 {
+            return error_main();
+        }
+        sub_key = conf.configuration_map_at(root_key, "solver").unwrap();
 
-    // configure the first solver to use the berkmin heuristic
-    sub_key = conf.configuration_array_at(sub_key, 0).unwrap();
-    sub_key = conf.configuration_map_at(sub_key, "heuristic").unwrap();
-    let err2 = conf.configuration_value_set(sub_key, "berkmin");
-    if err2 == 0 {
-        return error_main();
+        // configure the first solver to use the berkmin heuristic
+        sub_key = conf.configuration_array_at(sub_key, 0).unwrap();
+        sub_key = conf.configuration_map_at(sub_key, "heuristic").unwrap();
+        let err2 = conf.configuration_value_set(sub_key, "berkmin");
+        if err2 == 0 {
+            return error_main();
+        }
     }
     // note that the solver entry can be used both as an array and a map
     // if used as a map, this simply sets the configuration of the first solver and

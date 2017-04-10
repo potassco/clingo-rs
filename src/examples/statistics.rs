@@ -35,7 +35,7 @@ fn print_prefix(depth: u8) {
 }
 
 // recursively print the statistics object
-fn print_statistics(stats: &SafeClingoStatistics, key: uint64_t, depth: u8) {
+fn print_statistics(stats: &mut clingo_statistics_t, key: uint64_t, depth: u8) {
 
     // get the type of an entry and switch over its various values
     let statistics_type = stats.statistics_type(key).unwrap();
@@ -99,13 +99,15 @@ fn main() {
         .expect("Failed creating clingo_control");
 
     // get the configuration object and its root key
-    let conf = ctl.configuration().unwrap();;
-    let root_key = conf.configuration_root().unwrap();
-    // and set the statistics level to one to get more statistics
-    let subkey = conf.configuration_map_at(root_key, "stats").unwrap();
-    let err1 = conf.configuration_value_set(subkey, "1");
-    if err1 == 0 {
-        return error_main();
+    {
+        let conf = ctl.configuration().unwrap();;
+        let root_key = conf.configuration_root().unwrap();
+        // and set the statistics level to one to get more statistics
+        let subkey = conf.configuration_map_at(root_key, "stats").unwrap();
+        let err1 = conf.configuration_value_set(subkey, "1");
+        if err1 == 0 {
+            return error_main();
+        }
     }
 
     // add a logic program to the base part
@@ -139,8 +141,8 @@ fn main() {
         .expect("Failed while solving");
 
     // get the statistics object, get the root key, then print the statistics recursively
-    let stats = ctl.statistics().unwrap();
+    let mut stats = ctl.statistics().unwrap();
     let stats_key = stats.statistics_root().unwrap();
-    print_statistics(&stats, stats_key, 0);
+    print_statistics(stats, stats_key, 0);
 
 }

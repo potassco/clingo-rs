@@ -21,6 +21,12 @@ extern "C" fn on_model(model: *mut clingo_model_t, data: *mut c_void, goon: *mut
     return 1;
 }
 
+fn on_finish(result: clingo_solve_result_bitset_t /*,running: & atomic_flag*/) -> bool{
+//   (void)result;
+//   atomic_flag_clear(running);
+  return true;
+}
+
 fn error_main() {
     let error_message = safe_clingo_error_message();
     println!("{}", error_message);
@@ -28,6 +34,16 @@ fn error_main() {
 }
 
 fn main() {
+//   char const *error_message;
+//   int ret = 0;
+//   atomic_flag running = ATOMIC_FLAG_INIT;
+//   uint64_t samples = 0;
+//   uint64_t incircle = 0;
+//   uint64_t x, y;
+//   clingo_solve_result_bitset_t solve_ret;
+//   clingo_control_t *ctl = NULL;
+//   clingo_solve_async_t *async = NULL;
+//   clingo_part_t parts[] = {{ "base", NULL, 0 }};
 
     // create a control object and pass command line arguments
     let logger = None;
@@ -37,12 +53,12 @@ fn main() {
 
     // add a logic program to the base part
     let parameters: Vec<&str> = Vec::new();
-    let err1 = ctl.add("base", parameters, "a :- not b. b :- not a.");
+    let err1 = ctl.add("base", parameters, "#const n = 17.\
+                                            1 { p(X); q(X) } 1 :- X = 1..n.\
+                                            :- not n+1 { p(1..n); q(1..n) }.");
     if err1 == 0 {
         return error_main();
     }
-
-    println!("");
     
     // ground the base part
     let part = safe_clingo_part {
@@ -58,11 +74,22 @@ fn main() {
         return error_main();
     }
     
-    // solve using a model callback
-    let solve_callback: clingo_model_callback_t = Some(on_model);
-    let solve_callback_data = std::ptr::null_mut();
-    let assumptions = vec![];
-    let _solve_result = ctl.solve(solve_callback, solve_callback_data, assumptions)
-                           .expect("Failed while solving");
+//   atomic_flag_test_and_set(&running);
+//   // solve using a model callback
+//   if (!clingo_control_solve_async(ctl, on_model, NULL, (clingo_finish_callback_t*)on_finish, &running, NULL, 0, &async)) { goto error; }
+// 
+//   // let's approximate pi
+//   while (atomic_flag_test_and_set(&running)) {
+//     ++samples;
+//     x = rand();
+//     y = rand();
+//     if (x * x + y * y <= (uint64_t)RAND_MAX * RAND_MAX) { incircle+= 1; }
+//   }
+// 
+//   printf("pi = %g\n", 4.0*incircle/samples);
+// 
+//   // get the result (and make sure the search is running because calling the finish handler is still part of the search)
+//   if (!clingo_solve_async_get(async, &solve_ret)) { goto error; }
 
 }
+

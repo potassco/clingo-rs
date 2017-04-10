@@ -452,40 +452,36 @@ impl SafeClingoControl {
             }
         }
     }
-    pub fn configuration(&self) -> std::result::Result<SafeClingoConfiguration, u8> {
+    pub fn configuration(&mut self) -> std::result::Result<&mut clingo_configuration_t, u8> {
         unsafe {
             let mut conf = std::ptr::null_mut() as *mut clingo_configuration_t;
             let err = clingo_control_configuration(self.control, &mut conf);
             if err == 0 {
                 Err(err)
             } else {
-                Ok(SafeClingoConfiguration { configuration: conf })
+                Ok(&mut *conf)
             }
         }
     }
-    pub fn statistics(&self) -> std::result::Result<SafeClingoStatistics, u8> {
+    pub fn statistics(&self) -> std::result::Result<&mut clingo_statistics_t, u8> {
         unsafe {
             let mut stat = std::ptr::null_mut() as *mut clingo_statistics_t;
             let err = clingo_control_statistics(self.control, &mut stat);
             if err == 0 {
                 Err(err)
             } else {
-                Ok(SafeClingoStatistics { statistics: stat })
+                Ok(&mut *stat)
 
             }
         }
     }
 }
 
-pub struct SafeClingoConfiguration {
-    configuration: *mut clingo_configuration_t,
-}
-
-impl SafeClingoConfiguration {
-    pub fn configuration_root(&self) -> std::result::Result<clingo_id_t, u8> {
+impl clingo_configuration_t {
+    pub fn configuration_root(&mut self) -> std::result::Result<clingo_id_t, u8> {
         unsafe {
             let mut root_key = 0 as clingo_id_t;
-            let err = clingo_configuration_root(self.configuration, &mut root_key);
+            let err = clingo_configuration_root(self, &mut root_key);
             if err == 0 {
                 Err(err)
             } else {
@@ -493,13 +489,13 @@ impl SafeClingoConfiguration {
             }
         }
     }
-    pub fn configuration_map_at(&self,
+    pub fn configuration_map_at(&mut self,
                                 key: clingo_id_t,
                                 name: &str)
                                 -> std::result::Result<clingo_id_t, u8> {
         unsafe {
             let mut nkey = 0 as clingo_id_t;
-            let err = clingo_configuration_map_at(self.configuration,
+            let err = clingo_configuration_map_at(self,
                                                   key,
                                                   CString::new(name).unwrap().as_ptr(),
                                                   &mut nkey);
@@ -511,20 +507,20 @@ impl SafeClingoConfiguration {
             }
         }
     }
-    pub fn configuration_value_set(&self, key: clingo_id_t, value: &str) -> u8 {
+    pub fn configuration_value_set(&mut self, key: clingo_id_t, value: &str) -> u8 {
         unsafe {
-            clingo_configuration_value_set(self.configuration,
+            clingo_configuration_value_set(self,
                                            key,
                                            CString::new(value).unwrap().as_ptr())
         }
     }
-    pub fn configuration_array_at(&self,
+    pub fn configuration_array_at(&mut self,
                                   key: clingo_id_t,
                                   offset: size_t)
                                   -> std::result::Result<clingo_id_t, u8> {
         unsafe {
             let mut nkey = 0 as clingo_id_t;
-            let err = clingo_configuration_array_at(self.configuration, key, offset, &mut nkey);
+            let err = clingo_configuration_array_at(self, key, offset, &mut nkey);
             if err == 0 {
                 Err(err)
             } else {
@@ -534,16 +530,12 @@ impl SafeClingoConfiguration {
     }
 }
 
+impl clingo_statistics_t {
 
-pub struct SafeClingoStatistics {
-    statistics: *mut clingo_statistics_t,
-}
-
-impl SafeClingoStatistics {
-    pub fn statistics_root(&self) -> std::result::Result<uint64_t, u8> {
+    pub fn statistics_root(&mut self) -> std::result::Result<uint64_t, u8> {
         unsafe {
             let mut root_key = 0 as uint64_t;
-            let err = clingo_statistics_root(self.statistics, &mut root_key);
+            let err = clingo_statistics_root(self, &mut root_key);
             if err == 0 {
                 Err(err)
             } else {
@@ -551,13 +543,13 @@ impl SafeClingoStatistics {
             }
         }
     }
-    pub fn statistics_type(&self,
+    pub fn statistics_type(&mut self,
                            key: uint64_t)
                            -> std::result::Result<clingo_statistics_type_t, u8> {
         unsafe {
 
             let mut stype = 0 as clingo_statistics_type_t;
-            let err = clingo_statistics_type(self.statistics, key, &mut stype);
+            let err = clingo_statistics_type(self, key, &mut stype);
             if err == 0 {
                 Err(err)
             } else {
@@ -565,10 +557,10 @@ impl SafeClingoStatistics {
             }
         }
     }
-    pub fn statistics_value_get(&self, key: uint64_t) -> std::result::Result<f64, u8> {
+    pub fn statistics_value_get(&mut self, key: uint64_t) -> std::result::Result<f64, u8> {
         unsafe {
             let mut value = 0.0 as f64;
-            let err = clingo_statistics_value_get(self.statistics, key, &mut value);
+            let err = clingo_statistics_value_get(self, key, &mut value);
             if err == 0 {
                 Err(err)
             } else {
@@ -576,10 +568,10 @@ impl SafeClingoStatistics {
             }
         }
     }
-    pub fn statistics_array_size(&self, key: uint64_t) -> std::result::Result<size_t, u8> {
+    pub fn statistics_array_size(&mut self, key: uint64_t) -> std::result::Result<size_t, u8> {
         unsafe {
             let mut size = 0 as size_t;
-            let err = clingo_statistics_array_size(self.statistics, key, &mut size);
+            let err = clingo_statistics_array_size(self, key, &mut size);
             if err == 0 {
                 Err(err)
             } else {
@@ -587,13 +579,13 @@ impl SafeClingoStatistics {
             }
         }
     }
-    pub fn statistics_array_at(&self,
+    pub fn statistics_array_at(&mut self,
                                key: uint64_t,
                                offset: size_t)
                                -> std::result::Result<uint64_t, u8> {
         unsafe {
             let mut subkey = 0 as uint64_t;
-            let err = clingo_statistics_array_at(self.statistics, key, offset, &mut subkey);
+            let err = clingo_statistics_array_at(self, key, offset, &mut subkey);
             if err == 0 {
                 Err(err)
             } else {
@@ -601,10 +593,10 @@ impl SafeClingoStatistics {
             }
         }
     }
-    pub fn statistics_map_size(&self, key: uint64_t) -> std::result::Result<size_t, u8> {
+    pub fn statistics_map_size(&mut self, key: uint64_t) -> std::result::Result<size_t, u8> {
         unsafe {
             let mut size = 0 as size_t;
-            let err = clingo_statistics_map_size(self.statistics, key, &mut size);
+            let err = clingo_statistics_map_size(self, key, &mut size);
             if err == 0 {
                 Err(err)
             } else {
@@ -612,14 +604,14 @@ impl SafeClingoStatistics {
             }
         }
     }
-    pub fn statistics_map_subkey_name(&self,
+    pub fn statistics_map_subkey_name(&mut self,
                                       key: uint64_t,
                                       offset: size_t)
                                       -> std::result::Result<*const c_char, u8> {
         unsafe {
             let mut name = std::ptr::null() as *const c_char;
 
-            let err = clingo_statistics_map_subkey_name(self.statistics, key, offset, &mut name);
+            let err = clingo_statistics_map_subkey_name(self, key, offset, &mut name);
             if err == 0 {
                 Err(err)
             } else {
@@ -628,13 +620,13 @@ impl SafeClingoStatistics {
             }
         }
     }
-    pub fn statistics_map_at(&self,
+    pub fn statistics_map_at(&mut self,
                              key: uint64_t,
                              name: *const c_char)
                              -> std::result::Result<uint64_t, u8> {
         unsafe {
             let mut subkey = 0 as uint64_t;
-            let err = clingo_statistics_map_at(self.statistics, key, name, &mut subkey);
+            let err = clingo_statistics_map_at(self, key, name, &mut subkey);
             if err == 0 {
                 Err(err)
             } else {

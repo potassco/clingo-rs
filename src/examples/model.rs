@@ -30,18 +30,12 @@ extern "C" fn on_model(model: *mut clingo_model_t, data: *mut c_void, goon: *mut
     // get model type
     let model_type = safe_clingo_model_type(model).unwrap();
 
-    let clingo_model_type_stable_model =
-        clingo_model_type::clingo_model_type_stable_model as clingo_model_type_t;
-    let clingo_model_type_brave_consequences =
-        clingo_model_type::clingo_model_type_brave_consequences as clingo_model_type_t;
-    let clingo_model_type_cautious_consequences =
-        clingo_model_type::clingo_model_type_cautious_consequences as clingo_model_type_t;
-
     let mut type_string = "";
     match model_type {
-        clingo_model_type_stable_model => type_string = "Stable model",
-        clingo_model_type_brave_consequences => type_string = "Brave consequences", 
-        clingo_model_type_cautious_consequences => type_string = "Cautious consequences",
+        0 => type_string = "Stable model",
+        1 => type_string = "Brave consequences", 
+        2 => type_string = "Cautious consequences",
+        _ => {}
     };
 
     // get running number of model
@@ -114,7 +108,7 @@ fn main() {
     let solve_callback: clingo_model_callback_t = Some(on_model);
     let solve_callback_data = std::ptr::null_mut();
     let assumptions = vec![];
-    let solve_result = ctl.solve(solve_callback, solve_callback_data, assumptions)
+    let _solve_result = ctl.solve(solve_callback, solve_callback_data, assumptions)
         .expect("Failed while solving");
 
 }
