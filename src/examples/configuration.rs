@@ -38,20 +38,20 @@ fn main() {
 
     // get the configuration object and its root key
     let conf = ctl.configuration().unwrap();;
-    let root_key = safe_clingo_configuration_root(conf).unwrap();
+    let root_key = conf.configuration_root().unwrap();
 
     // configure to enumerate all models
-    let mut sub_key = safe_clingo_configuration_map_at(conf, root_key, "solve.models").unwrap();
-    let err1 = safe_clingo_configuration_value_set(conf, sub_key, "0");
+    let mut sub_key = conf.configuration_map_at(root_key, "solve.models").unwrap();
+    let err1 = conf.configuration_value_set(sub_key, "0");
     if err1 == 0 {
         return error_main();
     }
-    sub_key = safe_clingo_configuration_map_at(conf, root_key, "solver").unwrap();
+    sub_key = conf.configuration_map_at(root_key, "solver").unwrap();
 
     // configure the first solver to use the berkmin heuristic
-    sub_key = safe_clingo_configuration_array_at(conf, sub_key, 0).unwrap();
-    sub_key = safe_clingo_configuration_map_at(conf, sub_key, "heuristic").unwrap();
-    let err2 = safe_clingo_configuration_value_set(conf, sub_key, "berkmin");
+    sub_key = conf.configuration_array_at(sub_key, 0).unwrap();
+    sub_key = conf.configuration_map_at(sub_key, "heuristic").unwrap();
+    let err2 = conf.configuration_value_set(sub_key, "berkmin");
     if err2 == 0 {
         return error_main();
     }
@@ -86,7 +86,7 @@ fn main() {
     let solve_callback: clingo_model_callback_t = Some(on_model);
     let solve_callback_data = std::ptr::null_mut();
     let assumptions = vec![];
-    let solve_result = ctl.solve(solve_callback, solve_callback_data, assumptions)
+    let _solve_result = ctl.solve(solve_callback, solve_callback_data, assumptions)
         .expect("Failed while solving");
 
 }

@@ -5,7 +5,6 @@ extern crate libc;
 use std::ffi::CString;
 
 
-
 fn error_main() {
     let error_message = safe_clingo_error_message();
     println!("{}", error_message);

@@ -100,10 +100,10 @@ fn main() {
 
     // get the configuration object and its root key
     let conf = ctl.configuration().unwrap();;
-    let root_key = safe_clingo_configuration_root(conf).unwrap();
+    let root_key = conf.configuration_root().unwrap();
     // and set the statistics level to one to get more statistics
-    let subkey = safe_clingo_configuration_map_at(conf, root_key, "stats").unwrap();
-    let err1 = safe_clingo_configuration_value_set(conf, subkey, "1");
+    let subkey = conf.configuration_map_at(root_key, "stats").unwrap();
+    let err1 = conf.configuration_value_set(subkey, "1");
     if err1 == 0 {
         return error_main();
     }
