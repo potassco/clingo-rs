@@ -42,6 +42,10 @@ path = "src/examples/solve-async.rs"
 name = "solve-iteratively"
 path = "src/examples/solve-iteratively.rs"
 
+[[example]]
+name = "statistics"
+path = "src/examples/statistics.rs"
+
 [dependencies]
 libc = "0.2.20"
 
