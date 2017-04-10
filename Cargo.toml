@@ -34,6 +34,14 @@ path = "src/examples/model.rs"
 name = "configuration"
 path = "src/examples/configuration.rs"
 
+[[example]]
+name = "solve-async"
+path = "src/examples/solve-async.rs"
+
+[[example]]
+name = "solve-iteratively"
+path = "src/examples/solve-iteratively.rs"
+
 [dependencies]
 libc = "0.2.20"
 

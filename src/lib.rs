@@ -392,6 +392,20 @@ pub fn safe_clingo_configuration_array_at(configuration: *mut clingo_configurati
     }
 }
 
+pub fn safe_clingo_solve_iteratively_next(handle: *mut clingo_solve_iteratively_t)
+                                          -> std::result::Result<*mut clingo_model_t, u8> {
+    unsafe {
+
+        let mut model = std::ptr::null_mut() as *mut clingo_model_t;
+        let err = clingo_solve_iteratively_next(handle, &mut model);
+        if err == 0 {
+            Err(err)
+        } else {
+            Ok(model)
+        }
+    }
+}
+
 
 pub struct SafeClingoControl {
     control: *mut clingo_control_t,
@@ -512,9 +526,26 @@ impl SafeClingoControl {
             }
         }
     }
+
+
+    pub fn solve_iteratively(&mut self,
+                             assumptions: *const clingo_symbolic_literal_t,
+                             assumptions_size: size_t)
+                             -> std::result::Result<*mut clingo_solve_iteratively_t, u8> {
+        unsafe {
+            let mut handle = std::ptr::null_mut() as *mut clingo_solve_iteratively_t;
+            let err = clingo_control_solve_iteratively(self.control,
+                                                       assumptions,
+                                                       assumptions_size,
+                                                       &mut handle);
+            if err == 0 {
+                Err(err)
+            } else {
+                Ok(handle)
+            }
+        }
+    }
 }
-
-
 
 #[cfg(test)]
 mod tests {
