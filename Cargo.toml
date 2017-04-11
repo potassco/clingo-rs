@@ -46,6 +46,10 @@ path = "src/examples/solve-iteratively.rs"
 name = "statistics"
 path = "src/examples/statistics.rs"
 
+[[example]]
+name = "backend"
+path = "src/examples/backend.rs"
+
 [dependencies]
 libc = "0.2.20"
 

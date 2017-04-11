@@ -13,4 +13,5 @@ Rust bindings to clingo C API
     cargo run --example=configuration    
     cargo run --example=solve-iteratively 0
     cargo run --example=statistics 0    
+    cargo run --example=backend 0    
     

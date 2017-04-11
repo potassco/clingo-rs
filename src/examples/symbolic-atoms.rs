@@ -17,7 +17,7 @@ fn main() {
     // create a control object and pass command line arguments
     let logger: clingo_logger_t = None;
     let logger_data: *mut c_void = std::ptr::null_mut();
-    let mut ctl = SafeClingoControl::new(env::args(), logger, logger_data, 20)
+    let mut ctl = new_clingo_control(env::args(), logger, logger_data, 20)
         .expect("Failed creating clingo_control");
 
     // add a logic program to the base part
@@ -42,35 +42,35 @@ fn main() {
     }
 
     // get symbolic atoms
-    let ato = ctl.symbolic_atoms().unwrap();
+    let atoms = ctl.symbolic_atoms().unwrap();
 
     println!("Symbolic atoms:");
 
     // get begin and end iterator
     let sig_ptr = std::ptr::null();
-    let mut it_a = safe_clingo_symbolic_atoms_begin(ato, sig_ptr).unwrap();
-    let ie_a = safe_clingo_symbolic_atoms_end(ato).unwrap();
+    let mut it_a = safe_clingo_symbolic_atoms_begin(atoms, sig_ptr).unwrap();
+    let ie_a = safe_clingo_symbolic_atoms_end(atoms).unwrap();
 
     loop {
-        let equal = safe_clingo_symbolic_atoms_iterator_is_equal_to(ato, it_a, ie_a).unwrap();
+        let equal = safe_clingo_symbolic_atoms_iterator_is_equal_to(atoms, it_a, ie_a).unwrap();
         if equal {
             break;
         }
-        let symbol = safe_clingo_symbolic_atoms_symbol(ato, it_a).unwrap();
+        let symbol = safe_clingo_symbolic_atoms_symbol(atoms, it_a).unwrap();
         let atom_string = safe_clingo_symbol_to_string(&symbol).unwrap();
         print!("  {}", atom_string.to_str().unwrap());
 
 
-        let fact = safe_clingo_symbolic_atoms_is_fact(ato, it_a).unwrap();
+        let fact = safe_clingo_symbolic_atoms_is_fact(atoms, it_a).unwrap();
         if fact {
             print!(", fact");
         }
-        let external = safe_clingo_symbolic_atoms_is_external(ato, it_a).unwrap();
+        let external = safe_clingo_symbolic_atoms_is_external(atoms, it_a).unwrap();
         if external {
             print!(", external");
         }
         println!("");
 
-        it_a = safe_clingo_symbolic_atoms_next(ato, it_a).unwrap();
+        it_a = safe_clingo_symbolic_atoms_next(atoms, it_a).unwrap();
     }
 }

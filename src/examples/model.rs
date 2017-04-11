@@ -78,7 +78,7 @@ fn main() {
     // create a control object and pass command line arguments
     let logger = None;
     let logger_data = std::ptr::null_mut();
-    let mut ctl = SafeClingoControl::new(env::args(), logger, logger_data, 20)
+    let mut ctl = new_clingo_control(env::args(), logger, logger_data, 20)
         .expect("Failed creating clingo_control");
 
     // add a logic program to the base part

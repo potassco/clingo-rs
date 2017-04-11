@@ -22,18 +22,18 @@ extern "C" fn on_model(model: *mut clingo_model_t, data: *mut c_void, goon: *mut
 }
 
 
-typedef struct {
-  clingo_ast_term_t atom;
-  clingo_program_builder_t *builder;
-} on_statement_data;
+pub struct on_statement_data{
+  atom: clingo_ast_term_t,
+  builder: *clingo_program_builder_t;
+}
 
 // adds atom enable to all rule bodies
-bool on_statement (clingo_ast_statement_t const *stm, on_statement_data *data) {
-  bool ret = true;
-  clingo_ast_rule_t rule;
-  clingo_ast_body_literal_t *body = NULL;
-  clingo_ast_literal_t lit;
-  clingo_ast_statement_t stm2;
+extern "C" fn on_statement (stm: *const clingo_ast_statement_t, data: *mut on_statement_data) -> bool {
+  let ret = true;
+//   clingo_ast_rule_t rule;
+//   clingo_ast_body_literal_t *body = NULL;
+//   clingo_ast_literal_t lit;
+//   clingo_ast_statement_t stm2;
 
   // pass through all statements that are not rules
   if (stm->type != clingo_ast_statement_type_rule) {
@@ -88,16 +88,16 @@ out:
 }
 
 fn main() {
-  char const *error_message;
-  int ret = 0;
-  clingo_solve_result_bitset_t solve_ret;
-  clingo_control_t *ctl = NULL;
-  clingo_symbol_t sym;
-  clingo_location_t location;
-  clingo_ast_statement_t stm;
-  clingo_ast_external_t ext;
-  on_statement_data data;
-  clingo_part_t parts[] = {{ "base", NULL, 0 }};
+//   char const *error_message;
+//   int ret = 0;
+//   clingo_solve_result_bitset_t solve_ret;
+//   clingo_control_t *ctl = NULL;
+//   clingo_symbol_t sym;
+//   clingo_location_t location;
+//   clingo_ast_statement_t stm;
+//   clingo_ast_external_t ext;
+//   on_statement_data data;
+//   clingo_part_t parts[] = {{ "base", NULL, 0 }};
 
   // create a control object and pass command line arguments
   if (!clingo_control_new(argv+1, argc-1, NULL, NULL, 20, &ctl) != 0) { goto error; }
