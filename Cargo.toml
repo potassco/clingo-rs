@@ -35,10 +35,6 @@ name = "configuration"
 path = "src/examples/configuration.rs"
 
 [[example]]
-name = "solve-async"
-path = "src/examples/solve-async.rs"
-
-[[example]]
 name = "solve-iteratively"
 path = "src/examples/solve-iteratively.rs"
 
@@ -49,6 +45,22 @@ path = "src/examples/statistics.rs"
 [[example]]
 name = "backend"
 path = "src/examples/backend.rs"
+
+[[example]]
+name = "theory-atoms"
+path = "src/examples/theory-atoms.rs"
+
+[[example]]
+name = "solve-async"
+path = "src/examples/solve-async.rs"
+
+[[example]]
+name = "propagator"
+path = "src/examples/propagator.rs"
+
+[[example]]
+name = "ast"
+path = "src/examples/ast.rs"
 
 [dependencies]
 libc = "0.2.20"
