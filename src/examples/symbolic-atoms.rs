@@ -29,9 +29,8 @@ fn main() {
 
     // ground the base part
     let part = safe_clingo_part {
-        params: 0,
-        size: 0,
-        name: CString::new("base").unwrap(),
+        name: CString::new("base").unwrap(),      
+        params: &[],
     };
     let parts = vec![part];
     let ground_callback: clingo_ground_callback_t = None;
@@ -48,29 +47,29 @@ fn main() {
 
     // get begin and end iterator
     let sig_ptr = std::ptr::null();
-    let mut it_a = safe_clingo_symbolic_atoms_begin(atoms, sig_ptr).unwrap();
-    let ie_a = safe_clingo_symbolic_atoms_end(atoms).unwrap();
+    let mut it_a = atoms.begin(sig_ptr).unwrap();
+    let ie_a = atoms.end().unwrap();
 
     loop {
-        let equal = safe_clingo_symbolic_atoms_iterator_is_equal_to(atoms, it_a, ie_a).unwrap();
+        let equal = atoms.iterator_is_equal_to(it_a, ie_a).unwrap();
         if equal {
             break;
         }
-        let symbol = safe_clingo_symbolic_atoms_symbol(atoms, it_a).unwrap();
-        let atom_string = safe_clingo_symbol_to_string(&symbol).unwrap();
+        let symbol = atoms.symbol(it_a).unwrap();
+        let atom_string = safe_clingo_symbol_to_string(symbol).unwrap();
         print!("  {}", atom_string.to_str().unwrap());
 
 
-        let fact = safe_clingo_symbolic_atoms_is_fact(atoms, it_a).unwrap();
+        let fact = atoms.is_fact(it_a).unwrap();
         if fact {
             print!(", fact");
         }
-        let external = safe_clingo_symbolic_atoms_is_external(atoms, it_a).unwrap();
+        let external = atoms.is_external(it_a).unwrap();
         if external {
             print!(", external");
         }
         println!("");
 
-        it_a = safe_clingo_symbolic_atoms_next(atoms, it_a).unwrap();
+        it_a = atoms.next(it_a).unwrap();
     }
 }

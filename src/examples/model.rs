@@ -6,7 +6,7 @@ use libc::c_void;
 use std::ffi::CString;
 
 
-fn print_model(model: *mut clingo_model_t,
+fn print_model(model: &mut clingo_model_t,
                data: *mut c_void,
                label: &str,
                show: clingo_show_type_bitset_t) {
@@ -14,10 +14,10 @@ fn print_model(model: *mut clingo_model_t,
     print!("{}:", label);
 
     // retrieve the symbols in the model
-    let atoms = safe_clingo_model_symbols(model, show)
+    let atoms = model.symbols(show)
         .expect("Failed to retrieve symbols in the model");
 
-    for atom in &atoms {
+    for atom in atoms {
         // retrieve and print the symbol's string
         let atom_string = safe_clingo_symbol_to_string(atom).unwrap();
         print!(" {}", atom_string.to_str().unwrap());
@@ -25,10 +25,10 @@ fn print_model(model: *mut clingo_model_t,
     println!("");
 }
 
-extern "C" fn on_model(model: *mut clingo_model_t, data: *mut c_void, goon: *mut u8) -> u8 {
+unsafe extern "C" fn on_model(model: *mut clingo_model_t, data: *mut c_void, goon: *mut u8) -> u8 {
 
     // get model type
-    let model_type = safe_clingo_model_type(model).unwrap();
+    let model_type = (*model).model_type().unwrap();
 
     let mut type_string = "";
     match model_type {
@@ -39,23 +39,23 @@ extern "C" fn on_model(model: *mut clingo_model_t, data: *mut c_void, goon: *mut
     };
 
     // get running number of model
-    let number = safe_clingo_model_number(model).unwrap();
+    let number = (*model).number().unwrap();
 
     println!("{}: {}", type_string, number);
 
-    print_model(model,
+    print_model(&mut *model,
                 data,
                 "  shown",
                 clingo_show_type::clingo_show_type_shown as clingo_show_type_bitset_t);
-    print_model(model,
+    print_model(&mut *model,
                 data,
                 "  atoms",
                 clingo_show_type::clingo_show_type_atoms as clingo_show_type_bitset_t);
-    print_model(model,
+    print_model(&mut *model,
                 data,
                 "  terms",
                 clingo_show_type::clingo_show_type_terms as clingo_show_type_bitset_t);
-    print_model(model,
+    print_model(&mut *model,
                 data,
                 " ~atoms",
                 (clingo_show_type::clingo_show_type_complement as clingo_show_type_bitset_t +
@@ -91,10 +91,14 @@ fn main() {
     println!("");
 
     // ground the base part
+//     let part = safe_clingo_part {
+//         params: 0,
+//         size: 0,
+//         name: CString::new("base").unwrap(),
+//     };
     let part = safe_clingo_part {
-        params: 0,
-        size: 0,
-        name: CString::new("base").unwrap(),
+        name: CString::new("base").unwrap(),      
+        params: &[],
     };
     let parts = vec![part];
     let ground_callback = None;

@@ -6,14 +6,14 @@ use libc::c_void;
 use std::ffi::CString;
 
 
-extern "C" fn on_model(model: *mut clingo_model_t, data: *mut c_void, goon: *mut u8) -> u8 {
+unsafe extern "C" fn on_model(model: *mut clingo_model_t, data: *mut c_void, goon: *mut u8) -> u8 {
 
     // retrieve the symbols in the model
-    let atoms = safe_clingo_model_symbols(model, clingo_show_type::clingo_show_type_shown as clingo_show_type_bitset_t)
+    let atoms = (*model).symbols(clingo_show_type::clingo_show_type_shown as clingo_show_type_bitset_t)
         .expect("Failed to retrieve symbols in the model");
 
     print!("Model:");
-    for atom in &atoms {
+    for atom in atoms {
         // retrieve and print the symbol's string
         let atom_string = safe_clingo_symbol_to_string(atom).unwrap();
         print!(" {}", atom_string.to_str().unwrap());
@@ -45,9 +45,8 @@ fn main() {
 
     // ground the base part
     let part = safe_clingo_part {
-        params: 0,
-        size: 0,
-        name: CString::new("base").unwrap(),
+        name: CString::new("base").unwrap(),      
+        params: &[],
     };
     let parts = vec![part];
     let ground_callback = None;
@@ -57,20 +56,21 @@ fn main() {
         return error_main();
     }
 
-    // get symbolic atoms
-    let atoms = ctl.symbolic_atoms().unwrap();
-
+    let atom_strings = ["a", "b", "c"];
     // get the ids of atoms a, b, and c
     let mut atom_ids = Vec::new();
-    let atom_strings = ["a", "b", "c"];
+    {
+        // get symbolic atoms
+        let atoms = ctl.symbolic_atoms().unwrap();
 
-    for atom in atom_strings.iter() {
-        let symbol = safe_clingo_symbol_create_id(atom, true).unwrap();
-        let atom_it = safe_clingo_symbolic_atoms_find(atoms, symbol).unwrap();
+        for atom in atom_strings.iter() {
+            let symbol = safe_clingo_symbol_create_id(atom, true).unwrap();
+            let atom_it = atoms.find(symbol).unwrap();
 
-        // get the atom's id
-        let lit = safe_clingo_symbolic_atoms_literal(atoms, atom_it).unwrap();
-        atom_ids.push(lit);
+            // get the atom's id
+            let lit = atoms.literal(atom_it).unwrap();
+            atom_ids.push(lit);
+        }
     }
 
     {
@@ -79,6 +79,7 @@ fn main() {
 
         // add an additional atom (called d below)
         let atom_d = backend.add_atom().unwrap();
+        
         // add rule: d :- a, b.
         let head = vec![atom_d];
         let body = vec![atom_ids[0], atom_ids[1]];
@@ -96,6 +97,7 @@ fn main() {
             return error_main();
         }
     }
+    
     // solve using a model callback
     let solve_callback: clingo_model_callback_t = Some(on_model);
     let solve_callback_data = std::ptr::null_mut();

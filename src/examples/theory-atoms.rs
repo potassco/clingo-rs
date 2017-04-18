@@ -6,14 +6,14 @@ use libc::c_void;
 use std::ffi::CString;
 
 
-extern "C" fn on_model(model: *mut clingo_model_t, data: *mut c_void, goon: *mut u8) -> u8 {
+unsafe extern "C" fn on_model(model: *mut clingo_model_t, data: *mut c_void, goon: *mut u8) -> u8 {
 
     // retrieve the symbols in the model
-    let atoms = safe_clingo_model_symbols(model, clingo_show_type::clingo_show_type_shown as clingo_show_type_bitset_t)
+    let atoms = (*model).symbols(clingo_show_type::clingo_show_type_shown as clingo_show_type_bitset_t)
         .expect("Failed to retrieve symbols in the model");
 
     print!("Model:");
-    for atom in &atoms {
+    for atom in atoms {
         // retrieve and print the symbol's string
         let atom_string = safe_clingo_symbol_to_string(atom).unwrap();
         print!(" {}", atom_string.to_str().unwrap());
@@ -79,9 +79,8 @@ fn main() {
 
     // ground the base part
     let part = safe_clingo_part {
-        params: 0,
-        size: 0,
-        name: CString::new("base").unwrap(),
+        name: CString::new("base").unwrap(),      
+        params: &[],
     };
     let parts = vec![part];
     let ground_callback = None;
