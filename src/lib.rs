@@ -2,10 +2,8 @@
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
 
-// mod clingo {
-include!("bindings.rs");
-// }
-// use clingo;
+extern crate clingo_sys;
+
 use std::ffi::CStr;
 
 pub fn safe_clingo_version() -> (i32, i32, i32) {
