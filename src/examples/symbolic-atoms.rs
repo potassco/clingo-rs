@@ -28,13 +28,13 @@ fn main() {
     }
 
     // ground the base part
-    let part = safe_clingo_part {
+    let part = ClingoPart {
         name: CString::new("base").unwrap(),      
         params: &[],
     };
     let parts = vec![part];
-    let ground_callback: clingo_ground_callback_t = None;
-    let ground_callback_data: *mut c_void = std::ptr::null_mut();
+    let ground_callback = None;
+    let ground_callback_data = std::ptr::null_mut();
     let err2 = ctl.ground(parts, ground_callback, ground_callback_data);
     if err2 == 0 {
         return error_main();

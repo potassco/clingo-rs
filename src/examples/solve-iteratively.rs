@@ -29,7 +29,7 @@ fn main() {
     println!("");
 
     // ground the base part
-    let part = safe_clingo_part {
+    let part = ClingoPart {
         name: CString::new("base").unwrap(),
         params: &[],
     };

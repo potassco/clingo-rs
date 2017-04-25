@@ -4,6 +4,10 @@ version = "0.1.0"
 authors = ["sthiele <sthiele78@gmail.com>"]
 description = "Rust idiomatic bindings to libclingo"
 
+[dependencies]
+clingo-sys = { path = "./clingo-sys" }
+libc = "0.2.20"
+
 [lib]
 name = "clingo"
 path = "src/lib.rs"
@@ -59,7 +63,4 @@ path = "src/examples/propagator.rs"
 [[example]]
 name = "ast"
 path = "src/examples/ast.rs"
-
-[dependencies]
-libc = "0.2.20"
 

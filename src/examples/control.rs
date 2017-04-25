@@ -6,10 +6,10 @@ use libc::c_void;
 use std::ffi::CString;
 
 
-unsafe extern "C" fn on_model(model: *mut clingo_model_t, data: *mut c_void, goon: *mut u8) -> u8 {
+extern "C" fn on_model(model: &mut ClingoModel, data: *mut c_void, goon: *mut u8) -> u8 {
 
     // retrieve the symbols in the model
-    let atoms = (*model).symbols(clingo_show_type::clingo_show_type_shown as clingo_show_type_bitset_t)
+    let atoms = model.symbols(clingo_show_type::clingo_show_type_shown as clingo_show_type_bitset_t)
         .expect("Failed to retrieve symbols in the model");
 
     println!("Model:");
@@ -45,7 +45,7 @@ fn main() {
     println!("");
     
     // ground the base part
-    let part = safe_clingo_part {
+    let part = ClingoPart {
         name: CString::new("base").unwrap(),      
         params: &[],
     };
@@ -58,7 +58,7 @@ fn main() {
     }
     
     // solve using a model callback
-    let solve_callback: clingo_model_callback_t = Some(on_model);
+    let solve_callback: ClingoModelCallback = Some(on_model);
     let solve_callback_data = std::ptr::null_mut();
     let assumptions = vec![];
     let _solve_result = ctl.solve(solve_callback, solve_callback_data, assumptions)

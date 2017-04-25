@@ -6,7 +6,7 @@ use libc::c_void;
 use std::ffi::CString;
 
 
-fn print_model(model: &mut clingo_model_t,
+fn print_model(model: &mut ClingoModel,
                data: *mut c_void,
                label: &str,
                show: clingo_show_type_bitset_t) {
@@ -25,10 +25,10 @@ fn print_model(model: &mut clingo_model_t,
     println!("");
 }
 
-unsafe extern "C" fn on_model(model: *mut clingo_model_t, data: *mut c_void, goon: *mut u8) -> u8 {
+extern "C" fn on_model(model: &mut ClingoModel, data: *mut c_void, goon: *mut u8) -> u8 {
 
     // get model type
-    let model_type = (*model).model_type().unwrap();
+    let model_type = model.model_type().unwrap();
 
     let mut type_string = "";
     match model_type {
@@ -39,23 +39,23 @@ unsafe extern "C" fn on_model(model: *mut clingo_model_t, data: *mut c_void, goo
     };
 
     // get running number of model
-    let number = (*model).number().unwrap();
+    let number = model.number().unwrap();
 
     println!("{}: {}", type_string, number);
 
-    print_model(&mut *model,
+    print_model(model,
                 data,
                 "  shown",
                 clingo_show_type::clingo_show_type_shown as clingo_show_type_bitset_t);
-    print_model(&mut *model,
+    print_model(model,
                 data,
                 "  atoms",
                 clingo_show_type::clingo_show_type_atoms as clingo_show_type_bitset_t);
-    print_model(&mut *model,
+    print_model(model,
                 data,
                 "  terms",
                 clingo_show_type::clingo_show_type_terms as clingo_show_type_bitset_t);
-    print_model(&mut *model,
+    print_model(model,
                 data,
                 " ~atoms",
                 (clingo_show_type::clingo_show_type_complement as clingo_show_type_bitset_t +
@@ -91,12 +91,7 @@ fn main() {
     println!("");
 
     // ground the base part
-//     let part = safe_clingo_part {
-//         params: 0,
-//         size: 0,
-//         name: CString::new("base").unwrap(),
-//     };
-    let part = safe_clingo_part {
+    let part = ClingoPart {
         name: CString::new("base").unwrap(),      
         params: &[],
     };
@@ -109,7 +104,7 @@ fn main() {
     }
 
     // solve using a model callback
-    let solve_callback: clingo_model_callback_t = Some(on_model);
+    let solve_callback: ClingoModelCallback = Some(on_model);
     let solve_callback_data = std::ptr::null_mut();
     let assumptions = vec![];
     let _solve_result = ctl.solve(solve_callback, solve_callback_data, assumptions)
