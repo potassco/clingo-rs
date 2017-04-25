@@ -11,22 +11,23 @@ use clingo_sys::*;
 use std::ffi::CStr;
 use std::ffi::CString;
 
-pub use clingo_sys::{clingo_show_type_bitset_t,clingo_show_type, uint64_t, clingo_logger_t, clingo_literal_t, clingo_id_t};
+pub use clingo_sys::{clingo_show_type_bitset_t, clingo_show_type, uint64_t, clingo_logger_t,
+                     clingo_literal_t, clingo_id_t};
 use clingo_sys::{clingo_ground_callback_t, clingo_model_callback_t};
 pub type ClingoModelCallback =
     ::std::option::Option<unsafe extern "C" fn(model: &mut ClingoModel,
-                                               data: *mut c_void,
-                                               goon: *mut u8)
+                                                 data: *mut c_void,
+                                                 goon: *mut u8)
                                                  -> u8>;
 pub type ClingoGroundCallback =
     ::std::option::Option<unsafe extern "C" fn(location: clingo_location_t,
-                                               name: *const c_char,
-                                               arguments: *const clingo_symbol_t,
-                                               arguments_size: size_t,
-                                               data: *mut c_void,
-                                               symbol_callback: clingo_symbol_callback_t,
-                                               symbol_callback_data: *mut c_void)
-                              -> u8>;
+                                                 name: *const c_char,
+                                                 arguments: *const clingo_symbol_t,
+                                                 arguments_size: size_t,
+                                                 data: *mut c_void,
+                                                 symbol_callback: clingo_symbol_callback_t,
+                                                 symbol_callback_data: *mut c_void)
+                                                 -> u8>;
 
 pub fn safe_clingo_version() -> (i32, i32, i32) {
     let mut m1 = 0;
@@ -233,7 +234,7 @@ pub struct ClingoControl(clingo_control_t);
 impl Drop for ClingoControl {
     fn drop(&mut self) {
         unsafe {
-            let control = &mut self.0;
+            let ClingoControl(ref mut control) = *self;
             clingo_control_free(control)
         }
 
@@ -253,8 +254,7 @@ impl ClingoControl {
         let c_args = args.iter().map(|arg| arg.as_ptr()).collect::<Vec<*const c_char>>();
 
         unsafe {
-            let control = &mut self.0;
-            // let mut ClingoControl(control) = self;
+            let ClingoControl(ref mut control) = *self;
             clingo_control_add(control,
                                mname.as_ptr(),
                                c_args.as_ptr(),
@@ -272,8 +272,7 @@ impl ClingoControl {
         let parts_size = parts.len();
 
         unsafe {
-            let control = &mut self.0;
-            // let mut ClingoControl(control) = self;
+            let ClingoControl(ref mut control) = *self;
             clingo_control_ground(control,
                                   parts.as_ptr(),
                                   parts_size,
@@ -288,31 +287,37 @@ impl ClingoControl {
                  -> std::result::Result<clingo_solve_result_bitset_t, u8> {
         let mut solve_result = 0 as clingo_solve_result_bitset_t;
         unsafe {
+            let ClingoControl(ref mut control) = *self;
             match model_callback {
-            Some(mc) => { 
+                Some(mc) => {
                     // try casting the type of the function pointer
-                    let hc = std::mem::transmute::<unsafe extern "C" fn(&mut ClingoModel, *mut libc::c_void, *mut u8) -> u8, unsafe extern "C" fn(*mut clingo_model_t, *mut libc::c_void, *mut u8) -> u8>(mc);
-                    let ClingoControl(ref mut control) = *self;
+                    let hc = std::mem::transmute::<unsafe extern "C" fn(&mut ClingoModel,
+                                                                        *mut libc::c_void,
+                                                                        *mut u8)
+                                                                        -> u8,
+                                                   unsafe extern "C" fn(*mut clingo_model_t,
+                                                                        *mut libc::c_void,
+                                                                        *mut u8)
+                                                                        -> u8>(mc);
                     let err = clingo_control_solve(control,
-                                                Some(hc),
-                                                model_callback_data,
-                                                assumptions.as_ptr(),
-                                                assumptions.len(),
-                                                &mut solve_result);
+                                                   Some(hc),
+                                                   model_callback_data,
+                                                   assumptions.as_ptr(),
+                                                   assumptions.len(),
+                                                   &mut solve_result);
                     if err == 0 {
                         Err(err)
                     } else {
                         Ok(solve_result)
                     }
                 }
-            _ => { 
-                    let ClingoControl(ref mut control) = *self;
+                _ => {
                     let err = clingo_control_solve(control,
-                                                None,
-                                                model_callback_data,
-                                                assumptions.as_ptr(),
-                                                assumptions.len(),
-                                                &mut solve_result);
+                                                   None,
+                                                   model_callback_data,
+                                                   assumptions.as_ptr(),
+                                                   assumptions.len(),
+                                                   &mut solve_result);
                     if err == 0 {
                         Err(err)
                     } else {
@@ -326,8 +331,7 @@ impl ClingoControl {
                              assumptions: Vec<clingo_symbolic_literal_t>)
                              -> std::result::Result<&mut ClingoSolveIteratively, u8> {
         unsafe {
-            let control = &mut self.0;
-            // let mut ClingoControl(control) = self;
+            let ClingoControl(ref mut control) = *self;
             let mut handle = std::ptr::null_mut() as *mut clingo_solve_iteratively;
             let err = clingo_control_solve_iteratively(control,
                                                        assumptions.as_ptr(),
@@ -348,10 +352,9 @@ impl ClingoControl {
                        assumptions: Vec<clingo_symbolic_literal_t>)
                        -> std::result::Result<*mut clingo_solve_async_t, u8> {
         unsafe {
-            let control = &mut self.0;
-            // let mut ClingoControl(control) = self;
+            let ClingoControl(ref mut control) = *self;
             let mut handle = std::ptr::null_mut() as *mut clingo_solve_async_t;
-            
+
             let err = clingo_control_solve_async(control,
                                                  model_callback,
                                                  model_callback_data,
@@ -383,8 +386,7 @@ impl ClingoControl {
     //                                               -> u8;
     pub fn statistics(&mut self) -> std::result::Result<&mut ClingoStatistics, u8> {
         unsafe {
-            let control = &mut self.0;
-            // let mut ClingoControl(control) = self;
+            let ClingoControl(ref mut control) = *self;
             let mut stat = std::ptr::null_mut() as *mut clingo_statistics_t;
             let err = clingo_control_statistics(control, &mut stat);
             if err == 0 {
@@ -397,8 +399,7 @@ impl ClingoControl {
     //     pub fn clingo_control_interrupt(control: *mut ClingoControl);
     pub fn configuration(&mut self) -> std::result::Result<&mut ClingoConfiguration, u8> {
         unsafe {
-            let control = &mut self.0;
-            // let mut ClingoControl(control) = self;
+            let ClingoControl(ref mut control) = *self;
             let mut conf = std::ptr::null_mut() as *mut clingo_configuration_t;
             let err = clingo_control_configuration(control, &mut conf);
             if err == 0 {
@@ -421,8 +422,7 @@ impl ClingoControl {
     //                                    -> u8;
     pub fn symbolic_atoms(&mut self) -> std::result::Result<&mut ClingoSymbolicAtoms, u8> {
         unsafe {
-            let control = &mut self.0;
-            // let mut ClingoControl(control) = self;
+            let ClingoControl(ref mut control) = *self;
             let mut atoms = std::ptr::null_mut() as *mut clingo_symbolic_atoms_t;
             let err = clingo_control_symbolic_atoms(control, &mut atoms);
             if err == 0 {
@@ -434,8 +434,7 @@ impl ClingoControl {
     }
     pub fn theory_atoms(&mut self) -> std::result::Result<&mut ClingoTheoryAtoms, u8> {
         unsafe {
-            let control = &mut self.0;
-            // let mut ClingoControl(control) = self;
+            let ClingoControl(ref mut control) = *self;
             let mut atoms = std::ptr::null_mut() as *mut clingo_theory_atoms_t;
             let err = clingo_control_theory_atoms(control, &mut atoms);
             if err == 0 {
@@ -447,8 +446,7 @@ impl ClingoControl {
     }
     pub fn backend(&mut self) -> std::result::Result<&mut ClingoBackend, u8> {
         unsafe {
-            let control = &mut self.0;
-            // let mut ClingoControl(control) = self;
+            let ClingoControl(ref mut control) = *self;
             let mut backend = std::ptr::null_mut() as *mut clingo_backend_t;
             let err = clingo_control_backend(control, &mut backend);
             if err == 0 {
@@ -468,8 +466,7 @@ pub struct ClingoConfiguration(clingo_configuration_t);
 impl ClingoConfiguration {
     pub fn configuration_root(&mut self) -> std::result::Result<clingo_id_t, u8> {
         unsafe {
-            let conf = &mut self.0;
-            // let mut ClingoConfiguration(conf) = self;
+            let ClingoConfiguration(ref mut conf) = *self;
             let mut root_key = 0 as clingo_id_t;
             let err = clingo_configuration_root(conf, &mut root_key);
             if err == 0 {
@@ -496,8 +493,7 @@ impl ClingoConfiguration {
                                   offset: size_t)
                                   -> std::result::Result<clingo_id_t, u8> {
         unsafe {
-            let conf = &mut self.0;
-            // let mut ClingoConfiguration(conf) = self;
+            let ClingoConfiguration(ref mut conf) = *self;
             let mut nkey = 0 as clingo_id_t;
             let err = clingo_configuration_array_at(conf, key, offset, &mut nkey);
             if err == 0 {
@@ -521,8 +517,7 @@ impl ClingoConfiguration {
                                 name: &str)
                                 -> std::result::Result<clingo_id_t, u8> {
         unsafe {
-            let conf = &mut self.0;
-            // let mut ClingoConfiguration(conf) = self;
+            let ClingoConfiguration(ref mut conf) = *self;
             let mut nkey = 0 as clingo_id_t;
             let err = clingo_configuration_map_at(conf,
                                                   key,
@@ -551,8 +546,7 @@ impl ClingoConfiguration {
     //                                           -> u8;
     pub fn configuration_value_set(&mut self, key: clingo_id_t, value: &str) -> u8 {
         unsafe {
-            let conf = &mut self.0;
-            // let mut ClingoConfiguration(conf) = self;
+            let ClingoConfiguration(ref mut conf) = *self;
             clingo_configuration_value_set(conf, key, CString::new(value).unwrap().as_ptr())
         }
     }
@@ -572,10 +566,8 @@ impl ClingoBackend {
         let body = body_vector.as_ptr();
         let body_size = body_vector.len();
         unsafe {
-            let backend = &mut self.0;
-            // let mut ClingoBackend(backend) = self;
+            let ClingoBackend(ref mut backend) = *self;
             if choice {
-
                 clingo_backend_rule(backend, 1, head, head_size, body, body_size)
             } else {
                 clingo_backend_rule(backend, 0, head, head_size, body, body_size)
@@ -606,8 +598,7 @@ impl ClingoBackend {
     pub fn assume(&mut self, literals: *const clingo_literal_t, size: size_t) -> u8 {
 
         unsafe {
-            let backend = &mut self.0;
-            // let mut ClingoBackend(backend) = self;
+            let ClingoBackend(ref mut backend) = *self;
             clingo_backend_assume(backend, literals, size)
         }
     }
@@ -627,8 +618,7 @@ impl ClingoBackend {
     //                                     -> u8;
     pub fn add_atom(&mut self) -> std::result::Result<clingo_atom_t, u8> {
         unsafe {
-            let backend = &mut self.0;
-            // let mut ClingoBackend(backend) = self;
+            let ClingoBackend(ref mut backend) = *self;
             let mut atom = 0 as clingo_atom_t;
             let err = clingo_backend_add_atom(backend, &mut atom);
             if err == 0 {
@@ -644,8 +634,7 @@ pub struct ClingoStatistics(clingo_statistics_t);
 impl ClingoStatistics {
     pub fn statistics_root(&mut self) -> std::result::Result<uint64_t, u8> {
         unsafe {
-            let stats = &mut self.0;
-            // let mut ClingoStatistics(stats) = self;
+            let ClingoStatistics(ref mut stats) = *self;
             let mut root_key = 0 as uint64_t;
             let err = clingo_statistics_root(stats, &mut root_key);
             if err == 0 {
@@ -659,8 +648,7 @@ impl ClingoStatistics {
                            key: uint64_t)
                            -> std::result::Result<clingo_statistics_type_t, u8> {
         unsafe {
-            let stats = &mut self.0;
-            // let mut ClingoStatistics(stats) = self;
+            let ClingoStatistics(ref mut stats) = *self;
             let mut stype = 0 as clingo_statistics_type_t;
             let err = clingo_statistics_type(stats, key, &mut stype);
             if err == 0 {
@@ -672,8 +660,7 @@ impl ClingoStatistics {
     }
     pub fn statistics_array_size(&mut self, key: uint64_t) -> std::result::Result<size_t, u8> {
         unsafe {
-            let stats = &mut self.0;
-            // let mut ClingoStatistics(stats) = self;
+            let ClingoStatistics(ref mut stats) = *self;
             let mut size = 0 as size_t;
             let err = clingo_statistics_array_size(stats, key, &mut size);
             if err == 0 {
@@ -688,8 +675,7 @@ impl ClingoStatistics {
                                offset: size_t)
                                -> std::result::Result<uint64_t, u8> {
         unsafe {
-            let stats = &mut self.0;
-            // let mut ClingoStatistics(stats) = self;
+            let ClingoStatistics(ref mut stats) = *self;
             let mut subkey = 0 as uint64_t;
             let err = clingo_statistics_array_at(stats, key, offset, &mut subkey);
             if err == 0 {
@@ -701,8 +687,7 @@ impl ClingoStatistics {
     }
     pub fn statistics_map_size(&mut self, key: uint64_t) -> std::result::Result<size_t, u8> {
         unsafe {
-            let stats = &mut self.0;
-            // let mut ClingoStatistics(stats) = self;
+            let ClingoStatistics(ref mut stats) = *self;
             let mut size = 0 as size_t;
             let err = clingo_statistics_map_size(stats, key, &mut size);
             if err == 0 {
@@ -717,8 +702,7 @@ impl ClingoStatistics {
                                           offset: size_t)
                                           -> std::result::Result<&'a str, u8> {
         unsafe {
-            let stats = &mut self.0;
-            // let mut ClingoStatistics(stats) = self;
+            let ClingoStatistics(ref mut stats) = *self;
             let mut name = std::ptr::null() as *const c_char;
 
             let err = clingo_statistics_map_subkey_name(stats, key, offset, &mut name);
@@ -734,8 +718,7 @@ impl ClingoStatistics {
                              name: &str)
                              -> std::result::Result<uint64_t, u8> {
         unsafe {
-            let stats = &mut self.0;
-            // let mut ClingoStatistics(stats) = self;
+            let ClingoStatistics(ref mut stats) = *self;
             let mut subkey = 0 as uint64_t;
             let err = clingo_statistics_map_at(stats,
                                                key,
@@ -750,8 +733,7 @@ impl ClingoStatistics {
     }
     pub fn statistics_value_get(&mut self, key: uint64_t) -> std::result::Result<f64, u8> {
         unsafe {
-            let stats = &mut self.0;
-            // let mut ClingoStatistics(stats) = self;
+            let ClingoStatistics(ref mut stats) = *self;
             let mut value = 0.0 as f64;
             let err = clingo_statistics_value_get(stats, key, &mut value);
             if err == 0 {
@@ -769,8 +751,7 @@ impl ClingoSymbolicAtoms {
                  signature: *const clingo_signature_t)
                  -> std::result::Result<clingo_symbolic_atom_iterator_t, u8> {
         unsafe {
-            let atoms = &mut self.0;
-            // let mut ClingoSymbolicAtoms(atoms) = self;
+            let ClingoSymbolicAtoms(ref mut atoms) = *self;
             let mut iterator = 0 as clingo_symbolic_atom_iterator_t;
             let err = clingo_symbolic_atoms_begin(atoms, signature, &mut iterator);
             if err == 0 {
@@ -782,8 +763,7 @@ impl ClingoSymbolicAtoms {
     }
     pub fn end(&mut self) -> std::result::Result<clingo_symbolic_atom_iterator_t, u8> {
         unsafe {
-            let atoms = &mut self.0;
-            // let mut ClingoSymbolicAtoms(atoms) = self;
+            let ClingoSymbolicAtoms(ref mut atoms) = *self;
             let mut iterator = 0 as clingo_symbolic_atom_iterator_t;
             let err = clingo_symbolic_atoms_end(atoms, &mut iterator);
             if err == 0 {
@@ -797,8 +777,7 @@ impl ClingoSymbolicAtoms {
                 symbol: clingo_symbol_t)
                 -> std::result::Result<clingo_symbolic_atom_iterator_t, u8> {
         unsafe {
-            let atoms = &mut self.0;
-            // let mut ClingoSymbolicAtoms(atoms) = self;
+            let ClingoSymbolicAtoms(ref mut atoms) = *self;
             let mut iterator = 0 as clingo_symbolic_atom_iterator_t;
             let err = clingo_symbolic_atoms_find(atoms, symbol, &mut iterator);
             if err == 0 {
@@ -813,8 +792,7 @@ impl ClingoSymbolicAtoms {
                                 b: clingo_symbolic_atom_iterator_t)
                                 -> std::result::Result<bool, u8> {
         unsafe {
-            let atoms = &mut self.0;
-            // let mut ClingoSymbolicAtoms(atoms) = self;
+            let ClingoSymbolicAtoms(ref mut atoms) = *self;
             let mut equal = 0;
             let err = clingo_symbolic_atoms_iterator_is_equal_to(atoms, a, b, &mut equal);
             if err == 0 {
@@ -828,8 +806,7 @@ impl ClingoSymbolicAtoms {
                   iterator: clingo_symbolic_atom_iterator_t)
                   -> std::result::Result<clingo_symbol_t, u8> {
         unsafe {
-            let atoms = &mut self.0;
-            // let mut ClingoSymbolicAtoms(atoms) = self;
+            let ClingoSymbolicAtoms(ref mut atoms) = *self;
             let mut symbol = 0 as clingo_symbol_t;
             let err = clingo_symbolic_atoms_symbol(atoms, iterator, &mut symbol);
             if err == 0 {
@@ -843,8 +820,7 @@ impl ClingoSymbolicAtoms {
                    iterator: clingo_symbolic_atom_iterator_t)
                    -> std::result::Result<bool, u8> {
         unsafe {
-            let atoms = &mut self.0;
-            // let mut ClingoSymbolicAtoms(atoms) = self;
+            let ClingoSymbolicAtoms(ref mut atoms) = *self;
             let mut fact = 0;
             let err = clingo_symbolic_atoms_is_fact(atoms, iterator, &mut fact);
             if err == 0 {
@@ -858,8 +834,7 @@ impl ClingoSymbolicAtoms {
                        iterator: clingo_symbolic_atom_iterator_t)
                        -> std::result::Result<bool, u8> {
         unsafe {
-            let atoms = &mut self.0;
-            // let mut ClingoSymbolicAtoms(atoms) = self;
+            let ClingoSymbolicAtoms(ref mut atoms) = *self;
             let mut external = 0;
             let err = clingo_symbolic_atoms_is_external(atoms, iterator, &mut external);
             if err == 0 {
@@ -873,8 +848,7 @@ impl ClingoSymbolicAtoms {
                    iterator: clingo_symbolic_atom_iterator_t)
                    -> std::result::Result<clingo_literal_t, u8> {
         unsafe {
-            let atoms = &mut self.0;
-            // let mut ClingoSymbolicAtoms(atoms) = self;
+            let ClingoSymbolicAtoms(ref mut atoms) = *self;
             let mut literal = 0 as clingo_literal_t;
             let err = clingo_symbolic_atoms_literal(atoms, iterator, &mut literal);
             if err == 0 {
@@ -895,8 +869,7 @@ impl ClingoSymbolicAtoms {
                 iterator: clingo_symbolic_atom_iterator_t)
                 -> std::option::Option<clingo_symbolic_atom_iterator_t> {
         unsafe {
-            let atoms = &mut self.0;
-            // let mut ClingoSymbolicAtoms(atoms) = self;
+            let ClingoSymbolicAtoms(ref mut atoms) = *self;
             let mut next = 0 as clingo_symbolic_atom_iterator_t;
             let err = clingo_symbolic_atoms_next(atoms, iterator, &mut next);
             if err == 0 {
@@ -924,8 +897,7 @@ impl ClingoTheoryAtoms {
     //                                            -> u8;
     pub fn term_name<'a>(&mut self, term: clingo_id_t) -> std::result::Result<&'a str, u8> {
         unsafe {
-            let atoms = &mut self.0;
-            // let mut ClingoTheoryAtoms(atoms) = self;
+            let ClingoTheoryAtoms(ref mut atoms) = *self;
             let mut char_ptr = std::ptr::null() as *const c_char;
             let err = clingo_theory_atoms_term_name(atoms, term, &mut char_ptr);
             if err == 0 {
@@ -975,8 +947,7 @@ impl ClingoTheoryAtoms {
     //                                                  -> u8;
     pub fn size(&mut self) -> std::result::Result<size_t, u8> {
         unsafe {
-            let atoms = &mut self.0;
-            // let mut ClingoTheoryAtoms(atoms) = self;
+            let ClingoTheoryAtoms(ref mut atoms) = *self;
             let mut size = 0 as size_t;
             let err = clingo_theory_atoms_size(atoms, &mut size);
             if err == 0 {
@@ -988,8 +959,7 @@ impl ClingoTheoryAtoms {
     }
     pub fn atom_term(&mut self, atom: clingo_id_t) -> std::result::Result<clingo_id_t, u8> {
         unsafe {
-            let atoms = &mut self.0;
-            // let mut ClingoTheoryAtoms(atoms) = self;
+            let ClingoTheoryAtoms(ref mut atoms) = *self;
             let mut term = 0 as clingo_id_t;
             let err = clingo_theory_atoms_atom_term(atoms, atom, &mut term);
             if err == 0 {
@@ -1006,8 +976,7 @@ impl ClingoTheoryAtoms {
     //                                              -> u8;
     pub fn atom_has_guard(&mut self, atom: clingo_id_t) -> std::result::Result<bool, u8> {
         unsafe {
-            let atoms = &mut self.0;
-            // let mut ClingoTheoryAtoms(atoms) = self;
+            let ClingoTheoryAtoms(ref mut atoms) = *self;
             let mut has_guard = 0;
             let err = clingo_theory_atoms_atom_has_guard(atoms, atom, &mut has_guard);
             if err == 0 {
@@ -1028,8 +997,7 @@ impl ClingoTheoryAtoms {
     //                                           -> u8;
     pub fn atom_literal(&mut self, atom: clingo_id_t) -> std::result::Result<clingo_literal_t, u8> {
         unsafe {
-            let atoms = &mut self.0;
-            // let mut ClingoTheoryAtoms(atoms) = self;
+            let ClingoTheoryAtoms(ref mut atoms) = *self;
             let mut literal = 0 as clingo_literal_t;
             let err = clingo_theory_atoms_atom_literal(atoms, atom, &mut literal);
             if err == 0 {
@@ -1054,8 +1022,7 @@ pub struct ClingoModel(clingo_model_t);
 impl ClingoModel {
     pub fn model_type(&mut self) -> std::result::Result<clingo_model_type_t, u8> {
         unsafe {
-            let model = &mut self.0;
-            // let mut ClingoModel(model) = self;
+            let ClingoModel(ref mut model) = *self;
             let mut mtype = 0 as clingo_model_type_t;
             let err = clingo_model_type(model, &mut mtype);
             if err == 0 {
@@ -1068,8 +1035,7 @@ impl ClingoModel {
     pub fn number(&mut self) -> std::result::Result<uint64_t, u8> {
 
         unsafe {
-            let model = &mut self.0;
-            // let mut ClingoModel(model) = self;
+            let ClingoModel(ref mut model) = *self;
             let mut number = 0;
             let err = clingo_model_number(model, &mut number);
             if err == 0 {
@@ -1089,8 +1055,7 @@ impl ClingoModel {
         let mut size: usize = 0;
         let size_p = &mut size as *mut usize;
         unsafe {
-            let model = &mut self.0;
-            //         let mut ClingoModel(model) = self;
+            let ClingoModel(ref mut model) = *self;
             let err1 = clingo_model_symbols_size(model, show, size_p);
             if err1 == 0 {
                 Err(err1)
@@ -1195,8 +1160,7 @@ pub struct ClingoSolveControl(clingo_solve_control_t);
 impl ClingoSolveControl {
     pub fn thread_id(&mut self) -> std::option::Option<clingo_id_t> {
         unsafe {
-            let control = &mut self.0;
-            // let mut ClingoSolveControl(control) = self;
+            let ClingoSolveControl(ref mut control) = *self;
             let mut id = 0 as clingo_id_t;
             let err = clingo_solve_control_thread_id(control, &mut id);
             if err == 0 {
@@ -1209,8 +1173,7 @@ impl ClingoSolveControl {
     pub fn add_clause(&mut self, clause: *const clingo_symbolic_literal_t) -> bool {
 
         unsafe {
-            let control = &mut self.0;
-            // let mut ClingoSolveControl(control) = self;
+            let ClingoSolveControl(ref mut control) = *self;
             let size = 0; //TODO: comute size of clause
             clingo_solve_control_add_clause(control, clause, size) == 1
         }
@@ -1221,8 +1184,7 @@ pub struct ClingoPropagateControl(clingo_propagate_control_t);
 impl ClingoPropagateControl {
     pub fn thread_id(&mut self) -> clingo_id_t {
         unsafe {
-            let control = &mut self.0;
-            // let mut ClingoPropagateControl(control) = self;
+            let ClingoPropagateControl(ref mut control) = *self;
             clingo_propagate_control_thread_id(control)
         }
     }
@@ -1233,8 +1195,7 @@ impl ClingoPropagateControl {
                       type_: clingo_clause_type_t)
                       -> std::option::Option<u8> {
         unsafe {
-            let control = &mut self.0;
-            // let mut ClingoPropagateControl(control) = self;
+            let ClingoPropagateControl(ref mut control) = *self;
             let size = 0; //TODO: comute size of claus
             let mut result = 0;
             let err = clingo_propagate_control_add_clause(control,
@@ -1251,8 +1212,7 @@ impl ClingoPropagateControl {
     }
     pub fn propagate(&mut self) -> std::option::Option<u8> {
         unsafe {
-            let control = &mut self.0;
-            // let mut ClingoPropagateControl(control) = self;
+            let ClingoPropagateControl(ref mut control) = *self;
             let mut result = 0;
             let err = clingo_propagate_control_propagate(control, &mut result);
             if err == 0 {
@@ -1281,7 +1241,7 @@ impl ClingoPropagateInit {
     //                                               -> u8;
     pub fn number_of_threads(&mut self) -> size_t {
         unsafe {
-            let mut init = &mut self.0;
+            let ClingoPropagateInit(ref mut init) = *self;
             let ret = clingo_propagate_init_number_of_threads(init);
             (ret as size_t)
         }
