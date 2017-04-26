@@ -1,5 +1,7 @@
-use std::process::Command;
 extern crate gcc;
+
+use std::process::Command;
+
 
 fn main() {
 
@@ -139,7 +141,6 @@ fn main() {
         .include("clingo/liblp")
         .include("clingo/libprogram_opts")
         .compile("libclasp.a");
-
 
     println!("cargo:rustc-link-lib=static=clingo");
     println!("cargo:rustc-link-lib=static=clasp");
