@@ -2,7 +2,7 @@
 name = "clingo"
 version = "0.1.0"
 authors = ["sthiele <sthiele78@gmail.com>"]
-description = "Rust idiomatic bindings to the clingo C-API"
+description = "Rust idiomatic bindings to the clingo library"
 
 [dependencies]
 clingo-sys = { path = "./clingo-sys" }
