@@ -1,8 +1,8 @@
-# libclingo-rs
+# clingo-rs
 Rust bindings to clingo C API
 
 
-# Compile & Test
+## Compile & Test
     cargo build
     cargo test
     cargo run --example=version
