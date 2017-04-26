@@ -1,5 +1,5 @@
 # clingo-rs
-Rust bindings to the clingo C API
+Rust bindings to the clingo library
 
 
 ## Compile & Test
