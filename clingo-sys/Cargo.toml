@@ -6,6 +6,8 @@ description = "External FFI bindings to the C-API of the clingo library"
 categories = ["external-ffi-bindings"]
 build = "build.rs"
 links = "clingo"
+license = "GPL3"
+repository = "https://github.com/sthiele/clingo-rs"
 
 [lib]
 name = "clingo_sys"
