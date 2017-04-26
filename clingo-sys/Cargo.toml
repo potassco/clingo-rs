@@ -7,7 +7,7 @@ categories = ["external-ffi-bindings"]
 build = "build.rs"
 links = "clingo"
 license = "GPL3"
-repository = "https://github.com/sthiele/clingo-rs"
+repository = "https://github.com/sthiele/clingo-rs/clingo-sys"
 
 [lib]
 name = "clingo_sys"
