@@ -2,7 +2,7 @@
 name = "clingo-sys"
 version = "0.1.0"
 authors = ["sthiele <sthiele78@gmail.com>"]
-description = "External FFI bindings to the C-API of the clingo library"
+description = "External FFI bindings to the C API of the clingo library"
 categories = ["external-ffi-bindings"]
 build = "build.rs"
 links = "clingo"
