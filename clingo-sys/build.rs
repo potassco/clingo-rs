@@ -1,15 +1,16 @@
 extern crate gcc;
 
+use std::path::Path;
 use std::process::Command;
 
 
 fn main() {
-
-    Command::new("git")
-        .args(&["clone", "https://github.com/potassco/clingo.git"])
-        .status()
-        .unwrap();
-
+    if ! Path::new("clingo").exists() {
+        Command::new("git")
+            .args(&["clone", "https://github.com/potassco/clingo.git"])
+            .status()
+            .unwrap();
+    }
     Command::new("git")
         .args(&["checkout", "tags/v5.1.0"])
         .current_dir("./clingo")
