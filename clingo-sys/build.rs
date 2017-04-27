@@ -5,17 +5,18 @@ use std::process::Command;
 
 
 fn main() {
-    if ! Path::new("clingo").exists() {
+    if !Path::new("clingo").exists() {
         Command::new("git")
             .args(&["clone", "https://github.com/potassco/clingo.git"])
             .status()
             .unwrap();
+
+        Command::new("git")
+            .args(&["checkout", "tags/v5.1.0"])
+            .current_dir("./clingo")
+            .status()
+            .unwrap();
     }
-    Command::new("git")
-        .args(&["checkout", "tags/v5.1.0"])
-        .current_dir("./clingo")
-        .status()
-        .unwrap();
 
     gcc::Config::new()
         .cpp(true)
@@ -149,8 +150,8 @@ fn main() {
     println!("cargo:rustc-link-lib=static=lp");
     println!("cargo:rustc-link-lib=static=reify");
     println!("cargo:rustc-link-lib=static=gringo");
-    
-//     println!("cargo:rustc-link-lib=python3.6m");
-//     -DWITH_PYTHON=1 -I/usr/include/python3.6m
-    
+
+    //     println!("cargo:rustc-link-lib=python3.6m");
+    //     -DWITH_PYTHON=1 -I/usr/include/python3.6m
+
 }
