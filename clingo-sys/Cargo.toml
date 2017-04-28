@@ -1,6 +1,6 @@
 [package]
 name = "clingo-sys"
-version = "0.1.2"
+version = "0.1.3"
 authors = ["sthiele <sthiele78@gmail.com>"]
 description = "External FFI bindings to the C API of the clingo library"
 categories = ["external-ffi-bindings"]
@@ -8,6 +8,7 @@ build = "build.rs"
 links = "clingo"
 license = "GPL-3.0"
 repository = "https://github.com/sthiele/clingo-rs"
+documentation = "https://docs.rs/clingo-sys"
 
 [lib]
 name = "clingo_sys"

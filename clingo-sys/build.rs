@@ -20,6 +20,7 @@ fn main() {
 
     gcc::Config::new()
         .cpp(true)
+	.flag("-std=c++11")
         .define("NDEBUG", Some("1"))
         .file("clingo/libgringo/src/control.cc")
         .file("clingo/libgringo/src/term.cc")
@@ -61,6 +62,7 @@ fn main() {
 
     gcc::Config::new()
         .cpp(true)
+	.flag("-std=c++11")
         .define("NDEBUG", Some("1"))
         .file("clingo/libprogram_opts/src/application.cpp")
         .file("clingo/libprogram_opts/src/alarm.cpp")
@@ -72,6 +74,7 @@ fn main() {
 
     gcc::Config::new()
         .cpp(true)
+	.flag("-std=c++11")
         .define("NDEBUG", Some("1"))
         .file("clingo/libreify/src/program.cc")
         .include("clingo/libreify")
@@ -81,6 +84,7 @@ fn main() {
 
     gcc::Config::new()
         .cpp(true)
+	.flag("-std=c++11")
         .define("NDEBUG", Some("1"))
         .file("clingo/liblp/src/aspif.cpp")
         .file("clingo/liblp/src/clingo.cpp")
@@ -95,6 +99,7 @@ fn main() {
 
     gcc::Config::new()
         .cpp(true)
+	.flag("-std=c++11")
         .define("NDEBUG", Some("1"))
         .define("WITH_THREADS", Some("0"))
         .file("clingo/libclingo/src/clingocontrol.cc")
@@ -107,6 +112,7 @@ fn main() {
 
     gcc::Config::new()
         .cpp(true)
+	.flag("-std=c++11")
         .define("NDEBUG", Some("1"))
         .define("WITH_THREADS", Some("0"))
         .file("clingo/libclasp/src/parallel_solve.cpp")
