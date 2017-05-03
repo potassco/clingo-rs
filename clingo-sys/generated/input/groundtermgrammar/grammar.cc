@@ -34,7 +34,7 @@
 #define yylex   GringoGroundTermGrammar_lex
 
 // First part of user declarations.
-#line 35 "libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:404
+#line 39 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:404
 
 
 #include "gringo/term.hh"
@@ -49,7 +49,7 @@ int GringoGroundTermGrammar_lex(void *value, void *, GroundTermParser *lexer) {
 }
 
 
-#line 53 "build/release/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:404
+#line 53 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:404
 
 # ifndef YY_NULLPTR
 #  if defined __cplusplus && 201103L <= __cplusplus
@@ -63,9 +63,9 @@ int GringoGroundTermGrammar_lex(void *value, void *, GroundTermParser *lexer) {
 
 // User implementation prologue.
 
-#line 67 "build/release/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:412
+#line 67 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:412
 // Unqualified %code blocks.
-#line 50 "libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:413
+#line 54 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:413
 
 
 void GroundTermGrammar::parser::error(GroundTermGrammar::parser::location_type const &, std::string const &msg) {
@@ -73,7 +73,7 @@ void GroundTermGrammar::parser::error(GroundTermGrammar::parser::location_type c
 }
 
 
-#line 77 "build/release/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:413
+#line 77 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:413
 
 
 #ifndef YY_
@@ -157,9 +157,9 @@ void GroundTermGrammar::parser::error(GroundTermGrammar::parser::location_type c
 #define YYERROR         goto yyerrorlab
 #define YYRECOVERING()  (!!yyerrstatus_)
 
-#line 22 "libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:479
+#line 26 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:479
 namespace Gringo { namespace Input { namespace GroundTermGrammar {
-#line 163 "build/release/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:479
+#line 163 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:479
 
   /* Return YYSTR after stripping away unnecessary quotes and
      backslashes, so that it's suitable for yyerror.  The heuristic is
@@ -637,169 +637,169 @@ namespace Gringo { namespace Input { namespace GroundTermGrammar {
           switch (yyn)
             {
   case 2:
-#line 113 "libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:859
+#line 117 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:859
     { lexer->value = Symbol((yystack_[0].value.value)); }
-#line 643 "build/release/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:859
+#line 643 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 3:
-#line 116 "libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:859
+#line 120 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:859
     { (yylhs.value.value) = lexer->term(BinOp::XOR, Symbol((yystack_[2].value.value)), Symbol((yystack_[0].value.value))).rep(); }
-#line 649 "build/release/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:859
+#line 649 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 4:
-#line 117 "libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:859
+#line 121 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:859
     { (yylhs.value.value) = lexer->term(BinOp::OR,  Symbol((yystack_[2].value.value)), Symbol((yystack_[0].value.value))).rep(); }
-#line 655 "build/release/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:859
+#line 655 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 5:
-#line 118 "libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:859
+#line 122 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:859
     { (yylhs.value.value) = lexer->term(BinOp::AND, Symbol((yystack_[2].value.value)), Symbol((yystack_[0].value.value))).rep(); }
-#line 661 "build/release/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:859
+#line 661 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 6:
-#line 119 "libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:859
+#line 123 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:859
     { (yylhs.value.value) = lexer->term(BinOp::ADD, Symbol((yystack_[2].value.value)), Symbol((yystack_[0].value.value))).rep(); }
-#line 667 "build/release/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:859
+#line 667 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 7:
-#line 120 "libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:859
+#line 124 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:859
     { (yylhs.value.value) = lexer->term(BinOp::SUB, Symbol((yystack_[2].value.value)), Symbol((yystack_[0].value.value))).rep(); }
-#line 673 "build/release/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:859
+#line 673 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 8:
-#line 121 "libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:859
+#line 125 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:859
     { (yylhs.value.value) = lexer->term(BinOp::MUL, Symbol((yystack_[2].value.value)), Symbol((yystack_[0].value.value))).rep(); }
-#line 679 "build/release/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:859
+#line 679 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 9:
-#line 122 "libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:859
+#line 126 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:859
     { (yylhs.value.value) = lexer->term(BinOp::DIV, Symbol((yystack_[2].value.value)), Symbol((yystack_[0].value.value))).rep(); }
-#line 685 "build/release/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:859
+#line 685 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 10:
-#line 123 "libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:859
+#line 127 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:859
     { (yylhs.value.value) = lexer->term(BinOp::MOD, Symbol((yystack_[2].value.value)), Symbol((yystack_[0].value.value))).rep(); }
-#line 691 "build/release/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:859
+#line 691 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 11:
-#line 124 "libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:859
+#line 128 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:859
     { (yylhs.value.value) = lexer->term(BinOp::POW, Symbol((yystack_[2].value.value)), Symbol((yystack_[0].value.value))).rep(); }
-#line 697 "build/release/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:859
+#line 697 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 12:
-#line 125 "libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:859
+#line 129 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:859
     { (yylhs.value.value) = lexer->term(UnOp::NEG, Symbol((yystack_[0].value.value))).rep(); }
-#line 703 "build/release/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:859
+#line 703 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 13:
-#line 126 "libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:859
+#line 130 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:859
     { (yylhs.value.value) = lexer->term(UnOp::NOT, Symbol((yystack_[0].value.value))).rep(); }
-#line 709 "build/release/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:859
+#line 709 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 14:
-#line 127 "libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:859
+#line 131 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:859
     { (yylhs.value.value) = Symbol::createTuple(Potassco::toSpan<Symbol>()).rep(); }
-#line 715 "build/release/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:859
+#line 715 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 15:
-#line 128 "libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:859
+#line 132 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:859
     { (yylhs.value.value) = Symbol::createTuple(Potassco::toSpan<Symbol>()).rep(); }
-#line 721 "build/release/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:859
+#line 721 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 16:
-#line 129 "libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:859
+#line 133 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:859
     { (yylhs.value.value) = lexer->tuple((yystack_[1].value.uid), false).rep(); }
-#line 727 "build/release/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:859
+#line 727 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 17:
-#line 130 "libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:859
+#line 134 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:859
     { (yylhs.value.value) = lexer->tuple((yystack_[2].value.uid), true).rep(); }
-#line 733 "build/release/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:859
+#line 733 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 18:
-#line 131 "libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:859
+#line 135 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:859
     { (yylhs.value.value) = Symbol::createFun((yystack_[3].value.str), Potassco::toSpan(lexer->terms((yystack_[1].value.uid)))).rep(); }
-#line 739 "build/release/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:859
+#line 739 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 19:
-#line 132 "libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:859
+#line 136 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:859
     { (yylhs.value.value) = lexer->term(UnOp::ABS, Symbol((yystack_[1].value.value))).rep(); }
-#line 745 "build/release/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:859
+#line 745 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 20:
-#line 133 "libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:859
+#line 137 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:859
     { (yylhs.value.value) = Symbol::createId((yystack_[0].value.str)).rep(); }
-#line 751 "build/release/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:859
+#line 751 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 21:
-#line 134 "libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:859
+#line 138 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:859
     { (yylhs.value.value) = Symbol::createNum((yystack_[0].value.num)).rep(); }
-#line 757 "build/release/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:859
+#line 757 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 22:
-#line 135 "libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:859
+#line 139 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:859
     { (yylhs.value.value) = Symbol::createStr((yystack_[0].value.str)).rep(); }
-#line 763 "build/release/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:859
+#line 763 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 23:
-#line 136 "libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:859
+#line 140 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:859
     { (yylhs.value.value) = Symbol::createInf().rep(); }
-#line 769 "build/release/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:859
+#line 769 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 24:
-#line 137 "libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:859
+#line 141 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:859
     { (yylhs.value.value) = Symbol::createSup().rep(); }
-#line 775 "build/release/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:859
+#line 775 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 25:
-#line 141 "libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:859
+#line 145 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:859
     { (yylhs.value.uid) = lexer->terms(lexer->terms(), Symbol((yystack_[0].value.value)));  }
-#line 781 "build/release/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:859
+#line 781 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 26:
-#line 142 "libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:859
+#line 146 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:859
     { (yylhs.value.uid) = lexer->terms((yystack_[2].value.uid), Symbol((yystack_[0].value.value)));  }
-#line 787 "build/release/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:859
+#line 787 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 27:
-#line 146 "libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:859
+#line 150 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:859
     { (yylhs.value.uid) = (yystack_[0].value.uid);  }
-#line 793 "build/release/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:859
+#line 793 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 28:
-#line 147 "libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:859
+#line 151 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:859
     { (yylhs.value.uid) = lexer->terms();  }
-#line 799 "build/release/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:859
+#line 799 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:859
     break;
 
 
-#line 803 "build/release/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:859
+#line 803 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:859
             default:
               break;
             }
@@ -1170,9 +1170,9 @@ namespace Gringo { namespace Input { namespace GroundTermGrammar {
   const unsigned char
   parser::yyrline_[] =
   {
-       0,   113,   113,   116,   117,   118,   119,   120,   121,   122,
-     123,   124,   125,   126,   127,   128,   129,   130,   131,   132,
-     133,   134,   135,   136,   137,   141,   142,   146,   147
+       0,   117,   117,   120,   121,   122,   123,   124,   125,   126,
+     127,   128,   129,   130,   131,   132,   133,   134,   135,   136,
+     137,   138,   139,   140,   141,   145,   146,   150,   151
   };
 
   // Print the state stack on the debug stream.
@@ -1253,6 +1253,6 @@ namespace Gringo { namespace Input { namespace GroundTermGrammar {
       return undef_token_;
   }
 
-#line 22 "libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:1167
+#line 26 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:1167
 } } } // Gringo::Input::GroundTermGrammar
-#line 1259 "build/release/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:1167
+#line 1259 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar/grammar.cc" // lalr1.cc:1167

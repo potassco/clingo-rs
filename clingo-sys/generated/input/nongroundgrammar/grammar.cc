@@ -34,7 +34,7 @@
 #define yylex   GringoNonGroundGrammar_lex
 
 // First part of user declarations.
-#line 54 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:404
+#line 58 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:404
 
 
 #include "gringo/input/nongroundparser.hh"
@@ -72,7 +72,7 @@ int GringoNonGroundGrammar_lex(void *value, Gringo::Location* loc, NonGroundPars
 }
 
 
-#line 76 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:404
+#line 76 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:404
 
 # ifndef YY_NULLPTR
 #  if defined __cplusplus && 201103L <= __cplusplus
@@ -86,9 +86,9 @@ int GringoNonGroundGrammar_lex(void *value, Gringo::Location* loc, NonGroundPars
 
 // User implementation prologue.
 
-#line 90 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:412
+#line 90 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:412
 // Unqualified %code blocks.
-#line 92 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:413
+#line 96 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:413
 
 
 void NonGroundGrammar::parser::error(DefaultLocation const &l, std::string const &msg) {
@@ -96,7 +96,7 @@ void NonGroundGrammar::parser::error(DefaultLocation const &l, std::string const
 }
 
 
-#line 100 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:413
+#line 100 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:413
 
 
 #ifndef YY_
@@ -180,9 +180,9 @@ void NonGroundGrammar::parser::error(DefaultLocation const &l, std::string const
 #define YYERROR         goto yyerrorlab
 #define YYRECOVERING()  (!!yyerrstatus_)
 
-#line 24 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:479
+#line 28 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:479
 namespace Gringo { namespace Input { namespace NonGroundGrammar {
-#line 186 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:479
+#line 186 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:479
 
   /* Return YYSTR after stripping away unnecessary quotes and
      backslashes, so that it's suitable for yyerror.  The heuristic is
@@ -660,1861 +660,1861 @@ namespace Gringo { namespace Input { namespace NonGroundGrammar {
           switch (yyn)
             {
   case 7:
-#line 348 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 352 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.str) = (yystack_[0].value.str); }
-#line 666 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 666 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 8:
-#line 355 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 359 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.term) = BUILDER.term(yylhs.location, BinOp::XOR, (yystack_[2].value.term), (yystack_[0].value.term)); }
-#line 672 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 672 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 9:
-#line 356 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 360 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.term) = BUILDER.term(yylhs.location, BinOp::OR, (yystack_[2].value.term), (yystack_[0].value.term)); }
-#line 678 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 678 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 10:
-#line 357 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 361 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.term) = BUILDER.term(yylhs.location, BinOp::AND, (yystack_[2].value.term), (yystack_[0].value.term)); }
-#line 684 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 684 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 11:
-#line 358 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 362 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.term) = BUILDER.term(yylhs.location, BinOp::ADD, (yystack_[2].value.term), (yystack_[0].value.term)); }
-#line 690 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 690 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 12:
-#line 359 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 363 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.term) = BUILDER.term(yylhs.location, BinOp::SUB, (yystack_[2].value.term), (yystack_[0].value.term)); }
-#line 696 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 696 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 13:
-#line 360 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 364 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.term) = BUILDER.term(yylhs.location, BinOp::MUL, (yystack_[2].value.term), (yystack_[0].value.term)); }
-#line 702 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 702 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 14:
-#line 361 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 365 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.term) = BUILDER.term(yylhs.location, BinOp::DIV, (yystack_[2].value.term), (yystack_[0].value.term)); }
-#line 708 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 708 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 15:
-#line 362 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 366 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.term) = BUILDER.term(yylhs.location, BinOp::MOD, (yystack_[2].value.term), (yystack_[0].value.term)); }
-#line 714 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 714 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 16:
-#line 363 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 367 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.term) = BUILDER.term(yylhs.location, BinOp::POW, (yystack_[2].value.term), (yystack_[0].value.term)); }
-#line 720 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 720 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 17:
-#line 364 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 368 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.term) = BUILDER.term(yylhs.location, UnOp::NEG, (yystack_[0].value.term)); }
-#line 726 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 726 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 18:
-#line 365 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 369 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.term) = BUILDER.term(yylhs.location, UnOp::NOT, (yystack_[0].value.term)); }
-#line 732 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 732 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 19:
-#line 366 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 370 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.term) = BUILDER.term(yylhs.location, BUILDER.termvec(), false); }
-#line 738 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 738 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 20:
-#line 367 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 371 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.term) = BUILDER.term(yylhs.location, BUILDER.termvec(), true); }
-#line 744 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 744 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 21:
-#line 368 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 372 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.term) = BUILDER.term(yylhs.location, (yystack_[1].value.termvec), false); }
-#line 750 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 750 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 22:
-#line 369 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 373 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.term) = BUILDER.term(yylhs.location, (yystack_[2].value.termvec), true); }
-#line 756 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 756 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 23:
-#line 370 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 374 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.term) = BUILDER.term(yylhs.location, String::fromRep((yystack_[3].value.str)), (yystack_[1].value.termvecvec), false); }
-#line 762 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 762 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 24:
-#line 371 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 375 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.term) = BUILDER.term(yylhs.location, String::fromRep((yystack_[3].value.str)), (yystack_[1].value.termvecvec), true); }
-#line 768 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 768 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 25:
-#line 372 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 376 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.term) = BUILDER.term(yylhs.location, UnOp::ABS, (yystack_[1].value.term)); }
-#line 774 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 774 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 26:
-#line 373 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 377 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.term) = BUILDER.term(yylhs.location, Symbol::createId(String::fromRep((yystack_[0].value.str)))); }
-#line 780 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 780 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 27:
-#line 374 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 378 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.term) = BUILDER.term(yylhs.location, Symbol::createNum((yystack_[0].value.num))); }
-#line 786 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 786 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 28:
-#line 375 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 379 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.term) = BUILDER.term(yylhs.location, Symbol::createStr(String::fromRep((yystack_[0].value.str)))); }
-#line 792 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 792 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 29:
-#line 376 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 380 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.term) = BUILDER.term(yylhs.location, Symbol::createInf()); }
-#line 798 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 798 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 30:
-#line 377 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 381 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.term) = BUILDER.term(yylhs.location, Symbol::createSup()); }
-#line 804 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 804 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 31:
-#line 383 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 387 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.termvec) = BUILDER.termvec(BUILDER.termvec(), (yystack_[0].value.term));  }
-#line 810 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 810 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 32:
-#line 384 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 388 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.termvec) = BUILDER.termvec((yystack_[2].value.termvec), (yystack_[0].value.term));  }
-#line 816 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 816 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 33:
-#line 388 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 392 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.termvecvec) = BUILDER.termvecvec(BUILDER.termvecvec(), (yystack_[0].value.termvec));  }
-#line 822 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 822 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 34:
-#line 389 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 393 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.termvecvec) = BUILDER.termvecvec();  }
-#line 828 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 828 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 35:
-#line 395 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 399 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.term) = BUILDER.term(yylhs.location, (yystack_[2].value.term), (yystack_[0].value.term)); }
-#line 834 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 834 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 36:
-#line 396 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 400 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.term) = BUILDER.term(yylhs.location, BinOp::XOR, (yystack_[2].value.term), (yystack_[0].value.term)); }
-#line 840 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 840 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 37:
-#line 397 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 401 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.term) = BUILDER.term(yylhs.location, BinOp::OR, (yystack_[2].value.term), (yystack_[0].value.term)); }
-#line 846 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 846 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 38:
-#line 398 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 402 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.term) = BUILDER.term(yylhs.location, BinOp::AND, (yystack_[2].value.term), (yystack_[0].value.term)); }
-#line 852 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 852 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 39:
-#line 399 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 403 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.term) = BUILDER.term(yylhs.location, BinOp::ADD, (yystack_[2].value.term), (yystack_[0].value.term)); }
-#line 858 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 858 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 40:
-#line 400 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 404 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.term) = BUILDER.term(yylhs.location, BinOp::SUB, (yystack_[2].value.term), (yystack_[0].value.term)); }
-#line 864 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 864 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 41:
-#line 401 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 405 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.term) = BUILDER.term(yylhs.location, BinOp::MUL, (yystack_[2].value.term), (yystack_[0].value.term)); }
-#line 870 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 870 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 42:
-#line 402 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 406 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.term) = BUILDER.term(yylhs.location, BinOp::DIV, (yystack_[2].value.term), (yystack_[0].value.term)); }
-#line 876 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 876 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 43:
-#line 403 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 407 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.term) = BUILDER.term(yylhs.location, BinOp::MOD, (yystack_[2].value.term), (yystack_[0].value.term)); }
-#line 882 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 882 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 44:
-#line 404 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 408 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.term) = BUILDER.term(yylhs.location, BinOp::POW, (yystack_[2].value.term), (yystack_[0].value.term)); }
-#line 888 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 888 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 45:
-#line 405 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 409 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.term) = BUILDER.term(yylhs.location, UnOp::NEG, (yystack_[0].value.term)); }
-#line 894 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 894 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 46:
-#line 406 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 410 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.term) = BUILDER.term(yylhs.location, UnOp::NOT, (yystack_[0].value.term)); }
-#line 900 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 900 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 47:
-#line 407 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 411 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.term) = BUILDER.pool(yylhs.location, (yystack_[1].value.termvec)); }
-#line 906 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 906 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 48:
-#line 408 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 412 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.term) = BUILDER.term(yylhs.location, String::fromRep((yystack_[3].value.str)), (yystack_[1].value.termvecvec), false); }
-#line 912 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 912 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 49:
-#line 409 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 413 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.term) = BUILDER.term(yylhs.location, String::fromRep((yystack_[3].value.str)), (yystack_[1].value.termvecvec), true); }
-#line 918 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 918 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 50:
-#line 410 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 414 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.term) = BUILDER.term(yylhs.location, UnOp::ABS, (yystack_[1].value.termvec)); }
-#line 924 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 924 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 51:
-#line 411 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 415 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.term) = BUILDER.term(yylhs.location, Symbol::createId(String::fromRep((yystack_[0].value.str)))); }
-#line 930 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 930 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 52:
-#line 412 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 416 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.term) = BUILDER.term(yylhs.location, Symbol::createNum((yystack_[0].value.num))); }
-#line 936 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 936 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 53:
-#line 413 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 417 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.term) = BUILDER.term(yylhs.location, Symbol::createStr(String::fromRep((yystack_[0].value.str)))); }
-#line 942 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 942 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 54:
-#line 414 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 418 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.term) = BUILDER.term(yylhs.location, Symbol::createInf()); }
-#line 948 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 948 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 55:
-#line 415 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 419 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.term) = BUILDER.term(yylhs.location, Symbol::createSup()); }
-#line 954 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 954 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 56:
-#line 416 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 420 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.term) = BUILDER.term(yylhs.location, String::fromRep((yystack_[0].value.str))); }
-#line 960 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 960 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 57:
-#line 417 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 421 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.term) = BUILDER.term(yylhs.location, String("_")); }
-#line 966 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 966 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 58:
-#line 423 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 427 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.termvec) = BUILDER.termvec(BUILDER.termvec(), (yystack_[0].value.term)); }
-#line 972 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 972 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 59:
-#line 424 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 428 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.termvec) = BUILDER.termvec((yystack_[2].value.termvec), (yystack_[0].value.term)); }
-#line 978 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 978 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 60:
-#line 430 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 434 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.termvec) = BUILDER.termvec(BUILDER.termvec(), (yystack_[0].value.term)); }
-#line 984 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 984 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 61:
-#line 431 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 435 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.termvec) = BUILDER.termvec((yystack_[2].value.termvec), (yystack_[0].value.term)); }
-#line 990 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 990 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 62:
-#line 435 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 439 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.termvec) = (yystack_[0].value.termvec); }
-#line 996 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 996 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 63:
-#line 436 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 440 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.termvec) = BUILDER.termvec(); }
-#line 1002 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1002 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 64:
-#line 440 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 444 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.term) = BUILDER.term(yylhs.location, (yystack_[1].value.termvec), true); }
-#line 1008 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1008 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 65:
-#line 441 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 445 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.term) = BUILDER.term(yylhs.location, (yystack_[0].value.termvec), false); }
-#line 1014 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1014 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 66:
-#line 442 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 446 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.term) = BUILDER.term(yylhs.location, BUILDER.termvec(), true); }
-#line 1020 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1020 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 67:
-#line 443 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 447 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.term) = BUILDER.term(yylhs.location, BUILDER.termvec(), false); }
-#line 1026 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1026 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 68:
-#line 446 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 450 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.termvec) = BUILDER.termvec(BUILDER.termvec(), (yystack_[1].value.term)); }
-#line 1032 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1032 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 69:
-#line 447 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 451 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.termvec) = BUILDER.termvec((yystack_[2].value.termvec), (yystack_[1].value.term)); }
-#line 1038 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1038 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 70:
-#line 450 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 454 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.termvec) = BUILDER.termvec(BUILDER.termvec(), (yystack_[0].value.term)); }
-#line 1044 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1044 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 71:
-#line 451 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 455 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.termvec) = BUILDER.termvec((yystack_[1].value.termvec), (yystack_[0].value.term)); }
-#line 1050 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1050 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 72:
-#line 454 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 458 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.termvecvec) = BUILDER.termvecvec(BUILDER.termvecvec(), (yystack_[0].value.termvec)); }
-#line 1056 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1056 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 73:
-#line 455 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 459 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.termvecvec) = BUILDER.termvecvec((yystack_[2].value.termvecvec), (yystack_[0].value.termvec)); }
-#line 1062 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1062 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 74:
-#line 459 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 463 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.termvecvec) = BUILDER.termvecvec(BUILDER.termvecvec(), BUILDER.termvec(BUILDER.termvec(BUILDER.termvec(), (yystack_[2].value.term)), (yystack_[0].value.term))); }
-#line 1068 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1068 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 75:
-#line 460 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 464 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.termvecvec) = BUILDER.termvecvec((yystack_[4].value.termvecvec), BUILDER.termvec(BUILDER.termvec(BUILDER.termvec(), (yystack_[2].value.term)), (yystack_[0].value.term))); }
-#line 1074 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1074 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 76:
-#line 470 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 474 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.rel) = Relation::GT; }
-#line 1080 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1080 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 77:
-#line 471 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 475 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.rel) = Relation::LT; }
-#line 1086 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1086 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 78:
-#line 472 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 476 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.rel) = Relation::GEQ; }
-#line 1092 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1092 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 79:
-#line 473 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 477 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.rel) = Relation::LEQ; }
-#line 1098 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1098 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 80:
-#line 474 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 478 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.rel) = Relation::EQ; }
-#line 1104 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1104 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 81:
-#line 475 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 479 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.rel) = Relation::NEQ; }
-#line 1110 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1110 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 82:
-#line 479 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 483 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.term) = BUILDER.predRep(yylhs.location, false, String::fromRep((yystack_[0].value.str)), BUILDER.termvecvec(BUILDER.termvecvec(), BUILDER.termvec())); }
-#line 1116 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1116 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 83:
-#line 480 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 484 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.term) = BUILDER.predRep(yylhs.location, false, String::fromRep((yystack_[3].value.str)), (yystack_[1].value.termvecvec)); }
-#line 1122 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1122 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 84:
-#line 481 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 485 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.term) = BUILDER.predRep(yylhs.location, true, String::fromRep((yystack_[0].value.str)), BUILDER.termvecvec(BUILDER.termvecvec(), BUILDER.termvec())); }
-#line 1128 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1128 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 85:
-#line 482 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 486 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.term) = BUILDER.predRep(yylhs.location, true, String::fromRep((yystack_[3].value.str)), (yystack_[1].value.termvecvec)); }
-#line 1134 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1134 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 86:
-#line 486 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 490 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.lit) = BUILDER.boollit(yylhs.location, true); }
-#line 1140 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1140 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 87:
-#line 487 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 491 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.lit) = BUILDER.boollit(yylhs.location, false); }
-#line 1146 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1146 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 88:
-#line 488 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 492 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.lit) = BUILDER.boollit(yylhs.location, true); }
-#line 1152 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1152 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 89:
-#line 489 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 493 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.lit) = BUILDER.boollit(yylhs.location, false); }
-#line 1158 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1158 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 90:
-#line 490 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 494 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.lit) = BUILDER.boollit(yylhs.location, true); }
-#line 1164 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1164 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 91:
-#line 491 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 495 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.lit) = BUILDER.boollit(yylhs.location, false); }
-#line 1170 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1170 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 92:
-#line 492 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 496 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.lit) = BUILDER.predlit(yylhs.location, NAF::POS, (yystack_[0].value.term)); }
-#line 1176 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1176 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 93:
-#line 493 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 497 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.lit) = BUILDER.predlit(yylhs.location, NAF::NOT, (yystack_[0].value.term)); }
-#line 1182 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1182 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 94:
-#line 494 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 498 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.lit) = BUILDER.predlit(yylhs.location, NAF::NOTNOT, (yystack_[0].value.term)); }
-#line 1188 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1188 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 95:
-#line 495 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 499 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.lit) = BUILDER.rellit(yylhs.location, (yystack_[1].value.rel), (yystack_[2].value.term), (yystack_[0].value.term)); }
-#line 1194 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1194 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 96:
-#line 496 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 500 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.lit) = BUILDER.rellit(yylhs.location, neg((yystack_[1].value.rel)), (yystack_[2].value.term), (yystack_[0].value.term)); }
-#line 1200 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1200 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 97:
-#line 497 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 501 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.lit) = BUILDER.rellit(yylhs.location, (yystack_[1].value.rel), (yystack_[2].value.term), (yystack_[0].value.term)); }
-#line 1206 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1206 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 98:
-#line 498 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 502 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.lit) = BUILDER.csplit((yystack_[0].value.csplit)); }
-#line 1212 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1212 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 99:
-#line 502 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 506 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.cspmulterm) = BUILDER.cspmulterm(yylhs.location, (yystack_[0].value.term),                     (yystack_[2].value.term)); }
-#line 1218 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1218 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 100:
-#line 503 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 507 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.cspmulterm) = BUILDER.cspmulterm(yylhs.location, (yystack_[3].value.term),                     (yystack_[0].value.term)); }
-#line 1224 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1224 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 101:
-#line 504 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 508 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.cspmulterm) = BUILDER.cspmulterm(yylhs.location, BUILDER.term(yylhs.location, Symbol::createNum(1)), (yystack_[0].value.term)); }
-#line 1230 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1230 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 102:
-#line 505 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 509 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.cspmulterm) = BUILDER.cspmulterm(yylhs.location, (yystack_[0].value.term)); }
-#line 1236 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1236 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 103:
-#line 509 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 513 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.cspaddterm) = BUILDER.cspaddterm(yylhs.location, (yystack_[2].value.cspaddterm), (yystack_[0].value.cspmulterm), true); }
-#line 1242 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1242 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 104:
-#line 510 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 514 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.cspaddterm) = BUILDER.cspaddterm(yylhs.location, (yystack_[2].value.cspaddterm), (yystack_[0].value.cspmulterm), false); }
-#line 1248 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1248 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 105:
-#line 511 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 515 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.cspaddterm) = BUILDER.cspaddterm(yylhs.location, (yystack_[0].value.cspmulterm)); }
-#line 1254 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1254 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 106:
-#line 515 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 519 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.rel) = Relation::GT; }
-#line 1260 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1260 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 107:
-#line 516 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 520 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.rel) = Relation::LT; }
-#line 1266 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1266 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 108:
-#line 517 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 521 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.rel) = Relation::GEQ; }
-#line 1272 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1272 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 109:
-#line 518 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 522 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.rel) = Relation::LEQ; }
-#line 1278 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1278 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 110:
-#line 519 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 523 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.rel) = Relation::EQ; }
-#line 1284 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1284 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 111:
-#line 520 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 524 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.rel) = Relation::NEQ; }
-#line 1290 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1290 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 112:
-#line 524 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 528 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.csplit) = BUILDER.csplit(yylhs.location, (yystack_[2].value.csplit), (yystack_[1].value.rel), (yystack_[0].value.cspaddterm)); }
-#line 1296 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1296 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 113:
-#line 525 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 529 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.csplit) = BUILDER.csplit(yylhs.location, (yystack_[2].value.cspaddterm),   (yystack_[1].value.rel), (yystack_[0].value.cspaddterm)); }
-#line 1302 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1302 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 114:
-#line 533 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 537 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.litvec) = BUILDER.litvec(BUILDER.litvec(), (yystack_[0].value.lit)); }
-#line 1308 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1308 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 115:
-#line 534 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 538 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.litvec) = BUILDER.litvec((yystack_[2].value.litvec), (yystack_[0].value.lit)); }
-#line 1314 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1314 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 116:
-#line 538 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 542 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.litvec) = (yystack_[0].value.litvec); }
-#line 1320 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1320 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 117:
-#line 539 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 543 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.litvec) = BUILDER.litvec(); }
-#line 1326 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1326 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 118:
-#line 543 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 547 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.litvec) = (yystack_[0].value.litvec); }
-#line 1332 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1332 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 119:
-#line 544 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 548 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.litvec) = BUILDER.litvec(); }
-#line 1338 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1338 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 120:
-#line 548 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 552 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.litvec) = (yystack_[0].value.litvec); }
-#line 1344 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1344 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 121:
-#line 549 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 553 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.litvec) = BUILDER.litvec(); }
-#line 1350 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1350 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 122:
-#line 553 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 557 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.fun) = AggregateFunction::SUM; }
-#line 1356 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1356 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 123:
-#line 554 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 558 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.fun) = AggregateFunction::SUMP; }
-#line 1362 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1362 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 124:
-#line 555 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 559 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.fun) = AggregateFunction::MIN; }
-#line 1368 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1368 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 125:
-#line 556 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 560 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.fun) = AggregateFunction::MAX; }
-#line 1374 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1374 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 126:
-#line 557 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 561 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.fun) = AggregateFunction::COUNT; }
-#line 1380 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1380 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 127:
-#line 563 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 567 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.bodyaggrelem) = { BUILDER.termvec(), (yystack_[0].value.litvec) }; }
-#line 1386 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1386 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 128:
-#line 564 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 568 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.bodyaggrelem) = { (yystack_[1].value.termvec), (yystack_[0].value.litvec) }; }
-#line 1392 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1392 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 129:
-#line 568 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 572 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.bodyaggrelemvec) = BUILDER.bodyaggrelemvec(BUILDER.bodyaggrelemvec(), (yystack_[0].value.bodyaggrelem).first, (yystack_[0].value.bodyaggrelem).second); }
-#line 1398 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1398 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 130:
-#line 569 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 573 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.bodyaggrelemvec) = BUILDER.bodyaggrelemvec((yystack_[2].value.bodyaggrelemvec), (yystack_[0].value.bodyaggrelem).first, (yystack_[0].value.bodyaggrelem).second); }
-#line 1404 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1404 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 131:
-#line 575 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 579 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.lbodyaggrelem) = { (yystack_[1].value.lit), (yystack_[0].value.litvec) }; }
-#line 1410 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1410 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 132:
-#line 579 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 583 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.condlitlist) = BUILDER.condlitvec(BUILDER.condlitvec(), (yystack_[0].value.lbodyaggrelem).first, (yystack_[0].value.lbodyaggrelem).second); }
-#line 1416 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1416 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 133:
-#line 580 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 584 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.condlitlist) = BUILDER.condlitvec((yystack_[2].value.condlitlist), (yystack_[0].value.lbodyaggrelem).first, (yystack_[0].value.lbodyaggrelem).second); }
-#line 1422 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1422 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 134:
-#line 586 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 590 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.aggr) = { AggregateFunction::COUNT, true, BUILDER.condlitvec() }; }
-#line 1428 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1428 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 135:
-#line 587 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 591 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.aggr) = { AggregateFunction::COUNT, true, (yystack_[1].value.condlitlist) }; }
-#line 1434 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1434 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 136:
-#line 588 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 592 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.aggr) = { (yystack_[2].value.fun), false, BUILDER.bodyaggrelemvec() }; }
-#line 1440 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1440 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 137:
-#line 589 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 593 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.aggr) = { (yystack_[3].value.fun), false, (yystack_[1].value.bodyaggrelemvec) }; }
-#line 1446 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1446 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 138:
-#line 593 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 597 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.bound) = { Relation::LEQ, (yystack_[0].value.term) }; }
-#line 1452 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1452 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 139:
-#line 594 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 598 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.bound) = { (yystack_[1].value.rel), (yystack_[0].value.term) }; }
-#line 1458 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1458 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 140:
-#line 595 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 599 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.bound) = { Relation::LEQ, TermUid(-1) }; }
-#line 1464 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1464 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 141:
-#line 599 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 603 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.uid) = lexer->aggregate((yystack_[1].value.aggr).fun, (yystack_[1].value.aggr).choice, (yystack_[1].value.aggr).elems, lexer->boundvec(Relation::LEQ, (yystack_[2].value.term), (yystack_[0].value.bound).rel, (yystack_[0].value.bound).term)); }
-#line 1470 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1470 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 142:
-#line 600 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 604 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.uid) = lexer->aggregate((yystack_[1].value.aggr).fun, (yystack_[1].value.aggr).choice, (yystack_[1].value.aggr).elems, lexer->boundvec((yystack_[2].value.rel), (yystack_[3].value.term), (yystack_[0].value.bound).rel, (yystack_[0].value.bound).term)); }
-#line 1476 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1476 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 143:
-#line 601 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 605 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.uid) = lexer->aggregate((yystack_[1].value.aggr).fun, (yystack_[1].value.aggr).choice, (yystack_[1].value.aggr).elems, lexer->boundvec(Relation::LEQ, TermUid(-1), (yystack_[0].value.bound).rel, (yystack_[0].value.bound).term)); }
-#line 1482 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1482 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 144:
-#line 602 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 606 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.uid) = lexer->aggregate((yystack_[0].value.theoryAtom)); }
-#line 1488 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1488 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 145:
-#line 608 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 612 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.headaggrelemvec) = BUILDER.headaggrelemvec((yystack_[5].value.headaggrelemvec), (yystack_[3].value.termvec), (yystack_[1].value.lit), (yystack_[0].value.litvec)); }
-#line 1494 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1494 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 146:
-#line 609 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 613 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.headaggrelemvec) = BUILDER.headaggrelemvec(BUILDER.headaggrelemvec(), (yystack_[3].value.termvec), (yystack_[1].value.lit), (yystack_[0].value.litvec)); }
-#line 1500 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1500 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 147:
-#line 613 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 617 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.condlitlist) = BUILDER.condlitvec(BUILDER.condlitvec(), (yystack_[1].value.lit), (yystack_[0].value.litvec)); }
-#line 1506 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1506 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 148:
-#line 614 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 618 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.condlitlist) = BUILDER.condlitvec((yystack_[3].value.condlitlist), (yystack_[1].value.lit), (yystack_[0].value.litvec)); }
-#line 1512 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1512 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 149:
-#line 620 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 624 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.aggr) = { (yystack_[2].value.fun), false, BUILDER.headaggrelemvec() }; }
-#line 1518 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1518 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 150:
-#line 621 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 625 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.aggr) = { (yystack_[3].value.fun), false, (yystack_[1].value.headaggrelemvec) }; }
-#line 1524 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1524 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 151:
-#line 622 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 626 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.aggr) = { AggregateFunction::COUNT, true, BUILDER.condlitvec()}; }
-#line 1530 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1530 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 152:
-#line 623 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 627 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.aggr) = { AggregateFunction::COUNT, true, (yystack_[1].value.condlitlist)}; }
-#line 1536 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1536 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 153:
-#line 627 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 631 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.uid) = lexer->aggregate((yystack_[1].value.aggr).fun, (yystack_[1].value.aggr).choice, (yystack_[1].value.aggr).elems, lexer->boundvec(Relation::LEQ, (yystack_[2].value.term), (yystack_[0].value.bound).rel, (yystack_[0].value.bound).term)); }
-#line 1542 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1542 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 154:
-#line 628 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 632 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.uid) = lexer->aggregate((yystack_[1].value.aggr).fun, (yystack_[1].value.aggr).choice, (yystack_[1].value.aggr).elems, lexer->boundvec((yystack_[2].value.rel), (yystack_[3].value.term), (yystack_[0].value.bound).rel, (yystack_[0].value.bound).term)); }
-#line 1548 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1548 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 155:
-#line 629 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 633 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.uid) = lexer->aggregate((yystack_[1].value.aggr).fun, (yystack_[1].value.aggr).choice, (yystack_[1].value.aggr).elems, lexer->boundvec(Relation::LEQ, TermUid(-1), (yystack_[0].value.bound).rel, (yystack_[0].value.bound).term)); }
-#line 1554 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1554 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 156:
-#line 630 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 634 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.uid) = lexer->aggregate((yystack_[0].value.theoryAtom)); }
-#line 1560 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1560 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 157:
-#line 636 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 640 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.cspelemvec) = BUILDER.cspelemvec(BUILDER.cspelemvec(), yylhs.location, (yystack_[3].value.termvec), (yystack_[1].value.cspaddterm), (yystack_[0].value.litvec)); }
-#line 1566 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1566 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 158:
-#line 637 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 641 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.cspelemvec) = BUILDER.cspelemvec((yystack_[5].value.cspelemvec), yylhs.location, (yystack_[3].value.termvec), (yystack_[1].value.cspaddterm), (yystack_[0].value.litvec)); }
-#line 1572 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1572 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 159:
-#line 641 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 645 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.cspelemvec) = (yystack_[0].value.cspelemvec); }
-#line 1578 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1578 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 160:
-#line 642 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 646 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.cspelemvec) = BUILDER.cspelemvec(); }
-#line 1584 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1584 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 161:
-#line 646 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 650 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.disjoint) = { NAF::POS, (yystack_[1].value.cspelemvec) }; }
-#line 1590 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1590 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 162:
-#line 647 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 651 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.disjoint) = { NAF::NOT, (yystack_[1].value.cspelemvec) }; }
-#line 1596 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1596 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 163:
-#line 648 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 652 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.disjoint) = { NAF::NOTNOT, (yystack_[1].value.cspelemvec) }; }
-#line 1602 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1602 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 164:
-#line 655 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 659 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.lbodyaggrelem) = { (yystack_[2].value.lit), (yystack_[0].value.litvec) }; }
-#line 1608 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1608 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 167:
-#line 667 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 671 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.condlitlist) = BUILDER.condlitvec((yystack_[2].value.condlitlist), (yystack_[1].value.lit), BUILDER.litvec()); }
-#line 1614 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1614 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 168:
-#line 668 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 672 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.condlitlist) = BUILDER.condlitvec((yystack_[3].value.condlitlist), (yystack_[2].value.lit), (yystack_[1].value.litvec)); }
-#line 1620 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1620 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 169:
-#line 669 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 673 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.condlitlist) = BUILDER.condlitvec(); }
-#line 1626 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1626 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 170:
-#line 674 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 678 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.condlitlist) = BUILDER.condlitvec(BUILDER.condlitvec((yystack_[2].value.condlitlist), (yystack_[1].value.lit), (yystack_[0].value.litvec)), (yystack_[4].value.lit), BUILDER.litvec()); }
-#line 1632 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1632 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 171:
-#line 675 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 679 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.condlitlist) = BUILDER.condlitvec(BUILDER.condlitvec((yystack_[2].value.condlitlist), (yystack_[1].value.lit), (yystack_[0].value.litvec)), (yystack_[4].value.lit), BUILDER.litvec()); }
-#line 1638 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1638 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 172:
-#line 676 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 680 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.condlitlist) = BUILDER.condlitvec(BUILDER.condlitvec((yystack_[2].value.condlitlist), (yystack_[1].value.lit), (yystack_[0].value.litvec)), (yystack_[6].value.lit), (yystack_[4].value.litvec)); }
-#line 1644 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1644 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 173:
-#line 677 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 681 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.condlitlist) = BUILDER.condlitvec(BUILDER.condlitvec(), (yystack_[2].value.lit), (yystack_[0].value.litvec)); }
-#line 1650 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1650 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 174:
-#line 684 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 688 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.body) = BUILDER.bodylit((yystack_[2].value.body), (yystack_[1].value.lit)); }
-#line 1656 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1656 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 175:
-#line 685 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 689 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.body) = BUILDER.bodylit((yystack_[2].value.body), (yystack_[1].value.lit)); }
-#line 1662 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1662 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 176:
-#line 686 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 690 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.body) = lexer->bodyaggregate((yystack_[2].value.body), yystack_[1].location, NAF::POS, (yystack_[1].value.uid)); }
-#line 1668 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1668 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 177:
-#line 687 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 691 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.body) = lexer->bodyaggregate((yystack_[2].value.body), yystack_[1].location, NAF::POS, (yystack_[1].value.uid)); }
-#line 1674 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1674 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 178:
-#line 688 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 692 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.body) = lexer->bodyaggregate((yystack_[3].value.body), yystack_[1].location + yystack_[2].location, NAF::NOT, (yystack_[1].value.uid)); }
-#line 1680 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1680 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 179:
-#line 689 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 693 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.body) = lexer->bodyaggregate((yystack_[3].value.body), yystack_[1].location + yystack_[2].location, NAF::NOT, (yystack_[1].value.uid)); }
-#line 1686 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1686 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 180:
-#line 690 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 694 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.body) = lexer->bodyaggregate((yystack_[4].value.body), yystack_[1].location + yystack_[3].location, NAF::NOTNOT, (yystack_[1].value.uid)); }
-#line 1692 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1692 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 181:
-#line 691 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 695 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.body) = lexer->bodyaggregate((yystack_[4].value.body), yystack_[1].location + yystack_[3].location, NAF::NOTNOT, (yystack_[1].value.uid)); }
-#line 1698 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1698 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 182:
-#line 692 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 696 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.body) = BUILDER.conjunction((yystack_[2].value.body), yystack_[1].location, (yystack_[1].value.lbodyaggrelem).first, (yystack_[1].value.lbodyaggrelem).second); }
-#line 1704 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1704 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 183:
-#line 693 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 697 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.body) = BUILDER.disjoint((yystack_[2].value.body), yystack_[1].location, (yystack_[1].value.disjoint).first, (yystack_[1].value.disjoint).second); }
-#line 1710 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1710 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 184:
-#line 694 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 698 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.body) = BUILDER.body(); }
-#line 1716 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1716 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 185:
-#line 698 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 702 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.body) = BUILDER.bodylit((yystack_[2].value.body), (yystack_[1].value.lit)); }
-#line 1722 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1722 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 186:
-#line 699 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 703 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.body) = lexer->bodyaggregate((yystack_[2].value.body), yystack_[1].location, NAF::POS, (yystack_[1].value.uid)); }
-#line 1728 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1728 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 187:
-#line 700 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 704 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.body) = lexer->bodyaggregate((yystack_[3].value.body), yystack_[1].location + yystack_[2].location, NAF::NOT, (yystack_[1].value.uid)); }
-#line 1734 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1734 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 188:
-#line 701 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 705 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.body) = lexer->bodyaggregate((yystack_[4].value.body), yystack_[1].location + yystack_[3].location, NAF::NOTNOT, (yystack_[1].value.uid)); }
-#line 1740 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1740 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 189:
-#line 702 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 706 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.body) = BUILDER.conjunction((yystack_[2].value.body), yystack_[1].location, (yystack_[1].value.lbodyaggrelem).first, (yystack_[1].value.lbodyaggrelem).second); }
-#line 1746 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1746 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 190:
-#line 703 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 707 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.body) = BUILDER.disjoint((yystack_[2].value.body), yystack_[1].location, (yystack_[1].value.disjoint).first, (yystack_[1].value.disjoint).second); }
-#line 1752 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1752 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 191:
-#line 707 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 711 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.body) = BUILDER.body(); }
-#line 1758 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1758 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 192:
-#line 708 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 712 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.body) = BUILDER.body(); }
-#line 1764 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1764 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 193:
-#line 709 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 713 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.body) = (yystack_[0].value.body); }
-#line 1770 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1770 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 194:
-#line 712 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 716 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.head) = BUILDER.headlit((yystack_[0].value.lit)); }
-#line 1776 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1776 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 195:
-#line 713 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 717 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.head) = BUILDER.disjunction(yylhs.location, (yystack_[0].value.condlitlist)); }
-#line 1782 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1782 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 196:
-#line 714 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 718 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.head) = lexer->headaggregate(yylhs.location, (yystack_[0].value.uid)); }
-#line 1788 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1788 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 197:
-#line 718 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 722 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { BUILDER.rule(yylhs.location, (yystack_[1].value.head)); }
-#line 1794 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1794 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 198:
-#line 719 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 723 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { BUILDER.rule(yylhs.location, (yystack_[2].value.head)); }
-#line 1800 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1800 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 199:
-#line 720 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 724 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { BUILDER.rule(yylhs.location, (yystack_[2].value.head), (yystack_[0].value.body)); }
-#line 1806 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1806 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 200:
-#line 721 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 725 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { BUILDER.rule(yylhs.location, BUILDER.headlit(BUILDER.boollit(yylhs.location, false)), (yystack_[0].value.body)); }
-#line 1812 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1812 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 201:
-#line 722 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 726 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { BUILDER.rule(yylhs.location, BUILDER.headlit(BUILDER.boollit(yylhs.location, false)), BUILDER.body()); }
-#line 1818 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1818 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 202:
-#line 728 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 732 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { BUILDER.rule(yylhs.location, BUILDER.headlit(BUILDER.boollit(yystack_[2].location, false)), BUILDER.disjoint((yystack_[0].value.body), yystack_[2].location, inv((yystack_[2].value.disjoint).first), (yystack_[2].value.disjoint).second)); }
-#line 1824 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1824 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 203:
-#line 729 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 733 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { BUILDER.rule(yylhs.location, BUILDER.headlit(BUILDER.boollit(yystack_[2].location, false)), BUILDER.disjoint(BUILDER.body(), yystack_[2].location, inv((yystack_[2].value.disjoint).first), (yystack_[2].value.disjoint).second)); }
-#line 1830 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1830 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 204:
-#line 730 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 734 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { BUILDER.rule(yylhs.location, BUILDER.headlit(BUILDER.boollit(yystack_[1].location, false)), BUILDER.disjoint(BUILDER.body(), yystack_[1].location, inv((yystack_[1].value.disjoint).first), (yystack_[1].value.disjoint).second)); }
-#line 1836 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1836 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 205:
-#line 736 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 740 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.termvec) = (yystack_[0].value.termvec); }
-#line 1842 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1842 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 206:
-#line 737 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 741 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.termvec) = BUILDER.termvec(); }
-#line 1848 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1848 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 207:
-#line 741 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 745 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.termpair) = {(yystack_[2].value.term), (yystack_[0].value.term)}; }
-#line 1854 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1854 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 208:
-#line 742 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 746 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.termpair) = {(yystack_[0].value.term), BUILDER.term(yylhs.location, Symbol::createNum(0))}; }
-#line 1860 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1860 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 209:
-#line 746 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 750 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.body) = BUILDER.bodylit(BUILDER.body(), (yystack_[0].value.lit)); }
-#line 1866 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1866 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 210:
-#line 747 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 751 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.body) = BUILDER.bodylit((yystack_[2].value.body), (yystack_[0].value.lit)); }
-#line 1872 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1872 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 211:
-#line 751 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 755 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.body) = (yystack_[0].value.body); }
-#line 1878 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1878 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 212:
-#line 752 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 756 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.body) = BUILDER.body(); }
-#line 1884 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1884 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 213:
-#line 753 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 757 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.body) = BUILDER.body(); }
-#line 1890 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1890 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 214:
-#line 757 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 761 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { BUILDER.optimize(yylhs.location, (yystack_[2].value.termpair).first, (yystack_[2].value.termpair).second, (yystack_[1].value.termvec), (yystack_[4].value.body)); }
-#line 1896 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1896 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 215:
-#line 758 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 762 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { BUILDER.optimize(yylhs.location, (yystack_[2].value.termpair).first, (yystack_[2].value.termpair).second, (yystack_[1].value.termvec), BUILDER.body()); }
-#line 1902 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1902 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 216:
-#line 762 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 766 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { BUILDER.optimize(yylhs.location, BUILDER.term(yystack_[2].location, UnOp::NEG, (yystack_[2].value.termpair).first), (yystack_[2].value.termpair).second, (yystack_[1].value.termvec), (yystack_[0].value.body)); }
-#line 1908 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1908 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 217:
-#line 763 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 767 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { BUILDER.optimize(yylhs.location, BUILDER.term(yystack_[2].location, UnOp::NEG, (yystack_[2].value.termpair).first), (yystack_[2].value.termpair).second, (yystack_[1].value.termvec), (yystack_[0].value.body)); }
-#line 1914 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1914 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 218:
-#line 767 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 771 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { BUILDER.optimize(yylhs.location, (yystack_[2].value.termpair).first, (yystack_[2].value.termpair).second, (yystack_[1].value.termvec), (yystack_[0].value.body)); }
-#line 1920 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1920 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 219:
-#line 768 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 772 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { BUILDER.optimize(yylhs.location, (yystack_[2].value.termpair).first, (yystack_[2].value.termpair).second, (yystack_[1].value.termvec), (yystack_[0].value.body)); }
-#line 1926 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1926 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 224:
-#line 781 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 785 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { BUILDER.showsig(yylhs.location, Sig(String::fromRep((yystack_[3].value.str)), (yystack_[1].value.num), false), false); }
-#line 1932 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1932 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 225:
-#line 782 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 786 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { BUILDER.showsig(yylhs.location, Sig(String::fromRep((yystack_[3].value.str)), (yystack_[1].value.num), true), false); }
-#line 1938 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1938 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 226:
-#line 783 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 787 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { BUILDER.showsig(yylhs.location, Sig("", 0, false), false); }
-#line 1944 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1944 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 227:
-#line 784 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 788 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { BUILDER.show(yylhs.location, (yystack_[2].value.term), (yystack_[0].value.body), false); }
-#line 1950 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1950 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 228:
-#line 785 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 789 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { BUILDER.show(yylhs.location, (yystack_[1].value.term), BUILDER.body(), false); }
-#line 1956 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1956 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 229:
-#line 786 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 790 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { BUILDER.showsig(yylhs.location, Sig(String::fromRep((yystack_[3].value.str)), (yystack_[1].value.num), false), true); }
-#line 1962 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1962 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 230:
-#line 787 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 791 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { BUILDER.show(yylhs.location, (yystack_[2].value.term), (yystack_[0].value.body), true); }
-#line 1968 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1968 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 231:
-#line 788 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 792 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { BUILDER.show(yylhs.location, (yystack_[1].value.term), BUILDER.body(), true); }
-#line 1974 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1974 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 232:
-#line 794 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 798 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { BUILDER.edge(yylhs.location, (yystack_[2].value.termvecvec), (yystack_[0].value.body)); }
-#line 1980 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1980 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 233:
-#line 800 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 804 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { BUILDER.heuristic(yylhs.location, (yystack_[8].value.term), (yystack_[7].value.body), (yystack_[5].value.term), (yystack_[3].value.term), (yystack_[1].value.term)); }
-#line 1986 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1986 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 234:
-#line 801 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 805 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { BUILDER.heuristic(yylhs.location, (yystack_[6].value.term), (yystack_[5].value.body), (yystack_[3].value.term), BUILDER.term(yylhs.location, Symbol::createNum(0)), (yystack_[1].value.term)); }
-#line 1992 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1992 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 235:
-#line 807 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 811 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { BUILDER.project(yylhs.location, Sig(String::fromRep((yystack_[3].value.str)), (yystack_[1].value.num), false)); }
-#line 1998 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1998 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 236:
-#line 808 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 812 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { BUILDER.project(yylhs.location, Sig(String::fromRep((yystack_[3].value.str)), (yystack_[1].value.num), true)); }
-#line 2004 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2004 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 237:
-#line 809 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 813 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { BUILDER.project(yylhs.location, (yystack_[1].value.term), (yystack_[0].value.body)); }
-#line 2010 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2010 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 238:
-#line 815 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 819 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     {  BUILDER.define(yylhs.location, String::fromRep((yystack_[2].value.str)), (yystack_[0].value.term), false, LOGGER); }
-#line 2016 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2016 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 239:
-#line 819 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 823 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     {  BUILDER.define(yylhs.location, String::fromRep((yystack_[3].value.str)), (yystack_[1].value.term), true, LOGGER); }
-#line 2022 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2022 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 240:
-#line 825 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 829 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { BUILDER.python(yylhs.location, String::fromRep((yystack_[1].value.str))); }
-#line 2028 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2028 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 241:
-#line 826 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 830 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { BUILDER.lua(yylhs.location, String::fromRep((yystack_[1].value.str))); }
-#line 2034 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2034 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 242:
-#line 832 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 836 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { lexer->include(String::fromRep((yystack_[1].value.str)), yylhs.location, false, LOGGER); }
-#line 2040 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2040 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 243:
-#line 833 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 837 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { lexer->include(String::fromRep((yystack_[2].value.str)), yylhs.location, true, LOGGER); }
-#line 2046 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2046 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 244:
-#line 839 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 843 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.idlist) = BUILDER.idvec((yystack_[2].value.idlist), yystack_[0].location, String::fromRep((yystack_[0].value.str))); }
-#line 2052 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2052 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 245:
-#line 840 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 844 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.idlist) = BUILDER.idvec(BUILDER.idvec(), yystack_[0].location, String::fromRep((yystack_[0].value.str))); }
-#line 2058 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2058 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 246:
-#line 844 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 848 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.idlist) = BUILDER.idvec(); }
-#line 2064 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2064 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 247:
-#line 845 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 849 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.idlist) = (yystack_[0].value.idlist); }
-#line 2070 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2070 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 248:
-#line 849 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 853 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { BUILDER.block(yylhs.location, String::fromRep((yystack_[4].value.str)), (yystack_[2].value.idlist)); }
-#line 2076 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2076 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 249:
-#line 850 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 854 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { BUILDER.block(yylhs.location, String::fromRep((yystack_[1].value.str)), BUILDER.idvec()); }
-#line 2082 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2082 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 250:
-#line 856 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 860 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { BUILDER.external(yylhs.location, (yystack_[2].value.term), (yystack_[0].value.body)); }
-#line 2088 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2088 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 251:
-#line 857 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 861 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { BUILDER.external(yylhs.location, (yystack_[2].value.term), BUILDER.body()); }
-#line 2094 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2094 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 252:
-#line 858 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 862 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { BUILDER.external(yylhs.location, (yystack_[1].value.term), BUILDER.body()); }
-#line 2100 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2100 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 253:
-#line 866 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 870 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.theoryOps) = BUILDER.theoryops((yystack_[1].value.theoryOps), String::fromRep((yystack_[0].value.str))); }
-#line 2106 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2106 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 254:
-#line 867 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 871 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.theoryOps) = BUILDER.theoryops(BUILDER.theoryops(), String::fromRep((yystack_[0].value.str))); }
-#line 2112 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2112 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 255:
-#line 871 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 875 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.theoryTerm) = BUILDER.theorytermset(yylhs.location, (yystack_[1].value.theoryOpterms)); }
-#line 2118 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2118 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 256:
-#line 872 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 876 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.theoryTerm) = BUILDER.theoryoptermlist(yylhs.location, (yystack_[1].value.theoryOpterms)); }
-#line 2124 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2124 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 257:
-#line 873 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 877 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.theoryTerm) = BUILDER.theorytermtuple(yylhs.location, BUILDER.theoryopterms()); }
-#line 2130 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2130 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 258:
-#line 874 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 878 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.theoryTerm) = BUILDER.theorytermopterm(yylhs.location, (yystack_[1].value.theoryOpterm)); }
-#line 2136 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2136 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 259:
-#line 875 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 879 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.theoryTerm) = BUILDER.theorytermtuple(yylhs.location, BUILDER.theoryopterms(BUILDER.theoryopterms(), yystack_[2].location, (yystack_[2].value.theoryOpterm))); }
-#line 2142 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2142 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 260:
-#line 876 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 880 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.theoryTerm) = BUILDER.theorytermtuple(yylhs.location, BUILDER.theoryopterms(yystack_[3].location, (yystack_[3].value.theoryOpterm), (yystack_[1].value.theoryOpterms))); }
-#line 2148 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2148 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 261:
-#line 877 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 881 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.theoryTerm) = BUILDER.theorytermfun(yylhs.location, String::fromRep((yystack_[3].value.str)), (yystack_[1].value.theoryOpterms)); }
-#line 2154 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2154 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 262:
-#line 878 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 882 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.theoryTerm) = BUILDER.theorytermvalue(yylhs.location, Symbol::createId(String::fromRep((yystack_[0].value.str)))); }
-#line 2160 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2160 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 263:
-#line 879 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 883 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.theoryTerm) = BUILDER.theorytermvalue(yylhs.location, Symbol::createNum((yystack_[0].value.num))); }
-#line 2166 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2166 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 264:
-#line 880 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 884 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.theoryTerm) = BUILDER.theorytermvalue(yylhs.location, Symbol::createStr(String::fromRep((yystack_[0].value.str)))); }
-#line 2172 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2172 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 265:
-#line 881 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 885 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.theoryTerm) = BUILDER.theorytermvalue(yylhs.location, Symbol::createInf()); }
-#line 2178 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2178 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 266:
-#line 882 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 886 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.theoryTerm) = BUILDER.theorytermvalue(yylhs.location, Symbol::createSup()); }
-#line 2184 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2184 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 267:
-#line 883 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 887 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.theoryTerm) = BUILDER.theorytermvar(yylhs.location, String::fromRep((yystack_[0].value.str))); }
-#line 2190 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2190 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 268:
-#line 887 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 891 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.theoryOpterm) = BUILDER.theoryopterm((yystack_[2].value.theoryOpterm), (yystack_[1].value.theoryOps), (yystack_[0].value.theoryTerm)); }
-#line 2196 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2196 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 269:
-#line 888 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 892 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.theoryOpterm) = BUILDER.theoryopterm((yystack_[1].value.theoryOps), (yystack_[0].value.theoryTerm)); }
-#line 2202 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2202 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 270:
-#line 889 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 893 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.theoryOpterm) = BUILDER.theoryopterm(BUILDER.theoryops(), (yystack_[0].value.theoryTerm)); }
-#line 2208 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2208 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 271:
-#line 893 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 897 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.theoryOpterms) = BUILDER.theoryopterms((yystack_[2].value.theoryOpterms), yystack_[0].location, (yystack_[0].value.theoryOpterm)); }
-#line 2214 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2214 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 272:
-#line 894 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 898 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.theoryOpterms) = BUILDER.theoryopterms(BUILDER.theoryopterms(), yystack_[0].location, (yystack_[0].value.theoryOpterm)); }
-#line 2220 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2220 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 273:
-#line 898 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 902 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.theoryOpterms) = (yystack_[0].value.theoryOpterms); }
-#line 2226 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2226 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 274:
-#line 899 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 903 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.theoryOpterms) = BUILDER.theoryopterms(); }
-#line 2232 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2232 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 275:
-#line 903 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 907 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.theoryElem) = { (yystack_[2].value.theoryOpterms), (yystack_[0].value.litvec) }; }
-#line 2238 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2238 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 276:
-#line 904 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 908 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.theoryElem) = { BUILDER.theoryopterms(), (yystack_[0].value.litvec) }; }
-#line 2244 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2244 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 277:
-#line 908 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 912 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.theoryElems) = BUILDER.theoryelems((yystack_[3].value.theoryElems), (yystack_[0].value.theoryElem).first, (yystack_[0].value.theoryElem).second); }
-#line 2250 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2250 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 278:
-#line 909 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 913 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.theoryElems) = BUILDER.theoryelems(BUILDER.theoryelems(), (yystack_[0].value.theoryElem).first, (yystack_[0].value.theoryElem).second); }
-#line 2256 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2256 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 279:
-#line 913 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 917 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.theoryElems) = (yystack_[0].value.theoryElems); }
-#line 2262 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2262 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 280:
-#line 914 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 918 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.theoryElems) = BUILDER.theoryelems(); }
-#line 2268 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2268 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 281:
-#line 918 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 922 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.term) = BUILDER.term(yylhs.location, String::fromRep((yystack_[0].value.str)), BUILDER.termvecvec(BUILDER.termvecvec(), BUILDER.termvec()), false); }
-#line 2274 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2274 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 282:
-#line 919 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 923 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.term) = BUILDER.term(yylhs.location, String::fromRep((yystack_[3].value.str)), (yystack_[1].value.termvecvec), false); }
-#line 2280 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2280 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 283:
-#line 922 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 926 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.theoryAtom) = BUILDER.theoryatom((yystack_[6].value.term), (yystack_[3].value.theoryElems)); }
-#line 2286 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2286 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 284:
-#line 923 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 927 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.theoryAtom) = BUILDER.theoryatom((yystack_[8].value.term), (yystack_[5].value.theoryElems), String::fromRep((yystack_[2].value.str)), yystack_[1].location, (yystack_[1].value.theoryOpterm)); }
-#line 2292 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2292 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 285:
-#line 929 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 933 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.theoryOps) = BUILDER.theoryops(BUILDER.theoryops(), String::fromRep((yystack_[0].value.str))); }
-#line 2298 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2298 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 286:
-#line 930 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 934 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.theoryOps) = BUILDER.theoryops((yystack_[2].value.theoryOps), String::fromRep((yystack_[0].value.str))); }
-#line 2304 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2304 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 287:
-#line 934 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 938 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.theoryOps) = (yystack_[0].value.theoryOps); }
-#line 2310 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2310 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 288:
-#line 935 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 939 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.theoryOps) = BUILDER.theoryops(); }
-#line 2316 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2316 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 289:
-#line 939 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 943 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.theoryOpDef) = BUILDER.theoryopdef(yylhs.location, String::fromRep((yystack_[5].value.str)), (yystack_[2].value.num), TheoryOperatorType::Unary); }
-#line 2322 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2322 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 290:
-#line 940 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 944 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.theoryOpDef) = BUILDER.theoryopdef(yylhs.location, String::fromRep((yystack_[7].value.str)), (yystack_[4].value.num), TheoryOperatorType::BinaryLeft); }
-#line 2328 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2328 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 291:
-#line 941 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 945 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.theoryOpDef) = BUILDER.theoryopdef(yylhs.location, String::fromRep((yystack_[7].value.str)), (yystack_[4].value.num), TheoryOperatorType::BinaryRight); }
-#line 2334 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2334 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 292:
-#line 945 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 949 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.theoryOpDefs) = BUILDER.theoryopdefs(BUILDER.theoryopdefs(), (yystack_[0].value.theoryOpDef)); }
-#line 2340 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2340 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 293:
-#line 946 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 950 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.theoryOpDefs) = BUILDER.theoryopdefs((yystack_[3].value.theoryOpDefs), (yystack_[0].value.theoryOpDef)); }
-#line 2346 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2346 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 294:
-#line 950 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 954 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.theoryOpDefs) = (yystack_[0].value.theoryOpDefs); }
-#line 2352 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2352 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 295:
-#line 951 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 955 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.theoryOpDefs) = BUILDER.theoryopdefs(); }
-#line 2358 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2358 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 296:
-#line 955 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 959 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.str) = (yystack_[0].value.str); }
-#line 2364 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2364 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 297:
-#line 956 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 960 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.str) = String::toRep("left"); }
-#line 2370 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2370 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 298:
-#line 957 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 961 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.str) = String::toRep("right"); }
-#line 2376 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2376 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 299:
-#line 958 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 962 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.str) = String::toRep("unary"); }
-#line 2382 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2382 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 300:
-#line 959 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 963 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.str) = String::toRep("binary"); }
-#line 2388 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2388 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 301:
-#line 960 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 964 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.str) = String::toRep("head"); }
-#line 2394 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2394 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 302:
-#line 961 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 965 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.str) = String::toRep("body"); }
-#line 2400 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2400 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 303:
-#line 962 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 966 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.str) = String::toRep("any"); }
-#line 2406 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2406 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 304:
-#line 963 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 967 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.str) = String::toRep("directive"); }
-#line 2412 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2412 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 305:
-#line 967 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 971 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.theoryTermDef) = BUILDER.theorytermdef(yylhs.location, String::fromRep((yystack_[5].value.str)), (yystack_[2].value.theoryOpDefs), LOGGER); }
-#line 2418 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2418 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 306:
-#line 971 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 975 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.theoryAtomType) = TheoryAtomType::Head; }
-#line 2424 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2424 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 307:
-#line 972 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 976 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.theoryAtomType) = TheoryAtomType::Body; }
-#line 2430 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2430 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 308:
-#line 973 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 977 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.theoryAtomType) = TheoryAtomType::Any; }
-#line 2436 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2436 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 309:
-#line 974 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 978 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.theoryAtomType) = TheoryAtomType::Directive; }
-#line 2442 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2442 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 310:
-#line 979 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 983 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.theoryAtomDef) = BUILDER.theoryatomdef(yylhs.location, String::fromRep((yystack_[14].value.str)), (yystack_[12].value.num), String::fromRep((yystack_[10].value.str)), (yystack_[0].value.theoryAtomType), (yystack_[6].value.theoryOps), String::fromRep((yystack_[2].value.str))); }
-#line 2448 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2448 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 311:
-#line 980 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 984 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.theoryAtomDef) = BUILDER.theoryatomdef(yylhs.location, String::fromRep((yystack_[6].value.str)), (yystack_[4].value.num), String::fromRep((yystack_[2].value.str)), (yystack_[0].value.theoryAtomType)); }
-#line 2454 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2454 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 312:
-#line 984 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 988 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.theoryDefs) = BUILDER.theorydefs((yystack_[2].value.theoryDefs), (yystack_[0].value.theoryAtomDef)); }
-#line 2460 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2460 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 313:
-#line 985 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 989 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.theoryDefs) = BUILDER.theorydefs((yystack_[2].value.theoryDefs), (yystack_[0].value.theoryTermDef)); }
-#line 2466 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2466 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 314:
-#line 986 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 990 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.theoryDefs) = BUILDER.theorydefs(BUILDER.theorydefs(), (yystack_[0].value.theoryAtomDef)); }
-#line 2472 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2472 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 315:
-#line 987 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 991 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.theoryDefs) = BUILDER.theorydefs(BUILDER.theorydefs(), (yystack_[0].value.theoryTermDef)); }
-#line 2478 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2478 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 316:
-#line 991 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 995 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.theoryDefs) = (yystack_[0].value.theoryDefs); }
-#line 2484 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2484 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 317:
-#line 992 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 996 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { (yylhs.value.theoryDefs) = BUILDER.theorydefs(); }
-#line 2490 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2490 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 318:
-#line 996 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 1000 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { BUILDER.theorydef(yylhs.location, String::fromRep((yystack_[6].value.str)), (yystack_[3].value.theoryDefs), LOGGER); }
-#line 2496 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2496 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 319:
-#line 1002 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 1006 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { lexer->theoryLexing(TheoryLexing::Theory); }
-#line 2502 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2502 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 320:
-#line 1006 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 1010 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { lexer->theoryLexing(TheoryLexing::Definition); }
-#line 2508 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2508 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 321:
-#line 1010 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 1014 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { lexer->theoryLexing(TheoryLexing::Disabled); }
-#line 2514 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2514 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
 
-#line 2518 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2518 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
             default:
               break;
             }
@@ -3549,39 +3549,39 @@ namespace Gringo { namespace Input { namespace NonGroundGrammar {
   const unsigned short int
   parser::yyrline_[] =
   {
-       0,   332,   332,   333,   337,   338,   344,   348,   355,   356,
-     357,   358,   359,   360,   361,   362,   363,   364,   365,   366,
-     367,   368,   369,   370,   371,   372,   373,   374,   375,   376,
-     377,   383,   384,   388,   389,   395,   396,   397,   398,   399,
-     400,   401,   402,   403,   404,   405,   406,   407,   408,   409,
-     410,   411,   412,   413,   414,   415,   416,   417,   423,   424,
-     430,   431,   435,   436,   440,   441,   442,   443,   446,   447,
-     450,   451,   454,   455,   459,   460,   470,   471,   472,   473,
-     474,   475,   479,   480,   481,   482,   486,   487,   488,   489,
-     490,   491,   492,   493,   494,   495,   496,   497,   498,   502,
-     503,   504,   505,   509,   510,   511,   515,   516,   517,   518,
-     519,   520,   524,   525,   533,   534,   538,   539,   543,   544,
-     548,   549,   553,   554,   555,   556,   557,   563,   564,   568,
-     569,   575,   579,   580,   586,   587,   588,   589,   593,   594,
-     595,   599,   600,   601,   602,   608,   609,   613,   614,   620,
-     621,   622,   623,   627,   628,   629,   630,   636,   637,   641,
-     642,   646,   647,   648,   655,   662,   663,   667,   668,   669,
-     674,   675,   676,   677,   684,   685,   686,   687,   688,   689,
-     690,   691,   692,   693,   694,   698,   699,   700,   701,   702,
-     703,   707,   708,   709,   712,   713,   714,   718,   719,   720,
-     721,   722,   728,   729,   730,   736,   737,   741,   742,   746,
-     747,   751,   752,   753,   757,   758,   762,   763,   767,   768,
-     772,   773,   774,   775,   781,   782,   783,   784,   785,   786,
-     787,   788,   794,   800,   801,   807,   808,   809,   815,   819,
-     825,   826,   832,   833,   839,   840,   844,   845,   849,   850,
-     856,   857,   858,   866,   867,   871,   872,   873,   874,   875,
-     876,   877,   878,   879,   880,   881,   882,   883,   887,   888,
-     889,   893,   894,   898,   899,   903,   904,   908,   909,   913,
-     914,   918,   919,   922,   923,   929,   930,   934,   935,   939,
-     940,   941,   945,   946,   950,   951,   955,   956,   957,   958,
-     959,   960,   961,   962,   963,   967,   971,   972,   973,   974,
-     978,   980,   984,   985,   986,   987,   991,   992,   996,  1002,
-    1006,  1010
+       0,   336,   336,   337,   341,   342,   348,   352,   359,   360,
+     361,   362,   363,   364,   365,   366,   367,   368,   369,   370,
+     371,   372,   373,   374,   375,   376,   377,   378,   379,   380,
+     381,   387,   388,   392,   393,   399,   400,   401,   402,   403,
+     404,   405,   406,   407,   408,   409,   410,   411,   412,   413,
+     414,   415,   416,   417,   418,   419,   420,   421,   427,   428,
+     434,   435,   439,   440,   444,   445,   446,   447,   450,   451,
+     454,   455,   458,   459,   463,   464,   474,   475,   476,   477,
+     478,   479,   483,   484,   485,   486,   490,   491,   492,   493,
+     494,   495,   496,   497,   498,   499,   500,   501,   502,   506,
+     507,   508,   509,   513,   514,   515,   519,   520,   521,   522,
+     523,   524,   528,   529,   537,   538,   542,   543,   547,   548,
+     552,   553,   557,   558,   559,   560,   561,   567,   568,   572,
+     573,   579,   583,   584,   590,   591,   592,   593,   597,   598,
+     599,   603,   604,   605,   606,   612,   613,   617,   618,   624,
+     625,   626,   627,   631,   632,   633,   634,   640,   641,   645,
+     646,   650,   651,   652,   659,   666,   667,   671,   672,   673,
+     678,   679,   680,   681,   688,   689,   690,   691,   692,   693,
+     694,   695,   696,   697,   698,   702,   703,   704,   705,   706,
+     707,   711,   712,   713,   716,   717,   718,   722,   723,   724,
+     725,   726,   732,   733,   734,   740,   741,   745,   746,   750,
+     751,   755,   756,   757,   761,   762,   766,   767,   771,   772,
+     776,   777,   778,   779,   785,   786,   787,   788,   789,   790,
+     791,   792,   798,   804,   805,   811,   812,   813,   819,   823,
+     829,   830,   836,   837,   843,   844,   848,   849,   853,   854,
+     860,   861,   862,   870,   871,   875,   876,   877,   878,   879,
+     880,   881,   882,   883,   884,   885,   886,   887,   891,   892,
+     893,   897,   898,   902,   903,   907,   908,   912,   913,   917,
+     918,   922,   923,   926,   927,   933,   934,   938,   939,   943,
+     944,   945,   949,   950,   954,   955,   959,   960,   961,   962,
+     963,   964,   965,   966,   967,   971,   975,   976,   977,   978,
+     982,   984,   988,   989,   990,   991,   995,   996,  1000,  1006,
+    1010,  1014
   };
 
   // Print the state stack on the debug stream.
@@ -3669,6 +3669,6 @@ namespace Gringo { namespace Input { namespace NonGroundGrammar {
       return undef_token_;
   }
 
-#line 24 "libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:1167
+#line 28 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:1167
 } } } // Gringo::Input::NonGroundGrammar
-#line 3675 "build/release/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:1167
+#line 3675 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:1167

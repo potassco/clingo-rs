@@ -1,8 +1,6 @@
 use std::env;
 extern crate clingo;
 use clingo::*;
-extern crate libc;
-use libc::c_void;
 use std::ffi::CString;
 
 
@@ -16,27 +14,27 @@ fn main() {
 
     // create a control object and pass command line arguments
     let logger: clingo_logger_t = None;
-    let logger_data: *mut c_void = std::ptr::null_mut();
+    let logger_data = std::ptr::null_mut();
     let mut ctl = new_clingo_control(env::args(), logger, logger_data, 20)
         .expect("Failed creating clingo_control");
 
     // add a logic program to the base part
     let parameters: Vec<&str> = Vec::new();
-    let err1 = ctl.add("base", parameters, "a. {b}. #external c.");
-    if err1 == 0 {
+    let err = ctl.add("base", parameters, "a. {b}. #external c.");
+    if !err {
         return error_main();
     }
 
     // ground the base part
     let part = ClingoPart {
-        name: CString::new("base").unwrap(),      
+        name: CString::new("base").unwrap(),
         params: &[],
     };
     let parts = vec![part];
     let ground_callback = None;
     let ground_callback_data = std::ptr::null_mut();
-    let err2 = ctl.ground(parts, ground_callback, ground_callback_data);
-    if err2 == 0 {
+    let err = ctl.ground(parts, ground_callback, ground_callback_data);
+    if !err {
         return error_main();
     }
 
@@ -51,21 +49,18 @@ fn main() {
     let ie_a = atoms.end().unwrap();
 
     loop {
-        let equal = atoms.iterator_is_equal_to(it_a, ie_a).unwrap();
-        if equal {
+        if atoms.iterator_is_equal_to(it_a, ie_a).unwrap() {
             break;
         }
         let symbol = atoms.symbol(it_a).unwrap();
         let atom_string = safe_clingo_symbol_to_string(symbol).unwrap();
         print!("  {}", atom_string.to_str().unwrap());
 
-
-        let fact = atoms.is_fact(it_a).unwrap();
-        if fact {
+        if atoms.is_fact(it_a).unwrap() {
             print!(", fact");
         }
-        let external = atoms.is_external(it_a).unwrap();
-        if external {
+
+        if atoms.is_external(it_a).unwrap() {
             print!(", external");
         }
         println!("");

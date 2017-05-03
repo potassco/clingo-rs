@@ -1,6 +1,5 @@
 extern crate clingo;
 use clingo::*;
-extern crate libc;
 
 
 fn main() {

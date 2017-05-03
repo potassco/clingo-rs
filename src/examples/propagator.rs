@@ -12,7 +12,7 @@ struct state_t<'a> {
     // assignment of pigeons to holes
     // (hole number -> pigeon placement literal or zero)
     holes: &'a mut [clingo_literal_t],
-    size: size_t,
+    size: usize,
 }
 
 // state information for the propagator
@@ -20,10 +20,10 @@ struct propagator_t<'a> {
     // mapping from solver literals capturing pigeon placements to hole numbers
     // (solver literal -> hole number or zero)
     pigeons: *mut c_int,
-    pigeons_size: size_t,
+    pigeons_size: usize,
     // array of states
     states: &'a mut [state_t<'a>],
-    states_size: size_t,
+    states_size: usize,
 }
 
 // returns the offset'th numeric argument of the function symbol sym
@@ -39,32 +39,32 @@ struct propagator_t<'a> {
 //     return true;
 // }
 
-unsafe extern "C" fn init(init: *mut clingo_propagate_init_t, data: *mut c_void) -> u8 {
-    let mut propagato = data as *mut propagator_t;
-    let mut propagator = *propagato;
-    // the total number of holes pigeons can be assigned too
-    let holes: c_int = 0;
-    let threads: size_t = (*init).number_of_threads();
-    // stores the (numeric) maximum of the solver literals capturing pigeon placements
-    // note that the code below assumes that this literal is not negative
-    // which holds for the pigeon problem but not in general
-    let max: clingo_literal_t = 0;
-    let atoms: *mut clingo_symbolic_atoms_t;
-    let sig: clingo_signature_t;
-    let atoms_it: clingo_symbolic_atom_iterator_t;
-    let atoms_ie: clingo_symbolic_atom_iterator_t;
-    // ensure that solve can be called multiple times
-    // for simplicity, the case that additional holes or pigeons to assign are grounded is not handled here
-    //     if propagator.states != NULL {
-    if propagator.states_size != 0 {
-        // in principle the number of threads can increase between solve calls by changing the configuration
-        // this case is not handled (elegantly) here
-        if threads > propagator.states_size {
-            //       clingo_set_error(clingo_error_runtime, "more threads than states");
-            safe_clingo_set_error(1, "more threads than states");
-        }
-        return 1;
-    }
+// unsafe extern "C" fn init(init: *mut clingo_propagate_init_t, data: *mut c_void) -> u8 {
+//     let mut propagato = data as *mut propagator_t;
+//     let mut propagator = *propagato;
+//     // the total number of holes pigeons can be assigned too
+//     let holes: c_int = 0;
+//     let threads: size_t = (*init).number_of_threads();
+//     // stores the (numeric) maximum of the solver literals capturing pigeon placements
+//     // note that the code below assumes that this literal is not negative
+//     // which holds for the pigeon problem but not in general
+//     let max: clingo_literal_t = 0;
+//     let atoms: *mut clingo_symbolic_atoms_t;
+//     let sig: clingo_signature_t;
+//     let atoms_it: clingo_symbolic_atom_iterator_t;
+//     let atoms_ie: clingo_symbolic_atom_iterator_t;
+//     // ensure that solve can be called multiple times
+//     // for simplicity, the case that additional holes or pigeons to assign are grounded is not handled here
+//     //     if propagator.states != NULL {
+//     if propagator.states_size != 0 {
+//         // in principle the number of threads can increase between solve calls by changing the configuration
+//         // this case is not handled (elegantly) here
+//         if threads > propagator.states_size {
+//             //       clingo_set_error(clingo_error_runtime, "more threads than states");
+//             safe_clingo_set_error(1, "more threads than states");
+//         }
+//         return 1;
+//     }
     // allocate memory for exactly one state per thread
     //   if (!(data->states = (state_t*)malloc(sizeof(*data->states) * threads))) {
     // //     clingo_set_error(clingo_error_bad_alloc, "allocation failed");
@@ -150,104 +150,104 @@ unsafe extern "C" fn init(init: *mut clingo_propagate_init_t, data: *mut c_void)
     //     data->states[i].size = holes;
     //   }
 
-    return 1;
-}
+//     return 1;
+// }
 
-unsafe extern "C" fn propagate(control: *mut clingo_propagate_control_t,
-                               changes: *const clingo_literal_t,
-                               size: size_t,
-                               data: *mut c_void)
-                               -> u8 {
-    let mut propagato = data as *mut propagator_t;
-    let mut propagator = *propagato;
-    // get the thread specific state
-    //   let state: state_t = data->states[clingo_propagate_control_thread_id(control)];
-    let state: state_t = propagator.states[(*control).thread_id() as usize];
-
-
-    // apply and check the pigeon assignments done by the solver
-    for i in 0..size {
-        // the freshly assigned literal
-        let lit: clingo_literal_t = changes[i];
-        // a pointer to the previously assigned literal
-        let prev: *mut clingo_literal_t = state.holes + propagator.pigeons[lit];
-
-        // update the placement if no literal was assigned previously
-        if *prev == 0 {
-            *prev = lit;
-        }
-        // create a conflicting clause and propagate it
-        else {
-            // current and previous literal must not hold together
-            let clause: &[clingo_literal_t] = &[-lit, -*prev];
-            // stores the result when adding a clause or propagationg
-            // if result is false propagation must stop for the solver to backtrack
-
-            // add the clause
-            //       if (!clingo_propagate_control_add_clause(control, clause, sizeof(clause)/sizeof(*clause), clingo_clause_type_learnt, &result)) {return false; }
-            let result = (*control)
-                .add_clause(clause,
-                            clingo_clause_type::clingo_clause_type_learnt as clingo_clause_type_t)
-                .unwrap();
-
-            if result == 0 {
-                return 1;
-            }
-
-            // propagate it
-            //       if (!clingo_propagate_control_propagate(control, &result)) { return false; }
-            result = (*control).propagate().unwrap();
-
-            if result == 0 {
-                return 1;
-            }
-
-            // must not happen because the clause above is conflicting by construction
-            assert!(false);
-        }
-    }
-    return 1;
-}
-
-unsafe extern "C" fn undo(control: *mut clingo_propagate_control_t,
-                          changes: *const clingo_literal_t,
-                          size: size_t,
-                          data: *mut c_void)
-                          -> u8 {
-    let mut propagato = data as *mut propagator_t;
-    let mut propagator = *propagato;
-    // get the thread specific state
-    //   let state: state_t = data->states[clingo_propagate_control_thread_id(control)];
-    let state: state_t = propagator.states[(*control).thread_id() as usize];
-
-    // undo the assignments made in propagate
-    for i in 0..size {
-        let lit: clingo_literal_t = changes[i];
-        let hole: c_int = propagator.pigeons[lit];
-
-        if state.holes[hole] == lit {
-            // undo the assignment
-            state.holes[hole] = 0;
-        }
-    }
-    return 1;
-}
-
-unsafe extern "C" fn on_model(model: *mut clingo_model_t, data: *mut c_void, goon: *mut u8) -> u8 {
-
-    // retrieve the symbols in the model
-    let atoms = (*model)
-        .symbols(clingo_show_type::clingo_show_type_shown as clingo_show_type_bitset_t)
-        .expect("Failed to retrieve symbols in the model");
-
-    println!("Model:");
-    for atom in atoms {
-        // retrieve and print the symbol's string
-        let atom_string = safe_clingo_symbol_to_string(atom).unwrap();
-        println!(" {}", atom_string.to_str().unwrap());
-    }
-    return 1;
-}
+// unsafe extern "C" fn propagate(control: *mut clingo_propagate_control_t,
+//                                changes: *const clingo_literal_t,
+//                                size: size_t,
+//                                data: *mut c_void)
+//                                -> u8 {
+//     let mut propagato = data as *mut propagator_t;
+//     let mut propagator = *propagato;
+//     // get the thread specific state
+//     //   let state: state_t = data->states[clingo_propagate_control_thread_id(control)];
+//     let state: state_t = propagator.states[(*control).thread_id() as usize];
+// 
+// 
+//     // apply and check the pigeon assignments done by the solver
+//     for i in 0..size {
+//         // the freshly assigned literal
+//         let lit: clingo_literal_t = changes[i];
+//         // a pointer to the previously assigned literal
+//         let prev: *mut clingo_literal_t = state.holes + propagator.pigeons[lit];
+// 
+//         // update the placement if no literal was assigned previously
+//         if *prev == 0 {
+//             *prev = lit;
+//         }
+//         // create a conflicting clause and propagate it
+//         else {
+//             // current and previous literal must not hold together
+//             let clause: &[clingo_literal_t] = &[-lit, -*prev];
+//             // stores the result when adding a clause or propagationg
+//             // if result is false propagation must stop for the solver to backtrack
+// 
+//             // add the clause
+//             //       if (!clingo_propagate_control_add_clause(control, clause, sizeof(clause)/sizeof(*clause), clingo_clause_type_learnt, &result)) {return false; }
+//             let result = (*control)
+//                 .add_clause(clause,
+//                             clingo_clause_type::clingo_clause_type_learnt as clingo_clause_type_t)
+//                 .unwrap();
+// 
+//             if result == 0 {
+//                 return 1;
+//             }
+// 
+//             // propagate it
+//             //       if (!clingo_propagate_control_propagate(control, &result)) { return false; }
+//             result = (*control).propagate().unwrap();
+// 
+//             if result == 0 {
+//                 return 1;
+//             }
+// 
+//             // must not happen because the clause above is conflicting by construction
+//             assert!(false);
+//         }
+//     }
+//     return 1;
+// }
+// 
+// unsafe extern "C" fn undo(control: *mut clingo_propagate_control_t,
+//                           changes: *const clingo_literal_t,
+//                           size: size_t,
+//                           data: *mut c_void)
+//                           -> u8 {
+//     let mut propagato = data as *mut propagator_t;
+//     let mut propagator = *propagato;
+//     // get the thread specific state
+//     //   let state: state_t = data->states[clingo_propagate_control_thread_id(control)];
+//     let state: state_t = propagator.states[(*control).thread_id() as usize];
+// 
+//     // undo the assignments made in propagate
+//     for i in 0..size {
+//         let lit: clingo_literal_t = changes[i];
+//         let hole: c_int = propagator.pigeons[lit];
+// 
+//         if state.holes[hole] == lit {
+//             // undo the assignment
+//             state.holes[hole] = 0;
+//         }
+//     }
+//     return 1;
+// }
+// 
+// unsafe extern "C" fn on_model(model: *mut clingo_model_t, data: *mut c_void, goon: *mut u8) -> u8 {
+// 
+//     // retrieve the symbols in the model
+//     let atoms = (*model)
+//         .symbols(clingo_show_type::clingo_show_type_shown as clingo_show_type_bitset_t)
+//         .expect("Failed to retrieve symbols in the model");
+// 
+//     println!("Model:");
+//     for atom in atoms {
+//         // retrieve and print the symbol's string
+//         let atom_string = safe_clingo_symbol_to_string(atom).unwrap();
+//         println!(" {}", atom_string.to_str().unwrap());
+//     }
+//     return 1;
+// }
 
 
 fn main() {
@@ -259,7 +259,7 @@ fn main() {
     //   clingo_symbol_t args[2];
     // the pigeon program part having the number of holes and pigeons as parameters
     //     clingo_part_t parts[] = {{ "pigeon", args, sizeof(args)/sizeof(*args) }};
-    let part = safe_clingo_part {
+    let part = ClingoPart {
         name: CString::new("pigeon").unwrap(),
         params: &[], // args
     };
@@ -268,32 +268,34 @@ fn main() {
     let params = ["h", "p"];
     // create a propagator with the functions above
     // using the default implementation for the model check
-    //   prop = clingo_propagator_t {
-    //     init : (bool (*) (clingo_propagate_init_t *, void *)),
-    //     propagate : (bool (*) (clingo_propagate_control_t *, clingo_literal_t const *, size_t, void *)),
-    //     undo: (bool (*) (clingo_propagate_control_t *, clingo_literal_t const *, size_t, void *)),
-    //     check: NULL
-    //   };
     let prop = clingo_propagator {
-        init: Some(init),
-        propagate: Some(propagate),
-        undo: Some(undo),
+//         init: Some(init),
+        init: None,
+//         propagate: Some(propagate),
+        propagate: None,
+//         undo: Some(undo),
+        undo: None,
         check: None,
     };
 
-    //   // user data for the propagator
-    //   propagator_t prop_data = { NULL, 0, NULL, 0 };
-    //
-    //   // set the number of holes
-    //   clingo_symbol_create_number(8, &args[0]);
-    //   // set the number of pigeons
-    //   clingo_symbol_create_number(9, &args[1]);
-    //
-    //   // create a control object and pass command line arguments
-    //   if (!clingo_control_new(argv+1, argc-1, NULL, NULL, 20, &ctl) != 0) { goto error; }
-    //
-    //   // register the propagator
-    //   if (!clingo_control_register_propagator(ctl, prop, &prop_data, false)) { goto error; }
+    // user data for the propagator
+    let mut states = [];
+    let mut prop_data = propagator_t { pigeons: std::ptr::null_mut(), pigeons_size: 0, states: &mut states, states_size: 0 };
+          
+      
+    // set the number of holes
+    let arg0 = safe_clingo_symbol_create_number(8);
+    // set the number of pigeons
+    let arg1 = safe_clingo_symbol_create_number(9);
+    
+    // create a control object and pass command line arguments
+    let logger = None;
+    let logger_data = std::ptr::null_mut();
+    let mut ctl = new_clingo_control(env::args(), logger, logger_data, 20)
+        .expect("Failed creating clingo_control");
+    
+    // register the propagator
+     if (!ctl.register_propagator(&mut prop, &mut prop_data, false)) { goto error; }
     //
     //   // add a logic program to the pigeon part
     //   if (!clingo_control_add(ctl, "pigeon", params, sizeof(params)/sizeof(*params),

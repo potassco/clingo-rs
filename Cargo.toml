@@ -3,10 +3,14 @@ name = "clingo"
 version = "0.1.0"
 authors = ["sthiele <sthiele78@gmail.com>"]
 description = "Rust idiomatic bindings to the clingo library"
+categories = ["api-bindings"]
+license = "MIT"
+repository = "https://github.com/sthiele/clingo-rs"
 
 [dependencies]
 clingo-sys = { path = "./clingo-sys" }
 libc = "0.2.20"
+rand = "0.3"
 
 [lib]
 name = "clingo"
@@ -35,10 +39,6 @@ path = "src/examples/model.rs"
 [[example]]
 name = "configuration"
 path = "src/examples/configuration.rs"
-
-[[example]]
-name = "solve-iteratively"
-path = "src/examples/solve-iteratively.rs"
 
 [[example]]
 name = "statistics"
