@@ -7,11 +7,18 @@ use std::process::Command;
 fn main() {
 
     if !Path::new("clingo").exists() {
+    
         Command::new("git")
             .args(&["clone", "https://github.com/potassco/clingo.git"])
             .status()
             .unwrap();
-
+            
+        Command::new("git")
+            .args(&["checkout", "tags/v5.2.0"])
+            .current_dir("./clingo")
+            .status()
+            .unwrap();
+            
         Command::new("git")
             .args(&["submodule", "update", "--init", "--recursive"])
             .current_dir("./clingo")
