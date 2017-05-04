@@ -325,8 +325,8 @@ extern "C" {
     pub fn clingo_warning_string(code: clingo_warning_t) -> *const ::std::os::raw::c_char;
 }
 /// Callback to intercept warning messages.
-    ///
-    /// **Parameters:**
+///
+/// **Parameters:**
 ///
 /// * `code` associated warning code
 /// * `message` warning message
@@ -1696,7 +1696,7 @@ pub type clingo_solve_event_type_t = ::std::os::raw::c_uint;
 /// @attention If the search is finished, the model is NULL.
 ///
 /// **Parameters:**
-/// 
+///
 /// * `model` the current model
 /// * `data` user data of the callback
 /// * `goon` can be set to false to stop solving
@@ -1809,6 +1809,16 @@ extern "C" {
     /// - ::clingo_error_runtime if solving fails
     pub fn clingo_solve_handle_close(handle: *mut clingo_solve_handle_t) -> bool;
 }
+#[repr(u32)]
+/// Supported check modes for propagators.
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+pub enum clingo_propagator_check_mode {
+    clingo_propagator_check_mode_none = 0,
+    clingo_propagator_check_mode_total = 1,
+    clingo_propagator_check_mode_fixpoint = 2,
+}
+/// Corresponding type to ::clingo_propagator_check_mode.
+pub type clingo_propagator_check_mode_t = ::std::os::raw::c_int;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct clingo_propagate_init([u8; 0]);
@@ -1887,6 +1897,29 @@ extern "C" {
     /// @see clingo_propagate_control_thread_id()
     pub fn clingo_propagate_init_number_of_threads(init: *mut clingo_propagate_init_t)
                                                    -> ::std::os::raw::c_int;
+}
+extern "C" {
+    /// Configure when to call the check method of the propagator.
+    ///
+    /// **Parameters:**
+    ///
+    /// * `init` - the target
+    /// *`mode`- bitmask when to call the propagator
+    /// @see @ref ::clingo_propagator::check()
+    pub fn clingo_propagate_init_set_check_mode(init: *mut clingo_propagate_init_t,
+                                                mode: clingo_propagator_check_mode_t);
+}
+extern "C" {
+    /// Get the current check mode of the propagator.
+    ///
+    /// **Parameters:**
+    ///
+    /// * `init`- the target
+    ///
+    /// **Returns**  bitmask when to call the propagator
+    /// @see clingo_propagate_init_set_check_mode()
+    pub fn clingo_propagate_init_get_check_mode(init: *mut clingo_propagate_init_t)
+                                                -> clingo_propagator_check_mode_t;
 }
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -2016,15 +2049,44 @@ extern "C" {
     ///
     /// **Parameters:**
     ///
-    /// * `assignment` the target assignment
-    /// * `literal` the literal
-    /// * `value` the resulting truth value
+    /// * `assignment` - the target assignment
+    /// * `literal` - the literal
+    /// * `value` - the resulting truth value
     ///
     /// **Returns** whether the call was successful
     pub fn clingo_assignment_truth_value(assignment: *mut clingo_assignment_t,
                                          literal: clingo_literal_t,
                                          value: *mut clingo_truth_value_t)
                                          -> bool;
+}
+extern "C" {
+    /// The number of assigned literals in the assignment.
+    /// **Parameters:**
+    ///
+    /// * `assignment`- the target
+    ///
+    /// **Returns** the number of literals
+    pub fn clingo_assignment_size(assignment: *mut clingo_assignment_t) -> usize;
+}
+extern "C" {
+    /// The maximum size of the assignment (if all literals are assigned).
+    ///
+    /// **Parameters:**
+    ///
+    /// * `assignment`- the target
+    ///
+    /// **Returns** the maximum size
+    pub fn clingo_assignment_max_size(assignment: *mut clingo_assignment_t) -> usize;
+}
+extern "C" {
+    /// Check if the assignmen is total, i.e. - size == max_size.
+    ///
+    /// **Parameters:**
+    ///
+    /// * `assignment`- the target
+    ///
+    /// **Returns** wheather the assignment is total
+    pub fn clingo_assignment_is_total(assignment: *mut clingo_assignment_t) -> bool;
 }
 #[repr(u32)]
 /// Enumeration of clause types determining the lifetime of a clause.
@@ -2212,9 +2274,9 @@ pub struct clingo_propagator {
     /// **Note:** This is the last point to access symbolic and theory atoms.
     /// Once the search has started, they are no longer accessible.
     ///
-/// **Parameters:**
-///
-/// * `init` initizialization object
+    /// **Parameters:**
+    ///
+    /// * `init` initizialization object
     /// * `data` user data for the callback
     ///
     /// **Returns** whether the call was successful
@@ -5980,9 +6042,9 @@ pub struct clingo_ground_program_observer {
     ///
     /// If the incremental flag is true, there can be multiple calls to @ref clingo_control_solve().
     ///
-/// **Parameters:**
-///
-/// * `incremental` whether the program is incremental
+    /// **Parameters:**
+    ///
+    /// * `incremental` whether the program is incremental
     /// * `data` user data for the callback
     ///
     /// **Returns** whether the call was successful
@@ -5995,9 +6057,9 @@ pub struct clingo_ground_program_observer {
     ///
     /// @see @ref end_step
     ///
-/// **Parameters:**
-///
-/// * `data` user data for the callback
+    /// **Parameters:**
+    ///
+    /// * `data` user data for the callback
     ///
     /// **Returns** whether the call was successful
     pub begin_step: ::std::option::Option<unsafe extern "C" fn(data:
@@ -6009,9 +6071,9 @@ pub struct clingo_ground_program_observer {
     ///
     /// @see @ref begin_step
     ///
-/// **Parameters:**
-///
-/// * `data` user data for the callback
+    /// **Parameters:**
+    ///
+    /// * `data` user data for the callback
     ///
     /// **Returns** whether the call was successful
     pub end_step: ::std::option::Option<unsafe extern "C" fn(data:
@@ -6019,9 +6081,9 @@ pub struct clingo_ground_program_observer {
                                             -> bool>,
     /// Observe rules passed to the solver.
     ///
-/// **Parameters:**
-///
-/// * `choice` determines if the head is a choice or a disjunction
+    /// **Parameters:**
+    ///
+    /// * `choice` determines if the head is a choice or a disjunction
     /// * `head` the head atoms
     /// * `head_size` the number of atoms in the head
     /// * `body` the body literals
@@ -6041,9 +6103,9 @@ pub struct clingo_ground_program_observer {
                                         -> bool>,
     /// Observe weight rules passed to the solver.
     ///
-/// **Parameters:**
-///
-/// * `choice` determines if the head is a choice or a disjunction
+    /// **Parameters:**
+    ///
+    /// * `choice` determines if the head is a choice or a disjunction
     /// * `head` the head atoms
     /// * `head_size` the number of atoms in the head
     /// * `lower_bound` the lower bound of the weight rule
@@ -6068,9 +6130,9 @@ pub struct clingo_ground_program_observer {
                                                -> bool>,
     /// Observe minimize constraints (or weak constraints) passed to the solver.
     ///
-/// **Parameters:**
-///
-/// * `priority` the priority of the constraint
+    /// **Parameters:**
+    ///
+    /// * `priority` the priority of the constraint
     /// * `literals` the weighted literals whose sum to minimize
     /// * `size` the number of weighted literals
     /// * `data` user data for the callback
@@ -6086,9 +6148,9 @@ pub struct clingo_ground_program_observer {
                                             -> bool>,
     /// Observe projection directives passed to the solver.
     ///
-/// **Parameters:**
-///
-/// * `atoms` the atoms to project on
+    /// **Parameters:**
+    ///
+    /// * `atoms` the atoms to project on
     /// * `size` the number of atoms
     /// * `data` user data for the callback
     ///
@@ -6103,9 +6165,9 @@ pub struct clingo_ground_program_observer {
     /// \note Facts do not have an associated aspif atom.
     /// The value of the atom is set to zero.
     ///
-/// **Parameters:**
-///
-/// * `symbol` the symbolic representation of the atom
+    /// **Parameters:**
+    ///
+    /// * `symbol` the symbolic representation of the atom
     /// * `atom` the aspif atom (0 for facts)
     /// * `data` user data for the callback
     ///
@@ -6119,9 +6181,9 @@ pub struct clingo_ground_program_observer {
                                                -> bool>,
     /// Observe shown terms passed to the solver.
     ///
-/// **Parameters:**
-///
-/// * `symbol` the symbolic representation of the term
+    /// **Parameters:**
+    ///
+    /// * `symbol` the symbolic representation of the term
     /// * `condition` the literals of the condition
     /// * `size` the size of the condition
     /// * `data` user data for the callback
@@ -6137,9 +6199,9 @@ pub struct clingo_ground_program_observer {
                                                -> bool>,
     /// Observe shown csp variables passed to the solver.
     ///
-/// **Parameters:**
-///
-/// * `symbol` the symbolic representation of the variable
+    /// **Parameters:**
+    ///
+    /// * `symbol` the symbolic representation of the variable
     /// * `value` the value of the variable
     /// * `condition` the literals of the condition
     /// * `size` the size of the condition
@@ -6158,9 +6220,9 @@ pub struct clingo_ground_program_observer {
                                               -> bool>,
     /// Observe external statements passed to the solver.
     ///
-/// **Parameters:**
-///
-/// * `atom` the external atom
+    /// **Parameters:**
+    ///
+    /// * `atom` the external atom
     /// * `type` the type of the external statement
     /// * `data` user data for the callback
     ///
@@ -6174,9 +6236,9 @@ pub struct clingo_ground_program_observer {
                                             -> bool>,
     /// Observe assumption directives passed to the solver.
     ///
-/// **Parameters:**
-///
-/// * `literals` the literals to assume (positive literals are true and negative literals false for the next solve call)
+    /// **Parameters:**
+    ///
+    /// * `literals` the literals to assume (positive literals are true and negative literals false for the next solve call)
     /// * `size` the number of atoms
     /// * `data` user data for the callback
     ///
@@ -6189,9 +6251,9 @@ pub struct clingo_ground_program_observer {
                                           -> bool>,
     /// Observe heuristic directives passed to the solver.
     ///
-/// **Parameters:**
-///
-/// * `atom` the target atom
+    /// **Parameters:**
+    ///
+    /// * `atom` the target atom
     /// * `type` the type of the heuristic modification
     /// * `bias` the heuristic bias
     /// * `priority` the heuristic priority
@@ -6216,9 +6278,9 @@ pub struct clingo_ground_program_observer {
                                              -> bool>,
     /// Observe edge directives passed to the solver.
     ///
-/// **Parameters:**
-///
-/// * `node_u` the start vertex of the edge
+    /// **Parameters:**
+    ///
+    /// * `node_u` the start vertex of the edge
     /// * `node_v` the end vertex of the edge
     /// * `condition` the condition under which the edge is part of the graph
     /// * `size` the number of atoms in the condition
@@ -6237,9 +6299,9 @@ pub struct clingo_ground_program_observer {
                                              -> bool>,
     /// Observe numeric theory terms.
     ///
-/// **Parameters:**
-///
-/// * `term_id` the id of the term
+    /// **Parameters:**
+    ///
+    /// * `term_id` the id of the term
     /// * `number` the value of the term
     /// * `data` user data for the callback
     ///
@@ -6253,9 +6315,9 @@ pub struct clingo_ground_program_observer {
                                                       -> bool>,
     /// Observe string theory terms.
     ///
-/// **Parameters:**
-///
-/// * `term_id` the id of the term
+    /// **Parameters:**
+    ///
+    /// * `term_id` the id of the term
     /// * `name` the value of the term
     /// * `data` user data for the callback
     ///
@@ -6275,9 +6337,9 @@ pub struct clingo_ground_program_observer {
     /// - if it is -3, then it is a list
     /// - otherwise, it is a function and name_id_or_type refers to the id of the name (in form of a string term)
     ///
-/// **Parameters:**
-///
-/// * `term_id` the id of the term
+    /// **Parameters:**
+    ///
+    /// * `term_id` the id of the term
     /// * `name_id_or_type` the name or type of the term
     /// * `arguments` the arguments of the term
     /// * `size` the number of arguments
@@ -6296,9 +6358,9 @@ pub struct clingo_ground_program_observer {
                                                                              *mut ::std::os::raw::c_void)
                                                         -> bool>,
     /// Observe theory elements.
-///
-/// **Parameters:**
-///
+    ///
+    /// **Parameters:**
+    ///
     ///
     /// * `element_id` - the id of the element
     /// * `terms` - the term tuple of the element
@@ -6323,9 +6385,9 @@ pub struct clingo_ground_program_observer {
                                                   -> bool>,
     /// Observe theory atoms without guard.
     ///
-/// **Parameters:**
-///
-/// * `atom_id_or_zero` the id of the atom or zero for directives
+    /// **Parameters:**
+    ///
+    /// * `atom_id_or_zero` the id of the atom or zero for directives
     /// * `term_id` the term associated with the atom
     /// * `elements` the elements of the atom
     /// * `size` the number of elements
@@ -6344,9 +6406,9 @@ pub struct clingo_ground_program_observer {
                                                -> bool>,
     /// Observe theory atoms with guard.
     ///
-/// **Parameters:**
-///
-/// * `atom_id_or_zero` the id of the atom or zero for directives
+    /// **Parameters:**
+    ///
+    /// * `atom_id_or_zero` the id of the atom or zero for directives
     /// * `term_id` the term associated with the atom
     /// * `elements` the elements of the atom
     /// * `size` the number of elements
