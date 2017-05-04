@@ -1,5 +1,5 @@
 # clingo-rs
-Rust bindings to the clingo library
+Rust bindings to the [clingo](https://github.com/potassco/clingo) library
 
 ## Compile & Test
     cargo build
