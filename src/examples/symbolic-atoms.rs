@@ -1,7 +1,8 @@
-use std::env;
 extern crate clingo;
-use clingo::*;
+
+use std::env;
 use std::ffi::CString;
+use clingo::*;
 
 
 fn error_main() {

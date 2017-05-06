@@ -1,7 +1,8 @@
-use std::env;
 extern crate clingo;
-use clingo::*;
+
+use std::env;
 use std::ffi::CString;
+use clingo::*;
 
 
 fn error_main() {
@@ -13,7 +14,8 @@ fn error_main() {
 fn print_model(model: &mut ClingoModel) {
 
     // retrieve the symbols in the model
-    let atoms = model.symbols(clingo_show_type::clingo_show_type_shown as clingo_show_type_bitset_t)
+    let atoms = model
+        .symbols(clingo_show_type::clingo_show_type_shown as clingo_show_type_bitset_t)
         .expect("Failed to retrieve symbols in the model");
 
     for atom in atoms {
@@ -46,7 +48,7 @@ fn solve(ctl: &mut ClingoControl) {
             Some(model) => print_model(model),
         }
     }
-    
+
     // close the solve handle
     let _result = handle.get().expect("Failed to get solve handle");
     handle.close();
@@ -69,7 +71,7 @@ fn main() {
 
     // ground the base part
     let part = ClingoPart {
-        name: CString::new("base").unwrap(),      
+        name: CString::new("base").unwrap(),
         params: &[],
     };
     let parts = vec![part];
@@ -79,8 +81,7 @@ fn main() {
     if !err {
         return error_main();
     }
-    
+
     // solve
     let _solve_result = solve(ctl);
-
 }

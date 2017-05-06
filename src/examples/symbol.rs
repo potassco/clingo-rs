@@ -1,4 +1,5 @@
 extern crate clingo;
+
 use clingo::*;
 
 
@@ -54,5 +55,4 @@ fn main() {
                  atom_string1.to_str().unwrap(),
                  atom_string2.to_str().unwrap());
     }
-
 }

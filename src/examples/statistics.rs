@@ -1,7 +1,8 @@
-use std::env;
 extern crate clingo;
-use clingo::*;
+
+use std::env;
 use std::ffi::CString;
+use clingo::*;
 
 
 fn error_main() {
@@ -24,7 +25,8 @@ fn print_statistics(stats: &mut ClingoStatistics, key: u64, depth: u8) {
     match statistics_type {
         // print values
         1 => {
-            let value = stats.statistics_value_get(key)
+            let value = stats
+                .statistics_value_get(key)
                 .expect("Failed to retrieve statistics value");
 
             // print value (with prefix for readability)
@@ -35,13 +37,15 @@ fn print_statistics(stats: &mut ClingoStatistics, key: u64, depth: u8) {
         // print arrays
         2 => {
             // loop over array elements
-            let size = stats.statistics_array_size(key)
+            let size = stats
+                .statistics_array_size(key)
                 .expect("Failed to retrieve statistics array size");
             for i in 0..size {
 
                 // print array offset (with prefix for readability)
-                let subkey = stats.statistics_array_at(key, i)
-                    .expect("Failed to retrieve statistics array at _");;
+                let subkey = stats
+                    .statistics_array_at(key, i)
+                    .expect("Failed to retrieve statistics array at _");
                 print_prefix(depth);
                 println!("{} zu:", i);
 
@@ -59,8 +63,8 @@ fn print_statistics(stats: &mut ClingoStatistics, key: u64, depth: u8) {
                 let name = stats.statistics_map_subkey_name(key, i).unwrap();
                 let subkey = stats.statistics_map_at(key, name).unwrap();
                 print_prefix(depth);
-                print!("{}",name);
-                
+                print!("{}", name);
+
                 // recursively print subentry
                 print_statistics(stats, subkey, depth + 1);
             }
@@ -76,7 +80,8 @@ fn print_statistics(stats: &mut ClingoStatistics, key: u64, depth: u8) {
 fn print_model(model: &mut ClingoModel) {
 
     // retrieve the symbols in the model
-    let atoms = model.symbols(clingo_show_type::clingo_show_type_shown as clingo_show_type_bitset_t)
+    let atoms = model
+        .symbols(clingo_show_type::clingo_show_type_shown as clingo_show_type_bitset_t)
         .expect("Failed to retrieve symbols in the model");
 
     for atom in atoms {
@@ -109,7 +114,7 @@ fn solve(ctl: &mut ClingoControl) {
             Some(model) => print_model(model),
         }
     }
-    
+
     // close the solve handle
     let _result = handle.get().expect("Failed to get solve handle");
     handle.close();
@@ -125,7 +130,7 @@ fn main() {
 
     // get the configuration object and its root key
     {
-        let conf = ctl.configuration().unwrap();;
+        let conf = ctl.configuration().unwrap();
         let root_key = conf.configuration_root().unwrap();
         // and set the statistics level to one to get more statistics
         let subkey = conf.configuration_map_at(root_key, "stats").unwrap();
@@ -144,7 +149,7 @@ fn main() {
 
     // ground the base part
     let part = ClingoPart {
-        name: CString::new("base").unwrap(),      
+        name: CString::new("base").unwrap(),
         params: &[],
     };
     let parts = vec![part];
@@ -155,7 +160,7 @@ fn main() {
         return error_main();
     }
 
-    // solve 
+    // solve
     let _solve_result = solve(ctl);
 
     // get the statistics object, get the root key, then print the statistics recursively

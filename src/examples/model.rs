@@ -1,7 +1,8 @@
-use std::env;
 extern crate clingo;
-use clingo::*;
+
+use std::env;
 use std::ffi::CString;
+use clingo::*;
 
 
 fn error_main() {
@@ -15,7 +16,8 @@ fn print_model(model: &mut ClingoModel, label: &str, show: clingo_show_type_bits
     print!("{}:", label);
 
     // retrieve the symbols in the model
-    let atoms = model.symbols(show)
+    let atoms = model
+        .symbols(show)
         .expect("Failed to retrieve symbols in the model");
 
     for atom in atoms {
@@ -69,9 +71,10 @@ fn solve(ctl: &mut ClingoControl) {
                         "  terms",
                         clingo_show_type::clingo_show_type_terms as clingo_show_type_bitset_t);
             print_model(model,
-                            " ~atoms",
-                            (clingo_show_type::clingo_show_type_complement as clingo_show_type_bitset_t +
-                            clingo_show_type::clingo_show_type_atoms as clingo_show_type_bitset_t));
+                        " ~atoms",
+                        (clingo_show_type::clingo_show_type_complement as
+                         clingo_show_type_bitset_t +
+                         clingo_show_type::clingo_show_type_atoms as clingo_show_type_bitset_t));
 
         } else {
             // stop if there are no more models
@@ -113,5 +116,4 @@ fn main() {
 
     // solve
     let _solve_result = solve(ctl);
-
 }

@@ -1,14 +1,11 @@
-
-
 extern crate clingo;
 extern crate rand;
 
 use std::env;
 use std::ffi::CString;
-use clingo::*;
 use rand::distributions::{IndependentSample, Range};
-
 use std::sync::atomic::{AtomicBool, ATOMIC_BOOL_INIT};
+use clingo::*;
 
 
 fn error_main() {
@@ -63,7 +60,7 @@ fn main() {
         return error_main();
     }
 
-//     let mut running = ATOMIC_BOOL_INIT;
+    //     let mut running = ATOMIC_BOOL_INIT;
     let running = std::ptr::null_mut();
 
     // create a solve handle with an attached vent handler
@@ -80,17 +77,17 @@ fn main() {
     // let's approximate pi
     let mut samples = 0;
     let mut in_circle = 0;
-    
+
     let between = Range::new(-1f64, 1.);
     let mut rng = rand::thread_rng();
-//         while (atomic_flag_test_and_set(&running)) {
+    //         while (atomic_flag_test_and_set(&running)) {
     while samples < 10000000 {
         samples = samples + 1;
-       let x = between.ind_sample(&mut rng);
-       let y = between.ind_sample(&mut rng);
-       if x*x + y*y <= 1. {
-           in_circle += 1;
-       }        
+        let x = between.ind_sample(&mut rng);
+        let y = between.ind_sample(&mut rng);
+        if x * x + y * y <= 1. {
+            in_circle += 1;
+        }
     }
 
     println!("pi = {}", 4 * in_circle * samples);
