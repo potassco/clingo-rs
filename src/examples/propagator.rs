@@ -2,8 +2,8 @@ extern crate clingo;
 
 use std::env;
 //extern crate libc;
-use libc::c_void;
-use libc::c_int;
+//use libc::c_void;
+//use libc::c_int;
 use std::ffi::CString;
 use clingo::*;
 
@@ -20,7 +20,7 @@ struct state_t<'a> {
 struct propagator_t<'a> {
     // mapping from solver literals capturing pigeon placements to hole numbers
     // (solver literal -> hole number or zero)
-    pigeons: *mut c_int,
+    pigeons: *mut usize,
     pigeons_size: usize,
     // array of states
     states: &'a mut [state_t<'a>],
@@ -256,7 +256,6 @@ fn error_main() {
 //     return 1;
 // }
 
-
 fn main() {
     //   char const *error_message;
     //   int ret = 0;
@@ -293,7 +292,6 @@ fn main() {
         states: &mut states,
         states_size: 0,
     };
-
 
     // set the number of holes
     let arg0 = safe_clingo_symbol_create_number(8);

@@ -8,11 +8,12 @@ use std::ffi::CStr;
 use std::ffi::CString;
 
 use clingo_sys::*;
-pub use clingo_sys::{clingo_ast_term_t, clingo_propagator, clingo_solve_event_callback_t,
-                     clingo_solve_event_type_t, clingo_solve_handle_t,
-                     clingo_solve_result_bitset_t, clingo_solve_mode_bitset_t, clingo_solve_mode,
-                     clingo_show_type_bitset_t, clingo_show_type, clingo_logger_t,
-                     clingo_literal_t, clingo_id_t};
+pub use clingo_sys::{clingo_ast_term__bindgen_ty_1, clingo_program_builder_t, clingo_location,
+                     clingo_ast_term_t, clingo_ast_term_type, clingo_ast_term_type_t,
+                     clingo_propagator, clingo_solve_event_callback_t, clingo_solve_event_type_t,
+                     clingo_solve_handle_t, clingo_solve_result_bitset_t,
+                     clingo_solve_mode_bitset_t, clingo_solve_mode, clingo_show_type_bitset_t,
+                     clingo_show_type, clingo_logger_t, clingo_literal_t, clingo_id_t};
 
 
 pub fn safe_clingo_version() -> (i32, i32, i32) {
@@ -133,6 +134,24 @@ pub fn safe_clingo_symbol_is_equal_to(a: clingo_symbol_t, b: clingo_symbol_t) ->
 }
 pub fn safe_clingo_symbol_is_less_than(a: clingo_symbol_t, b: clingo_symbol_t) -> bool {
     unsafe { clingo_symbol_is_less_than(a, b) }
+}
+pub fn safe_clingo_parse_program(program: &str,
+                                 callback: clingo_ast_callback_t,
+                                 callback_data: *mut ::std::os::raw::c_void,
+                                 logger: clingo_logger_t,
+                                 logger_data: *mut ::std::os::raw::c_void,
+                                 message_limit: ::std::os::raw::c_uint)
+                                 -> bool {
+    unsafe {
+
+        let mprogram = CString::new(program).unwrap();
+        clingo_parse_program(mprogram.as_ptr(),
+                             callback,
+                             callback_data,
+                             logger,
+                             logger_data,
+                             message_limit)
+    }
 }
 pub fn new_clingo_control<'a>(arguments: std::env::Args,
                               logger: clingo_logger_t,
@@ -341,11 +360,29 @@ impl ClingoControl {
             }
         }
     }
-    //     pub fn clingo_control_program_builder(control: *mut ClingoControl,
-    //                                           builder: *mut *mut clingo_program_builder_t)
-    //                                          -> u8;
+    pub fn program_builder(&mut self) -> std::option::Option<&mut ClingoProgramBuilder> {
+        unsafe {
+            let ClingoControl(ref mut control) = *self;
+            let mut builder = std::ptr::null_mut() as *mut clingo_program_builder_t;
+            let err = clingo_control_program_builder(control, &mut builder);
+            if !err {
+                None
+            } else {
+                Some(&mut *(builder as *mut ClingoProgramBuilder))
+            }
+        }
+    }
 }
 
+pub struct ClingoProgramBuilder(clingo_program_builder_t);
+impl ClingoProgramBuilder {
+    pub fn begin(&mut self) -> bool {
+        unsafe {
+            let ClingoProgramBuilder(ref mut builder) = *self;
+            clingo_program_builder_begin(builder)
+        }
+    }
+}
 
 pub struct ClingoConfiguration(clingo_configuration_t);
 impl ClingoConfiguration {
@@ -802,7 +839,6 @@ impl ClingoModel {
         }
     }
     pub fn number(&mut self) -> std::option::Option<u64> {
-
         unsafe {
             let ClingoModel(ref mut model) = *self;
             let mut number = 0;
@@ -823,7 +859,6 @@ impl ClingoModel {
 
         let err = unsafe { clingo_model_symbols_size(model, show, size_p) };
         if !err {
-            println!("no size");
             None
         } else {
             let mut a1 = Vec::<clingo_symbol_t>::with_capacity(size);
@@ -831,7 +866,6 @@ impl ClingoModel {
             let symbols = slice.as_ptr() as *mut clingo_symbol_t;
             let err = unsafe { clingo_model_symbols(model, show, symbols, size) };
             if !err {
-                println!("no symbols");
                 None
             } else {
                 let res = unsafe { Vec::from_raw_parts(symbols, size, size) };

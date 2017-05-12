@@ -108,14 +108,13 @@ fn main() {
     //   clingo_part_t parts[] = {{ "base", NULL, 0 }};
 
     // create a control object and pass command line arguments
-    if (!clingo_control_new(argv + 1, argc - 1, NULL, NULL, 20, &ctl) != 0) {
-        return error_main();
-    }
+    let logger = None;
+    let logger_data = std::ptr::null_mut();
+    let mut ctl = new_clingo_control(env::args(), logger, logger_data, 20)
+        .expect("Failed creating clingo_control");
 
     // get the program builder
-    if (!clingo_control_program_builder(ctl, &data.builder)) {
-        return error_main();
-    }
+    let builder = ctl.program_builder().unwrap();
 
     // initialize the location
     let location = clingo_location {
@@ -123,25 +122,49 @@ fn main() {
         end_line: 0,
         begin_column: 0,
         end_column: 0,
-        begin_file: "<rewrite>",
-        end_file: "<rewrite>",
+        begin_file: CString::new("<rewrite>").unwrap().as_ptr(),
+        end_file: CString::new("<rewrite>").unwrap().as_ptr(),
     };
 
     // initilize atom to add
     let sym = safe_clingo_symbol_create_id("enable", true).unwrap();
+    let _bg_anon_1 = clingo_ast_term__bindgen_ty_1 {
+        symbol: PhantomData,
+        variable: PhantomData,
+        unary_operation: PhantomData,
+        binary_operation: PhantomData,
+        interval: PhantomData,
+        function: PhantomData,
+        external_function: PhantomData,
+        pool: PhantomData,
+        bindgen_union_field: sym,
+    };
+
     let atom = clingo_ast_term_t {
         location: location,
-        type_: clingo_ast_term_type_symbol,
-        symbol: sym,
+        type_: clingo_ast_term_type::clingo_ast_term_type_symbol as clingo_ast_term_type_t,
+        __bindgen_anon_1: _bg_anon_1,
     };
 
     // begin building a program
-    // if (!clingo_program_builder_begin(data.builder)) { return error_main(); }
+    if !builder.begin() {
+        return error_main();
+    }
 
-    // // get the AST of the program
-    // if (!clingo_parse_program("a :- not b. b :- not a.", (clingo_ast_callback_t*)on_statement, &data, NULL, NULL, 20)) { return error_main(); }
+    // get the AST of the program
+    let logger = None;
+    let logger_data = std::ptr::null_mut();
+    let callback: clingo_ast_callback_t = Some(on_statement);
+    if !safe_clingo_parse_program("a :- not b. b :- not a.",
+                                  callback,
+                                  &data,
+                                  logger,
+                                  logger_data,
+                                  20) {
+        return error_main();
+    }
 
-    // // add the external statement: #external enable.
+    // add the external statement: #external enable.
     // ext.atom = data.atom;
     // ext.body = NULL;
     // ext.size = 0;

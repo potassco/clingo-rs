@@ -51,7 +51,7 @@ fn solve(ctl: &mut ClingoControl) {
             let mut type_string = "";
             match model_type {
                 0 => type_string = "Stable model",
-                1 => type_string = "Brave consequences", 
+                1 => type_string = "Brave consequences",
                 2 => type_string = "Cautious consequences",
                 _ => {}
             };
