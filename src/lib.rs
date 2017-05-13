@@ -2,18 +2,21 @@
 extern crate libc;
 extern crate clingo_sys;
 
-use libc::c_int;
-use libc::c_char;
 use std::ffi::CStr;
 use std::ffi::CString;
-
+use libc::c_int;
+use libc::c_char;
 use clingo_sys::*;
-pub use clingo_sys::{clingo_ast_term__bindgen_ty_1, clingo_program_builder_t, clingo_location,
-                     clingo_ast_term_t, clingo_ast_term_type, clingo_ast_term_type_t,
-                     clingo_propagator, clingo_solve_event_callback_t, clingo_solve_event_type_t,
+
+pub use clingo_sys::{__BindgenUnionField, clingo_ast_statement_type, clingo_ast_statement_type_t,
+                     clingo_ast_statement_t, clingo_ast_term__bindgen_ty_1, clingo_location,
+                     clingo_ast_external, clingo_ast_term_t, clingo_ast_term_type,
+                     clingo_ast_term_type_t, clingo_ast_callback_t, clingo_propagator,
+                     clingo_solve_event_callback_t, clingo_solve_event_type_t,
                      clingo_solve_handle_t, clingo_solve_result_bitset_t,
                      clingo_solve_mode_bitset_t, clingo_solve_mode, clingo_show_type_bitset_t,
-                     clingo_show_type, clingo_logger_t, clingo_literal_t, clingo_id_t};
+                     clingo_show_type, clingo_logger_t, clingo_literal_t, clingo_id_t,
+                     clingo_truth_value};
 
 
 pub fn safe_clingo_version() -> (i32, i32, i32) {
@@ -267,15 +270,16 @@ impl ClingoControl {
             } else {
                 Some(&mut *(handle as *mut ClingoSolveHandle))
             }
-
         }
     }
 
     //     pub fn clingo_control_cleanup(control: *mut ClingoControl) -> u8;
-    //     pub fn clingo_control_assign_external(control: *mut ClingoControl,
-    //                                           atom: clingo_symbol_t,
-    //                                           value: clingo_truth_value_t)
-    //                                           -> u8;
+    pub fn assign_external(&mut self, atom: clingo_symbol_t, value: clingo_truth_value) -> bool {
+        unsafe {
+            let ClingoControl(ref mut control) = *self;
+            clingo_control_assign_external(control, atom, value as clingo_truth_value_t)
+        }
+    }
     //     pub fn clingo_control_release_external(control: *mut ClingoControl,
     //                                            atom: clingo_symbol_t)
     //                                            -> u8;
@@ -381,6 +385,51 @@ impl ClingoProgramBuilder {
             let ClingoProgramBuilder(ref mut builder) = *self;
             clingo_program_builder_begin(builder)
         }
+    }
+    pub fn add(&mut self, statement: &ClingoAstStatement) -> bool {
+        unsafe {
+            let ClingoProgramBuilder(ref mut builder) = *self;
+            let ClingoAstStatement(ref stm) = *statement;
+            clingo_program_builder_add(builder, stm)
+        }
+    }
+    pub fn end(&mut self) -> bool {
+        unsafe {
+            let ClingoProgramBuilder(ref mut builder) = *self;
+            clingo_program_builder_end(builder)
+        }
+    }
+}
+
+pub struct ClingoAstStatement(clingo_ast_statement_t);
+impl ClingoAstStatement {
+    pub fn new(location: clingo_location,
+               type_: clingo_ast_statement_type,
+               external: *const clingo_ast_external_t)
+               -> ClingoAstStatement {
+        let _bg_union_2 = clingo_ast_statement__bindgen_ty_1 {
+            rule: __BindgenUnionField::new(),
+            definition: __BindgenUnionField::new(),
+            show_signature: __BindgenUnionField::new(),
+            show_term: __BindgenUnionField::new(),
+            minimize: __BindgenUnionField::new(),
+            script: __BindgenUnionField::new(),
+            program: __BindgenUnionField::new(),
+            external: __BindgenUnionField::new(),
+            edge: __BindgenUnionField::new(),
+            heuristic: __BindgenUnionField::new(),
+            project_atom: __BindgenUnionField::new(),
+            project_signature: __BindgenUnionField::new(),
+            theory_definition: __BindgenUnionField::new(),
+            bindgen_union_field: external as u64,
+        };
+        let stm = clingo_ast_statement_t {
+            location: location,
+            type_: type_ as clingo_ast_statement_type_t,
+            __bindgen_anon_1: _bg_union_2,
+        };
+        ClingoAstStatement(stm)
+
     }
 }
 

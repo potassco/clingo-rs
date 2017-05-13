@@ -274,7 +274,7 @@ fn main() {
     let params = ["h", "p"];
     // create a propagator with the functions above
     // using the default implementation for the model check
-    let prop = clingo_propagator {
+    let mut prop = clingo_propagator {
         //         init: Some(init),
         init: None,
         //         propagate: Some(propagate),
@@ -305,9 +305,13 @@ fn main() {
         .expect("Failed creating clingo_control");
 
     // register the propagator
-    if !ctl.register_propagator(&mut prop, &mut prop_data, false) {
+    let prop_data_ptr = unsafe {
+        std::mem::transmute::<&mut propagator_t, *mut ::std::os::raw::c_void>(&mut prop_data)
+    };
+    if !ctl.register_propagator(&prop, prop_data_ptr, false) {
         return error_main();
     }
+
     //
     //   // add a logic program to the pigeon part
     //   if (!clingo_control_add(ctl, "pigeon", params, sizeof(params)/sizeof(*params),
