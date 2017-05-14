@@ -8,7 +8,8 @@ use libc::c_int;
 use libc::c_char;
 use clingo_sys::*;
 
-pub use clingo_sys::{__BindgenUnionField, clingo_ast_statement_type, clingo_ast_statement_type_t,
+pub use clingo_sys::{clingo_propagate_init_t, clingo_propagate_control_t, __BindgenUnionField,
+                     clingo_ast_statement_type, clingo_ast_statement_type_t,
                      clingo_ast_statement_t, clingo_ast_term__bindgen_ty_1, clingo_location,
                      clingo_ast_external, clingo_ast_term_t, clingo_ast_term_type,
                      clingo_ast_term_type_t, clingo_ast_callback_t, clingo_propagator,

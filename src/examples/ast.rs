@@ -1,9 +1,7 @@
-extern crate libc;
 extern crate clingo;
 
 use std::env;
 use std::ffi::CString;
-// use libc::c_void;
 use clingo::*;
 
 
@@ -22,11 +20,15 @@ extern "C" fn on_statement(stm: *const clingo_ast_statement_t,
     // //   clingo_ast_literal_t lit;
     // //   clingo_ast_statement_t stm2;
 
-    //   // pass through all statements that are not rules
-    //   if (stm->type != clingo_ast_statement_type_rule) {
-    //     if (!clingo_program_builder_add(data->builder, stm)) { return error_main(); }
-    //     goto out;
-    //   }
+    // let builder = (*data).builder;
+
+    // // pass through all statements that are not rules
+    // if (*stm).type != clingo_ast_statement_type::clingo_ast_statement_type_rule {
+    //     if !builder.add(*stm) {
+    //         return error_main();
+    //     }
+    //     return ret;
+    // }
 
     //   // allocate space to hold the current rule body + one literal
     //   body = (clingo_ast_body_literal_t*)malloc(sizeof(clingo_ast_body_literal_t) * (stm->rule->size + 1));
