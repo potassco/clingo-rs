@@ -45,8 +45,7 @@ fn main() {
     println!("Symbolic atoms:");
 
     // get begin and end iterator
-    let sig_ptr = std::ptr::null();
-    let mut it_a = atoms.begin(sig_ptr).unwrap();
+    let mut it_a = atoms.begin(None).unwrap();
     let ie_a = atoms.end().unwrap();
 
     loop {

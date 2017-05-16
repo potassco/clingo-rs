@@ -8,16 +8,18 @@ use libc::c_int;
 use libc::c_char;
 use clingo_sys::*;
 
-pub use clingo_sys::{clingo_propagate_init_t, clingo_propagate_control_t, __BindgenUnionField,
-                     clingo_ast_statement_type, clingo_ast_statement_type_t,
-                     clingo_ast_statement_t, clingo_ast_term__bindgen_ty_1, clingo_location,
-                     clingo_ast_external, clingo_ast_term_t, clingo_ast_term_type,
-                     clingo_ast_term_type_t, clingo_ast_callback_t, clingo_propagator,
-                     clingo_solve_event_callback_t, clingo_solve_event_type_t,
-                     clingo_solve_handle_t, clingo_solve_result_bitset_t,
-                     clingo_solve_mode_bitset_t, clingo_solve_mode, clingo_show_type_bitset_t,
-                     clingo_show_type, clingo_logger_t, clingo_literal_t, clingo_id_t,
-                     clingo_truth_value};
+pub use clingo_sys::{clingo_signature_t, clingo_signature_create, clingo_symbolic_atoms_t,
+                     clingo_propagate_init_symbolic_atoms,
+                     clingo_propagate_init_number_of_threads, clingo_propagate_init_t,
+                     clingo_propagate_control_t, __BindgenUnionField, clingo_ast_statement_type,
+                     clingo_ast_statement_type_t, clingo_ast_statement_t,
+                     clingo_ast_term__bindgen_ty_1, clingo_location, clingo_ast_external,
+                     clingo_ast_term_t, clingo_ast_term_type, clingo_ast_term_type_t,
+                     clingo_ast_callback_t, clingo_propagator, clingo_solve_event_callback_t,
+                     clingo_solve_event_type_t, clingo_solve_handle_t,
+                     clingo_solve_result_bitset_t, clingo_solve_mode_bitset_t, clingo_solve_mode,
+                     clingo_show_type_bitset_t, clingo_show_type, clingo_logger_t,
+                     clingo_literal_t, clingo_id_t, clingo_truth_value};
 
 
 pub fn safe_clingo_version() -> (i32, i32, i32) {
@@ -660,17 +662,45 @@ impl ClingoStatistics {
         }
     }
 }
-
+pub struct ClingoSignature(clingo_signature_t);
+impl ClingoSignature {
+    pub fn create(name: &str,
+                      arity: u32,
+                      positive: bool)
+                      -> std::option::Option<ClingoSignature> {
+        let mname = CString::new(name).unwrap().as_ptr();
+        let mut signature = 0;
+        let err = unsafe { clingo_signature_create(mname, arity, positive, &mut signature) };
+        if !err {
+            None
+        } else {
+            unsafe { Some(ClingoSignature(signature)) }
+        }
+    }
+}
 pub struct ClingoSymbolicAtoms(clingo_symbolic_atoms_t);
 impl ClingoSymbolicAtoms {
     pub fn begin(&mut self,
-                 signature: *const clingo_signature_t)
+                 //  signature: *const clingo_signature_t
+                 opt_sig: Option<ClingoSignature>)
                  -> std::option::Option<clingo_symbolic_atom_iterator_t> {
-        unsafe {
-            let ClingoSymbolicAtoms(ref mut atoms) = *self;
-            let mut iterator = 0 as clingo_symbolic_atom_iterator_t;
-            let err = clingo_symbolic_atoms_begin(atoms, signature, &mut iterator);
-            if !err { None } else { Some(iterator) }
+        match opt_sig {
+            Some(sig) => {
+                unsafe {
+                    let ClingoSymbolicAtoms(ref mut atoms) = *self;
+                    let ClingoSignature(signature) = sig;
+                    let mut iterator = 0 as clingo_symbolic_atom_iterator_t;
+                    let err = clingo_symbolic_atoms_begin(atoms, &signature, &mut iterator);
+                    if !err { None } else { Some(iterator) }
+                }
+            }
+            None => unsafe {
+                let ClingoSymbolicAtoms(ref mut atoms) = *self;
+                let signature = std::ptr::null();
+                let mut iterator = 0 as clingo_symbolic_atom_iterator_t;
+                let err = clingo_symbolic_atoms_begin(atoms, signature, &mut iterator);
+                if !err { None } else { Some(iterator) }
+            },
         }
     }
     pub fn end(&mut self) -> std::option::Option<clingo_symbolic_atom_iterator_t> {
@@ -1047,7 +1077,7 @@ impl ClingoPropagateInit {
     //                                            -> u8;
     //     pub fn clingo_propagate_init_symbolic_atoms(init: *mut ClingoPropagateInit,
     //                                                 atoms: *mut *mut ClingoSymbolicAtoms)
-    //                                                 -> u8;
+    //                                                 -> bool;
     //     pub fn c_lingo_propagate_init_theory_atoms(init: *mut ClingoPropagateInit,
     //                                               atoms: *mut *mut ClingoTheoryAtoms)
     //                                               -> u8;
@@ -1059,6 +1089,19 @@ impl ClingoPropagateInit {
         }
     }
 }
+pub fn safe_clingo_propagate_init_symbolic_atoms<'a>(init: *mut clingo_propagate_init_t)
+                                                     -> Option<&'a mut ClingoSymbolicAtoms> {
+    unsafe {
+        let mut mmatoms = std::ptr::null_mut();
+        let err = clingo_propagate_init_symbolic_atoms(init, &mut mmatoms);
+        if !err {
+            None
+        } else {
+            Some(&mut *(mmatoms as *mut ClingoSymbolicAtoms))
+        }
+    }
+}
+
 pub struct ClingoSolveHandle(clingo_solve_handle);
 impl ClingoSolveHandle {
     /// Get the next solve result.

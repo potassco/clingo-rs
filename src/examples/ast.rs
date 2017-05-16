@@ -15,14 +15,14 @@ extern "C" fn on_statement(stm: *const clingo_ast_statement_t,
                            data: *mut std::os::raw::c_void)
                            -> bool {
     let ret = true;
-    // //   clingo_ast_rule_t rule;
-    // //   clingo_ast_body_literal_t *body = NULL;
-    // //   clingo_ast_literal_t lit;
-    // //   clingo_ast_statement_t stm2;
+    //   clingo_ast_rule_t rule;
+    //   clingo_ast_body_literal_t *body = NULL;
+    //   clingo_ast_literal_t lit;
+    //   clingo_ast_statement_t stm2;
 
     // let builder = (*data).builder;
 
-    // // pass through all statements that are not rules
+    // pass through all statements that are not rules
     // if (*stm).type != clingo_ast_statement_type::clingo_ast_statement_type_rule {
     //     if !builder.add(*stm) {
     //         return error_main();
@@ -30,41 +30,41 @@ extern "C" fn on_statement(stm: *const clingo_ast_statement_t,
     //     return ret;
     // }
 
-    //   // allocate space to hold the current rule body + one literal
+    // allocate space to hold the current rule body + one literal
     //   body = (clingo_ast_body_literal_t*)malloc(sizeof(clingo_ast_body_literal_t) * (stm->rule->size + 1));
     //   if (!body) {
     //     clingo_set_error(clingo_error_bad_alloc, "could not allocate memory for rule body");
     //     return error_main();
     //   }
 
-    //   // copy the current rule body
+    // copy the current rule body
     //   for (size_t i = 0; i < stm->rule->size; ++i) {
     //     body[i] = stm->rule->body[i];
     //   }
 
-    //   // create atom enable
+    // create atom enable
     //   lit.symbol   = &data->atom;
     //   lit.location = data->atom.location;
     //   lit.type     = clingo_ast_literal_type_symbolic;
     //   lit.sign     = clingo_ast_sign_none;
 
-    //   // add atom enable to the rule body
+    // add atom enable to the rule body
     //   body[stm->rule->size].location = data->atom.location;
     //   body[stm->rule->size].type     = clingo_ast_body_literal_type_literal;
     //   body[stm->rule->size].sign     = clingo_ast_sign_none;
     //   body[stm->rule->size].literal  = &lit;
 
-    //   // initialize the rule
+    // initialize the rule
     //   rule.head = stm->rule->head;
     //   rule.size = stm->rule->size + 1;
     //   rule.body = body;
 
-    //   // initialize the statement
+    // initialize the statement
     //   stm2.location = stm->location;
     //   stm2.type     = stm->type;
     //   stm2.rule     = &rule;
 
-    //   // add the rewritten statement to the program
+    // add the rewritten statement to the program
     //   if (!clingo_program_builder_add(data->builder, &stm2)) { return error_main(); }
 
     //   goto out;
@@ -159,13 +159,11 @@ fn main() {
             pool: __BindgenUnionField::new(),
             bindgen_union_field: sym,
         };
-
         let atom = clingo_ast_term_t {
             location: location,
             type_: clingo_ast_term_type::clingo_ast_term_type_symbol as clingo_ast_term_type_t,
             __bindgen_anon_1: _bg_union_1,
         };
-
         let mut data = on_statement_data {
             atom: atom,
             // builder: builder,
@@ -211,6 +209,7 @@ fn main() {
             return error_main();
         }
     }
+
     // ground the base part
     let part = ClingoPart {
         name: CString::new("base").unwrap(),
@@ -239,16 +238,4 @@ fn main() {
         return error_main();
     }
     solve(ctl);
-    //   goto out;
-
-    // error:
-    //   if (!(error_message = clingo_error_message())) { error_message = "error"; }
-
-    //   printf("%s\n", error_message);
-    //   ret = clingo_error_code();
-
-    // out:
-    //   if (ctl) { clingo_control_free(ctl); }
-
-    //   return ret;
 }
