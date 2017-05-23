@@ -5,7 +5,7 @@ use std::ffi::CString;
 use clingo::*;
 
 
-pub struct on_statement_data {
+pub struct OnStatementData {
     atom: clingo_ast_term_t,
     // builder: &'a mut ClingoProgramBuilder,
 }
@@ -164,7 +164,7 @@ fn main() {
             type_: clingo_ast_term_type::clingo_ast_term_type_symbol as clingo_ast_term_type_t,
             __bindgen_anon_1: _bg_union_1,
         };
-        let mut data = on_statement_data {
+        let mut data = OnStatementData {
             atom: atom,
             // builder: builder,
         };
@@ -178,9 +178,8 @@ fn main() {
         let logger = None;
         let logger_data = std::ptr::null_mut();
         let callback: clingo_ast_callback_t = Some(on_statement);
-        let data_ptr = unsafe {
-            std::mem::transmute::<&on_statement_data, *mut ::std::os::raw::c_void>(&data)
-        };
+        let data_ptr =
+            unsafe { std::mem::transmute::<&OnStatementData, *mut ::std::os::raw::c_void>(&data) };
         if !safe_clingo_parse_program("a :- not b. b :- not a.",
                                       callback,
                                       data_ptr,

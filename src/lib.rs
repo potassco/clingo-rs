@@ -8,8 +8,9 @@ use libc::c_int;
 use libc::c_char;
 use clingo_sys::*;
 
-pub use clingo_sys::{clingo_signature_t, clingo_signature_create, clingo_symbolic_atoms_t,
-                     clingo_propagate_init_symbolic_atoms,
+pub use clingo_sys::{clingo_symbol_t, clingo_signature_t, clingo_signature_create,
+                     clingo_symbolic_atoms_t, clingo_propagate_init_solver_literal,
+                     clingo_propagate_init_add_watch, clingo_propagate_init_symbolic_atoms,
                      clingo_propagate_init_number_of_threads, clingo_propagate_init_t,
                      clingo_propagate_control_t, __BindgenUnionField, clingo_ast_statement_type,
                      clingo_ast_statement_type_t, clingo_ast_statement_t,
@@ -664,17 +665,14 @@ impl ClingoStatistics {
 }
 pub struct ClingoSignature(clingo_signature_t);
 impl ClingoSignature {
-    pub fn create(name: &str,
-                      arity: u32,
-                      positive: bool)
-                      -> std::option::Option<ClingoSignature> {
+    pub fn create(name: &str, arity: u32, positive: bool) -> std::option::Option<ClingoSignature> {
         let mname = CString::new(name).unwrap().as_ptr();
         let mut signature = 0;
         let err = unsafe { clingo_signature_create(mname, arity, positive, &mut signature) };
         if !err {
             None
         } else {
-            unsafe { Some(ClingoSignature(signature)) }
+            Some(ClingoSignature(signature))
         }
     }
 }
@@ -682,18 +680,16 @@ pub struct ClingoSymbolicAtoms(clingo_symbolic_atoms_t);
 impl ClingoSymbolicAtoms {
     pub fn begin(&mut self,
                  //  signature: *const clingo_signature_t
-                 opt_sig: Option<ClingoSignature>)
+                 opt_sig: Option<&ClingoSignature>)
                  -> std::option::Option<clingo_symbolic_atom_iterator_t> {
         match opt_sig {
-            Some(sig) => {
-                unsafe {
-                    let ClingoSymbolicAtoms(ref mut atoms) = *self;
-                    let ClingoSignature(signature) = sig;
-                    let mut iterator = 0 as clingo_symbolic_atom_iterator_t;
-                    let err = clingo_symbolic_atoms_begin(atoms, &signature, &mut iterator);
-                    if !err { None } else { Some(iterator) }
-                }
-            }
+            Some(sig) => unsafe {
+                let ClingoSymbolicAtoms(ref mut atoms) = *self;
+                let ClingoSignature(signature) = *sig;
+                let mut iterator = 0 as clingo_symbolic_atom_iterator_t;
+                let err = clingo_symbolic_atoms_begin(atoms, &signature, &mut iterator);
+                if !err { None } else { Some(iterator) }
+            },
             None => unsafe {
                 let ClingoSymbolicAtoms(ref mut atoms) = *self;
                 let signature = std::ptr::null();
@@ -1029,7 +1025,10 @@ impl ClingoSolveControl {
         }
     }
 }
-
+pub fn safe_clingo_propagate_control_thread_id(control: *mut clingo_propagate_control_t)
+                                               -> clingo_id_t {
+    unsafe { clingo_propagate_control_thread_id(control) }
+}
 pub struct ClingoPropagateControl(clingo_propagate_control_t);
 impl ClingoPropagateControl {
     pub fn thread_id(&mut self) -> clingo_id_t {
@@ -1071,16 +1070,16 @@ impl ClingoPropagateInit {
     //     pub fn clingo_propagate_init_solver_literal(init: *mut ClingoPropagateInit,
     //                                                 aspif_literal: clingo_literal_t,
     //                                                 solver_literal: *mut clingo_literal_t)
-    //                                                 -> u8;
+    //                                                 -> bool;
     //     pub fn clingo_propagate_init_add_watch(init: *mut ClingoPropagateInit,
     //                                            solver_literal: clingo_literal_t)
-    //                                            -> u8;
+    //                                            -> bool;
     //     pub fn clingo_propagate_init_symbolic_atoms(init: *mut ClingoPropagateInit,
     //                                                 atoms: *mut *mut ClingoSymbolicAtoms)
     //                                                 -> bool;
     //     pub fn c_lingo_propagate_init_theory_atoms(init: *mut ClingoPropagateInit,
     //                                               atoms: *mut *mut ClingoTheoryAtoms)
-    //                                               -> u8;
+    //                                               -> bool;
     pub fn number_of_threads(&mut self) -> c_int {
         unsafe {
             let ClingoPropagateInit(ref mut init) = *self;
@@ -1178,7 +1177,7 @@ mod tests {
     fn version_test() {
         let (ma, mi, re) = safe_clingo_version();
         assert!(ma == 5);
-        assert!(mi == 0);
+        assert!(mi == 2);
         assert!(re == 0);
     }
 }
