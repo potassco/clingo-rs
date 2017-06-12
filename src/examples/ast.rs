@@ -131,7 +131,7 @@ fn main() {
     let mut ctl = new_clingo_control(env::args(), logger, logger_data, 20)
         .expect("Failed creating clingo_control");
 
-    let sym = safe_clingo_symbol_create_id("enable", true).unwrap();
+    let sym = clingo_symbol::create_id("enable", true).unwrap();
 
     {
         // get the program builder

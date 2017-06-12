@@ -4,6 +4,7 @@ extern crate clingo;
 use std::env;
 use std::ffi::CString;
 use std::vec::Vec;
+use std::cell::RefCell;
 use std::rc::Rc;
 use libc::c_int;
 use clingo::*;
@@ -17,6 +18,7 @@ struct StateT {
     holes: Vec<clingo_literal_t>,
     size: usize,
 }
+
 // state information for the propagator
 struct PropagatorT {
     // mapping from solver literals capturing pigeon placements to hole numbers
@@ -24,13 +26,13 @@ struct PropagatorT {
     pigeons: Vec<i32>,
     pigeons_size: i32,
     // array of states
-    states: Vec<Rc<StateT>>,
+    states: Vec<Rc<RefCell<StateT>>>,
     states_size: i32,
 }
 
 fn error_main() {
     let error_message = safe_clingo_error_message();
-    println!("{}", error_message);
+    println!("Error: {}", error_message);
     safe_clingo_error_code();
 }
 
@@ -42,13 +44,15 @@ fn get_arg(sym: clingo_symbol_t, offset: c_int) -> Option<c_int> {
     safe_clingo_symbol_number(args[offset as usize])
 }
 
-unsafe extern "C" fn init(init: *mut clingo_propagate_init_t,
-                          data: *mut ::std::os::raw::c_void)
-                          -> bool {
+extern "C" fn init(init_: *mut clingo_propagate_init_t, data: *mut ::std::os::raw::c_void) -> bool {
     let mut propagator = data as *mut PropagatorT;
+    let mut init =
+        unsafe { std::mem::transmute::<clingo_propagate_init_t, ClingoPropagateInit>(*init_) };
+
     // the total number of holes pigeons can be assigned too
     let mut holes = 0;
-    let threads = clingo_propagate_init_number_of_threads(init);
+    // let threads = safe_clingo_propagate_init_number_of_threads(init);
+    let threads = init.number_of_threads();
     // stores the (numeric) maximum of the solver literals capturing pigeon placements
     // note that the code below assumes that this literal is not negative
     // which holds for the pigeon problem but not in general
@@ -56,33 +60,34 @@ unsafe extern "C" fn init(init: *mut clingo_propagate_init_t,
     // ensure that solve can be called multiple times
     // for simplicity, the case that additional holes or pigeons to assign are grounded is not handled here
 
-    if (*propagator).states_size != 0 {
+    if unsafe { (*propagator).states_size } != 0 {
         // in principle the number of threads can increase between solve calls by changing the configuration
         // this case is not handled (elegantly) here
-        if threads > (*propagator).states_size {
-            //       clingo_set_error(clingo_error_runtime, "more threads than states");
-            safe_clingo_set_error(1, "more threads than states");
+        if threads > unsafe { (*propagator).states_size } {
+            safe_clingo_set_error(clingo_error::clingo_error_runtime as clingo_error_t,
+                                  "more threads than states");
         }
         return true;
     }
     // allocate memory for exactly one state per thread
-    //   if (!(data->states = (StateT*)malloc(sizeof(*data->states) * threads))) {
-    //     clingo_set_error(clingo_error_bad_alloc, "allocation failed");
-    //     safe_clingo_set_error(3, "allocation failed");
+    // if (!(data->states = (StateT*)malloc(sizeof(*data->states) * threads))) {
+    //     safe_clingo_set_error(clingo_error::clingo_error_bad_alloc as clingo_error_t, "allocation failed");
     //     return false;
-    //   }
+    // }
     //   memset(data->states, 0, sizeof(*data->states) * threads);
-    let s1_holes = vec![];
-    let state1 = Rc::new(StateT {
-                             holes: s1_holes,
-                             size: 0,
-                         });
-    (*propagator).states = vec![state1];
-    (*propagator).states_size = threads;
-
+    let s1_holes: Vec<clingo_literal_t> = vec![];
+    let state1 = Rc::new(RefCell::new(StateT {
+                                          holes: s1_holes,
+                                          size: 0,
+                                      }));
+    unsafe {
+        (*propagator).states = vec![state1];
+        (*propagator).states_size = threads;
+    }
     // the propagator monitors place/2 atoms and dectects conflicting assignments
     // first get the symbolic atoms handle
-    let atoms = safe_clingo_propagate_init_symbolic_atoms(init).unwrap();
+    // let atoms = safe_clingo_propagate_init_symbolic_atoms(init).unwrap();
+    let atoms = init.symbolic_atoms().unwrap();
 
     // create place/2 signature to filter symbolic atoms with
     let sig = ClingoSignature::create("place", 2, true).unwrap();
@@ -100,11 +105,11 @@ unsafe extern "C" fn init(init: *mut clingo_propagate_init_t,
         let mut atoms_it = atoms.begin(Some(&sig)).unwrap();
         if pass == 1 {
             // allocate memory for the assignemnt literal -> hole mapping
-            //       if (!(data->pigeons = (int*)malloc(sizeof(*data->pigeons) * (max + 1)))) {
-            //         clingo_set_error(clingo_error_bad_alloc, "allocation failed");
-            //         return false;
-            //       }
-            (*propagator).pigeons_size = max + 1;
+            // if (!(data->pigeons = (int*)malloc(sizeof(*data->pigeons) * (max + 1)))) {
+            //   safe_clingo_set_error(clingo_error::clingo_error_bad_alloc as clingo_error_t, "allocation failed");
+            //   return false;
+            // }
+            unsafe { (*propagator).pigeons_size = max + 1 };
         }
         loop {
             // stop iteration if the end is reached
@@ -115,9 +120,8 @@ unsafe extern "C" fn init(init: *mut clingo_propagate_init_t,
 
             // get the solver literal for the placement atom
             let mut lit = atoms.literal(atoms_it).unwrap();
-            if !clingo_propagate_init_solver_literal(init, lit, &mut lit) {
-                return false;
-            }
+            // if !safe_clingo_propagate_init_solver_literal(init, lit, &mut lit) {
+            lit = init.solver_literal(lit).unwrap();
 
             if pass == 0 {
                 // determine the maximum literal
@@ -131,10 +135,11 @@ unsafe extern "C" fn init(init: *mut clingo_propagate_init_t,
                 let h = get_arg(sym, 1).unwrap();
 
                 // initialize the assignemnt literal -> hole mapping
-                (*propagator).pigeons[lit as usize] = h;
+                unsafe { (*propagator).pigeons[lit as usize] = h };
 
                 // watch the assignment literal
-                if !clingo_propagate_init_add_watch(init, lit) {
+                // if !safe_clingo_propagate_init_add_watch(init, lit) {
+                if !init.add_watch(lit) {
                     return false;
                 }
 
@@ -152,97 +157,87 @@ unsafe extern "C" fn init(init: *mut clingo_propagate_init_t,
     // initialize the per solver thread state information
     for i in 0..threads {
         // if (!((*propagator).states[i].holes = (clingo_literal_t*)malloc(sizeof(*data->states[i].holes) * holes))) {
-        //   safe_clingo_set_error(3, "allocation failed");
+        //   safe_clingo_set_error(clingo_error::clingo_error_bad_alloc as clingo_error_t, "allocation failed");
         //   return false;
         // }
         // initially no pigeons are assigned to any holes
         // so the hole -> literal mapping is initialized with zero
         // which is not a valid literal
-        //     memset(data->states[i].holes, 0, sizeof(*data->states[i].holes) * holes);
+        // memset(data->states[i].holes, 0, sizeof(*data->states[i].holes) * holes);
 
-        // (*propagator).states[i as usize].size = holes as usize;
-        let new_state = Rc::new(StateT {
-                                    holes: (*propagator).states[i as usize].holes.to_vec(),
-                                    size: holes as usize,
-                                });
-        (*propagator).states[i as usize] = new_state;
+        unsafe { (*propagator).states[i as usize].borrow_mut().size = holes as usize };
     }
     return true;
 }
 
-unsafe extern "C" fn propagate(control: *mut clingo_propagate_control_t,
-                               changes: *const clingo_literal_t,
-                               size: usize,
-                               data: *mut ::std::os::raw::c_void)
-                               -> bool {
-    let mut propagator = data as *mut PropagatorT;
-    // get the thread specific state
-    let state = (*propagator).states[safe_clingo_propagate_control_thread_id(control) as usize]
-        .clone();
-
-    // apply and check the pigeon assignments done by the solver
-    for i in 0..size {
-        // the freshly assigned literal
-        //     let lit: clingo_literal_t = changes[i];
-        // a pointer to the previously assigned literal
-        //     let prev: *mut clingo_literal_t = state.holes + propagator.pigeons[lit];
-
-        // update the placement if no literal was assigned previously
-        //     if *prev == 0 {
-        //         *prev = lit;
-        //     }
-        // create a conflicting clause and propagate it
-        //     else {
-        // current and previous literal must not hold together
-        //         let clause: &[clingo_literal_t] = &[-lit, -*prev];
-        // stores the result when adding a clause or propagationg
-        // if result is false propagation must stop for the solver to backtrack
-
-        // add the clause
-        //         if (!clingo_propagate_control_add_clause(control, clause, sizeof(clause)/sizeof(*clause), clingo_clause_type_learnt, &result)) {return false; }
-        //         let result = (*control)
-        //             .add_clause(clause,
-        //                         clingo_clause_type::clingo_clause_type_learnt as clingo_clause_type_t)
-        //             .unwrap();
-
-        //         if result == 0 {
-        //              return 1;
-        //         }
-
-        // propagate it
-        //         if (!clingo_propagate_control_propagate(control, &result)) { return false; }
-        //         result = (*control).propagate().unwrap();
-
-        //         if result == 0 {
-        //              return 1;
-        //         }
-
-        // must not happen because the clause above is conflicting by construction
-        //         assert!(false);
-        //     }
-    }
-    return true;
-}
-
-unsafe extern "C" fn undo(control: *mut clingo_propagate_control_t,
-                          changes: *const clingo_literal_t,
-                          size: usize,
-                          data: *mut ::std::os::raw::c_void)
-                          -> bool {
+extern "C" fn propagate(control: *mut clingo_propagate_control_t,
+                        changes: *const clingo_literal_t,
+                        size: usize,
+                        data: *mut ::std::os::raw::c_void)
+                        -> bool {
     let propagator = data as *mut PropagatorT;
     // get the thread specific state
-    let state = (*propagator).states[safe_clingo_propagate_control_thread_id(control) as usize]
-        .clone();
+    let mut state = unsafe {
+        (*propagator).states[safe_clingo_propagate_control_thread_id(control) as usize].borrow_mut()
+    };
+
+    // apply and check the pigeon assignments done by the solver
+    let ch_array = unsafe { std::slice::from_raw_parts(changes, size) };
+    for i in 0..size {
+        // the freshly assigned literal
+        let lit: clingo_literal_t = ch_array[i];
+        // a pointer to the previously assigned literal
+        let idx = unsafe { (*propagator).pigeons[lit as usize] } as usize;
+        let mut prev = state.holes[idx];
+
+        // update the placement if no literal was assigned previously
+        if prev == 0 {
+            prev = lit;
+            state.holes[idx] = prev;
+        }
+        // create a conflicting clause and propagate it
+        else {
+            // current and previous literal must not hold together
+            let clause: &[clingo_literal_t] = &[-lit, -prev];
+            // stores the result when adding a clause or propagationg
+            // if result is false propagation must stop for the solver to backtrack
+
+            // add the clause
+            if !safe_clingo_propagate_control_add_clause(control, clause,clingo_clause_type::clingo_clause_type_learnt).unwrap() {return true;}
+
+            // propagate it
+            if !safe_clingo_propagate_control_propagate(control).unwrap() {
+                return true;
+            }
+
+            // must not happen because the clause above is conflicting by construction
+            //         assert!(false);
+        }
+    }
+    return true;
+}
+
+extern "C" fn undo(control: *mut clingo_propagate_control_t,
+                   changes: *const clingo_literal_t,
+                   size: usize,
+                   data: *mut ::std::os::raw::c_void)
+                   -> bool {
+    let propagator = data as *mut PropagatorT;
+    // get the thread specific state
+    let mut state = unsafe {
+        (*propagator).states[safe_clingo_propagate_control_thread_id(control) as usize].borrow_mut()
+    };
 
     // undo the assignments made in propagate
-    let ch_array = std::slice::from_raw_parts(changes, size);
+    let ch_array = unsafe { std::slice::from_raw_parts(changes, size) };
     for i in 0..size {
         let lit: clingo_literal_t = ch_array[i];
-        let hole: c_int = (*propagator).pigeons[lit as usize];
+        let hole: c_int = unsafe { (*propagator).pigeons[lit as usize] };
 
         if state.holes[hole as usize] == lit {
             // undo the assignment
-            // state.holes[hole as usize] = 0;
+            println!("TODO: holes{}:{}", hole, state.holes[hole as usize]);
+            state.holes[hole as usize] = 0;
         }
     }
     return true;
@@ -310,50 +305,60 @@ fn main() {
     };
 
     // set the number of holes
-    let arg0 = safe_clingo_symbol_create_number(8);
+    let arg0 = clingo_symbol::create_number(8);
     // set the number of pigeons
-    let arg1 = safe_clingo_symbol_create_number(9);
+    let arg1 = clingo_symbol::create_number(9);
 
     // create a control object and pass command line arguments
     let logger = None;
     let logger_data = std::ptr::null_mut();
-    let mut ctl = new_clingo_control(env::args(), logger, logger_data, 20)
-        .expect("Failed creating clingo_control");
+    let option = new_clingo_control(env::args(), logger, logger_data, 20);
+    match option {
+        Some(ctl) => {
 
-    // register the propagator
-    let prop_data_ptr = unsafe {
-        std::mem::transmute::<&mut PropagatorT, *mut ::std::os::raw::c_void>(&mut prop_data)
-    };
-    if !ctl.register_propagator(&prop, prop_data_ptr, false) {
-        return error_main();
+
+            // register the propagator
+            let prop_data_ptr =
+                unsafe {
+                    std::mem::transmute::<&mut PropagatorT,
+                                          *mut ::std::os::raw::c_void>(&mut prop_data)
+                };
+            if !ctl.register_propagator(&prop, prop_data_ptr, false) {
+                return error_main();
+            }
+
+            // add a logic program to the pigeon part
+            // parameters for the pigeon part
+            let parameters = vec!["h", "p"];
+            let err = ctl.add("pigeon",
+                              parameters,
+                              "1 { place(P,H) : H = 1..h } 1 :- P = 1..p.");
+            if !err {
+                return error_main();
+            }
+
+            // ground the pigeon part
+            // arguments to the pigeon program part
+            let num_pigeons = u64::from_str_radix(env::args().nth(1).unwrap().as_str(), 10)
+                .unwrap();
+            // the pigeon program part having the number of holes and pigeons as parameters
+            let part = ClingoPart {
+                name: CString::new("pigeon").unwrap(),
+                params: &[num_pigeons],
+            };
+            let parts = vec![part];
+            let ground_callback = None;
+            let ground_callback_data = std::ptr::null_mut();
+            let err = ctl.ground(parts, ground_callback, ground_callback_data);
+            if !err {
+                return error_main();
+            }
+
+            // solve using a model callback
+            solve(ctl);
+        }
+        None => {
+            return error_main();
+        }
     }
-
-    // add a logic program to the pigeon part
-    // parameters for the pigeon part
-    let parameters = vec!["h", "p"];
-    let err = ctl.add("pigeon",
-                      parameters,
-                      "1 { place(P,H) : H = 1..h } 1 :- P = 1..p.");
-    if !err {
-        return error_main();
-    }
-
-    // ground the pigeon part
-    // arguments to the pigeon program part
-    let num_pigeons = u64::from_str_radix(env::args().nth(1).unwrap().as_str(), 10).unwrap();
-    // the pigeon program part having the number of holes and pigeons as parameters
-    let part = ClingoPart {
-        name: CString::new("pigeon").unwrap(),
-        params: &[num_pigeons],
-    };
-    let parts = vec![part];
-    let ground_callback = None;
-    let ground_callback_data = std::ptr::null_mut();
-    let err = ctl.ground(parts, ground_callback, ground_callback_data);
-    if !err {
-        return error_main();
-    }
-
-    // solve using a model callback
-    solve(ctl);
 }
