@@ -5,13 +5,14 @@ use std::ffi::CString;
 use clingo::*;
 
 
-pub struct OnStatementData {
+pub struct OnStatementData<'a> {
     atom: clingo_ast_term_t,
-    // builder: &'a mut ClingoProgramBuilder,
+    builder: &'a mut ClingoProgramBuilder,
 }
 
 // adds atom enable to all rule bodies
-extern "C" fn on_statement(stm: *const clingo_ast_statement_t,
+
+extern "C" fn on_statement(stm_: *const clingo_ast_statement_t,
                            data: *mut std::os::raw::c_void)
                            -> bool {
     let ret = true;
@@ -19,16 +20,19 @@ extern "C" fn on_statement(stm: *const clingo_ast_statement_t,
     //   clingo_ast_body_literal_t *body = NULL;
     //   clingo_ast_literal_t lit;
     //   clingo_ast_statement_t stm2;
-
-    // let builder = (*data).builder;
+    let stm = unsafe { std::mem::transmute::<clingo_ast_statement_t, ClingoAstStatement>(*stm_) };
+    let on_statement_data = data as *mut OnStatementData;
+    // let builder = unsafe{(*on_statement_data).builder};
 
     // pass through all statements that are not rules
-    // if (*stm).type != clingo_ast_statement_type::clingo_ast_statement_type_rule {
-    //     if !builder.add(*stm) {
-    //         return error_main();
-    //     }
-    //     return ret;
-    // }
+    if stm.get_type() !=
+       clingo_ast_statement_type::clingo_ast_statement_type_rule as clingo_ast_statement_type_t {
+        if !unsafe { (*on_statement_data).builder.add(&stm) } {
+            // return error_main();
+            return false;
+        }
+        return true;
+    }
 
     // allocate space to hold the current rule body + one literal
     //   body = (clingo_ast_body_literal_t*)malloc(sizeof(clingo_ast_body_literal_t) * (stm->rule->size + 1));
@@ -38,15 +42,17 @@ extern "C" fn on_statement(stm: *const clingo_ast_statement_t,
     //   }
 
     // copy the current rule body
-    //   for (size_t i = 0; i < stm->rule->size; ++i) {
-    //     body[i] = stm->rule->body[i];
-    //   }
+    let body = stm.get_rule_body();
 
     // create atom enable
     //   lit.symbol   = &data->atom;
     //   lit.location = data->atom.location;
     //   lit.type     = clingo_ast_literal_type_symbolic;
     //   lit.sign     = clingo_ast_sign_none;
+    let lit = ClingoAstLiteral::new(unsafe { (*on_statement_data).atom.location },
+                                    clingo_ast_sign::clingo_ast_sign_none,
+                                    clingo_ast_literal_type::clingo_ast_literal_type_symbolic,
+                                    &unsafe { (*on_statement_data).atom });
 
     // add atom enable to the rule body
     //   body[stm->rule->size].location = data->atom.location;
@@ -164,13 +170,14 @@ fn main() {
             type_: clingo_ast_term_type::clingo_ast_term_type_symbol as clingo_ast_term_type_t,
             __bindgen_anon_1: _bg_union_1,
         };
+
         let mut data = OnStatementData {
             atom: atom,
-            // builder: builder,
+            builder: builder,
         };
 
         // begin building a program
-        if !builder.begin() {
+        if !data.builder.begin() {
             return error_main();
         }
 
@@ -195,16 +202,18 @@ fn main() {
             body: std::ptr::null(),
             size: 0,
         };
+
         let stm =
             ClingoAstStatement::new(location,
                                     clingo_ast_statement_type::clingo_ast_statement_type_external,
                                     &ext);
-        if !builder.add(&stm) {
+
+        if !data.builder.add(&stm) {
             return error_main();
         }
 
         // finish building a program
-        if !builder.end() {
+        if !data.builder.end() {
             return error_main();
         }
     }

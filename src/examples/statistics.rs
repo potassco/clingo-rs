@@ -167,5 +167,4 @@ fn main() {
     let mut stats = ctl.statistics().unwrap();
     let stats_key = stats.statistics_root().unwrap();
     print_statistics(stats, stats_key, 0);
-
 }

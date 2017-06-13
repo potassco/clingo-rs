@@ -9,18 +9,19 @@ use libc::c_int;
 use libc::c_char;
 use clingo_sys::*;
 
-pub use clingo_sys::{clingo_clause_type, clingo_error, clingo_error_t, clingo_symbol_t,
-                     clingo_signature_t, clingo_signature_create, clingo_symbolic_atoms_t,
-                     clingo_propagate_init_symbolic_atoms, clingo_propagate_init_t,
-                     clingo_propagate_control_t, __BindgenUnionField, clingo_ast_statement_type,
-                     clingo_ast_statement_type_t, clingo_ast_statement_t,
-                     clingo_ast_term__bindgen_ty_1, clingo_location, clingo_ast_external,
-                     clingo_ast_term_t, clingo_ast_term_type, clingo_ast_term_type_t,
-                     clingo_ast_callback_t, clingo_propagator, clingo_solve_event_callback_t,
-                     clingo_solve_event_type_t, clingo_solve_handle_t,
-                     clingo_solve_result_bitset_t, clingo_solve_mode_bitset_t, clingo_solve_mode,
-                     clingo_show_type_bitset_t, clingo_show_type, clingo_logger_t,
-                     clingo_literal_t, clingo_id_t, clingo_truth_value};
+pub use clingo_sys::{clingo_ast_sign, clingo_ast_literal_type, clingo_clause_type, clingo_error,
+                     clingo_error_t, clingo_symbol_t, clingo_signature_t, clingo_signature_create,
+                     clingo_symbolic_atoms_t, clingo_propagate_init_symbolic_atoms,
+                     clingo_propagate_init_t, clingo_propagate_control_t, __BindgenUnionField,
+                     clingo_ast_statement_type, clingo_ast_statement_type_t,
+                     clingo_ast_statement_t, clingo_ast_term__bindgen_ty_1, clingo_location,
+                     clingo_ast_external, clingo_ast_term_t, clingo_ast_term_type,
+                     clingo_ast_term_type_t, clingo_ast_callback_t, clingo_propagator,
+                     clingo_solve_event_callback_t, clingo_solve_event_type_t,
+                     clingo_solve_handle_t, clingo_solve_result_bitset_t,
+                     clingo_solve_mode_bitset_t, clingo_solve_mode, clingo_show_type_bitset_t,
+                     clingo_show_type, clingo_logger_t, clingo_literal_t, clingo_id_t,
+                     clingo_truth_value};
 
 
 pub fn safe_clingo_version() -> (i32, i32, i32) {
@@ -353,10 +354,64 @@ impl ClingoAstStatement {
             __bindgen_anon_1: _bg_union_2,
         };
         ClingoAstStatement(stm)
-
+    }
+    pub fn get_type(&self) -> clingo_ast_statement_type_t {
+        let ClingoAstStatement(ref stm) = *self;
+        stm.type_
+    }
+    pub fn get_rule_body(&self) -> &[clingo_ast_body_literal] {
+        let ClingoAstStatement(ref stm) = *self;
+        let ast_rule_ptr = stm.__bindgen_anon_1.bindgen_union_field as *const clingo_ast_rule_t;
+        let body =
+            unsafe { std::slice::from_raw_parts((*ast_rule_ptr).body, (*ast_rule_ptr).size) };
+        body
+    }
+    // pub fn set_rule_body(&mut self, rule_body : ) {
+    //     let _bg_union_2 = clingo_ast_statement__bindgen_ty_1 {
+    //         rule: __BindgenUnionField::new(),
+    //         definition: __BindgenUnionField::new(),
+    //         show_signature: __BindgenUnionField::new(),
+    //         show_term: __BindgenUnionField::new(),
+    //         minimize: __BindgenUnionField::new(),
+    //         script: __BindgenUnionField::new(),
+    //         program: __BindgenUnionField::new(),
+    //         external: __BindgenUnionField::new(),
+    //         edge: __BindgenUnionField::new(),
+    //         heuristic: __BindgenUnionField::new(),
+    //         project_atom: __BindgenUnionField::new(),
+    //         project_signature: __BindgenUnionField::new(),
+    //         theory_definition: __BindgenUnionField::new(),
+    //         bindgen_union_field: rule_body as u64,
+    //     };
+    //     unsafe {
+    //         let ClingoAstStatement(ref mut stm) = *self;
+    //         stm.__bindgen_anon_1 = _bg_union_2;
+    //     }
+    // }
+}
+pub struct ClingoAstLiteral(clingo_ast_literal_t);
+impl ClingoAstLiteral {
+    pub fn new(location: clingo_location,
+               sign: clingo_ast_sign,
+               type_: clingo_ast_literal_type,
+               symbol: *const clingo_ast_term_t)
+               -> ClingoAstLiteral {
+        let _bg_union_2 = clingo_ast_literal__bindgen_ty_1 {
+            boolean: __BindgenUnionField::new(),
+            symbol: __BindgenUnionField::new(),
+            comparison: __BindgenUnionField::new(),
+            csp_literal: __BindgenUnionField::new(),
+            bindgen_union_field: symbol as u64,
+        };
+        let lit = clingo_ast_literal_t {
+            location: location,
+            type_: type_ as clingo_ast_literal_type_t,
+            sign: sign as clingo_ast_sign_t,
+            __bindgen_anon_1: _bg_union_2,
+        };
+        ClingoAstLiteral(lit)
     }
 }
-
 pub struct ClingoConfiguration(clingo_configuration_t);
 impl ClingoConfiguration {
     pub fn configuration_root(&mut self) -> Option<clingo_id_t> {
@@ -917,20 +972,6 @@ impl ClingoModel {
 //     pub fn clingo_symbol_is_less_than(a: clingo_symbol_t, b: clingo_symbol_t) -> u8;
 //     pub fn clingo_symbol_hash(symbol: clingo_symbol_t) -> size_t;
 // }
-pub fn safe_clingo_symbol_to_string(symbol: clingo_symbol_t) -> Option<CString> {
-
-    let mut size: usize = 0;
-    let err = unsafe { clingo_symbol_to_string_size(symbol, &mut size) };
-    if !err {
-        None
-    } else {
-        let a1 = vec![1; size];
-        let string = unsafe { CString::from_vec_unchecked(a1) };
-        let err = unsafe { clingo_symbol_to_string(symbol, string.as_ptr() as *mut c_char, size) };
-        if !err { None } else { Some(string) }
-    }
-
-}
 pub mod clingo_symbol {
 
     use libc::c_int;
@@ -970,6 +1011,19 @@ pub mod clingo_symbol {
         if !err { None } else { Some(symbol) }
     }
 }
+pub fn safe_clingo_symbol_to_string(symbol: clingo_symbol_t) -> Option<CString> {
+
+    let mut size: usize = 0;
+    let err = unsafe { clingo_symbol_to_string_size(symbol, &mut size) };
+    if !err {
+        None
+    } else {
+        let a1 = vec![1; size];
+        let string = unsafe { CString::from_vec_unchecked(a1) };
+        let err = unsafe { clingo_symbol_to_string(symbol, string.as_ptr() as *mut c_char, size) };
+        if !err { None } else { Some(string) }
+    }
+}
 pub fn safe_clingo_symbol_number(symbol: clingo_symbol_t) -> Option<c_int> {
 
     let mut number = 0;
@@ -994,7 +1048,6 @@ pub fn safe_clingo_symbol_arguments(symbol: clingo_symbol_t) -> Option<Vec<cling
         }
         Some(a1)
     }
-
 }
 pub fn safe_clingo_symbol_is_equal_to(a: clingo_symbol_t, b: clingo_symbol_t) -> bool {
     unsafe { clingo_symbol_is_equal_to(a, b) }
@@ -1012,10 +1065,6 @@ impl ClingoSolveControl {
             clingo_solve_control_add_clause(control, clause.as_ptr(), size)
         }
     }
-}
-pub fn safe_clingo_propagate_control_thread_id(control: *mut clingo_propagate_control_t)
-                                               -> clingo_id_t {
-    unsafe { clingo_propagate_control_thread_id(control) }
 }
 pub struct ClingoPropagateControl(clingo_propagate_control_t);
 impl ClingoPropagateControl {
@@ -1050,29 +1099,6 @@ impl ClingoPropagateControl {
             let err = clingo_propagate_control_propagate(control, &mut result);
             if !err { None } else { Some(result) }
         }
-    }
-}
-pub fn safe_clingo_propagate_control_add_clause(control: *mut clingo_propagate_control_t,
-                                                clause: &[clingo_literal_t],
-                                                type_: clingo_clause_type)
-                                                -> Option<bool> {
-    unsafe {
-        let size = mem::size_of_val(clause);
-        let mut result = false;
-        let err = clingo_propagate_control_add_clause(control,
-                                                      clause.as_ptr(),
-                                                      size,
-                                                      type_ as clingo_clause_type_t,
-                                                      &mut result);
-        if !err { None } else { Some(result) }
-    }
-}
-pub fn safe_clingo_propagate_control_propagate(control: *mut clingo_propagate_control_t)
-                                               -> Option<bool> {
-    unsafe {
-        let mut result = false;
-        let err = clingo_propagate_control_propagate(control, &mut result);
-        if !err { None } else { Some(result) }
     }
 }
 
@@ -1113,35 +1139,6 @@ impl ClingoPropagateInit {
             let ret = clingo_propagate_init_number_of_threads(init);
             (ret as c_int)
         }
-    }
-}
-pub fn safe_clingo_propagate_init_solver_literal(init: *mut clingo_propagate_init_t,
-                                                 aspif_literal: clingo_literal_t,
-                                                 solver_literal: *mut clingo_literal_t)
-                                                 -> bool {
-    unsafe { clingo_propagate_init_solver_literal(init, aspif_literal, solver_literal) }
-}
-pub fn safe_clingo_propagate_init_add_watch(init: *mut clingo_propagate_init_t,
-                                            solver_literal: clingo_literal_t)
-                                            -> bool {
-    unsafe { clingo_propagate_init_add_watch(init, solver_literal) }
-}
-pub fn safe_clingo_propagate_init_symbolic_atoms<'a>(init: *mut clingo_propagate_init_t)
-                                                     -> Option<&'a mut ClingoSymbolicAtoms> {
-    unsafe {
-        let mut mmatoms = std::ptr::null_mut();
-        let err = clingo_propagate_init_symbolic_atoms(init, &mut mmatoms);
-        if !err {
-            None
-        } else {
-            Some(&mut *(mmatoms as *mut ClingoSymbolicAtoms))
-        }
-    }
-}
-pub fn safe_clingo_propagate_init_number_of_threads(init: *mut clingo_propagate_init_t) -> c_int {
-    unsafe {
-        let ret = clingo_propagate_init_number_of_threads(init);
-        (ret as c_int)
     }
 }
 
