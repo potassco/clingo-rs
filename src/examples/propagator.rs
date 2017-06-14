@@ -45,9 +45,12 @@ fn get_arg(sym: clingo_symbol_t, offset: c_int) -> Option<c_int> {
 }
 
 extern "C" fn init(init_: *mut clingo_propagate_init_t, data: *mut ::std::os::raw::c_void) -> bool {
-    let mut propagator = data as *mut PropagatorT;
-    let mut init =
-        unsafe { std::mem::transmute::<clingo_propagate_init_t, ClingoPropagateInit>(*init_) };
+    let mut init = unsafe {
+            std::mem::transmute::<*mut clingo_propagate_init_t, *mut ClingoPropagateInit>(init_)
+                .as_mut()
+        }
+        .unwrap();
+    let mut propagator = unsafe { (data as *mut PropagatorT).as_mut() }.unwrap();
 
     // the total number of holes pigeons can be assigned too
     let mut holes = 0;
@@ -59,10 +62,10 @@ extern "C" fn init(init_: *mut clingo_propagate_init_t, data: *mut ::std::os::ra
     // ensure that solve can be called multiple times
     // for simplicity, the case that additional holes or pigeons to assign are grounded is not handled here
 
-    if unsafe { (*propagator).states_size } != 0 {
+    if propagator.states_size != 0 {
         // in principle the number of threads can increase between solve calls by changing the configuration
         // this case is not handled (elegantly) here
-        if threads > unsafe { (*propagator).states_size } {
+        if threads > propagator.states_size {
             safe_clingo_set_error(clingo_error::clingo_error_runtime as clingo_error_t,
                                   "more threads than states");
         }
@@ -79,10 +82,9 @@ extern "C" fn init(init_: *mut clingo_propagate_init_t, data: *mut ::std::os::ra
                                           holes: s1_holes,
                                           size: 0,
                                       }));
-    unsafe {
-        (*propagator).states = vec![state1];
-        (*propagator).states_size = threads;
-    }
+    propagator.states = vec![state1];
+    propagator.states_size = threads;
+
     // the propagator monitors place/2 atoms and dectects conflicting assignments
     // first get the symbolic atoms handle
     let atoms = init.symbolic_atoms().unwrap();
@@ -98,7 +100,6 @@ extern "C" fn init(init_: *mut clingo_propagate_init_t, data: *mut ::std::os::ra
     // the first pass determines the maximum placement literal
     // the second pass allocates memory for data structures based on the first pass
     for pass in 0..1 {
-
         // get an iterator to the first place/2 atom
         let mut atoms_it = atoms.begin(Some(&sig)).unwrap();
         if pass == 1 {
@@ -107,7 +108,7 @@ extern "C" fn init(init_: *mut clingo_propagate_init_t, data: *mut ::std::os::ra
             //   safe_clingo_set_error(clingo_error::clingo_error_bad_alloc as clingo_error_t, "allocation failed");
             //   return false;
             // }
-            unsafe { (*propagator).pigeons_size = max + 1 };
+            propagator.pigeons_size = max + 1;
         }
         loop {
             // stop iteration if the end is reached
@@ -132,7 +133,7 @@ extern "C" fn init(init_: *mut clingo_propagate_init_t, data: *mut ::std::os::ra
                 let h = get_arg(sym, 1).unwrap();
 
                 // initialize the assignemnt literal -> hole mapping
-                unsafe { (*propagator).pigeons[lit as usize] = h };
+                propagator.pigeons[lit as usize] = h;
 
                 // watch the assignment literal
                 if !init.add_watch(lit) {
@@ -161,30 +162,34 @@ extern "C" fn init(init_: *mut clingo_propagate_init_t, data: *mut ::std::os::ra
         // which is not a valid literal
         // memset(data->states[i].holes, 0, sizeof(*data->states[i].holes) * holes);
 
-        unsafe { (*propagator).states[i as usize].borrow_mut().size = holes as usize };
+        propagator.states[i as usize].borrow_mut().size = holes as usize;
     }
     return true;
 }
 
 extern "C" fn propagate(control_: *mut clingo_propagate_control_t,
-                        changes: *const clingo_literal_t,
+                        changes_: *const clingo_literal_t,
                         size: usize,
                         data: *mut ::std::os::raw::c_void)
                         -> bool {
-    let propagator = data as *mut PropagatorT;
     let mut control = unsafe {
-        std::mem::transmute::<clingo_propagate_control_t, ClingoPropagateControl>(*control_)
-    };
+            std::mem::transmute::<*mut clingo_propagate_control_t,
+                                  *mut ClingoPropagateControl>(control_)
+                    .as_mut()
+        }
+        .unwrap();
+    let changes = unsafe { std::slice::from_raw_parts(changes_, size) };
+    let propagator = unsafe { (data as *mut PropagatorT).as_ref() }.unwrap();
+
     // get the thread specific state
-    let mut state = unsafe { (*propagator).states[control.thread_id() as usize].borrow_mut() };
+    let mut state = propagator.states[control.thread_id() as usize].borrow_mut();
 
     // apply and check the pigeon assignments done by the solver
-    let ch_array = unsafe { std::slice::from_raw_parts(changes, size) };
     for i in 0..size {
         // the freshly assigned literal
-        let lit: clingo_literal_t = ch_array[i];
+        let lit: clingo_literal_t = changes[i];
         // a pointer to the previously assigned literal
-        let idx = unsafe { (*propagator).pigeons[lit as usize] } as usize;
+        let idx = propagator.pigeons[lit as usize] as usize;
         let mut prev = state.holes[idx];
 
         // update the placement if no literal was assigned previously
@@ -219,22 +224,26 @@ extern "C" fn propagate(control_: *mut clingo_propagate_control_t,
 }
 
 extern "C" fn undo(control_: *mut clingo_propagate_control_t,
-                   changes: *const clingo_literal_t,
+                   changes_: *const clingo_literal_t,
                    size: usize,
                    data: *mut ::std::os::raw::c_void)
                    -> bool {
-    let propagator = data as *mut PropagatorT;
     let mut control = unsafe {
-        std::mem::transmute::<clingo_propagate_control_t, ClingoPropagateControl>(*control_)
-    };
+            std::mem::transmute::<*mut clingo_propagate_control_t,
+                                  *mut ClingoPropagateControl>(control_)
+                    .as_mut()
+        }
+        .unwrap();
+    let changes = unsafe { std::slice::from_raw_parts(changes_, size) };
+    let propagator = unsafe { (data as *mut PropagatorT).as_ref() }.unwrap();
+
     // get the thread specific state
-    let mut state = unsafe { (*propagator).states[control.thread_id() as usize].borrow_mut() };
+    let mut state = propagator.states[control.thread_id() as usize].borrow_mut();
 
     // undo the assignments made in propagate
-    let ch_array = unsafe { std::slice::from_raw_parts(changes, size) };
     for i in 0..size {
-        let lit: clingo_literal_t = ch_array[i];
-        let hole: c_int = unsafe { (*propagator).pigeons[lit as usize] };
+        let lit: clingo_literal_t = changes[i];
+        let hole: c_int = propagator.pigeons[lit as usize];
 
         if state.holes[hole as usize] == lit {
             // undo the assignment

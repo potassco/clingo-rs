@@ -20,14 +20,18 @@ extern "C" fn on_statement(stm_: *const clingo_ast_statement_t,
     //   clingo_ast_body_literal_t *body = NULL;
     //   clingo_ast_literal_t lit;
     //   clingo_ast_statement_t stm2;
-    let stm = unsafe { std::mem::transmute::<clingo_ast_statement_t, ClingoAstStatement>(*stm_) };
-    let on_statement_data = data as *mut OnStatementData;
-    // let builder = unsafe{(*on_statement_data).builder};
+    let stm = unsafe {
+            (std::mem::transmute::<*const clingo_ast_statement_t, *const ClingoAstStatement>(stm_))
+                .as_ref()
+        }
+        .unwrap();
+    let mut on_statement_data = unsafe { (data as *mut OnStatementData).as_mut() }.unwrap();
+    // let builder = on_statement_data.builder;
 
     // pass through all statements that are not rules
     if stm.get_type() !=
        clingo_ast_statement_type::clingo_ast_statement_type_rule as clingo_ast_statement_type_t {
-        if !unsafe { (*on_statement_data).builder.add(&stm) } {
+        if !on_statement_data.builder.add(&stm) {
             // return error_main();
             return false;
         }
@@ -42,23 +46,23 @@ extern "C" fn on_statement(stm_: *const clingo_ast_statement_t,
     //   }
 
     // copy the current rule body
-    let body = stm.get_rule_body();
+    let mut body = stm.get_rule_body().clone();
 
     // create atom enable
     //   lit.symbol   = &data->atom;
     //   lit.location = data->atom.location;
     //   lit.type     = clingo_ast_literal_type_symbolic;
     //   lit.sign     = clingo_ast_sign_none;
-    let lit = ClingoAstLiteral::new(unsafe { (*on_statement_data).atom.location },
+    let lit = ClingoAstLiteral::new(on_statement_data.atom.location,
                                     clingo_ast_sign::clingo_ast_sign_none,
                                     clingo_ast_literal_type::clingo_ast_literal_type_symbolic,
-                                    &unsafe { (*on_statement_data).atom });
+                                    &on_statement_data.atom);
 
     // add atom enable to the rule body
-    //   body[stm->rule->size].location = data->atom.location;
-    //   body[stm->rule->size].type     = clingo_ast_body_literal_type_literal;
-    //   body[stm->rule->size].sign     = clingo_ast_sign_none;
-    //   body[stm->rule->size].literal  = &lit;
+    body[stm.get_rule().size].location = on_statement_data.atom.location;
+    //   body[stm.get_rule().size].type_    = clingo_ast_body_literal_type::clingo_ast_body_literal_type_literal as clingo_ast_body_literal_type_t;
+    //   body[stm.get_rule().size].sign     = clingo_ast_sign::clingo_ast_sign_none;
+    //   body[stm.get_rule().size].literal  = &lit;
 
     // initialize the rule
     //   rule.head = stm->rule->head;

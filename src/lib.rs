@@ -9,7 +9,8 @@ use libc::c_int;
 use libc::c_char;
 use clingo_sys::*;
 
-pub use clingo_sys::{clingo_ast_sign, clingo_ast_literal_type, clingo_clause_type, clingo_error,
+pub use clingo_sys::{clingo_ast_body_literal_type_t, clingo_ast_body_literal_type,
+                     clingo_ast_sign, clingo_ast_literal_type, clingo_clause_type, clingo_error,
                      clingo_error_t, clingo_symbol_t, clingo_signature_t, clingo_signature_create,
                      clingo_symbolic_atoms_t, clingo_propagate_init_symbolic_atoms,
                      clingo_propagate_init_t, clingo_propagate_control_t, __BindgenUnionField,
@@ -358,6 +359,11 @@ impl ClingoAstStatement {
     pub fn get_type(&self) -> clingo_ast_statement_type_t {
         let ClingoAstStatement(ref stm) = *self;
         stm.type_
+    }
+    pub fn get_rule(&self) -> &clingo_ast_rule_t {
+        let ClingoAstStatement(ref stm) = *self;
+        let ast_rule_ptr = stm.__bindgen_anon_1.bindgen_union_field as *const clingo_ast_rule_t;
+        unsafe { ast_rule_ptr.as_ref() }.unwrap()
     }
     pub fn get_rule_body(&self) -> &[clingo_ast_body_literal] {
         let ClingoAstStatement(ref stm) = *self;
