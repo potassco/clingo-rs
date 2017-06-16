@@ -15,7 +15,7 @@ fn main() {
 
     // print the symbols along with their hash values
     for &symbol in &symbols {
-        let atom_string = safe_clingo_symbol_to_string(&symbol).unwrap();
+        let atom_string = safe_clingo_symbol_to_string(symbol).unwrap();
         println!(
             "the hash of {} is {}",
             atom_string.to_str().unwrap(),
@@ -30,8 +30,8 @@ fn main() {
     for symbol in symbols2 {
         let equal = safe_clingo_symbol_is_equal_to(symbols[0], symbol);
 
-        let atom_string1 = safe_clingo_symbol_to_string(&symbols[0]).unwrap();
-        let atom_string2 = safe_clingo_symbol_to_string(&symbol).unwrap();
+        let atom_string1 = safe_clingo_symbol_to_string(symbols[0]).unwrap();
+        let atom_string2 = safe_clingo_symbol_to_string(symbol).unwrap();
         if equal {
             println!(
                 "{} is equal {}",
@@ -49,8 +49,8 @@ fn main() {
 
     // less than comparison
     let less = safe_clingo_symbol_is_less_than(symbols[0], symbols[1]);
-    let atom_string1 = safe_clingo_symbol_to_string(&symbols[0]).unwrap();
-    let atom_string2 = safe_clingo_symbol_to_string(&symbols[1]).unwrap();
+    let atom_string1 = safe_clingo_symbol_to_string(symbols[0]).unwrap();
+    let atom_string2 = safe_clingo_symbol_to_string(symbols[1]).unwrap();
     if less {
         println!(
             "{} is less than {}",

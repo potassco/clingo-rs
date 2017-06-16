@@ -327,7 +327,7 @@ fn main() {
     // create a control object and pass command line arguments
     let logger = None;
     let logger_data = std::ptr::null_mut();
-    let option = new_clingo_control(env::args(), logger, logger_data, 20);
+    let option = ClingoControl::new(env::args(), logger, logger_data, 20);
     match option {
         Some(ctl) => {
             // register the propagator

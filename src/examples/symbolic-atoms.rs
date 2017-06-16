@@ -53,7 +53,7 @@ fn main() {
             break;
         }
         let symbol = atoms.symbol(it_a).unwrap();
-        let atom_string = safe_clingo_symbol_to_string(&symbol).unwrap();
+        let atom_string = safe_clingo_symbol_to_string(symbol).unwrap();
         print!("  {}", atom_string.to_str().unwrap());
 
         if atoms.is_fact(it_a).unwrap() {

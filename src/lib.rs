@@ -83,46 +83,6 @@ pub fn safe_clingo_parse_program(
         )
     }
 }
-pub fn new_clingo_control<'a>(
-    arguments: std::env::Args,
-    logger: clingo_logger_t,
-    logger_data: *mut ::std::os::raw::c_void,
-    message_limit: ::std::os::raw::c_uint,
-) -> Option<&'a mut ClingoControl> {
-
-    let arguments_size = arguments.len() - 1;
-
-    // create a vector of zero terminated strings
-    let args = arguments
-        .map(|arg| CString::new(arg).unwrap())
-        .collect::<Vec<CString>>();
-
-    // drop first element
-    let (_, tail) = args.split_first().unwrap();
-
-    // convert the strings to raw pointers
-    let c_args = tail.iter()
-        .map(|arg| arg.as_ptr())
-        .collect::<Vec<*const c_char>>();
-
-    let mut ctl = std::ptr::null_mut();
-
-    let err = unsafe {
-        clingo_control_new(
-            c_args.as_ptr(),
-            arguments_size,
-            logger,
-            logger_data,
-            message_limit,
-            &mut ctl,
-        )
-    };
-    if !err {
-        None
-    } else {
-        unsafe { Some(&mut *(ctl as *mut ClingoControl)) }
-    }
-}
 
 #[derive(Debug)]
 pub struct ClingoControl(clingo_control_t);
@@ -192,7 +152,15 @@ impl ClingoControl {
             .map(|arg| arg.as_ptr())
             .collect::<Vec<*const c_char>>();
 
-        unsafe { clingo_control_add(&mut self.0, name.as_ptr(), c_args.as_ptr(), parameters_size, program.as_ptr()) }
+        unsafe {
+            clingo_control_add(
+                &mut self.0,
+                name.as_ptr(),
+                c_args.as_ptr(),
+                parameters_size,
+                program.as_ptr(),
+            )
+        }
     }
 
     pub fn ground(
@@ -647,7 +615,6 @@ impl ClingoSignature {
 #[derive(Debug)]
 pub struct ClingoSymbolicAtoms(clingo_symbolic_atoms_t);
 impl ClingoSymbolicAtoms {
-
     pub fn begin(
         &mut self,
         opt_sig: Option<&ClingoSignature>,
@@ -996,16 +963,16 @@ pub mod clingo_symbol {
         if !err { None } else { Some(symbol) }
     }
 }
-pub fn safe_clingo_symbol_to_string(symbol: &clingo_symbol_t) -> Option<CString> {
+pub fn safe_clingo_symbol_to_string(symbol: clingo_symbol_t) -> Option<CString> {
 
     let mut size: usize = 0;
-    let err = unsafe { clingo_symbol_to_string_size(*symbol, &mut size) };
+    let err = unsafe { clingo_symbol_to_string_size(symbol, &mut size) };
     if !err {
         None
     } else {
         let a1 = vec![1; size];
         let string = unsafe { CString::from_vec_unchecked(a1) };
-        let err = unsafe { clingo_symbol_to_string(*symbol, string.as_ptr() as *mut c_char, size) };
+        let err = unsafe { clingo_symbol_to_string(symbol, string.as_ptr() as *mut c_char, size) };
         if !err { None } else { Some(string) }
     }
 }
@@ -1026,17 +993,17 @@ pub fn safe_clingo_symbol_arguments(symbol: clingo_symbol_t) -> Option<Vec<cling
     if !err {
         None
     } else {
-         let mut a1 = Vec::<clingo_symbol_t>::with_capacity(size);
-//         for _ in 0..size {
-//             let nsymbol = unsafe { *a_ptr };
-//             a1.push(nsymbol);
-//         }
-//         
+        let mut a1 = Vec::<clingo_symbol_t>::with_capacity(size);
+        //         for _ in 0..size {
+        //             let nsymbol = unsafe { *a_ptr };
+        //             a1.push(nsymbol);
+        //         }
+        //
         let res = unsafe { Vec::from_raw_parts(&mut a_ptr, size, size) };
         for i in res {
-println!("i:{:?}",i);
-            let x = unsafe { *i};
-println!("*i:{}",x);
+            println!("i:{:?}", i);
+            let x = unsafe { *i };
+            println!("*i:{}", x);
             a1.push(x);
         }
         Some(a1)
