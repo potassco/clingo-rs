@@ -12,25 +12,26 @@ pub struct OnStatementData<'a> {
 
 // adds atom enable to all rule bodies
 
-extern "C" fn on_statement(stm_: *const clingo_ast_statement_t,
-                           data: *mut std::os::raw::c_void)
-                           -> bool {
+extern "C" fn on_statement(
+    stm_: *const clingo_ast_statement_t,
+    data: *mut std::os::raw::c_void,
+) -> bool {
     let ret = true;
     //   clingo_ast_rule_t rule;
     //   clingo_ast_body_literal_t *body = NULL;
     //   clingo_ast_literal_t lit;
     //   clingo_ast_statement_t stm2;
     let stm = unsafe {
-            (std::mem::transmute::<*const clingo_ast_statement_t, *const ClingoAstStatement>(stm_))
-                .as_ref()
-        }
-        .unwrap();
+        (std::mem::transmute::<*const clingo_ast_statement_t, *const ClingoAstStatement>(stm_))
+            .as_ref()
+    }.unwrap();
     let mut on_statement_data = unsafe { (data as *mut OnStatementData).as_mut() }.unwrap();
     // let builder = on_statement_data.builder;
 
     // pass through all statements that are not rules
     if stm.get_type() !=
-       clingo_ast_statement_type::clingo_ast_statement_type_rule as clingo_ast_statement_type_t {
+        clingo_ast_statement_type::clingo_ast_statement_type_rule as clingo_ast_statement_type_t
+    {
         if !on_statement_data.builder.add(&stm) {
             // return error_main();
             return false;
@@ -46,23 +47,26 @@ extern "C" fn on_statement(stm_: *const clingo_ast_statement_t,
     //   }
 
     // copy the current rule body
-    let mut body = stm.get_rule_body().clone();
+    let mut body = unsafe { stm.rule() }.body().clone();
+    //    let x : () = body;
 
     // create atom enable
     //   lit.symbol   = &data->atom;
     //   lit.location = data->atom.location;
     //   lit.type     = clingo_ast_literal_type_symbolic;
     //   lit.sign     = clingo_ast_sign_none;
-    let lit = ClingoAstLiteral::new(on_statement_data.atom.location,
-                                    clingo_ast_sign::clingo_ast_sign_none,
-                                    clingo_ast_literal_type::clingo_ast_literal_type_symbolic,
-                                    &on_statement_data.atom);
+    let lit = ClingoAstLiteral::new(
+        on_statement_data.atom.location,
+        clingo_ast_sign::clingo_ast_sign_none,
+        clingo_ast_literal_type::clingo_ast_literal_type_symbolic,
+        &on_statement_data.atom,
+    );
 
     // add atom enable to the rule body
-    body[stm.get_rule().size].location = on_statement_data.atom.location;
-    //   body[stm.get_rule().size].type_    = clingo_ast_body_literal_type::clingo_ast_body_literal_type_literal as clingo_ast_body_literal_type_t;
-    //   body[stm.get_rule().size].sign     = clingo_ast_sign::clingo_ast_sign_none;
-    //   body[stm.get_rule().size].literal  = &lit;
+    //    body[stm.rule().size].location = on_statement_data.atom.location;
+    //   body[stm.rule().size].type_    = clingo_ast_body_literal_type::clingo_ast_body_literal_type_literal as clingo_ast_body_literal_type_t;
+    //   body[stm.rule().size].sign     = clingo_ast_sign::clingo_ast_sign_none;
+    //   body[stm.rule().size].literal  = &lit;
 
     // initialize the rule
     //   rule.head = stm->rule->head;
@@ -96,7 +100,9 @@ fn print_model(model: &mut ClingoModel) {
 
     // retrieve the symbols in the model
     let atoms = model
-        .symbols(clingo_show_type::clingo_show_type_shown as clingo_show_type_bitset_t)
+        .symbols(
+            clingo_show_type::clingo_show_type_shown as clingo_show_type_bitset_t,
+        )
         .expect("Failed to retrieve symbols in the model");
 
     for atom in atoms {
@@ -191,12 +197,15 @@ fn main() {
         let callback: clingo_ast_callback_t = Some(on_statement);
         let data_ptr =
             unsafe { std::mem::transmute::<&OnStatementData, *mut ::std::os::raw::c_void>(&data) };
-        if !safe_clingo_parse_program("a :- not b. b :- not a.",
-                                      callback,
-                                      data_ptr,
-                                      logger,
-                                      logger_data,
-                                      20) {
+        if !safe_clingo_parse_program(
+            "a :- not b. b :- not a.",
+            callback,
+            data_ptr,
+            logger,
+            logger_data,
+            20,
+        )
+        {
             return error_main();
         }
 
@@ -207,10 +216,11 @@ fn main() {
             size: 0,
         };
 
-        let stm =
-            ClingoAstStatement::new(location,
-                                    clingo_ast_statement_type::clingo_ast_statement_type_external,
-                                    &ext);
+        let stm = ClingoAstStatement::new(
+            location,
+            clingo_ast_statement_type::clingo_ast_statement_type_external,
+            &ext,
+        );
 
         if !data.builder.add(&stm) {
             return error_main();
@@ -238,12 +248,14 @@ fn main() {
     // solve with external enable = false
     println!("Solving with enable = false...");
     solve(ctl);
+
     // solve with external enable = true
     println!("Solving with enable = true...");
     if !ctl.assign_external(sym, clingo_truth_value::clingo_truth_value_true) {
         return error_main();
     }
     solve(ctl);
+
     // solve with external enable = false
     println!("Solving with enable = false...");
     if !ctl.assign_external(sym, clingo_truth_value::clingo_truth_value_false) {

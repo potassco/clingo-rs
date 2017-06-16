@@ -16,8 +16,10 @@ fn main() {
     // create a control object and pass command line arguments
     let logger: clingo_logger_t = None;
     let logger_data = std::ptr::null_mut();
-    let mut ctl = new_clingo_control(env::args(), logger, logger_data, 20)
+    let mut ctl = ClingoControl::new(env::args(), logger, logger_data, 20)
         .expect("Failed creating clingo_control");
+
+println!("ctl: {:?}",ctl);
 
     // add a logic program to the base part
     let parameters: Vec<&str> = Vec::new();
@@ -25,6 +27,8 @@ fn main() {
     if !err {
         return error_main();
     }
+
+println!("ctl: {:?}",ctl);
 
     // ground the base part
     let part = ClingoPart {
@@ -42,7 +46,7 @@ fn main() {
     // get symbolic atoms
     let atoms = ctl.symbolic_atoms().unwrap();
 
-    println!("Symbolic atoms:");
+    println!("Symbolic atoms:{:?}",atoms);
 
     // get begin and end iterator
     let mut it_a = atoms.begin(None).unwrap();
@@ -53,7 +57,7 @@ fn main() {
             break;
         }
         let symbol = atoms.symbol(it_a).unwrap();
-        let atom_string = safe_clingo_symbol_to_string(symbol).unwrap();
+        let atom_string = safe_clingo_symbol_to_string(&symbol).unwrap();
         print!("  {}", atom_string.to_str().unwrap());
 
         if atoms.is_fact(it_a).unwrap() {

@@ -25,9 +25,9 @@ fn print_statistics(stats: &mut ClingoStatistics, key: u64, depth: u8) {
     match statistics_type {
         // print values
         1 => {
-            let value = stats
-                .statistics_value_get(key)
-                .expect("Failed to retrieve statistics value");
+            let value = stats.statistics_value_get(key).expect(
+                "Failed to retrieve statistics value",
+            );
 
             // print value (with prefix for readability)
             print_prefix(depth);
@@ -37,15 +37,15 @@ fn print_statistics(stats: &mut ClingoStatistics, key: u64, depth: u8) {
         // print arrays
         2 => {
             // loop over array elements
-            let size = stats
-                .statistics_array_size(key)
-                .expect("Failed to retrieve statistics array size");
+            let size = stats.statistics_array_size(key).expect(
+                "Failed to retrieve statistics array size",
+            );
             for i in 0..size {
 
                 // print array offset (with prefix for readability)
-                let subkey = stats
-                    .statistics_array_at(key, i)
-                    .expect("Failed to retrieve statistics array at _");
+                let subkey = stats.statistics_array_at(key, i).expect(
+                    "Failed to retrieve statistics array at _",
+                );
                 print_prefix(depth);
                 println!("{} zu:", i);
 
@@ -81,12 +81,16 @@ fn print_model(model: &mut ClingoModel) {
 
     // retrieve the symbols in the model
     let atoms = model
-        .symbols(clingo_show_type::clingo_show_type_shown as clingo_show_type_bitset_t)
+        .symbols(
+            clingo_show_type::clingo_show_type_shown as clingo_show_type_bitset_t,
+        )
         .expect("Failed to retrieve symbols in the model");
+        
+    print!(" Model:");
 
     for atom in atoms {
         // retrieve and print the symbol's string
-        let atom_string = safe_clingo_symbol_to_string(atom).unwrap();
+        let atom_string = safe_clingo_symbol_to_string(&atom).unwrap();
         print!(" {}", atom_string.to_str().unwrap());
     }
     println!("");

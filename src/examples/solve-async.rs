@@ -14,11 +14,12 @@ fn error_main() {
     safe_clingo_error_code();
 }
 
-unsafe extern "C" fn on_event(etype: clingo_solve_event_type_t,
-                              event: *mut ::std::os::raw::c_void,
-                              data: *mut ::std::os::raw::c_void,
-                              goon: *mut bool)
-                              -> bool {
+extern "C" fn on_event(
+    etype: clingo_solve_event_type_t,
+    event: *mut ::std::os::raw::c_void,
+    data: *mut ::std::os::raw::c_void,
+    goon: *mut bool,
+) -> bool {
     //   (void)type;
     //   (void)event;
     //   (void)goon; // this is true by default
@@ -39,10 +40,12 @@ fn main() {
 
     // add a logic program to the base part
     let parameters: Vec<&str> = Vec::new();
-    let err = ctl.add("base",
-                      parameters,
-                      "#const n = 17.1 { p(X); q(X) } 1 :- X = 1..n.:- not n+1 { p(1..n); \
-                       q(1..n) }.");
+    let err = ctl.add(
+        "base",
+        parameters,
+        "#const n = 17.1 { p(X); q(X) } 1 :- X = 1..n.:- not n+1 { p(1..n); \
+                       q(1..n) }.",
+    );
     if !err {
         return error_main();
     }
@@ -66,13 +69,14 @@ fn main() {
     // create a solve handle with an attached vent handler
     let assumptions = vec![];
     let solve_event_callback: clingo_solve_event_callback_t = Some(on_event);
-    let mut handle =
-        ctl.solve((clingo_solve_mode::clingo_solve_mode_async as clingo_solve_mode_bitset_t) +
-                   (clingo_solve_mode::clingo_solve_mode_yield as clingo_solve_mode_bitset_t),
-                   assumptions,
-                   solve_event_callback,
-                   running)
-            .expect("Failed to retrieve solve handle");
+    let mut handle = ctl.solve(
+        (clingo_solve_mode::clingo_solve_mode_async as clingo_solve_mode_bitset_t) +
+            (clingo_solve_mode::clingo_solve_mode_yield as
+                 clingo_solve_mode_bitset_t),
+        assumptions,
+        solve_event_callback,
+        running,
+    ).expect("Failed to retrieve solve handle");
 
     // let's approximate pi
     let mut samples = 0;

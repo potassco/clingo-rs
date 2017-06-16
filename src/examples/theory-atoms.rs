@@ -15,12 +15,16 @@ fn print_model(model: &mut ClingoModel) {
 
     // retrieve the symbols in the model
     let atoms = model
-        .symbols(clingo_show_type::clingo_show_type_shown as clingo_show_type_bitset_t)
+        .symbols(
+            clingo_show_type::clingo_show_type_shown as clingo_show_type_bitset_t,
+        )
         .expect("Failed to retrieve symbols in the model");
 
+    print!(" Model:");
+    
     for atom in atoms {
         // retrieve and print the symbol's string
-        let atom_string = safe_clingo_symbol_to_string(atom).unwrap();
+        let atom_string = safe_clingo_symbol_to_string(&atom).unwrap();
         print!(" {}", atom_string.to_str().unwrap());
     }
     println!("");
@@ -95,10 +99,12 @@ fn main() {
 
     // add a logic program to the base part
     let parameters: Vec<&str> = Vec::new();
-    let err = ctl.add("base",
-                      parameters,
-                      "#theory t { term   { + : 1, binary, left };&a/0 : term, any;&b/1 : term, \
-                       {=}, term, any}.x :- &a { 1+2 }.y :- &b(3) { } = 17.");
+    let err = ctl.add(
+        "base",
+        parameters,
+        "#theory t { term   { + : 1, binary, left };&a/0 : term, any;&b/1 : term, \
+                       {=}, term, any}.x :- &a { 1+2 }.y :- &b(3) { } = 17.",
+    );
     if !err {
         return error_main();
     }

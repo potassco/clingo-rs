@@ -46,10 +46,9 @@ fn get_arg(sym: clingo_symbol_t, offset: c_int) -> Option<c_int> {
 
 extern "C" fn init(init_: *mut clingo_propagate_init_t, data: *mut ::std::os::raw::c_void) -> bool {
     let mut init = unsafe {
-            std::mem::transmute::<*mut clingo_propagate_init_t, *mut ClingoPropagateInit>(init_)
-                .as_mut()
-        }
-        .unwrap();
+        std::mem::transmute::<*mut clingo_propagate_init_t, *mut ClingoPropagateInit>(init_)
+            .as_mut()
+    }.unwrap();
     let mut propagator = unsafe { (data as *mut PropagatorT).as_mut() }.unwrap();
 
     // the total number of holes pigeons can be assigned too
@@ -66,8 +65,10 @@ extern "C" fn init(init_: *mut clingo_propagate_init_t, data: *mut ::std::os::ra
         // in principle the number of threads can increase between solve calls by changing the configuration
         // this case is not handled (elegantly) here
         if threads > propagator.states_size {
-            safe_clingo_set_error(clingo_error::clingo_error_runtime as clingo_error_t,
-                                  "more threads than states");
+            safe_clingo_set_error(
+                clingo_error::clingo_error_runtime as clingo_error_t,
+                "more threads than states",
+            );
         }
         return true;
     }
@@ -79,9 +80,9 @@ extern "C" fn init(init_: *mut clingo_propagate_init_t, data: *mut ::std::os::ra
     //   memset(data->states, 0, sizeof(*data->states) * threads);
     let s1_holes: Vec<clingo_literal_t> = vec![];
     let state1 = Rc::new(RefCell::new(StateT {
-                                          holes: s1_holes,
-                                          size: 0,
-                                      }));
+        holes: s1_holes,
+        size: 0,
+    }));
     propagator.states = vec![state1];
     propagator.states_size = threads;
 
@@ -167,17 +168,17 @@ extern "C" fn init(init_: *mut clingo_propagate_init_t, data: *mut ::std::os::ra
     return true;
 }
 
-extern "C" fn propagate(control_: *mut clingo_propagate_control_t,
-                        changes_: *const clingo_literal_t,
-                        size: usize,
-                        data: *mut ::std::os::raw::c_void)
-                        -> bool {
+extern "C" fn propagate(
+    control_: *mut clingo_propagate_control_t,
+    changes_: *const clingo_literal_t,
+    size: usize,
+    data: *mut ::std::os::raw::c_void,
+) -> bool {
     let mut control = unsafe {
-            std::mem::transmute::<*mut clingo_propagate_control_t,
-                                  *mut ClingoPropagateControl>(control_)
-                    .as_mut()
-        }
-        .unwrap();
+        std::mem::transmute::<*mut clingo_propagate_control_t, *mut ClingoPropagateControl>(
+            control_,
+        ).as_mut()
+    }.unwrap();
     let changes = unsafe { std::slice::from_raw_parts(changes_, size) };
     let propagator = unsafe { (data as *mut PropagatorT).as_ref() }.unwrap();
 
@@ -206,8 +207,9 @@ extern "C" fn propagate(control_: *mut clingo_propagate_control_t,
 
             // add the clause
             if !control
-                    .add_clause(clause, clingo_clause_type::clingo_clause_type_learnt)
-                    .unwrap() {
+                .add_clause(clause, clingo_clause_type::clingo_clause_type_learnt)
+                .unwrap()
+            {
                 return true;
             }
 
@@ -223,17 +225,17 @@ extern "C" fn propagate(control_: *mut clingo_propagate_control_t,
     return true;
 }
 
-extern "C" fn undo(control_: *mut clingo_propagate_control_t,
-                   changes_: *const clingo_literal_t,
-                   size: usize,
-                   data: *mut ::std::os::raw::c_void)
-                   -> bool {
+extern "C" fn undo(
+    control_: *mut clingo_propagate_control_t,
+    changes_: *const clingo_literal_t,
+    size: usize,
+    data: *mut ::std::os::raw::c_void,
+) -> bool {
     let mut control = unsafe {
-            std::mem::transmute::<*mut clingo_propagate_control_t,
-                                  *mut ClingoPropagateControl>(control_)
-                    .as_mut()
-        }
-        .unwrap();
+        std::mem::transmute::<*mut clingo_propagate_control_t, *mut ClingoPropagateControl>(
+            control_,
+        ).as_mut()
+    }.unwrap();
     let changes = unsafe { std::slice::from_raw_parts(changes_, size) };
     let propagator = unsafe { (data as *mut PropagatorT).as_ref() }.unwrap();
 
@@ -258,7 +260,9 @@ fn print_model(model: &mut ClingoModel) {
 
     // retrieve the symbols in the model
     let atoms = model
-        .symbols(clingo_show_type::clingo_show_type_shown as clingo_show_type_bitset_t)
+        .symbols(
+            clingo_show_type::clingo_show_type_shown as clingo_show_type_bitset_t,
+        )
         .expect("Failed to retrieve symbols in the model");
 
     for atom in atoms {
@@ -327,11 +331,9 @@ fn main() {
     match option {
         Some(ctl) => {
             // register the propagator
-            let prop_data_ptr =
-                unsafe {
-                    std::mem::transmute::<&mut PropagatorT,
-                                          *mut ::std::os::raw::c_void>(&mut prop_data)
-                };
+            let prop_data_ptr = unsafe {
+                std::mem::transmute::<&mut PropagatorT, *mut ::std::os::raw::c_void>(&mut prop_data)
+            };
             if !ctl.register_propagator(&prop, prop_data_ptr, false) {
                 return error_main();
             }
@@ -339,9 +341,11 @@ fn main() {
             // add a logic program to the pigeon part
             // parameters for the pigeon part
             let parameters = vec!["h", "p"];
-            let err = ctl.add("pigeon",
-                              parameters,
-                              "1 { place(P,H) : H = 1..h } 1 :- P = 1..p.");
+            let err = ctl.add(
+                "pigeon",
+                parameters,
+                "1 { place(P,H) : H = 1..h } 1 :- P = 1..p.",
+            );
             if !err {
                 return error_main();
             }

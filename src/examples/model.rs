@@ -16,13 +16,13 @@ fn print_model(model: &mut ClingoModel, label: &str, show: clingo_show_type_bits
     print!("{}:", label);
 
     // retrieve the symbols in the model
-    let atoms = model
-        .symbols(show)
-        .expect("Failed to retrieve symbols in the model");
+    let atoms = model.symbols(show).expect(
+        "Failed to retrieve symbols in the model",
+    );
 
     for atom in atoms {
         // retrieve and print the symbol's string
-        let atom_string = safe_clingo_symbol_to_string(atom).unwrap();
+        let atom_string = safe_clingo_symbol_to_string(&atom).unwrap();
         print!(" {}", atom_string.to_str().unwrap());
     }
     println!("");
@@ -61,20 +61,27 @@ fn solve(ctl: &mut ClingoControl) {
 
             println!("{}: {}", type_string, number);
 
-            print_model(model,
-                        "  shown",
-                        clingo_show_type::clingo_show_type_shown as clingo_show_type_bitset_t);
-            print_model(model,
-                        "  atoms",
-                        clingo_show_type::clingo_show_type_atoms as clingo_show_type_bitset_t);
-            print_model(model,
-                        "  terms",
-                        clingo_show_type::clingo_show_type_terms as clingo_show_type_bitset_t);
-            print_model(model,
-                        " ~atoms",
-                        (clingo_show_type::clingo_show_type_complement as
-                         clingo_show_type_bitset_t +
-                         clingo_show_type::clingo_show_type_atoms as clingo_show_type_bitset_t));
+            print_model(
+                model,
+                "  shown",
+                clingo_show_type::clingo_show_type_shown as clingo_show_type_bitset_t,
+            );
+            print_model(
+                model,
+                "  atoms",
+                clingo_show_type::clingo_show_type_atoms as clingo_show_type_bitset_t,
+            );
+            print_model(
+                model,
+                "  terms",
+                clingo_show_type::clingo_show_type_terms as clingo_show_type_bitset_t,
+            );
+            print_model(
+                model,
+                " ~atoms",
+                (clingo_show_type::clingo_show_type_complement as clingo_show_type_bitset_t +
+                     clingo_show_type::clingo_show_type_atoms as clingo_show_type_bitset_t),
+            );
 
         } else {
             // stop if there are no more models
