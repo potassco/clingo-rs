@@ -19,16 +19,12 @@ fn main() {
     let mut ctl = ClingoControl::new(env::args(), logger, logger_data, 20)
         .expect("Failed creating clingo_control");
 
-println!("ctl: {:?}",ctl);
-
     // add a logic program to the base part
     let parameters: Vec<&str> = Vec::new();
     let err = ctl.add("base", parameters, "a. {b}. #external c.");
     if !err {
         return error_main();
     }
-
-println!("ctl: {:?}",ctl);
 
     // ground the base part
     let part = ClingoPart {
@@ -46,7 +42,7 @@ println!("ctl: {:?}",ctl);
     // get symbolic atoms
     let atoms = ctl.symbolic_atoms().unwrap();
 
-    println!("Symbolic atoms:{:?}",atoms);
+    println!("Symbolic atoms:");
 
     // get begin and end iterator
     let mut it_a = atoms.begin(None).unwrap();
