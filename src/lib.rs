@@ -994,17 +994,10 @@ pub fn safe_clingo_symbol_arguments(symbol: clingo_symbol_t) -> Option<Vec<cling
         None
     } else {
         let mut a1 = Vec::<clingo_symbol_t>::with_capacity(size);
-        //         for _ in 0..size {
-        //             let nsymbol = unsafe { *a_ptr };
-        //             a1.push(nsymbol);
-        //         }
-        //
-        let res = unsafe { Vec::from_raw_parts(&mut a_ptr, size, size) };
-        for i in res {
-            println!("i:{:?}", i);
-            let x = unsafe { *i };
-            println!("*i:{}", x);
-            a1.push(x);
+        for _ in 0..size {
+            let nsymbol = unsafe { *a_ptr };
+            a1.push(nsymbol);
+            a_ptr = unsafe { a_ptr.offset(1) };
         }
         Some(a1)
     }
