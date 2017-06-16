@@ -34,13 +34,13 @@ fn main() {
         let atom_string2 = safe_clingo_symbol_to_string(symbol).unwrap();
         if equal {
             println!(
-                "{} is equal {}",
+                "{} is equal to {}",
                 atom_string1.to_str().unwrap(),
                 atom_string2.to_str().unwrap()
             );
         } else {
             println!(
-                "{} is not equal {}",
+                "{} is not equal to {}",
                 atom_string1.to_str().unwrap(),
                 atom_string2.to_str().unwrap()
             );
