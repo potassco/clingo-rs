@@ -1,6 +1,13 @@
 # clingo-rs
 Rust bindings to the [clingo](https://github.com/potassco/clingo) library
 
+## Requirements
+
+- a c++14 conforming compiler
+  - *at least* [gcc](https://gcc.gnu.org/) version 4.9
+  - [clang](http://clang.llvm.org/) version 3.1 (using either libstdc++
+    provided by gcc 4.9 or libc++)
+    
 ## Compile & Test
     cargo build
     cargo test
