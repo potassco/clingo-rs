@@ -45,6 +45,7 @@ fn get_arg(sym: clingo_symbol_t, offset: c_int) -> Option<c_int> {
 }
 
 extern "C" fn init(init_: *mut clingo_propagate_init_t, data: *mut ::std::os::raw::c_void) -> bool {
+
     let mut init = unsafe {
         std::mem::transmute::<*mut clingo_propagate_init_t, *mut ClingoPropagateInit>(init_)
             .as_mut()
@@ -174,6 +175,7 @@ extern "C" fn propagate(
     size: usize,
     data: *mut ::std::os::raw::c_void,
 ) -> bool {
+
     let mut control = unsafe {
         std::mem::transmute::<*mut clingo_propagate_control_t, *mut ClingoPropagateControl>(
             control_,
@@ -231,6 +233,7 @@ extern "C" fn undo(
     size: usize,
     data: *mut ::std::os::raw::c_void,
 ) -> bool {
+
     let mut control = unsafe {
         std::mem::transmute::<*mut clingo_propagate_control_t, *mut ClingoPropagateControl>(
             control_,
@@ -265,6 +268,8 @@ fn print_model(model: &mut ClingoModel) {
         )
         .expect("Failed to retrieve symbols in the model");
 
+    print!(" Model:");
+
     for atom in atoms {
         // retrieve and print the symbol's string
         let atom_string = safe_clingo_symbol_to_string(atom).unwrap();
@@ -274,6 +279,7 @@ fn print_model(model: &mut ClingoModel) {
 }
 
 fn solve(ctl: &mut ClingoControl) {
+
     let solve_mode = clingo_solve_mode::clingo_solve_mode_yield as clingo_solve_mode_bitset_t;
     let assumptions = vec![];
     let solve_event_callback = None;
@@ -302,6 +308,10 @@ fn solve(ctl: &mut ClingoControl) {
 }
 
 fn main() {
+
+    // collect clingo options from the command line
+    let options = env::args().skip(1).collect();
+
     // create a propagator with the functions above
     // using the default implementation for the model check
     let prop = clingo_propagator {
@@ -319,15 +329,10 @@ fn main() {
         states_size: 0,
     };
 
-    // set the number of holes
-    let arg0 = clingo_symbol::create_number(8);
-    // set the number of pigeons
-    let arg1 = clingo_symbol::create_number(9);
-
     // create a control object and pass command line arguments
     let logger = None;
     let logger_data = std::ptr::null_mut();
-    let option = ClingoControl::new(env::args(), logger, logger_data, 20);
+    let option = ClingoControl::new(options, logger, logger_data, 20);
     match option {
         Some(ctl) => {
             // register the propagator
@@ -350,14 +355,23 @@ fn main() {
                 return error_main();
             }
 
+            print!("");
+
             // ground the pigeon part
-            // arguments to the pigeon program part
-            let num_pigeons = u64::from_str_radix(env::args().nth(1).unwrap().as_str(), 10)
-                .unwrap();
+
+            // set the number of holes
+            let arg0 = clingo_symbol::create_number(8);
+            // set the number of pigeons
+            let arg1 = clingo_symbol::create_number(9);
+
+            let mut args = Vec::new();
+            args.push(arg0);
+            args.push(arg1);
+
             // the pigeon program part having the number of holes and pigeons as parameters
             let part = ClingoPart {
                 name: CString::new("pigeon").unwrap(),
-                params: &[num_pigeons],
+                params: &args,
             };
             let parts = vec![part];
             let ground_callback = None;

@@ -29,9 +29,7 @@ extern "C" fn on_statement(
     // let builder = on_statement_data.builder;
 
     // pass through all statements that are not rules
-    if stm.get_type() !=
-        clingo_ast_statement_type::clingo_ast_statement_type_rule
-    {
+    if stm.get_type() != clingo_ast_statement_type::clingo_ast_statement_type_rule {
         if !on_statement_data.builder.add(&stm) {
             // return error_main();
             return false;
@@ -59,7 +57,7 @@ extern "C" fn on_statement(
     );
 
     // add atom enable to the rule body
-    let mut y: ClingoAstBodyLiteral = ClingoAstBodyLiteral::new(
+    let y: ClingoAstBodyLiteral = ClingoAstBodyLiteral::new(
         on_statement_data.atom.location,
         clingo_ast_body_literal_type::clingo_ast_body_literal_type_literal as
             clingo_ast_body_literal_type_t,
@@ -69,16 +67,20 @@ extern "C" fn on_statement(
     body.push(y);
 
     // initialize the rule
-    let rule = ClingoAstRule::new(stm.rule().head(), body);
+    let rule = ClingoAstRule::new(unsafe { stm.rule() }.head(), &body);
     //   rule.head = stm->rule->head;
     //   rule.size = stm->rule->size + 1;
     //   rule.body = body;
 
     // initialize the statement
-    let stm2 = ClingoAstStatement::new(stm.location() ,stm.get_type(), &rule);
+    let stm2 = ClingoAstStatement::new_rule(stm.location(), stm.get_type(), &rule);
 
     // add the rewritten statement to the program
     //   if (!clingo_program_builder_add(data->builder, &stm2)) { return error_main(); }
+    if !on_statement_data.builder.add(&stm2) {
+        // return error_main();
+        return false;
+    }
 
     //   goto out;
     // error:
@@ -103,6 +105,8 @@ fn print_model(model: &mut ClingoModel) {
             clingo_show_type::clingo_show_type_shown as clingo_show_type_bitset_t,
         )
         .expect("Failed to retrieve symbols in the model");
+
+    print!("Model:");
 
     for atom in atoms {
         // retrieve and print the symbol's string
@@ -140,10 +144,13 @@ fn solve(ctl: &mut ClingoControl) {
 }
 
 fn main() {
-    // create a control object and pass command line arguments
+
+    // collect clingo options from the command line
+    let options = env::args().skip(1).collect();
+
     let logger = None;
     let logger_data = std::ptr::null_mut();
-    let mut ctl = ClingoControl::new(env::args(), logger, logger_data, 20)
+    let mut ctl = ClingoControl::new(options, logger, logger_data, 20)
         .expect("Failed creating clingo_control");
 
     let sym = clingo_symbol::create_id("enable", true).unwrap();
@@ -215,7 +222,7 @@ fn main() {
             size: 0,
         };
 
-        let stm = ClingoAstStatement::new(
+        let stm = ClingoAstStatement::new_external(
             location,
             clingo_ast_statement_type::clingo_ast_statement_type_external,
             &ext,

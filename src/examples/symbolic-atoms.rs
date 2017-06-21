@@ -13,10 +13,13 @@ fn error_main() {
 
 fn main() {
 
+    // collect clingo options from the command line
+    let options = env::args().skip(1).collect();
+
     // create a control object and pass command line arguments
     let logger: clingo_logger_t = None;
     let logger_data = std::ptr::null_mut();
-    let mut ctl = ClingoControl::new(env::args(), logger, logger_data, 20)
+    let mut ctl = ClingoControl::new(options, logger, logger_data, 20)
         .expect("Failed creating clingo_control");
 
     // add a logic program to the base part

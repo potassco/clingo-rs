@@ -93,24 +93,20 @@ impl Drop for ClingoControl {
 }
 impl ClingoControl {
     pub fn new<'a>(
-        arguments: std::env::Args,
+        arguments: std::vec::Vec<String>,
         logger: clingo_logger_t,
         logger_data: *mut ::std::os::raw::c_void,
         message_limit: ::std::os::raw::c_uint,
     ) -> Option<&'a mut ClingoControl> {
 
-        let arguments_size = arguments.len() - 1;
-
         // create a vector of zero terminated strings
-        let args = arguments
-            .map(|arg| CString::new(arg).unwrap())
-            .collect::<Vec<CString>>();
-
-        // drop first element
-        let (_, tail) = args.split_first().unwrap();
+        let mut args: Vec<CString> = Vec::new();
+        for arg in arguments {
+            args.push(CString::new(arg).unwrap());
+        }
 
         // convert the strings to raw pointers
-        let c_args = tail.iter()
+        let c_args = args.iter()
             .map(|arg| arg.as_ptr())
             .collect::<Vec<*const c_char>>();
 
@@ -119,7 +115,7 @@ impl ClingoControl {
         let err = unsafe {
             clingo_control_new(
                 c_args.as_ptr(),
-                arguments_size,
+                c_args.len(),
                 logger,
                 logger_data,
                 message_limit,
@@ -332,7 +328,6 @@ impl ClingoProgramBuilder {
 #[derive(Debug, Clone, Copy)]
 pub struct ClingoAstBodyLiteral(clingo_ast_body_literal_t);
 impl ClingoAstBodyLiteral {
-
     pub fn new(
         location: clingo_location_t,
         sign: clingo_ast_sign_t,
@@ -358,9 +353,13 @@ impl ClingoAstBodyLiteral {
 }
 pub struct ClingoAstRule(clingo_ast_rule_t);
 impl ClingoAstRule {
-
-    pub fn new(head : clingo_ast_head_literal_t, body : &[ClingoAstBodyLiteral]) -> ClingoAstRule {
-        let rule = clingo_ast_rule_t {};
+    pub fn new(head: clingo_ast_head_literal_t, body: &[ClingoAstBodyLiteral]) -> ClingoAstRule {
+        let body_ptr = body.as_ptr() as *const clingo_ast_body_literal_t;
+        let rule = clingo_ast_rule {
+            head: head,
+            body: body_ptr,
+            size: body.len(),
+        };
         ClingoAstRule(rule)
     }
 
@@ -384,8 +383,7 @@ impl ClingoAstRule {
 }
 pub struct ClingoAstStatement(clingo_ast_statement_t);
 impl ClingoAstStatement {
-
-    pub fn new(
+    pub fn new_external(
         location: clingo_location,
         type_: clingo_ast_statement_type,
         external: *const clingo_ast_external_t,
@@ -415,6 +413,38 @@ impl ClingoAstStatement {
         ClingoAstStatement(stm)
     }
 
+    pub fn new_rule(
+        location: clingo_location,
+        type_: clingo_ast_statement_type,
+        rule_: &ClingoAstRule,
+    ) -> ClingoAstStatement {
+
+        let rule: *const ClingoAstRule = rule_;
+
+        let _bg_union_2 = clingo_ast_statement__bindgen_ty_1 {
+            rule: __BindgenUnionField::new(),
+            definition: __BindgenUnionField::new(),
+            show_signature: __BindgenUnionField::new(),
+            show_term: __BindgenUnionField::new(),
+            minimize: __BindgenUnionField::new(),
+            script: __BindgenUnionField::new(),
+            program: __BindgenUnionField::new(),
+            external: __BindgenUnionField::new(),
+            edge: __BindgenUnionField::new(),
+            heuristic: __BindgenUnionField::new(),
+            project_atom: __BindgenUnionField::new(),
+            project_signature: __BindgenUnionField::new(),
+            theory_definition: __BindgenUnionField::new(),
+            bindgen_union_field: rule as u64,
+        };
+        let stm = clingo_ast_statement_t {
+            location: location,
+            type_: type_ as clingo_ast_statement_type_t,
+            __bindgen_anon_1: _bg_union_2,
+        };
+        ClingoAstStatement(stm)
+    }
+
     pub fn location(&self) -> clingo_location_t {
         let ClingoAstStatement(ref stm) = *self;
         stm.location
@@ -422,10 +452,10 @@ impl ClingoAstStatement {
 
     pub fn get_type(&self) -> clingo_ast_statement_type {
         let ClingoAstStatement(ref stm) = *self;
-        let t = stm.type_; 
+        let t = stm.type_;
         match t {
             0 => clingo_ast_statement_type::clingo_ast_statement_type_rule,
-            1 => clingo_ast_statement_type::clingo_ast_statement_type_const, 
+            1 => clingo_ast_statement_type::clingo_ast_statement_type_const,
             2 => clingo_ast_statement_type::clingo_ast_statement_type_show_signature,
             3 => clingo_ast_statement_type::clingo_ast_statement_type_show_term,
             4 => clingo_ast_statement_type::clingo_ast_statement_type_minimize,

@@ -31,6 +31,7 @@ fn print_model(model: &mut ClingoModel) {
 }
 
 fn solve(ctl: &mut ClingoControl) {
+
     let solve_mode = clingo_solve_mode::clingo_solve_mode_yield as clingo_solve_mode_bitset_t;
     let assumptions = vec![];
     let solve_event_callback = None;
@@ -59,6 +60,7 @@ fn solve(ctl: &mut ClingoControl) {
 }
 
 fn get_theory_atom_literal(ctl: &mut ClingoControl) -> std::option::Option<clingo_literal_t> {
+
     // get the theory atoms container
     let atoms = ctl.theory_atoms().unwrap();
 
@@ -91,10 +93,13 @@ fn get_theory_atom_literal(ctl: &mut ClingoControl) -> std::option::Option<cling
 
 fn main() {
 
+    // collect clingo options from the command line
+    let options = env::args().skip(1).collect();
+
     // create a control object and pass command line arguments
     let logger = None;
     let logger_data = std::ptr::null_mut();
-    let mut ctl = ClingoControl::new(env::args(), logger, logger_data, 20)
+    let mut ctl = ClingoControl::new(options, logger, logger_data, 20)
         .expect("Failed creating clingo_control");
 
     // add a logic program to the base part
