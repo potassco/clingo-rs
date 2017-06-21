@@ -445,7 +445,6 @@ impl ClingoAstStatement {
 
     pub fn new_rule(
         location: clingo_location,
-        type_: clingo_ast_statement_type,
         rule_: &ClingoAstRule,
     ) -> ClingoAstStatement {
 
@@ -469,7 +468,7 @@ impl ClingoAstStatement {
         };
         let stm = clingo_ast_statement_t {
             location: location,
-            type_: type_ as clingo_ast_statement_type_t,
+            type_: clingo_ast_statement_type::clingo_ast_statement_type_rule as clingo_ast_statement_type_t,
             __bindgen_anon_1: _bg_union_2,
         };
         ClingoAstStatement(stm)
@@ -526,7 +525,6 @@ impl ClingoAstTerm {
             type_: clingo_ast_term_type::clingo_ast_term_type_symbol as clingo_ast_term_type_t,
             __bindgen_anon_1: _bg_union_1,
         };
-
         ClingoAstTerm(term)
     }
 

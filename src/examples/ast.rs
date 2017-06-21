@@ -65,10 +65,9 @@ extern "C" fn on_statement(
     let rule = ClingoAstRule::new(unsafe { stm.rule() }.head(), &body);
 
     // initialize the statement
-    let stm2 = ClingoAstStatement::new_rule(stm.location(), stm.get_type(), &rule);
+    let stm2 = ClingoAstStatement::new_rule(stm.location(), &rule);
 
     // add the rewritten statement to the program
-    //   if (!clingo_program_builder_add(data->builder, &stm2)) { return error_main(); }
     if !on_statement_data.builder.add(&stm2) {
         // return error_main();
         return false;
