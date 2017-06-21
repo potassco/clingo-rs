@@ -15,7 +15,7 @@ use clingo::*;
 struct StateT {
     // assignment of pigeons to holes
     // (hole number -> pigeon placement literal or zero)
-    holes: Vec<clingo_literal_t>,
+    holes: Vec<ClingoLiteral>,
     size: usize,
 }
 
@@ -37,7 +37,7 @@ fn error_main() {
 }
 
 // returns the offset'th numeric argument of the function symbol sym
-fn get_arg(sym: clingo_symbol_t, offset: c_int) -> Option<c_int> {
+fn get_arg(sym: ClingoSymbol, offset: c_int) -> Option<c_int> {
     // get the arguments of the function symbol
     let args = safe_clingo_symbol_arguments(sym).unwrap();
     // get the requested numeric argument
@@ -58,7 +58,7 @@ extern "C" fn init(init_: *mut clingo_propagate_init_t, data: *mut ::std::os::ra
     // stores the (numeric) maximum of the solver literals capturing pigeon placements
     // note that the code below assumes that this literal is not negative
     // which holds for the pigeon problem but not in general
-    let mut max: clingo_literal_t = 0;
+    let mut max: ClingoLiteral = 0;
     // ensure that solve can be called multiple times
     // for simplicity, the case that additional holes or pigeons to assign are grounded is not handled here
 
@@ -67,7 +67,7 @@ extern "C" fn init(init_: *mut clingo_propagate_init_t, data: *mut ::std::os::ra
         // this case is not handled (elegantly) here
         if threads > propagator.states_size {
             safe_clingo_set_error(
-                clingo_error::clingo_error_runtime as clingo_error_t,
+                clingo_error::clingo_error_runtime,
                 "more threads than states",
             );
         }
@@ -79,7 +79,7 @@ extern "C" fn init(init_: *mut clingo_propagate_init_t, data: *mut ::std::os::ra
     //     return false;
     // }
     //   memset(data->states, 0, sizeof(*data->states) * threads);
-    let s1_holes: Vec<clingo_literal_t> = vec![];
+    let s1_holes: Vec<ClingoLiteral> = vec![];
     let state1 = Rc::new(RefCell::new(StateT {
         holes: s1_holes,
         size: 0,
@@ -171,7 +171,7 @@ extern "C" fn init(init_: *mut clingo_propagate_init_t, data: *mut ::std::os::ra
 
 extern "C" fn propagate(
     control_: *mut clingo_propagate_control_t,
-    changes_: *const clingo_literal_t,
+    changes_: *const ClingoLiteral,
     size: usize,
     data: *mut ::std::os::raw::c_void,
 ) -> bool {
@@ -190,7 +190,7 @@ extern "C" fn propagate(
     // apply and check the pigeon assignments done by the solver
     for i in 0..size {
         // the freshly assigned literal
-        let lit: clingo_literal_t = changes[i];
+        let lit: ClingoLiteral = changes[i];
         // a pointer to the previously assigned literal
         let idx = propagator.pigeons[lit as usize] as usize;
         let mut prev = state.holes[idx];
@@ -203,7 +203,7 @@ extern "C" fn propagate(
         // create a conflicting clause and propagate it
         else {
             // current and previous literal must not hold together
-            let clause: &[clingo_literal_t] = &[-lit, -prev];
+            let clause: &[ClingoLiteral] = &[-lit, -prev];
             // stores the result when adding a clause or propagationg
             // if result is false propagation must stop for the solver to backtrack
 
@@ -229,7 +229,7 @@ extern "C" fn propagate(
 
 extern "C" fn undo(
     control_: *mut clingo_propagate_control_t,
-    changes_: *const clingo_literal_t,
+    changes_: *const ClingoLiteral,
     size: usize,
     data: *mut ::std::os::raw::c_void,
 ) -> bool {
@@ -247,7 +247,7 @@ extern "C" fn undo(
 
     // undo the assignments made in propagate
     for i in 0..size {
-        let lit: clingo_literal_t = changes[i];
+        let lit: ClingoLiteral = changes[i];
         let hole: c_int = propagator.pigeons[lit as usize];
 
         if state.holes[hole as usize] == lit {

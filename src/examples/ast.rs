@@ -6,7 +6,7 @@ use clingo::*;
 
 
 pub struct OnStatementData<'a> {
-    atom: clingo_ast_term_t,
+    atom: ClingoAstTerm,
     builder: &'a mut ClingoProgramBuilder,
 }
 
@@ -17,16 +17,12 @@ extern "C" fn on_statement(
     data: *mut std::os::raw::c_void,
 ) -> bool {
     let ret = true;
-    //   clingo_ast_rule_t rule;
-    //   clingo_ast_body_literal_t *body = NULL;
-    //   clingo_ast_literal_t lit;
-    //   clingo_ast_statement_t stm2;
+
     let stm = unsafe {
         (std::mem::transmute::<*const clingo_ast_statement_t, *const ClingoAstStatement>(stm_))
             .as_ref()
     }.unwrap();
     let mut on_statement_data = unsafe { (data as *mut OnStatementData).as_mut() }.unwrap();
-    // let builder = on_statement_data.builder;
 
     // pass through all statements that are not rules
     if stm.get_type() != clingo_ast_statement_type::clingo_ast_statement_type_rule {
@@ -50,7 +46,7 @@ extern "C" fn on_statement(
 
     // create atom enable
     let lit = ClingoAstLiteral::new(
-        on_statement_data.atom.location,
+        on_statement_data.atom.location(),
         clingo_ast_sign::clingo_ast_sign_none,
         clingo_ast_literal_type::clingo_ast_literal_type_symbolic,
         &on_statement_data.atom,
@@ -58,19 +54,15 @@ extern "C" fn on_statement(
 
     // add atom enable to the rule body
     let y: ClingoAstBodyLiteral = ClingoAstBodyLiteral::new(
-        on_statement_data.atom.location,
-        clingo_ast_body_literal_type::clingo_ast_body_literal_type_literal as
-            clingo_ast_body_literal_type_t,
-        clingo_ast_sign::clingo_ast_sign_none as clingo_ast_sign_t,
+        on_statement_data.atom.location(),
+        clingo_ast_sign::clingo_ast_sign_none,
+        clingo_ast_body_literal_type::clingo_ast_body_literal_type_literal,
         &lit,
     );
     body.push(y);
 
     // initialize the rule
     let rule = ClingoAstRule::new(unsafe { stm.rule() }.head(), &body);
-    //   rule.head = stm->rule->head;
-    //   rule.size = stm->rule->size + 1;
-    //   rule.body = body;
 
     // initialize the statement
     let stm2 = ClingoAstStatement::new_rule(stm.location(), stm.get_type(), &rule);
@@ -170,22 +162,7 @@ fn main() {
         };
 
         // initilize atom to add
-        let _bg_union_1 = clingo_ast_term__bindgen_ty_1 {
-            symbol: __BindgenUnionField::new(),
-            variable: __BindgenUnionField::new(),
-            unary_operation: __BindgenUnionField::new(),
-            binary_operation: __BindgenUnionField::new(),
-            interval: __BindgenUnionField::new(),
-            function: __BindgenUnionField::new(),
-            external_function: __BindgenUnionField::new(),
-            pool: __BindgenUnionField::new(),
-            bindgen_union_field: sym,
-        };
-        let atom = clingo_ast_term_t {
-            location: location,
-            type_: clingo_ast_term_type::clingo_ast_term_type_symbol as clingo_ast_term_type_t,
-            __bindgen_anon_1: _bg_union_1,
-        };
+        let atom = ClingoAstTerm::new_symbol(location, sym);
 
         let mut data = OnStatementData {
             atom: atom,
@@ -216,11 +193,7 @@ fn main() {
         }
 
         // add the external statement: #external enable.
-        let ext = clingo_ast_external {
-            atom: data.atom,
-            body: std::ptr::null(),
-            size: 0,
-        };
+        let ext = ClingoAstExternal::new(data.atom, &[]);
 
         let stm = ClingoAstStatement::new_external(
             location,

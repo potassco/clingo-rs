@@ -121,7 +121,7 @@ fn main() {
 
         // add rule: :- not d, c.
         let head = vec![];
-        let body = vec![-(atom_d as clingo_literal_t), atom_ids[2]];
+        let body = vec![-(atom_d as ClingoLiteral), atom_ids[2]];
 
         if !backend.rule(false, &head, &body) {
             return error_main();

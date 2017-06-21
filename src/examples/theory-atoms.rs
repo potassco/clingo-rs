@@ -59,7 +59,7 @@ fn solve(ctl: &mut ClingoControl) {
     handle.close();
 }
 
-fn get_theory_atom_literal(ctl: &mut ClingoControl) -> std::option::Option<clingo_literal_t> {
+fn get_theory_atom_literal(ctl: &mut ClingoControl) -> std::option::Option<ClingoLiteral> {
 
     // get the theory atoms container
     let atoms = ctl.theory_atoms().unwrap();
@@ -72,20 +72,20 @@ fn get_theory_atom_literal(ctl: &mut ClingoControl) -> std::option::Option<cling
     for atom in 0..size {
 
         // get the term associated with the theory atom
-        let term = atoms.atom_term(atom as clingo_id_t).unwrap();
+        let term = atoms.atom_term(atom as ClingoId).unwrap();
 
         // get the name associated with the theory atom
         let name = atoms.term_name(term).unwrap();
         // we got theory atom b/1 here
         if name == "b" {
-            let guard = atoms.atom_has_guard(atom as clingo_id_t).unwrap();
+            let guard = atoms.atom_has_guard(atom as ClingoId).unwrap();
             if guard {
                 println!("theory atom b/1 has a guard: true");
             } else {
                 println!("theory atom b/1 has a guard: false");
             }
             // get the literal associated with the theory atom
-            return Some(atoms.atom_literal(atom as clingo_id_t).unwrap());
+            return Some(atoms.atom_literal(atom as ClingoId).unwrap());
         }
     }
     None
