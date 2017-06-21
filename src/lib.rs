@@ -10,19 +10,19 @@ use libc::c_char;
 use clingo_sys::*;
 
 pub use clingo_sys::{clingo_ast_body_literal_type_t, clingo_ast_body_literal_type,
-                     clingo_ast_sign, clingo_ast_literal_type, clingo_clause_type, clingo_error,
-                     clingo_error_t, clingo_symbol_t, clingo_signature_t, clingo_signature_create,
-                     clingo_symbolic_atoms_t, clingo_propagate_init_symbolic_atoms,
-                     clingo_propagate_init_t, clingo_propagate_control_t, __BindgenUnionField,
-                     clingo_ast_statement_type, clingo_ast_statement_type_t,
-                     clingo_ast_statement_t, clingo_ast_term__bindgen_ty_1, clingo_location,
-                     clingo_ast_external, clingo_ast_term_t, clingo_ast_term_type,
-                     clingo_ast_term_type_t, clingo_ast_callback_t, clingo_propagator,
-                     clingo_solve_event_callback_t, clingo_solve_event_type_t,
-                     clingo_solve_handle_t, clingo_solve_result_bitset_t,
-                     clingo_solve_mode_bitset_t, clingo_solve_mode, clingo_show_type_bitset_t,
-                     clingo_show_type, clingo_logger_t, clingo_literal_t, clingo_id_t,
-                     clingo_truth_value};
+                     clingo_ast_sign, clingo_ast_sign_t, clingo_ast_literal_type,
+                     clingo_clause_type, clingo_error, clingo_error_t, clingo_symbol_t,
+                     clingo_signature_t, clingo_signature_create, clingo_symbolic_atoms_t,
+                     clingo_propagate_init_symbolic_atoms, clingo_propagate_init_t,
+                     clingo_propagate_control_t, __BindgenUnionField, clingo_ast_statement_type,
+                     clingo_ast_statement_type_t, clingo_ast_statement_t,
+                     clingo_ast_term__bindgen_ty_1, clingo_location, clingo_ast_external,
+                     clingo_ast_term_t, clingo_ast_term_type, clingo_ast_term_type_t,
+                     clingo_ast_callback_t, clingo_propagator, clingo_solve_event_callback_t,
+                     clingo_solve_event_type_t, clingo_solve_handle_t,
+                     clingo_solve_result_bitset_t, clingo_solve_mode_bitset_t, clingo_solve_mode,
+                     clingo_show_type_bitset_t, clingo_show_type, clingo_logger_t,
+                     clingo_literal_t, clingo_id_t, clingo_truth_value};
 
 
 pub fn safe_clingo_version() -> (i32, i32, i32) {
@@ -327,16 +327,64 @@ impl ClingoProgramBuilder {
         unsafe { clingo_program_builder_end(&mut self.0) }
     }
 }
+// pub type ClingoAstBodyLiteral = clingo_ast_body_literal_t;
 
+#[derive(Debug, Clone, Copy)]
+pub struct ClingoAstBodyLiteral(clingo_ast_body_literal_t);
+impl ClingoAstBodyLiteral {
+
+    pub fn new(
+        location: clingo_location_t,
+        sign: clingo_ast_sign_t,
+        type_: clingo_ast_body_literal_type_t,
+        lit_ref: &ClingoAstLiteral,
+    ) -> ClingoAstBodyLiteral {
+        let _bg_union_2 = clingo_ast_body_literal__bindgen_ty_1 {
+            literal: __BindgenUnionField::new(),
+            conditional: __BindgenUnionField::new(),
+            aggregate: __BindgenUnionField::new(),
+            body_aggregate: __BindgenUnionField::new(),
+            theory_atom: __BindgenUnionField::new(),
+            disjoint: __BindgenUnionField::new(),
+            bindgen_union_field: (lit_ref as *const ClingoAstLiteral) as u64,
+        };
+        ClingoAstBodyLiteral(clingo_ast_body_literal_t {
+            location: location,
+            sign: sign,
+            type_: type_,
+            __bindgen_anon_1: _bg_union_2,
+        })
+    }
+}
 pub struct ClingoAstRule(clingo_ast_rule_t);
 impl ClingoAstRule {
-    pub fn body(&self) -> &[clingo_ast_body_literal_t] {
+
+    pub fn new(head : clingo_ast_head_literal_t, body : &[ClingoAstBodyLiteral]) -> ClingoAstRule {
+        let rule = clingo_ast_rule_t {};
+        ClingoAstRule(rule)
+    }
+
+    pub fn head(&self) -> clingo_ast_head_literal_t {
         let ClingoAstRule(ref rule) = *self;
-        unsafe { std::slice::from_raw_parts(rule.body, rule.size) }
+        rule.head
+    }
+    pub fn body(&self) -> &[ClingoAstBodyLiteral] {
+        let ClingoAstRule(ref rule) = *self;
+        let bla = unsafe { std::slice::from_raw_parts(rule.body, rule.size) };
+        let blu = unsafe {
+            std::mem::transmute::<&[clingo_ast_body_literal_t], &[ClingoAstBodyLiteral]>(bla)
+        };
+        blu
+    }
+
+    pub fn size(&self) -> usize {
+        let ClingoAstRule(ref rule) = *self;
+        rule.size
     }
 }
 pub struct ClingoAstStatement(clingo_ast_statement_t);
 impl ClingoAstStatement {
+
     pub fn new(
         location: clingo_location,
         type_: clingo_ast_statement_type,
@@ -366,10 +414,32 @@ impl ClingoAstStatement {
         };
         ClingoAstStatement(stm)
     }
-    pub fn get_type(&self) -> clingo_ast_statement_type_t {
+
+    pub fn location(&self) -> clingo_location_t {
         let ClingoAstStatement(ref stm) = *self;
-        stm.type_
+        stm.location
     }
+
+    pub fn get_type(&self) -> clingo_ast_statement_type {
+        let ClingoAstStatement(ref stm) = *self;
+        let t = stm.type_; 
+        match t {
+            0 => clingo_ast_statement_type::clingo_ast_statement_type_rule,
+            1 => clingo_ast_statement_type::clingo_ast_statement_type_const, 
+            2 => clingo_ast_statement_type::clingo_ast_statement_type_show_signature,
+            3 => clingo_ast_statement_type::clingo_ast_statement_type_show_term,
+            4 => clingo_ast_statement_type::clingo_ast_statement_type_minimize,
+            5 => clingo_ast_statement_type::clingo_ast_statement_type_script,
+            6 => clingo_ast_statement_type::clingo_ast_statement_type_program,
+            7 => clingo_ast_statement_type::clingo_ast_statement_type_external,
+            8 => clingo_ast_statement_type::clingo_ast_statement_type_edge,
+            9 => clingo_ast_statement_type::clingo_ast_statement_type_heuristic,
+            10 => clingo_ast_statement_type::clingo_ast_statement_type_project_atom,
+            11 => clingo_ast_statement_type::clingo_ast_statement_type_project_atom_signature,
+            _ => clingo_ast_statement_type::clingo_ast_statement_type_theory_definition,
+        }
+    }
+
     pub unsafe fn rule(&self) -> &ClingoAstRule {
         let ClingoAstStatement(ref stm) = *self;
         let ast_rule_ptr = stm.__bindgen_anon_1.bindgen_union_field as *const clingo_ast_rule_t;

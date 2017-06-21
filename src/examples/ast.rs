@@ -30,7 +30,7 @@ extern "C" fn on_statement(
 
     // pass through all statements that are not rules
     if stm.get_type() !=
-        clingo_ast_statement_type::clingo_ast_statement_type_rule as clingo_ast_statement_type_t
+        clingo_ast_statement_type::clingo_ast_statement_type_rule
     {
         if !on_statement_data.builder.add(&stm) {
             // return error_main();
@@ -47,14 +47,10 @@ extern "C" fn on_statement(
     //   }
 
     // copy the current rule body
-    let mut body = unsafe { stm.rule() }.body().clone();
-    //    let x : () = body;
+    let mut body = std::vec::Vec::new();
+    body.clone_from_slice(unsafe { stm.rule() }.body());
 
     // create atom enable
-    //   lit.symbol   = &data->atom;
-    //   lit.location = data->atom.location;
-    //   lit.type     = clingo_ast_literal_type_symbolic;
-    //   lit.sign     = clingo_ast_sign_none;
     let lit = ClingoAstLiteral::new(
         on_statement_data.atom.location,
         clingo_ast_sign::clingo_ast_sign_none,
@@ -63,20 +59,23 @@ extern "C" fn on_statement(
     );
 
     // add atom enable to the rule body
-    //    body[stm.rule().size].location = on_statement_data.atom.location;
-    //   body[stm.rule().size].type_    = clingo_ast_body_literal_type::clingo_ast_body_literal_type_literal as clingo_ast_body_literal_type_t;
-    //   body[stm.rule().size].sign     = clingo_ast_sign::clingo_ast_sign_none;
-    //   body[stm.rule().size].literal  = &lit;
+    let mut y: ClingoAstBodyLiteral = ClingoAstBodyLiteral::new(
+        on_statement_data.atom.location,
+        clingo_ast_body_literal_type::clingo_ast_body_literal_type_literal as
+            clingo_ast_body_literal_type_t,
+        clingo_ast_sign::clingo_ast_sign_none as clingo_ast_sign_t,
+        &lit,
+    );
+    body.push(y);
 
     // initialize the rule
+    let rule = ClingoAstRule::new(stm.rule().head(), body);
     //   rule.head = stm->rule->head;
     //   rule.size = stm->rule->size + 1;
     //   rule.body = body;
 
     // initialize the statement
-    //   stm2.location = stm->location;
-    //   stm2.type     = stm->type;
-    //   stm2.rule     = &rule;
+    let stm2 = ClingoAstStatement::new(stm.location() ,stm.get_type(), &rule);
 
     // add the rewritten statement to the program
     //   if (!clingo_program_builder_add(data->builder, &stm2)) { return error_main(); }
