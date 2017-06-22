@@ -16,7 +16,6 @@ extern "C" fn on_statement(
     stm_: *const clingo_ast_statement_t,
     data: *mut std::os::raw::c_void,
 ) -> bool {
-    let ret = true;
 
     let stm = unsafe {
         (std::mem::transmute::<*const clingo_ast_statement_t, *const ClingoAstStatement>(stm_))
@@ -33,16 +32,12 @@ extern "C" fn on_statement(
         return true;
     }
 
-    // allocate space to hold the current rule body + one literal
-    //   body = (clingo_ast_body_literal_t*)malloc(sizeof(clingo_ast_body_literal_t) * (stm->rule->size + 1));
-    //   if (!body) {
-    //     clingo_set_error(clingo_error_bad_alloc, "could not allocate memory for rule body");
-    //     return error_main();
-    //   }
-
     // copy the current rule body
-    let mut body = std::vec::Vec::new();
-    body.clone_from_slice(unsafe { stm.rule() }.body());
+    let body = unsafe { stm.rule() }.body();
+    let mut extended_body = std::vec::Vec::with_capacity(body.len() + 1);
+    for e in body {
+        extended_body.push(e.clone());
+    }
 
     // create atom enable
     let lit = ClingoAstLiteral::new(
@@ -59,10 +54,10 @@ extern "C" fn on_statement(
         clingo_ast_body_literal_type::clingo_ast_body_literal_type_literal,
         &lit,
     );
-    body.push(y);
+    extended_body.push(y);
 
     // initialize the rule
-    let rule = ClingoAstRule::new(unsafe { stm.rule() }.head(), &body);
+    let rule = ClingoAstRule::new(unsafe { stm.rule() }.head(), &extended_body);
 
     // initialize the statement
     let stm2 = ClingoAstStatement::new_rule(stm.location(), &rule);
@@ -73,13 +68,7 @@ extern "C" fn on_statement(
         return false;
     }
 
-    //   goto out;
-    // error:
-    //   ret = false;
-    // out:
-    //   if (body) { free(body); }
-
-    return ret;
+    return true;
 }
 
 fn error_main() {
