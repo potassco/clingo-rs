@@ -9,19 +9,20 @@ use libc::c_int;
 use libc::c_char;
 use clingo_sys::*;
 
-pub use clingo_sys::{clingo_ast_statement_t, clingo_truth_value, clingo_ast_sign,
+pub use clingo_sys::{clingo_ast_statement_t, clingo_truth_value, clingo_ast_sign, clingo_solve_mode,
                      clingo_clause_type, clingo_ast_body_literal_type, clingo_show_type,
                      clingo_ast_literal_type, clingo_ast_term_type, clingo_ast_statement_type,
-                     clingo_ast_term_type_t, clingo_solve_event_type_t, clingo_show_type_bitset_t,
-                     clingo_error, clingo_error_t, clingo_signature_t, clingo_signature_create,
-                     clingo_symbolic_atoms_t, clingo_propagate_init_symbolic_atoms,
-                     clingo_propagate_init_t, clingo_propagate_control_t, clingo_location,
-                     clingo_ast_callback_t, clingo_propagator, clingo_solve_event_callback_t,
-                     clingo_solve_handle_t, clingo_solve_result_bitset_t,
-                     clingo_solve_mode_bitset_t, clingo_solve_mode, clingo_logger_t};
+                     clingo_ast_term_type_t, clingo_solve_event_type_t, clingo_show_type_bitset_t, clingo_solve_mode_bitset_t,
+                     clingo_error, clingo_error_t,
+                     clingo_solve_result_bitset_t,
+                     clingo_propagate_init_t, clingo_propagate_control_t,
+                     clingo_logger_t};
 
 pub type ClingoLiteral = clingo_literal_t;
 pub type ClingoId = clingo_id_t;
+pub type ClingoAstCallback = clingo_ast_callback_t;
+pub type ClingoSolveEventCallback = clingo_solve_event_callback_t;
+pub type ClingoLocation = clingo_location;
 
 pub fn safe_clingo_version() -> (i32, i32, i32) {
     let mut major = 0;
@@ -33,9 +34,18 @@ pub fn safe_clingo_version() -> (i32, i32, i32) {
 }
 
 pub struct ClingoPart<'a> {
-    pub name: CString,
-    pub params: &'a [clingo_symbol_t],
+     name: CString,
+     params: &'a [clingo_symbol_t],
 }
+// impl ClingoPart {
+    pub fn new_part<'a>(name: &str, params: &'a [clingo_symbol_t]) -> ClingoPart<'a> {
+        let part = ClingoPart {
+            name: CString::new(name).unwrap(),
+            params: params,
+        };
+        part
+    }
+// }
 
 fn from_clingo_part(spart: &ClingoPart) -> clingo_part {
     clingo_part {
@@ -87,6 +97,47 @@ pub fn safe_clingo_parse_program(
         )
     }
 }
+
+
+pub struct ClingoPropagator(clingo_propagator_t);
+impl ClingoPropagator {
+    pub fn new(
+        init: Option<
+            unsafe extern "C" fn(init: *mut clingo_propagate_init_t,
+                                 data: *mut ::std::os::raw::c_void)
+                                 -> bool,
+        >,
+        propagate: Option<
+            unsafe extern "C" fn(control: *mut clingo_propagate_control_t,
+                                 changes: *const clingo_literal_t,
+                                 size: usize,
+                                 data: *mut ::std::os::raw::c_void)
+                                 -> bool,
+        >,
+        undo: Option<
+            unsafe extern "C" fn(control: *mut clingo_propagate_control_t,
+                                 changes: *const clingo_literal_t,
+                                 size: usize,
+                                 data: *mut ::std::os::raw::c_void)
+                                 -> bool,
+        >,
+        check: Option<
+            unsafe extern "C" fn(control: *mut clingo_propagate_control_t,
+                                 data: *mut ::std::os::raw::c_void)
+                                 -> bool,
+        >,
+    ) -> ClingoPropagator {
+
+        let prop = clingo_propagator_t {
+            init: init,
+            propagate: propagate,
+            undo: undo,
+            check: check,
+        };
+        ClingoPropagator(prop)
+    }
+}
+
 
 #[derive(Debug)]
 pub struct ClingoControl(clingo_control_t);
@@ -228,11 +279,14 @@ impl ClingoControl {
 
     pub fn register_propagator(
         &mut self,
-        propagator: *const clingo_propagator_t,
+        propagator: &ClingoPropagator,
         data: *mut ::std::os::raw::c_void,
         sequential: bool,
     ) -> bool {
-        unsafe { clingo_control_register_propagator(&mut self.0, propagator, data, sequential) }
+
+        let ptr: *const ClingoPropagator = propagator;
+        let ptr2 = ptr as *const clingo_propagator;
+        unsafe { clingo_control_register_propagator(&mut self.0, ptr2, data, sequential) }
     }
 
     pub fn statistics(&mut self) -> Option<&mut ClingoStatistics> {
@@ -383,10 +437,10 @@ impl ClingoAstRule {
     pub fn body(&self) -> &[ClingoAstBodyLiteral] {
         let ClingoAstRule(ref rule) = *self;
         let bla = unsafe { std::slice::from_raw_parts(rule.body, rule.size) };
-        let blu = unsafe {
-            std::mem::transmute::<&[clingo_ast_body_literal_t], &[ClingoAstBodyLiteral]>(bla)
-        };
-        blu
+         let blu = unsafe {
+             std::mem::transmute::<&[clingo_ast_body_literal_t], &[ClingoAstBodyLiteral]>(bla)
+         };
+         blu
     }
 
     pub fn size(&self) -> usize {
@@ -1243,8 +1297,10 @@ impl ClingoPropagateControl {
     pub fn thread_id(&mut self) -> clingo_id_t {
         unsafe { clingo_propagate_control_thread_id(&mut self.0) }
     }
+
     //     pub fn clingo_propagate_control_assignment(control: *mut ClingoPropagateControl)
-    //                                                -> *mut clingo_assignment_t;
+    //                                           -> *mut clingo_assignment_t;
+
     pub fn add_clause(
         &mut self,
         clause: &[clingo_literal_t],
@@ -1264,6 +1320,7 @@ impl ClingoPropagateControl {
         if !err { None } else { Some(result) }
 
     }
+
     pub fn propagate(&mut self) -> Option<bool> {
         let mut result = false;
         let err = unsafe { clingo_propagate_control_propagate(&mut self.0, &mut result) };
@@ -1305,8 +1362,8 @@ impl ClingoPropagateInit {
     //                                               atoms: *mut *mut ClingoTheoryAtoms)
     //                                               -> bool;
 
-    pub fn number_of_threads(&mut self) -> c_int {
-        unsafe { clingo_propagate_init_number_of_threads(&mut self.0) }
+    pub fn number_of_threads(&mut self) -> usize {
+        (unsafe { clingo_propagate_init_number_of_threads(&mut self.0) } as usize)
     }
 }
 

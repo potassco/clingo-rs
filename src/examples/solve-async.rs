@@ -2,7 +2,6 @@ extern crate clingo;
 extern crate rand;
 
 use std::env;
-use std::ffi::CString;
 use rand::distributions::{IndependentSample, Range};
 use std::sync::atomic::{AtomicBool, ATOMIC_BOOL_INIT};
 use clingo::*;
@@ -54,10 +53,7 @@ fn main() {
     }
 
     // ground the base part
-    let part = ClingoPart {
-        name: CString::new("base").unwrap(),
-        params: &[],
-    };
+    let part = new_part("base",&[]);
     let parts = vec![part];
     let ground_callback = None;
     let ground_callback_data = std::ptr::null_mut();
@@ -71,7 +67,7 @@ fn main() {
 
     // create a solve handle with an attached vent handler
     let assumptions = vec![];
-    let solve_event_callback: clingo_solve_event_callback_t = Some(on_event);
+    let solve_event_callback: ClingoSolveEventCallback = Some(on_event);
     let mut handle = ctl.solve(
         (clingo_solve_mode::clingo_solve_mode_async as clingo_solve_mode_bitset_t) +
             (clingo_solve_mode::clingo_solve_mode_yield as

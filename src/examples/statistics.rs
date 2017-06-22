@@ -1,7 +1,6 @@
 extern crate clingo;
 
 use std::env;
-use std::ffi::CString;
 use clingo::*;
 
 
@@ -158,10 +157,7 @@ fn main() {
     print!("");
 
     // ground the base part
-    let part = ClingoPart {
-        name: CString::new("base").unwrap(),
-        params: &[],
-    };
+    let part = new_part("base",&[]);
     let parts = vec![part];
     let ground_callback = None;
     let ground_callback_data = std::ptr::null_mut();

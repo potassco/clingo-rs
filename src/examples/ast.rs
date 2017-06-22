@@ -140,7 +140,7 @@ fn main() {
         let mut builder = ctl.program_builder().unwrap();
 
         // initialize the location
-        let location = clingo_location {
+        let location = ClingoLocation {
             begin_line: 0,
             end_line: 0,
             begin_column: 0,
@@ -165,7 +165,7 @@ fn main() {
         // get the AST of the program
         let logger = None;
         let logger_data = std::ptr::null_mut();
-        let callback: clingo_ast_callback_t = Some(on_statement);
+        let callback: ClingoAstCallback = Some(on_statement);
         let data_ptr =
             unsafe { std::mem::transmute::<&OnStatementData, *mut ::std::os::raw::c_void>(&data) };
         if !safe_clingo_parse_program(
@@ -200,10 +200,7 @@ fn main() {
     }
 
     // ground the base part
-    let part = ClingoPart {
-        name: CString::new("base").unwrap(),
-        params: &[],
-    };
+    let part = new_part("base",&[]);
     let parts = vec![part];
     let ground_callback = None;
     let ground_callback_data = std::ptr::null_mut();
