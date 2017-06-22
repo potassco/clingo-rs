@@ -112,7 +112,7 @@ fn main() {
     }
 
     // ground the base part
-    let part = new_part("base",&[]);
+    let part = new_part("base", &[]);
     let parts = vec![part];
     let ground_callback = None;
     let ground_callback_data = std::ptr::null_mut();

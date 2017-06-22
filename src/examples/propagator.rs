@@ -368,7 +368,7 @@ fn main() {
 
             // the pigeon program part having the number of holes and pigeons as parameters
 
-            let part = new_part("pigeon",&args);
+            let part = new_part("pigeon", &args);
             let parts = vec![part];
             let ground_callback = None;
             let ground_callback_data = std::ptr::null_mut();

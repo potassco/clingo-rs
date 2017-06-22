@@ -9,14 +9,13 @@ use libc::c_int;
 use libc::c_char;
 use clingo_sys::*;
 
-pub use clingo_sys::{clingo_ast_statement_t, clingo_truth_value, clingo_ast_sign, clingo_solve_mode,
-                     clingo_clause_type, clingo_ast_body_literal_type, clingo_show_type,
-                     clingo_ast_literal_type, clingo_ast_term_type, clingo_ast_statement_type,
-                     clingo_ast_term_type_t, clingo_solve_event_type_t, clingo_show_type_bitset_t, clingo_solve_mode_bitset_t,
-                     clingo_error, clingo_error_t,
-                     clingo_solve_result_bitset_t,
-                     clingo_propagate_init_t, clingo_propagate_control_t,
-                     clingo_logger_t};
+pub use clingo_sys::{clingo_ast_statement_t, clingo_truth_value, clingo_ast_sign,
+                     clingo_solve_mode, clingo_clause_type, clingo_ast_body_literal_type,
+                     clingo_show_type, clingo_ast_literal_type, clingo_ast_term_type,
+                     clingo_ast_statement_type, clingo_ast_term_type_t, clingo_solve_event_type_t,
+                     clingo_show_type_bitset_t, clingo_solve_mode_bitset_t, clingo_error,
+                     clingo_error_t, clingo_solve_result_bitset_t, clingo_propagate_init_t,
+                     clingo_propagate_control_t, clingo_logger_t};
 
 pub type ClingoLiteral = clingo_literal_t;
 pub type ClingoId = clingo_id_t;
@@ -34,17 +33,17 @@ pub fn safe_clingo_version() -> (i32, i32, i32) {
 }
 
 pub struct ClingoPart<'a> {
-     name: CString,
-     params: &'a [clingo_symbol_t],
+    name: CString,
+    params: &'a [clingo_symbol_t],
 }
 // impl ClingoPart {
-    pub fn new_part<'a>(name: &str, params: &'a [clingo_symbol_t]) -> ClingoPart<'a> {
-        let part = ClingoPart {
-            name: CString::new(name).unwrap(),
-            params: params,
-        };
-        part
-    }
+pub fn new_part<'a>(name: &str, params: &'a [clingo_symbol_t]) -> ClingoPart<'a> {
+    let part = ClingoPart {
+        name: CString::new(name).unwrap(),
+        params: params,
+    };
+    part
+}
 // }
 
 fn from_clingo_part(spart: &ClingoPart) -> clingo_part {
@@ -437,10 +436,10 @@ impl ClingoAstRule {
     pub fn body(&self) -> &[ClingoAstBodyLiteral] {
         let ClingoAstRule(ref rule) = *self;
         let bla = unsafe { std::slice::from_raw_parts(rule.body, rule.size) };
-         let blu = unsafe {
-             std::mem::transmute::<&[clingo_ast_body_literal_t], &[ClingoAstBodyLiteral]>(bla)
-         };
-         blu
+        let blu = unsafe {
+            std::mem::transmute::<&[clingo_ast_body_literal_t], &[ClingoAstBodyLiteral]>(bla)
+        };
+        blu
     }
 
     pub fn size(&self) -> usize {
