@@ -92,7 +92,7 @@ fn main() {
         let atoms = ctl.symbolic_atoms().unwrap();
 
         for atom in atom_strings.iter() {
-            let symbol = clingo_symbol::create_id(atom, true).unwrap();
+            let symbol = ClingoSymbol::create_id(atom, true).unwrap();
             let atom_it = atoms.find(symbol).unwrap();
 
             // get the atom's id

@@ -358,9 +358,9 @@ fn main() {
             // ground the pigeon part
 
             // set the number of holes
-            let arg0 = clingo_symbol::create_number(3);
+            let arg0 = ClingoSymbol::create_number(3);
             // set the number of pigeons
-            let arg1 = clingo_symbol::create_number(3);
+            let arg1 = ClingoSymbol::create_number(3);
 
             let mut args = Vec::new();
             args.push(arg0);
@@ -368,7 +368,7 @@ fn main() {
 
             // the pigeon program part having the number of holes and pigeons as parameters
 
-            let part = new_part("pigeon", &args);
+            let part = new_part("pigeon", args.as_slice());
             let parts = vec![part];
             let ground_callback = None;
             let ground_callback_data = std::ptr::null_mut();

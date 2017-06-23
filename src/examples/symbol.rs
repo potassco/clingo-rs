@@ -6,11 +6,11 @@ use clingo::*;
 fn main() {
 
     // create a number, identifier (function without arguments), and a function symbol
-    let number_symbol = clingo_symbol::create_number(42);
-    let identifier_symbol = clingo_symbol::create_id("x", true).unwrap();
+    let number_symbol = ClingoSymbol::create_number(42);
+    let identifier_symbol = ClingoSymbol::create_id("x", true).unwrap();
 
     let function_args = &[number_symbol, identifier_symbol];
-    let function_symbol = clingo_symbol::create_function("x", function_args, true).unwrap();
+    let function_symbol = ClingoSymbol::create_function("x", function_args, true).unwrap();
     let symbols = [number_symbol, identifier_symbol, function_symbol];
 
     // print the symbols along with their hash values
