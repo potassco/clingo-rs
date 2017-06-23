@@ -354,9 +354,14 @@ impl ClingoControl {
 
     //     pub fn clingo_control_cleanup(control: *mut ClingoControl) -> u8;
 
-    pub fn assign_external(&mut self, atom_: ClingoSymbol, value: clingo_truth_value) -> bool {
-        let ClingoSymbol(atom) = atom_;
-        unsafe { clingo_control_assign_external(&mut self.0, atom, value as clingo_truth_value_t) }
+    pub fn assign_external(
+        &mut self,
+        ClingoSymbol(symbol): ClingoSymbol,
+        value: clingo_truth_value,
+    ) -> bool {
+        unsafe {
+            clingo_control_assign_external(&mut self.0, symbol, value as clingo_truth_value_t)
+        }
     }
 
     //     pub fn clingo_control_release_external(control: *mut ClingoControl,
@@ -1235,9 +1240,8 @@ impl ClingoModel {
 
 
 
-pub fn safe_clingo_symbol_to_string(symbol_: ClingoSymbol) -> Option<CString> {
+pub fn safe_clingo_symbol_to_string(ClingoSymbol(symbol): ClingoSymbol) -> Option<CString> {
 
-    let ClingoSymbol(symbol) = symbol_;
     let mut size: usize = 0;
     let err = unsafe { clingo_symbol_to_string_size(symbol, &mut size) };
     if !err {
@@ -1257,14 +1261,14 @@ pub fn safe_clingo_symbol_number(ClingoSymbol(symbol): ClingoSymbol) -> Option<c
     if !err { None } else { Some(number) }
 }
 
-pub fn safe_clingo_symbol_hash(symbol_: ClingoSymbol) -> usize {
-    let ClingoSymbol(symbol) = symbol_;
+pub fn safe_clingo_symbol_hash(ClingoSymbol(symbol): ClingoSymbol) -> usize {
     unsafe { clingo_symbol_hash(symbol) }
 }
 
-pub fn safe_clingo_symbol_arguments(symbol_: ClingoSymbol) -> Option<Vec<ClingoSymbol>> {
+pub fn safe_clingo_symbol_arguments(
+    ClingoSymbol(symbol): ClingoSymbol,
+) -> Option<Vec<ClingoSymbol>> {
 
-    let ClingoSymbol(symbol) = symbol_;
     let mut a_ptr = std::ptr::null() as *const clingo_symbol_t;
     let mut size: usize = 0;
     let err = unsafe { clingo_symbol_arguments(symbol, &mut a_ptr, &mut size) };
