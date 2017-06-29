@@ -20,6 +20,7 @@ Rust bindings to the [clingo](https://github.com/potassco/clingo) library
     cargo run --example=symbolic-atoms 0
     cargo run --example=theory-atoms 0
     cargo run --example=backend 0
+    cargo run --example=ast 0
     
 ## Contribution
 

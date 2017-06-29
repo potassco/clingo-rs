@@ -68,7 +68,7 @@ fn get_theory_atom_literal(ctl: &mut ClingoControl) -> std::option::Option<Cling
     println!("number of grounded theory atoms: {}", size);
 
     // verify that theory atom b has a guard
-    for atom in 0..size {
+    for atom in UNSAFEClingoTheoryAtomsIterator::from(atoms) {
 
         // get the term associated with the theory atom
         let term = atoms.atom_term(atom as ClingoId).unwrap();
@@ -114,7 +114,7 @@ fn main() {
     }
 
     // ground the base part
-    let part = new_part("base", &[]);
+    let part = ClingoPart::new_part("base", &[]);
     let parts = vec![part];
     let ground_callback = None;
     let ground_callback_data = std::ptr::null_mut();
@@ -123,15 +123,14 @@ fn main() {
         return error_main();
     }
 
-    let lit = get_theory_atom_literal(ctl).unwrap();
     // use the backend to assume that the theory atom is true
     // (note that only symbolic literals can be passed as assumptions to a solve call;
     // the backend accepts any aspif literal)
-    if lit != 0 {
+    if let Some(lit) = get_theory_atom_literal(ctl) {
         // get the backend
         let backend = ctl.backend().unwrap();
         // add the assumption
-        let err = backend.assume(&lit, 1);
+        let err = backend.assume(&[lit]);
         if !err {
             return error_main();
         }

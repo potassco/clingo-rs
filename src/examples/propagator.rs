@@ -14,7 +14,7 @@ use clingo::*;
 struct StateT {
     // assignment of pigeons to holes
     // (hole number -> pigeon placement literal or zero)
-    holes: Vec<ClingoLiteral>,
+    holes: Vec<Option<ClingoLiteral>>,
     // size: usize,
 }
 
@@ -56,10 +56,11 @@ extern "C" fn init(init_: *mut clingo_propagate_init_t, data: *mut ::std::os::ra
     // the total number of holes pigeons can be assigned too
     let mut holes = 0;
     let threads = init.number_of_threads();
+
     // stores the (numeric) maximum of the solver literals capturing pigeon placements
     // note that the code below assumes that this literal is not negative
     // which holds for the pigeon problem but not in general
-    let mut max: ClingoLiteral = 0;
+    // TODO let mut max: ClingoLiteral = 0;
     // ensure that solve can be called multiple times
     // for simplicity, the case that additional holes or pigeons to assign are grounded is not handled here
 
@@ -80,7 +81,7 @@ extern "C" fn init(init_: *mut clingo_propagate_init_t, data: *mut ::std::os::ra
     //     return false;
     // }
     //   memset(data->states, 0, sizeof(*data->states) * threads);
-    let s1_holes: Vec<ClingoLiteral> = vec![];
+    let s1_holes: Vec<Option<ClingoLiteral>> = vec![];
     let state1 = Rc::new(RefCell::new(StateT {
         holes: s1_holes,
         // size: 0,
@@ -126,10 +127,10 @@ extern "C" fn init(init_: *mut clingo_propagate_init_t, data: *mut ::std::os::ra
 
             if pass == 0 {
                 // determine the maximum literal
-                assert!(lit > 0, "lit not > 0");
-                if lit > max {
-                    max = lit;
-                }
+                // TODO assert!(lit > 0, "lit not > 0");
+                // if lit > max {
+                //     max = lit;
+                // }
             } else {
                 // extract the hole number from the atom
                 let sym = atoms.symbol(atoms_it).unwrap();
@@ -170,7 +171,7 @@ extern "C" fn init(init_: *mut clingo_propagate_init_t, data: *mut ::std::os::ra
 
 extern "C" fn propagate(
     control_: *mut clingo_propagate_control_t,
-    changes_: *const ClingoLiteral,
+    changes_: *const clingo_literal_t,
     size: usize,
     data: *mut ::std::os::raw::c_void,
 ) -> bool {
@@ -182,7 +183,7 @@ extern "C" fn propagate(
             control_,
         ).as_mut()
     }.unwrap();
-    let changes = unsafe { std::slice::from_raw_parts(changes_, size) };
+    let changes = unsafe { std::slice::from_raw_parts(changes_ as *const ClingoLiteral, size) };
     let propagator = unsafe { (data as *mut PropagatorT).as_ref() }.unwrap();
 
     // get the thread specific state
@@ -197,40 +198,42 @@ extern "C" fn propagate(
         let mut prev = state.holes[idx];
 
         // update the placement if no literal was assigned previously
-        if prev == 0 {
-            prev = lit;
-            state.holes[idx] = prev;
-        }
-        // create a conflicting clause and propagate it
-        else {
-            // current and previous literal must not hold together
-            let clause: &[ClingoLiteral] = &[-lit, -prev];
-            // stores the result when adding a clause or propagationg
-            // if result is false propagation must stop for the solver to backtrack
-
-            // add the clause
-            if !control
-                .add_clause(clause, clingo_clause_type::clingo_clause_type_learnt)
-                .unwrap()
-            {
-                return true;
+        match prev {
+            None => {
+                prev = Some(lit);
+                state.holes[idx] = prev;
             }
+            // create a conflicting clause and propagate it
+            Some(x) => {
+                // current and previous literal must not hold together
+                let clause: &[ClingoLiteral] = &[lit.negate(), x.negate()];
+                // stores the result when adding a clause or propagationg
+                // if result is false propagation must stop for the solver to backtrack
 
-            // propagate it
-            if !control.propagate().unwrap() {
-                return true;
+                // add the clause
+                if !control
+                    .add_clause(clause, clingo_clause_type::clingo_clause_type_learnt)
+                    .unwrap()
+                {
+                    return true;
+                }
+
+                // propagate it
+                if !control.propagate().unwrap() {
+                    return true;
+                }
+
+                // must not happen because the clause above is conflicting by construction
+                // assert!(false);
             }
-
-            // must not happen because the clause above is conflicting by construction
-            // assert!(false);
-        }
+        };
     }
     return true;
 }
 
 extern "C" fn undo(
     control_: *mut clingo_propagate_control_t,
-    changes_: *const ClingoLiteral,
+    changes_: *const clingo_literal_t,
     size: usize,
     data: *mut ::std::os::raw::c_void,
 ) -> bool {
@@ -242,7 +245,7 @@ extern "C" fn undo(
             control_,
         ).as_mut()
     }.unwrap();
-    let changes = unsafe { std::slice::from_raw_parts(changes_, size) };
+    let changes = unsafe { std::slice::from_raw_parts(changes_ as *const ClingoLiteral, size) };
     let propagator = unsafe { (data as *mut PropagatorT).as_ref() }.unwrap();
 
     // get the thread specific state
@@ -253,10 +256,12 @@ extern "C" fn undo(
         let lit: ClingoLiteral = changes[i];
         let hole: c_int = propagator.pigeons[lit as usize];
 
-        if state.holes[hole as usize] == lit {
-            // undo the assignment
-            println!("TODO: holes{}:{}", hole, state.holes[hole as usize]);
-            state.holes[hole as usize] = 0;
+        if let Some(x) = state.holes[hole as usize] {
+            if equal(x, lit) {
+                // undo the assignment
+                println!("TODO: holes{}:{:?}", hole, state.holes[hole as usize]);
+                state.holes[hole as usize] = None;
+            }
         }
     }
     return true;
@@ -368,7 +373,7 @@ fn main() {
 
             // the pigeon program part having the number of holes and pigeons as parameters
 
-            let part = new_part("pigeon", args.as_slice());
+            let part = ClingoPart::new_part("pigeon", args.as_slice());
             let parts = vec![part];
             let ground_callback = None;
             let ground_callback_data = std::ptr::null_mut();

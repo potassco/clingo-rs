@@ -76,7 +76,7 @@ fn main() {
     }
 
     // ground the base part
-    let part = new_part("base", &[]);
+    let part = ClingoPart::new_part("base", &[]);
     let parts = vec![part];
     let ground_callback = None;
     let ground_callback_data = std::ptr::null_mut();
@@ -117,7 +117,7 @@ fn main() {
 
         // add rule: :- not d, c.
         let head = vec![];
-        let body = vec![-(atom_d as ClingoLiteral), atom_ids[2]];
+        let body = vec![ClingoLiteral::UNSAFE_from(atom_d).negate(), atom_ids[2]];
 
         if !backend.rule(false, &head, &body) {
             return error_main();

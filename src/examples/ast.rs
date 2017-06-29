@@ -1,7 +1,6 @@
 extern crate clingo;
 
 use std::env;
-use std::ffi::CString;
 use clingo::*;
 
 
@@ -140,14 +139,7 @@ fn main() {
         let mut builder = ctl.program_builder().unwrap();
 
         // initialize the location
-        let location = ClingoLocation {
-            begin_line: 0,
-            end_line: 0,
-            begin_column: 0,
-            end_column: 0,
-            begin_file: CString::new("<rewrite>").unwrap().as_ptr(),
-            end_file: CString::new("<rewrite>").unwrap().as_ptr(),
-        };
+        let location = ClingoLocation::new(0, 0, 0, 0, "<rewrite>", "<rewrite>");
 
         // initilize atom to add
         let atom = ClingoAstTerm::new_symbol(location, sym);
@@ -183,8 +175,10 @@ fn main() {
         // add the external statement: #external enable.
         let ext = ClingoAstExternal::new(data.atom, &[]);
 
+        let location2 = ClingoLocation::new(0, 0, 0, 0, "<rewrite>", "<rewrite>");
+
         let stm = ClingoAstStatement::new_external(
-            location,
+            location2,
             clingo_ast_statement_type::clingo_ast_statement_type_external,
             &ext,
         );
@@ -200,7 +194,7 @@ fn main() {
     }
 
     // ground the base part
-    let part = new_part("base", &[]);
+    let part = ClingoPart::new_part("base", &[]);
     let parts = vec![part];
     let ground_callback = None;
     let ground_callback_data = std::ptr::null_mut();
