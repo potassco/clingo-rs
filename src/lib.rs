@@ -31,6 +31,9 @@ impl ClingoLiteral {
     pub fn UNSAFE_from(atom: clingo_atom_t) -> ClingoLiteral {
         ClingoLiteral(atom as clingo_literal_t)
     }
+    pub fn get_integer(&self) -> i32 {
+        self.0
+    }
 }
 
 pub fn equal(ClingoLiteral(l1): ClingoLiteral, ClingoLiteral(l2): ClingoLiteral) -> bool {
@@ -39,6 +42,11 @@ pub fn equal(ClingoLiteral(l1): ClingoLiteral, ClingoLiteral(l2): ClingoLiteral)
 
 #[derive(Debug, Copy, Clone)]
 pub struct ClingoId(clingo_id_t);
+impl ClingoId {
+    pub fn get_integer(&self) -> u32 {
+        self.0
+    }
+}
 
 pub struct ClingoLocation {
     begin_line: usize,
@@ -97,7 +105,6 @@ impl ClingoLocation {
         None
     }
 }
-
 
 #[derive(Debug, Clone, Copy)]
 pub struct ClingoSymbol(clingo_symbol_t);
@@ -215,7 +222,7 @@ impl<'a> ClingoPart<'a> {
 
 fn from_clingo_part(spart: &ClingoPart) -> clingo_part {
     clingo_part {
-        name: spart.name.as_ptr() as *const i8,
+        name: spart.name.as_ptr(),
         params: spart.params.as_ptr() as *const clingo_symbol_t,
         size: spart.params.len(),
     }
@@ -1442,9 +1449,8 @@ impl ClingoSolveControl {
 
 pub struct ClingoPropagateControl(clingo_propagate_control_t);
 impl ClingoPropagateControl {
-    pub fn thread_id(&mut self) -> ClingoId {
-        let id = unsafe { clingo_propagate_control_thread_id(&mut self.0) };
-        ClingoId(id)
+    pub fn thread_id(&mut self) -> u32 {
+        unsafe { clingo_propagate_control_thread_id(&mut self.0) }
     }
 
     //     pub fn clingo_propagate_control_assignment(control: *mut ClingoPropagateControl)

@@ -15,7 +15,6 @@ struct StateT {
     // assignment of pigeons to holes
     // (hole number -> pigeon placement literal or zero)
     holes: Vec<Option<ClingoLiteral>>,
-    // size: usize,
 }
 
 // state information for the propagator
@@ -23,10 +22,8 @@ struct PropagatorT {
     // mapping from solver literals capturing pigeon placements to hole numbers
     // (solver literal -> hole number or zero)
     pigeons: Vec<i32>,
-    //  pigeons_size: i32,
     // array of states
     states: Vec<Rc<RefCell<StateT>>>,
-    // states_size: i32,
 }
 
 fn error_main() {
@@ -47,20 +44,13 @@ extern "C" fn init(init_: *mut clingo_propagate_init_t, data: *mut ::std::os::ra
 
     println!("init!");
 
-    let mut init = unsafe {
-        std::mem::transmute::<*mut clingo_propagate_init_t, *mut ClingoPropagateInit>(init_)
-            .as_mut()
-    }.unwrap();
+    let mut init = unsafe { (init_ as *mut ClingoPropagateInit).as_mut() }.unwrap();
     let mut propagator = unsafe { (data as *mut PropagatorT).as_mut() }.unwrap();
 
     // the total number of holes pigeons can be assigned too
     let mut holes = 0;
     let threads = init.number_of_threads();
 
-    // stores the (numeric) maximum of the solver literals capturing pigeon placements
-    // note that the code below assumes that this literal is not negative
-    // which holds for the pigeon problem but not in general
-    // TODO let mut max: ClingoLiteral = 0;
     // ensure that solve can be called multiple times
     // for simplicity, the case that additional holes or pigeons to assign are grounded is not handled here
 
@@ -75,19 +65,10 @@ extern "C" fn init(init_: *mut clingo_propagate_init_t, data: *mut ::std::os::ra
         }
         return true;
     }
-    // allocate memory for exactly one state per thread
-    // if (!(data->states = (StateT*)malloc(sizeof(*data->states) * threads))) {
-    //     safe_clingo_set_error(clingo_error::clingo_error_bad_alloc as clingo_error_t, "allocation failed");
-    //     return false;
-    // }
-    //   memset(data->states, 0, sizeof(*data->states) * threads);
+
     let s1_holes: Vec<Option<ClingoLiteral>> = vec![];
-    let state1 = Rc::new(RefCell::new(StateT {
-        holes: s1_holes,
-        // size: 0,
-    }));
+    let state1 = Rc::new(RefCell::new(StateT { holes: s1_holes }));
     propagator.states = vec![state1];
-    //   propagator.states_size = threads;
 
     // the propagator monitors place/2 atoms and dectects conflicting assignments
     // first get the symbolic atoms handle
@@ -106,14 +87,7 @@ extern "C" fn init(init_: *mut clingo_propagate_init_t, data: *mut ::std::os::ra
     for pass in 0..1 {
         // get an iterator to the first place/2 atom
         let mut atoms_it = atoms.begin(Some(&sig)).unwrap();
-        // if pass == 1 {
-        //     // allocate memory for the assignemnt literal -> hole mapping
-        //     if (!(data->pigeons = (int*)malloc(sizeof(*data->pigeons) * (max + 1)))) {
-        //         safe_clingo_set_error(clingo_error::clingo_error_bad_alloc as clingo_error_t, "allocation failed");
-        //         return false;
-        //     }
-        //     propagator.pigeons_size = max + 1;
-        // }
+
         loop {
             // stop iteration if the end is reached
             let equal = atoms.iterator_is_equal_to(atoms_it, atoms_ie).unwrap();
@@ -125,19 +99,13 @@ extern "C" fn init(init_: *mut clingo_propagate_init_t, data: *mut ::std::os::ra
             let mut lit = atoms.literal(atoms_it).unwrap();
             lit = init.solver_literal(lit).unwrap();
 
-            if pass == 0 {
-                // determine the maximum literal
-                // TODO assert!(lit > 0, "lit not > 0");
-                // if lit > max {
-                //     max = lit;
-                // }
-            } else {
+            if pass != 0 {
                 // extract the hole number from the atom
                 let sym = atoms.symbol(atoms_it).unwrap();
                 let h = get_arg(sym, 1).unwrap();
 
                 // initialize the assignemnt literal -> hole mapping
-                propagator.pigeons[lit as usize] = h;
+                propagator.pigeons[lit.get_integer() as usize] = h;
 
                 // watch the assignment literal
                 if !init.add_watch(lit) {
@@ -178,11 +146,7 @@ extern "C" fn propagate(
 
     println!("propagate!");
 
-    let mut control = unsafe {
-        std::mem::transmute::<*mut clingo_propagate_control_t, *mut ClingoPropagateControl>(
-            control_,
-        ).as_mut()
-    }.unwrap();
+    let mut control = unsafe { (control_ as *mut ClingoPropagateControl).as_mut() }.unwrap();
     let changes = unsafe { std::slice::from_raw_parts(changes_ as *const ClingoLiteral, size) };
     let propagator = unsafe { (data as *mut PropagatorT).as_ref() }.unwrap();
 
@@ -194,7 +158,7 @@ extern "C" fn propagate(
         // the freshly assigned literal
         let lit: ClingoLiteral = changes[i];
         // a pointer to the previously assigned literal
-        let idx = propagator.pigeons[lit as usize] as usize;
+        let idx = propagator.pigeons[lit.get_integer() as usize] as usize;
         let mut prev = state.holes[idx];
 
         // update the placement if no literal was assigned previously
@@ -240,11 +204,7 @@ extern "C" fn undo(
 
     println!("undo!");
 
-    let mut control = unsafe {
-        std::mem::transmute::<*mut clingo_propagate_control_t, *mut ClingoPropagateControl>(
-            control_,
-        ).as_mut()
-    }.unwrap();
+    let mut control = unsafe { (control_ as *mut ClingoPropagateControl).as_mut() }.unwrap();
     let changes = unsafe { std::slice::from_raw_parts(changes_ as *const ClingoLiteral, size) };
     let propagator = unsafe { (data as *mut PropagatorT).as_ref() }.unwrap();
 
@@ -254,13 +214,13 @@ extern "C" fn undo(
     // undo the assignments made in propagate
     for i in 0..size {
         let lit: ClingoLiteral = changes[i];
-        let hole: c_int = propagator.pigeons[lit as usize];
+        let hole = propagator.pigeons[lit.get_integer() as usize] as usize;
 
-        if let Some(x) = state.holes[hole as usize] {
+        if let Some(x) = state.holes[hole] {
             if equal(x, lit) {
                 // undo the assignment
-                println!("TODO: holes{}:{:?}", hole, state.holes[hole as usize]);
-                state.holes[hole as usize] = None;
+                println!("TODO: holes{}:{:?}", hole, state.holes[hole]);
+                state.holes[hole] = None;
             }
         }
     }
@@ -327,9 +287,7 @@ fn main() {
     // user data for the propagator
     let mut prop_data = PropagatorT {
         pigeons: vec![],
-        // pigeons_size: 0,
         states: vec![],
-        // states_size: 0,
     };
 
     // create a control object and pass command line arguments
