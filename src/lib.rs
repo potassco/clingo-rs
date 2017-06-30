@@ -28,7 +28,7 @@ impl ClingoLiteral {
     pub fn negate(&self) -> ClingoLiteral {
         ClingoLiteral(-(self.0))
     }
-    pub fn UNSAFE_from(atom: clingo_atom_t) -> ClingoLiteral {
+    pub fn UNSAFE_from(ClingoAtom(atom): ClingoAtom) -> ClingoLiteral {
         ClingoLiteral(atom as clingo_literal_t)
     }
     pub fn get_integer(&self) -> i32 {
@@ -39,6 +39,9 @@ impl ClingoLiteral {
 pub fn equal(ClingoLiteral(l1): ClingoLiteral, ClingoLiteral(l2): ClingoLiteral) -> bool {
     l1 == l2
 }
+
+#[derive(Debug, Copy, Clone)]
+pub struct ClingoAtom(clingo_atom_t);
 
 #[derive(Debug, Copy, Clone)]
 pub struct ClingoId(clingo_id_t);
@@ -887,11 +890,11 @@ impl ClingoBackend {
     pub fn rule(
         &mut self,
         choice: bool,
-        head_vector: &Vec<clingo_atom_t>,
-        body_vector: &Vec<ClingoLiteral>,
+        head_vector: &[ClingoAtom],
+        body_vector: &[ClingoLiteral],
     ) -> bool {
 
-        let head = head_vector.as_ptr();
+        let head = head_vector.as_ptr() as *const clingo_atom_t;
         let head_size = head_vector.len();
 
         let body_ptr = body_vector.as_ptr() as *const clingo_literal_t;
@@ -951,11 +954,11 @@ impl ClingoBackend {
     //                                     size: size_t)
     //                                     -> u8;
 
-    pub fn add_atom(&mut self) -> Option<clingo_atom_t> {
+    pub fn add_atom(&mut self) -> Option<ClingoAtom> {
 
         let mut atom = 0 as clingo_atom_t;
         let err = unsafe { clingo_backend_add_atom(&mut self.0, &mut atom) };
-        if !err { None } else { Some(atom) }
+        if !err { None } else { Some(ClingoAtom(atom)) }
     }
 }
 
@@ -1387,7 +1390,7 @@ pub fn safe_clingo_symbol_to_string(ClingoSymbol(symbol): ClingoSymbol) -> Optio
     }
 }
 
-pub fn safe_clingo_symbol_number(ClingoSymbol(symbol): ClingoSymbol) -> Option<c_int> {
+pub fn safe_clingo_symbol_number(ClingoSymbol(symbol): ClingoSymbol) -> Option<i32> {
 
     let mut number = 0;
     let err = unsafe { clingo_symbol_number(symbol, &mut number) };

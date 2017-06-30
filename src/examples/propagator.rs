@@ -5,7 +5,6 @@ use std::env;
 use std::vec::Vec;
 use std::cell::RefCell;
 use std::rc::Rc;
-use libc::c_int;
 use clingo::*;
 
 
@@ -33,7 +32,7 @@ fn error_main() {
 }
 
 // returns the offset'th numeric argument of the function symbol sym
-fn get_arg(sym: ClingoSymbol, offset: c_int) -> Option<c_int> {
+fn get_arg(sym: ClingoSymbol, offset: usize) -> Option<i32> {
     // get the arguments of the function symbol
     let args = safe_clingo_symbol_arguments(sym).unwrap();
     // get the requested numeric argument
