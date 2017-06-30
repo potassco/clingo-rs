@@ -34,9 +34,9 @@ fn error_main() {
 // returns the offset'th numeric argument of the function symbol sym
 fn get_arg(sym: ClingoSymbol, offset: usize) -> Option<i32> {
     // get the arguments of the function symbol
-    let args = safe_clingo_symbol_arguments(sym).unwrap();
+    let args = sym.arguments().unwrap();
     // get the requested numeric argument
-    safe_clingo_symbol_number(args[offset as usize])
+    args[offset as usize].number()
 }
 
 extern "C" fn init(init_: *mut clingo_propagate_init_t, data: *mut ::std::os::raw::c_void) -> bool {
@@ -239,8 +239,7 @@ fn print_model(model: &mut ClingoModel) {
 
     for atom in atoms {
         // retrieve and print the symbol's string
-        let atom_string = safe_clingo_symbol_to_string(atom).unwrap();
-        print!(" {}", atom_string.to_str().unwrap());
+        print!(" {}", atom.to_string().unwrap());
     }
     println!("");
 }

@@ -3,6 +3,6 @@ extern crate clingo;
 
 fn main() {
 
-    let (mo, mi, re) = clingo::safe_clingo_version();
+    let (mo, mi, re) = clingo::version();
     println!("Hello, this is clingo version {}.{}.{}.", mo, mi, re);
 }

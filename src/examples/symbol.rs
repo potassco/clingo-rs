@@ -15,53 +15,34 @@ fn main() {
 
     // print the symbols along with their hash values
     for &symbol in &symbols {
-        let atom_string = safe_clingo_symbol_to_string(symbol).unwrap();
         println!(
             "the hash of {} is {}",
-            atom_string.to_str().unwrap(),
-            safe_clingo_symbol_hash(symbol)
+            symbol.to_string().unwrap(),
+            symbol.hash()
         );
     }
 
     // retrieve argument symbols of a symbol
-    let symbols2 = safe_clingo_symbol_arguments(function_symbol).unwrap();
+    let symbols2 = function_symbol.arguments().unwrap();
 
     // equal to comparison
     for symbol in symbols2 {
-        let equal = safe_clingo_symbol_is_equal_to(symbols[0], symbol);
 
-        let atom_string1 = safe_clingo_symbol_to_string(symbols[0]).unwrap();
-        let atom_string2 = safe_clingo_symbol_to_string(symbol).unwrap();
-        if equal {
-            println!(
-                "{} is equal to {}",
-                atom_string1.to_str().unwrap(),
-                atom_string2.to_str().unwrap()
-            );
+        print!("{} is ", symbols[0].to_string().unwrap());
+        if symbols[0] == symbol {
+            print!("equal");
         } else {
-            println!(
-                "{} is not equal to {}",
-                atom_string1.to_str().unwrap(),
-                atom_string2.to_str().unwrap()
-            );
+            print!("not equal");
         }
+        println!(" to {}", symbol.to_string().unwrap());
     }
 
     // less than comparison
-    let less = safe_clingo_symbol_is_less_than(symbols[0], symbols[1]);
-    let atom_string1 = safe_clingo_symbol_to_string(symbols[0]).unwrap();
-    let atom_string2 = safe_clingo_symbol_to_string(symbols[1]).unwrap();
-    if less {
-        println!(
-            "{} is less than {}",
-            atom_string1.to_str().unwrap(),
-            atom_string2.to_str().unwrap()
-        );
+    print!("{} is ", symbols[0].to_string().unwrap());
+    if symbols[0].is_less_than(&symbols[1]) {
+        print!("less");
     } else {
-        println!(
-            "{} is not less than {}",
-            atom_string1.to_str().unwrap(),
-            atom_string2.to_str().unwrap()
-        );
+        print!("not less");
     }
+    println!(" than {}", symbols[1].to_string().unwrap());
 }

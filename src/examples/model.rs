@@ -21,8 +21,7 @@ fn print_model(model: &mut ClingoModel, label: &str, show: clingo_show_type_bits
 
     for atom in atoms {
         // retrieve and print the symbol's string
-        let atom_string = safe_clingo_symbol_to_string(atom).unwrap();
-        print!(" {}", atom_string.to_str().unwrap());
+        print!(" {}", atom.to_string().unwrap());
     }
     println!("");
 }
