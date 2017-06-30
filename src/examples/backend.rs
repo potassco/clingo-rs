@@ -5,9 +5,8 @@ use clingo::*;
 
 
 fn error_main() {
-    let error_message = safe_clingo_error_message();
-    println!("{}", error_message);
-    safe_clingo_error_code();
+    let error_message = clingo::error_message();
+    println!("Error {}: {}", clingo::error_code(), error_message);
 }
 
 fn print_model(model: &mut ClingoModel) {
@@ -41,9 +40,7 @@ fn solve(ctl: &mut ClingoControl) {
 
     // loop over all models
     loop {
-        if !handle.resume() {
-            return error_main();
-        }
+        handle.resume().expect("Failed resume on solve handle.");
         match handle.model() {
             // stop if there are no more models
             None => break,
@@ -79,8 +76,9 @@ fn main() {
     let parts = vec![part];
     let ground_callback = None;
     let ground_callback_data = std::ptr::null_mut();
-    if !ctl.ground(parts, ground_callback, ground_callback_data) {
-        return error_main();
+    if let Err(e) = ctl.ground(parts, ground_callback, ground_callback_data) {
+        println!("{}", e);
+        return;
     }
 
     let atom_strings = ["a", "b", "c"];

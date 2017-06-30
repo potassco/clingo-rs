@@ -8,9 +8,8 @@ use clingo::*;
 
 
 fn error_main() {
-    let error_message = safe_clingo_error_message();
-    println!("{}", error_message);
-    safe_clingo_error_code();
+    let error_message = clingo::error_message();
+    println!("Error {}: {}", clingo::error_code(), error_message);
 }
 
 extern "C" fn on_event(
@@ -42,14 +41,15 @@ fn main() {
 
     // add a logic program to the base part
     let parameters: Vec<&str> = Vec::new();
-    let err = ctl.add(
+    if let Err(e) = ctl.add(
         "base",
         parameters,
         "#const n = 17.1 { p(X); q(X) } 1 :- X = 1..n.:- not n+1 { p(1..n); \
                        q(1..n) }.",
-    );
-    if !err {
-        return error_main();
+    )
+    {
+        println!("{}",e);
+        return;
     }
 
     // ground the base part
@@ -57,9 +57,9 @@ fn main() {
     let parts = vec![part];
     let ground_callback = None;
     let ground_callback_data = std::ptr::null_mut();
-    let err = ctl.ground(parts, ground_callback, ground_callback_data);
-    if !err {
-        return error_main();
+    if let Err(e) = ctl.ground(parts, ground_callback, ground_callback_data) {
+        println!("{}", e);
+        return;
     }
 
     //     let mut running = ATOMIC_BOOL_INIT;

@@ -14,12 +14,13 @@ pub use clingo_sys::{clingo_literal_t, clingo_ast_statement_t, clingo_truth_valu
                      clingo_ast_body_literal_type, clingo_show_type, clingo_ast_literal_type,
                      clingo_ast_term_type, clingo_ast_statement_type, clingo_ast_term_type_t,
                      clingo_solve_event_type_t, clingo_show_type_bitset_t,
-                     clingo_solve_mode_bitset_t, clingo_error, clingo_error_t,
-                     clingo_solve_result_bitset_t, clingo_propagate_init_t,
-                     clingo_propagate_control_t, clingo_logger_t};
+                     clingo_solve_mode_bitset_t, clingo_error, clingo_solve_result_bitset_t,
+                     clingo_propagate_init_t, clingo_propagate_control_t, clingo_logger_t};
 
 pub type ClingoAstCallback = clingo_ast_callback_t;
 pub type ClingoSolveEventCallback = clingo_solve_event_callback_t;
+pub type ClingoError = clingo_error_t;
+
 
 #[derive(Debug, Copy, Clone)]
 pub struct ClingoLiteral(clingo_literal_t);
@@ -258,11 +259,11 @@ fn from_clingo_part(spart: &ClingoPart) -> clingo_part {
     }
 }
 
-pub fn safe_clingo_error_code() -> clingo_error_t {
+pub fn error_code() -> clingo_error_t {
     unsafe { clingo_error_code() }
 }
 
-pub fn safe_clingo_error_message() -> &'static str {
+pub fn error_message() -> &'static str {
 
     let char_ptr: *const c_char = unsafe { clingo_error_message() };
     if char_ptr.is_null() {
@@ -273,7 +274,7 @@ pub fn safe_clingo_error_message() -> &'static str {
     }
 }
 
-pub fn safe_clingo_set_error(code: clingo_error, message: &str) {
+pub fn set_error(code: clingo_error, message: &str) {
 
     let message_c_str = CString::new(message).unwrap();
     unsafe { clingo_set_error(code as clingo_error_t, message_c_str.as_ptr()) }
@@ -353,7 +354,7 @@ impl ClingoControl {
         logger: clingo_logger_t,
         logger_data: *mut ::std::os::raw::c_void,
         message_limit: ::std::os::raw::c_uint,
-    ) -> Option<&'a mut ClingoControl> {
+    ) -> Result<&'a mut ClingoControl, &'static str> {
 
         // create a vector of zero terminated strings
         let mut args: Vec<CString> = Vec::new();
@@ -368,7 +369,7 @@ impl ClingoControl {
 
         let mut ctl = std::ptr::null_mut();
 
-        let err = unsafe {
+        let suc = unsafe {
             clingo_control_new(
                 c_args.as_ptr(),
                 c_args.len(),
@@ -378,16 +379,33 @@ impl ClingoControl {
                 &mut ctl,
             )
         };
-        if !err {
-            None
+        if suc {
+            unsafe { Ok(&mut *(ctl as *mut ClingoControl)) }
         } else {
-            unsafe { Some(&mut *(ctl as *mut ClingoControl)) }
+            Err(error_message())
         }
     }
 
     //     pub fn clingo_control_load(control: *mut ClingoControl, file: *const c_char) -> u8;
 
-    pub fn add(&mut self, name_: &str, parameters: Vec<&str>, program_: &str) -> bool {
+    /// Extend the logic program with the given non-ground logic program in string form.
+    ///
+    /// This function puts the given program into a block of form: <tt>\#program name(parameters).</tt>
+    ///
+    /// After extending the logic program, the corresponding program parts are typically grounded with ::clingo_control_ground.
+    ///
+    /// **Parameters:**
+    ///
+    /// * `control` the target
+    /// * `name` name of the program block
+    /// * `parameters` string array of parameters of the program block
+    /// * `parameters_size` number of parameters
+    /// * `program` string representation of the program
+    ///
+    /// **Returns** whether the call was successful; might set one of the following error codes:
+    /// - ::clingo_error_bad_alloc
+    /// - ::clingo_error_runtime if parsing fails
+    pub fn add(&mut self, name_: &str, parameters: Vec<&str>, program_: &str) -> Result<(), &'static str> {
 
         let name = CString::new(name_).unwrap();
         let program = CString::new(program_).unwrap();
@@ -395,7 +413,7 @@ impl ClingoControl {
         let parameters_size = parameters.len();
 
         // create a vector of zero terminated strings
-        let args = &parameters
+        let args = parameters
             .into_iter()
             .map(|arg| CString::new(arg).unwrap())
             .collect::<Vec<CString>>();
@@ -405,7 +423,7 @@ impl ClingoControl {
             .map(|arg| arg.as_ptr())
             .collect::<Vec<*const c_char>>();
 
-        unsafe {
+        let suc = unsafe {
             clingo_control_add(
                 &mut self.0,
                 name.as_ptr(),
@@ -413,15 +431,38 @@ impl ClingoControl {
                 parameters_size,
                 program.as_ptr(),
             )
-        }
+        };
+        if suc { Ok(()) } else { Err(error_message()) }
     }
 
+    /// Ground the selected @link ::clingo_part parts @endlink of the current (non-ground) logic program.
+    ///
+    /// After grounding, logic programs can be solved with ::clingo_control_solve().
+    ///
+    ///
+    /// **Note:** Parts of a logic program without an explicit <tt>\#program</tt>
+    /// specification are by default put into a program called `base` without
+    /// arguments.
+    ///
+    /// **Parameters:**
+    ///
+    /// * `control` the target
+    /// * `parts` array of parts to ground
+    /// * `parts_size` size of the parts array
+    /// * `ground_callback` callback to implement external functions
+    /// * `ground_callback_data` user data for ground_callback
+    ///
+    /// **Returns** whether the call was successful; might set one of the following error codes:
+    /// - ::clingo_error_bad_alloc
+    /// - error code of ground callback
+    ///
+    /// @see clingo_part
     pub fn ground(
         &mut self,
         sparts: Vec<ClingoPart>,
         ground_callback: clingo_ground_callback_t,
         ground_callback_data: *mut ::std::os::raw::c_void,
-    ) -> bool {
+    ) -> Result<(), &'static str> {
 
         let parts = sparts
             .iter()
@@ -429,7 +470,7 @@ impl ClingoControl {
             .collect::<Vec<clingo_part>>();
         let parts_size = parts.len();
 
-        unsafe {
+        let suc = unsafe {
             clingo_control_ground(
                 &mut self.0,
                 parts.as_ptr(),
@@ -437,7 +478,8 @@ impl ClingoControl {
                 ground_callback,
                 ground_callback_data,
             )
-        }
+        };
+        if suc { Ok(()) } else { Err(error_message()) }
     }
 
     pub fn solve(
@@ -1495,11 +1537,11 @@ impl ClingoSolveHandle {
     /// @return whether the call was successful; might set one of the following error codes:
     /// - ::clingo_error_bad_alloc
     /// - ::clingo_error_runtime if solving fails
-    pub fn get(&mut self) -> Option<clingo_solve_result_bitset_t> {
+    pub fn get(&mut self) -> Result<clingo_solve_result_bitset_t, &'static str> {
 
         let mut result = 0;
-        let err = unsafe { clingo_solve_handle_get(&mut self.0, &mut result) };
-        if !err { None } else { Some(result) }
+        let suc = unsafe { clingo_solve_handle_get(&mut self.0, &mut result) };
+        if suc { Ok(result) } else { Err(error_message()) }
     }
 
     /// Get the next model (or zero if there are no more models).
@@ -1532,9 +1574,10 @@ impl ClingoSolveHandle {
     /// - ::clingo_error_bad_alloc
     /// - ::clingo_error_runtime if solving fails
 
-    pub fn resume(&mut self) -> bool {
+    pub fn resume(&mut self) -> Result<(), &'static str> {
         let ClingoSolveHandle(ref mut handle) = *self;
-        unsafe { clingo_solve_handle_resume(handle) }
+        let suc = unsafe { clingo_solve_handle_resume(handle) };
+        if suc { Ok(()) } else { Err(error_message()) }
     }
     /// Stops the running search and releases the handle.
     ///
@@ -1544,9 +1587,10 @@ impl ClingoSolveHandle {
     /// @return whether the call was successful; might set one of the following error codes:
     /// - ::clingo_error_bad_alloc
     /// - ::clingo_error_runtime if solving fails
-    pub fn close(&mut self) -> bool {
+    pub fn close(&mut self)  -> Result<(), &'static str>  {
         let ClingoSolveHandle(ref mut handle) = *self;
-        unsafe { clingo_solve_handle_close(handle) }
+        let suc = unsafe { clingo_solve_handle_close(handle) };
+        if suc { Ok(()) } else { Err(error_message()) }
     }
 }
 

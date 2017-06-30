@@ -5,9 +5,8 @@ use clingo::*;
 
 
 fn error_main() {
-    let error_message = safe_clingo_error_message();
-    println!("{}", error_message);
-    safe_clingo_error_code();
+    let error_message = clingo::error_message();
+    println!("Error {}: {}", clingo::error_code(), error_message);
 }
 
 fn print_prefix(depth: u8) {
@@ -107,9 +106,7 @@ fn solve(ctl: &mut ClingoControl) {
 
     // loop over all models
     loop {
-        if !handle.resume() {
-            return error_main();
-        }
+        handle.resume().expect("Failed resume on solve handle.");
         match handle.model() {
             // stop if there are no more models
             None => break,
@@ -148,9 +145,9 @@ fn main() {
 
     // add a logic program to the base part
     let parameters: Vec<&str> = Vec::new();
-    let err = ctl.add("base", parameters, "a :- not b. b :- not a.");
-    if !err {
-        return error_main();
+    if let Err(e) = ctl.add("base", parameters, "a :- not b. b :- not a.") {
+        println!("{}", e);
+        return;
     }
 
     print!("");
@@ -160,9 +157,9 @@ fn main() {
     let parts = vec![part];
     let ground_callback = None;
     let ground_callback_data = std::ptr::null_mut();
-    let err = ctl.ground(parts, ground_callback, ground_callback_data);
-    if !err {
-        return error_main();
+    if let Err(e) = ctl.ground(parts, ground_callback, ground_callback_data) {
+        println!("{}", e);
+        return;
     }
 
     // solve

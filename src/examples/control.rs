@@ -4,13 +4,7 @@ use std::env;
 use clingo::*;
 
 
-fn error_main() {
-    let error_message = safe_clingo_error_message();
-    println!("error {}", error_message);
-    safe_clingo_error_code();
-}
-
-fn print_model(model: &mut ClingoModel) {
+fn print_model(model: &mut ClingoModel) -> Result<(), &'static str>{
 
     // retrieve the symbols in the model
     let atoms = model
@@ -26,9 +20,10 @@ fn print_model(model: &mut ClingoModel) {
         print!(" {}", atom.to_string().unwrap());
     }
     println!("");
+    Ok(())
 }
 
-fn solve(ctl: &mut ClingoControl) {
+fn solve(ctl: &mut ClingoControl) -> Result<(), &'static str> {
 
     let solve_mode = clingo_solve_mode::clingo_solve_mode_yield as clingo_solve_mode_bitset_t;
     let assumptions = vec![];
@@ -41,23 +36,22 @@ fn solve(ctl: &mut ClingoControl) {
 
     // loop over all models
     loop {
-        if !handle.resume() {
-            return error_main();
-        }
+        handle.resume()?;
         match handle.model() {
             // stop if there are no more models
             None => break,
             // print the model
-            Some(model) => print_model(model),
+            Some(model) => print_model(model)?,
         }
     }
 
     // close the solve handle
-    let _result = handle.get().expect("Failed to get solve handle");
-    handle.close();
+    let _result = handle.get()?;
+    handle.close()?;
+    Ok(())
 }
 
-fn main() {
+fn run() -> Result<(), &'static str> {
 
     // collect clingo options from the command line
     let options = env::args().skip(1).collect();
@@ -65,15 +59,11 @@ fn main() {
     // create a control object and pass command line arguments
     let logger = None;
     let logger_data = std::ptr::null_mut();
-    let mut ctl = ClingoControl::new(options, logger, logger_data, 20)
-        .expect("Failed creating clingo_control");
+    let mut ctl = ClingoControl::new(options, logger, logger_data, 20)?;
 
     // add a logic program to the base part
     let parameters: Vec<&str> = Vec::new();
-    let err = ctl.add("base", parameters, "a :- not b. b :- not a.");
-    if !err {
-        return error_main();
-    }
+    ctl.add("base", parameters, "a :- not b. b :- not a.")?;
 
     print!("");
 
@@ -83,11 +73,16 @@ fn main() {
     let parts = vec![part];
     let ground_callback = None;
     let ground_callback_data = std::ptr::null_mut();
-    let err = ctl.ground(parts, ground_callback, ground_callback_data);
-    if !err {
-        return error_main();
-    }
+    ctl.ground(parts, ground_callback, ground_callback_data)?;
 
     // solve
-    let _solve_result = solve(ctl);
+    solve(ctl)?;
+    Ok(())
+}
+
+fn main() {
+    if let Err(e) = run() {
+        // print error
+        println!("{}", e);
+    }
 }

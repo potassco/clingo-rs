@@ -26,9 +26,8 @@ struct PropagatorT {
 }
 
 fn error_main() {
-    let error_message = safe_clingo_error_message();
-    println!("Error: {}", error_message);
-    safe_clingo_error_code();
+    let error_message = clingo::error_message();
+    println!("Error {}: {}", clingo::error_code(), error_message);
 }
 
 // returns the offset'th numeric argument of the function symbol sym
@@ -57,7 +56,7 @@ extern "C" fn init(init_: *mut clingo_propagate_init_t, data: *mut ::std::os::ra
         // in principle the number of threads can increase between solve calls by changing the configuration
         // this case is not handled (elegantly) here
         if threads > propagator.states.len() {
-            safe_clingo_set_error(
+            clingo::set_error(
                 clingo_error::clingo_error_runtime,
                 "more threads than states",
             );
@@ -253,13 +252,11 @@ fn solve(ctl: &mut ClingoControl) {
 
     // get a solve handle
     let handle = ctl.solve(solve_mode, assumptions, solve_event_callback, data)
-        .expect("Failed retrieving solve handle");
+        .expect("Failed to retrieve solve handle");
 
     // loop over all models
     loop {
-        if !handle.resume() {
-            return error_main();
-        }
+        handle.resume().expect("Failed resume on solve handle.");
         match handle.model() {
             // stop if there are no more models
             None => break,
@@ -293,7 +290,7 @@ fn main() {
     let logger_data = std::ptr::null_mut();
     let option = ClingoControl::new(options, logger, logger_data, 20);
     match option {
-        Some(ctl) => {
+        Ok(ctl) => {
             // register the propagator
             let prop_data_ptr = unsafe {
                 std::mem::transmute::<&mut PropagatorT, *mut ::std::os::raw::c_void>(&mut prop_data)
@@ -305,13 +302,13 @@ fn main() {
             // add a logic program to the pigeon part
             // parameters for the pigeon part
             let parameters = vec!["h", "p"];
-            let err = ctl.add(
+            if let Err(e) = ctl.add(
                 "pigeon",
                 parameters,
                 "1 { place(P,H) : H = 1..h } 1 :- P = 1..p.",
-            );
-            if !err {
-                return error_main();
+            ){
+                println!("{}", e);
+                return;
             }
 
             print!("");
@@ -333,16 +330,16 @@ fn main() {
             let parts = vec![part];
             let ground_callback = None;
             let ground_callback_data = std::ptr::null_mut();
-            let err = ctl.ground(parts, ground_callback, ground_callback_data);
-            if !err {
-                return error_main();
+            if let Err(e) = ctl.ground(parts, ground_callback, ground_callback_data) {
+                println!("{}", e);
+                return;
             }
 
             // solve using a model callback
             solve(ctl);
         }
-        None => {
-            return error_main();
+        Err(e) => {
+          println!("{}",e);
         }
     }
 }

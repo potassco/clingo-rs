@@ -25,7 +25,7 @@ extern "C" fn on_statement(
     // pass through all statements that are not rules
     if stm.get_type() != clingo_ast_statement_type::clingo_ast_statement_type_rule {
         if !on_statement_data.builder.add(&stm) {
-            // return error_main();
+            error_main();
             return false;
         }
         return true;
@@ -63,7 +63,7 @@ extern "C" fn on_statement(
 
     // add the rewritten statement to the program
     if !on_statement_data.builder.add(&stm2) {
-        // return error_main();
+        error_main();
         return false;
     }
 
@@ -71,9 +71,8 @@ extern "C" fn on_statement(
 }
 
 fn error_main() {
-    let error_message = safe_clingo_error_message();
-    println!("{}", error_message);
-    safe_clingo_error_code();
+    let error_message = clingo::error_message();
+    println!("Error {}: {}", clingo::error_code(), error_message);
 }
 
 fn print_model(model: &mut ClingoModel) {
@@ -106,9 +105,7 @@ fn solve(ctl: &mut ClingoControl) {
 
     // loop over all models
     loop {
-        if !handle.resume() {
-            return error_main();
-        }
+        handle.resume().expect("Failed resume on solve handle.");
         match handle.model() {
             // stop if there are no more models
             None => break,
@@ -118,7 +115,7 @@ fn solve(ctl: &mut ClingoControl) {
     }
     // close the solve handle
     let _result = handle.get().expect("Failed to get solve handle");
-    handle.close();
+    handle.close().expect("Failed to close solve handle");
 }
 
 fn main() {
@@ -197,9 +194,9 @@ fn main() {
     let parts = vec![part];
     let ground_callback = None;
     let ground_callback_data = std::ptr::null_mut();
-    let err = ctl.ground(parts, ground_callback, ground_callback_data);
-    if !err {
-        return error_main();
+    if let Err(e) = ctl.ground(parts, ground_callback, ground_callback_data) {
+        println!("{}", e);
+        return;
     }
 
     // solve with external enable = false
