@@ -4,11 +4,6 @@ use std::env;
 use clingo::*;
 
 
-fn error_main() {
-    let error_message = clingo::error_message();
-    println!("Error {}: {}", clingo::error_code(), error_message);
-}
-
 fn print_model(model: &mut ClingoModel) {
 
     // retrieve the symbols in the model
@@ -50,8 +45,8 @@ fn solve(ctl: &mut ClingoControl) {
     }
 
     // close the solve handle
-    let _result = handle.get().expect("Failed to get solve handle");
-    handle.close();
+    let _result = handle.get();
+    handle.close().expect("Failed to close solve handle");
 }
 
 fn main() {
@@ -63,28 +58,26 @@ fn main() {
     let logger = None;
     let logger_data = std::ptr::null_mut();
     let mut ctl = ClingoControl::new(options, logger, logger_data, 20)
-        .expect("Failed creating clingo_control");
+        .expect("Failed creating ClingoControl");
 
     // get the configuration object and its root key
     {
         let conf = ctl.configuration().unwrap();
-        let root_key = conf.configuration_root().unwrap();
+        let root_key = conf.root().unwrap();
 
         // configure to enumerate all models
-        let mut sub_key = conf.configuration_map_at(root_key, "solve.models").unwrap();
-        let err = conf.configuration_value_set(sub_key, "0");
-        if !err {
-            return error_main();
-        }
-        sub_key = conf.configuration_map_at(root_key, "solver").unwrap();
+        let mut sub_key = conf.map_at(root_key, "solve.models").unwrap();
+        conf.value_set(sub_key, "0").expect(
+            "Failed to set solve.models to 0.",
+        );
+        sub_key = conf.map_at(root_key, "solver").unwrap();
 
         // configure the first solver to use the berkmin heuristic
-        sub_key = conf.configuration_array_at(sub_key, 0).unwrap();
-        sub_key = conf.configuration_map_at(sub_key, "heuristic").unwrap();
-        let err = conf.configuration_value_set(sub_key, "berkmin");
-        if !err {
-            return error_main();
-        }
+        sub_key = conf.array_at(sub_key, 0).unwrap();
+        sub_key = conf.map_at(sub_key, "heuristic").unwrap();
+        conf.value_set(sub_key, "berkmin").expect(
+            "Failed to set heuristic to berkmin.",
+        );
     }
     // note that the solver entry can be used both as an array and a map
     // if used as a map, this simply sets the configuration of the first solver and
@@ -92,11 +85,9 @@ fn main() {
 
     // add a logic program to the base part
     let parameters: Vec<&str> = Vec::new();
-    if let Err(e) = ctl.add("base", parameters, "a :- not b. b :- not a.")
-    {
-        println("{}",e);
-        return;
-    }
+    ctl.add("base", parameters, "a :- not b. b :- not a.")
+        .expect("Failed to add a logic program");
+
     print!("");
 
     // ground the base part
@@ -104,10 +95,8 @@ fn main() {
     let parts = vec![part];
     let ground_callback = None;
     let ground_callback_data = std::ptr::null_mut();
-    if let Err(e) = ctl.ground(parts, ground_callback, ground_callback_data) {
-        println!("{}", e);
-        return;
-    }
+    ctl.ground(parts, ground_callback, ground_callback_data)
+        .expect("Failed to ground a logic program");
 
     // solve
     let _solve_result = solve(ctl);

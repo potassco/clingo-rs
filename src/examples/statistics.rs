@@ -4,11 +4,6 @@ use std::env;
 use clingo::*;
 
 
-fn error_main() {
-    let error_message = clingo::error_message();
-    println!("Error {}: {}", clingo::error_code(), error_message);
-}
-
 fn print_prefix(depth: u8) {
     for _ in 0..depth {
         print!("  ");
@@ -22,9 +17,9 @@ fn print_statistics(stats: &mut ClingoStatistics, key: u64, depth: u8) {
     let statistics_type = stats.statistics_type(key).unwrap();
     match statistics_type {
         // print values
-        1 => {
+        clingo_statistics_type::clingo_statistics_type_value => {
             let value = stats.statistics_value_get(key).expect(
-                "Failed to retrieve statistics value",
+                "Failed to retrieve statistics value.",
             );
 
             // print value (with prefix for readability)
@@ -33,16 +28,16 @@ fn print_statistics(stats: &mut ClingoStatistics, key: u64, depth: u8) {
         }
 
         // print arrays
-        2 => {
+        clingo_statistics_type::clingo_statistics_type_array => {
             // loop over array elements
             let size = stats.statistics_array_size(key).expect(
-                "Failed to retrieve statistics array size",
+                "Failed to retrieve statistics array size.",
             );
             for i in 0..size {
 
                 // print array offset (with prefix for readability)
                 let subkey = stats.statistics_array_at(key, i).expect(
-                    "Failed to retrieve statistics array at _",
+                    "Failed to retrieve statistics array.",
                 );
                 print_prefix(depth);
                 println!("{} zu:", i);
@@ -53,7 +48,7 @@ fn print_statistics(stats: &mut ClingoStatistics, key: u64, depth: u8) {
         }
 
         // print maps
-        3 => {
+        clingo_statistics_type::clingo_statistics_type_map => {
             // loop over map elements
             let size = stats.statistics_map_size(key).unwrap();
             for i in 0..size {
@@ -69,7 +64,7 @@ fn print_statistics(stats: &mut ClingoStatistics, key: u64, depth: u8) {
         }
 
         // this case won't occur if the statistics are traversed like this
-        _ => {
+        clingo_statistics_type::clingo_statistics_type_empty => {
             println!("clingo_statistics_type_empty");
         }
     }
@@ -82,7 +77,7 @@ fn print_model(model: &mut ClingoModel) {
         .symbols(
             clingo_show_type::clingo_show_type_shown as clingo_show_type_bitset_t,
         )
-        .expect("Failed to retrieve symbols in the model");
+        .expect("Failed to retrieve symbols in the model.");
 
     print!("Model:");
 
@@ -102,7 +97,7 @@ fn solve(ctl: &mut ClingoControl) {
 
     // get a solve handle
     let handle = ctl.solve(solve_mode, assumptions, solve_event_callback, data)
-        .expect("Failed retrieving solve handle");
+        .expect("Failed retrieving solve handle.");
 
     // loop over all models
     loop {
@@ -116,8 +111,8 @@ fn solve(ctl: &mut ClingoControl) {
     }
 
     // close the solve handle
-    let _result = handle.get().expect("Failed to get solve handle");
-    handle.close();
+    let _result = handle.get();
+    handle.close().expect("Failed to close solve handle.");
 }
 
 fn main() {
@@ -129,18 +124,17 @@ fn main() {
     let logger = None;
     let logger_data = std::ptr::null_mut();
     let mut ctl = ClingoControl::new(options, logger, logger_data, 20)
-        .expect("Failed creating clingo_control");
+        .expect("Failed creating clingo_control.");
 
     // get the configuration object and its root key
     {
         let conf = ctl.configuration().unwrap();
-        let root_key = conf.configuration_root().unwrap();
+        let root_key = conf.root().unwrap();
         // and set the statistics level to one to get more statistics
-        let subkey = conf.configuration_map_at(root_key, "stats").unwrap();
-        let err = conf.configuration_value_set(subkey, "1");
-        if !err {
-            return error_main();
-        }
+        let subkey = conf.map_at(root_key, "stats").unwrap();
+        conf.value_set(subkey, "1").expect(
+            "Failed to set value in configuration.",
+        );
     }
 
     // add a logic program to the base part

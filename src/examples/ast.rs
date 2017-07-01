@@ -24,10 +24,9 @@ extern "C" fn on_statement(
 
     // pass through all statements that are not rules
     if stm.get_type() != clingo_ast_statement_type::clingo_ast_statement_type_rule {
-        if !on_statement_data.builder.add(&stm) {
-            error_main();
-            return false;
-        }
+        on_statement_data.builder.add(&stm).expect(
+            "Failed to add statement to ProgramBuilder.",
+        );
         return true;
     }
 
@@ -62,17 +61,10 @@ extern "C" fn on_statement(
     let stm2 = ClingoAstStatement::new_rule(stm.location(), &rule);
 
     // add the rewritten statement to the program
-    if !on_statement_data.builder.add(&stm2) {
-        error_main();
-        return false;
-    }
-
+    on_statement_data.builder.add(&stm2).expect(
+        "Failed to add statement to ProgramBuilder.",
+    );
     return true;
-}
-
-fn error_main() {
-    let error_message = clingo::error_message();
-    println!("Error {}: {}", clingo::error_code(), error_message);
 }
 
 fn print_model(model: &mut ClingoModel) {
@@ -114,7 +106,7 @@ fn solve(ctl: &mut ClingoControl) {
         }
     }
     // close the solve handle
-    let _result = handle.get().expect("Failed to get solve handle");
+    let _result = handle.get();
     handle.close().expect("Failed to close solve handle");
 }
 
@@ -146,9 +138,9 @@ fn main() {
         };
 
         // begin building a program
-        if !data.builder.begin() {
-            return error_main();
-        }
+        data.builder.begin().expect(
+            "Failed building logic program.",
+        );
 
         // get the AST of the program
         let logger = None;
@@ -156,17 +148,14 @@ fn main() {
         let callback: ClingoAstCallback = Some(on_statement);
         let data_ptr =
             unsafe { std::mem::transmute::<&OnStatementData, *mut ::std::os::raw::c_void>(&data) };
-        if !safe_clingo_parse_program(
+        parse_program(
             "a :- not b. b :- not a.",
             callback,
             data_ptr,
             logger,
             logger_data,
             20,
-        )
-        {
-            return error_main();
-        }
+        ).expect("Failed to parse logic program");
 
         // add the external statement: #external enable.
         let ext = ClingoAstExternal::new(data.atom, &[]);
@@ -178,15 +167,14 @@ fn main() {
             clingo_ast_statement_type::clingo_ast_statement_type_external,
             &ext,
         );
-
-        if !data.builder.add(&stm) {
-            return error_main();
-        }
+        data.builder.add(&stm).expect(
+            "Failed to add statement to ProgramBuilder.",
+        );
 
         // finish building a program
-        if !data.builder.end() {
-            return error_main();
-        }
+        data.builder.end().expect(
+            "Failed to finish building a program.",
+        );
     }
 
     // ground the base part
@@ -194,10 +182,8 @@ fn main() {
     let parts = vec![part];
     let ground_callback = None;
     let ground_callback_data = std::ptr::null_mut();
-    if let Err(e) = ctl.ground(parts, ground_callback, ground_callback_data) {
-        println!("{}", e);
-        return;
-    }
+    ctl.ground(parts, ground_callback, ground_callback_data)
+        .expect("Failed to ground a logic program");
 
     // solve with external enable = false
     println!("Solving with enable = false...");
@@ -205,15 +191,13 @@ fn main() {
 
     // solve with external enable = true
     println!("Solving with enable = true...");
-    if !ctl.assign_external(sym, clingo_truth_value::clingo_truth_value_true) {
-        return error_main();
-    }
+    ctl.assign_external(sym, clingo_truth_value::clingo_truth_value_true)
+        .expect("Failed to assign #external enable true.");
     solve(ctl);
 
     // solve with external enable = false
     println!("Solving with enable = false...");
-    if !ctl.assign_external(sym, clingo_truth_value::clingo_truth_value_false) {
-        return error_main();
-    }
+    ctl.assign_external(sym, clingo_truth_value::clingo_truth_value_false)
+        .expect("Failed to assign #external enable false.");
     solve(ctl);
 }

@@ -4,11 +4,6 @@ use std::env;
 use clingo::*;
 
 
-fn error_main() {
-    let error_message = clingo::error_message();
-    println!("Error {}: {}", clingo::error_code(), error_message);
-}
-
 fn print_model(model: &mut ClingoModel) {
 
     // retrieve the symbols in the model
@@ -50,8 +45,8 @@ fn solve(ctl: &mut ClingoControl) {
     }
 
     // close the solve handle
-    let _result = handle.get().expect("Failed to get solve handle");
-    handle.close();
+    let _result = handle.get();
+    handle.close().expect("Failed to close solve handle");
 }
 
 fn main() {
@@ -67,19 +62,17 @@ fn main() {
 
     // add a logic program to the base part
     let parameters: Vec<&str> = Vec::new();
-    if !ctl.add("base", parameters, "{a; b; c}.") {
-        return error_main();
-    }
+    ctl.add("base", parameters, "{a; b; c}.").expect(
+        "Failed to add a logic program",
+    );
 
     // ground the base part
     let part = ClingoPart::new_part("base", &[]);
     let parts = vec![part];
     let ground_callback = None;
     let ground_callback_data = std::ptr::null_mut();
-    if let Err(e) = ctl.ground(parts, ground_callback, ground_callback_data) {
-        println!("{}", e);
-        return;
-    }
+    ctl.ground(parts, ground_callback, ground_callback_data)
+        .expect("Failed to ground a logic program");
 
     let atom_strings = ["a", "b", "c"];
     // get the ids of atoms a, b, and c
@@ -108,17 +101,17 @@ fn main() {
         // add rule: d :- a, b.
         let head = vec![atom_d];
         let body = vec![atom_ids[0], atom_ids[1]];
-        if !backend.rule(false, &head, &body) {
-            return error_main();
-        }
+        backend.rule(false, &head, &body).expect(
+            "Failed to add a rule to the program.",
+        );
 
         // add rule: :- not d, c.
         let head = vec![];
         let body = vec![ClingoLiteral::UNSAFE_from(atom_d).negate(), atom_ids[2]];
 
-        if !backend.rule(false, &head, &body) {
-            return error_main();
-        }
+        backend.rule(false, &head, &body).expect(
+            "Failed to add a rule to the program.",
+        );
     }
 
     // solve

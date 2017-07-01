@@ -4,7 +4,7 @@ use std::env;
 use clingo::*;
 
 
-fn print_model(model: &mut ClingoModel) -> Result<(), &'static str>{
+fn print_model(model: &mut ClingoModel) {
 
     // retrieve the symbols in the model
     let atoms = model
@@ -20,10 +20,9 @@ fn print_model(model: &mut ClingoModel) -> Result<(), &'static str>{
         print!(" {}", atom.to_string().unwrap());
     }
     println!("");
-    Ok(())
 }
 
-fn solve(ctl: &mut ClingoControl) -> Result<(), &'static str> {
+fn solve(ctl: &mut ClingoControl) {
 
     let solve_mode = clingo_solve_mode::clingo_solve_mode_yield as clingo_solve_mode_bitset_t;
     let assumptions = vec![];
@@ -36,22 +35,21 @@ fn solve(ctl: &mut ClingoControl) -> Result<(), &'static str> {
 
     // loop over all models
     loop {
-        handle.resume()?;
+        handle.resume().expect("Failed resume on solve handle.");
         match handle.model() {
             // stop if there are no more models
             None => break,
             // print the model
-            Some(model) => print_model(model)?,
+            Some(model) => print_model(model),
         }
     }
 
     // close the solve handle
-    let _result = handle.get()?;
-    handle.close()?;
-    Ok(())
+    let _result = handle.get();
+    handle.close().expect("Failed to close solve handle");
 }
 
-fn run() -> Result<(), &'static str> {
+fn main() {
 
     // collect clingo options from the command line
     let options = env::args().skip(1).collect();
@@ -59,11 +57,13 @@ fn run() -> Result<(), &'static str> {
     // create a control object and pass command line arguments
     let logger = None;
     let logger_data = std::ptr::null_mut();
-    let mut ctl = ClingoControl::new(options, logger, logger_data, 20)?;
+    let mut ctl = ClingoControl::new(options, logger, logger_data, 20)
+        .expect("Failed creating ClingoControl");
 
     // add a logic program to the base part
     let parameters: Vec<&str> = Vec::new();
-    ctl.add("base", parameters, "a :- not b. b :- not a.")?;
+    ctl.add("base", parameters, "a :- not b. b :- not a.")
+        .expect("Failed to add a logic program");;
 
     print!("");
 
@@ -73,16 +73,9 @@ fn run() -> Result<(), &'static str> {
     let parts = vec![part];
     let ground_callback = None;
     let ground_callback_data = std::ptr::null_mut();
-    ctl.ground(parts, ground_callback, ground_callback_data)?;
+    ctl.ground(parts, ground_callback, ground_callback_data)
+        .expect("Failed to ground a logic program");
 
     // solve
-    solve(ctl)?;
-    Ok(())
-}
-
-fn main() {
-    if let Err(e) = run() {
-        // print error
-        println!("{}", e);
-    }
+    solve(ctl);
 }

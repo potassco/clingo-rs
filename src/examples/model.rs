@@ -4,11 +4,6 @@ use std::env;
 use clingo::*;
 
 
-fn error_main() {
-    let error_message = clingo::error_message();
-    println!("Error {}: {}", clingo::error_code(), error_message);
-}
-
 fn print_model(model: &mut ClingoModel, label: &str, show: clingo_show_type_bitset_t) {
 
     print!("{}:", label);
@@ -85,8 +80,8 @@ fn solve(ctl: &mut ClingoControl) {
     }
 
     // close the solve handle
-    let _result = handle.get().expect("Failed to get solve handle");
-    handle.close();
+    let _result = handle.get();
+    handle.close().expect("Failed to close solve handle");
 }
 
 fn main() {
@@ -102,20 +97,16 @@ fn main() {
 
     // add a logic program to the base part
     let parameters: Vec<&str> = Vec::new();
-    if let Err(e) = ctl.add("base", parameters, "1 {a; b} 1. #show c : b. #show a/0.") {
-        println!("{}", e);
-        return;
-    }
+    ctl.add("base", parameters, "1 {a; b} 1. #show c : b. #show a/0.")
+        .expect("Failed to add a logic program");
 
     // ground the base part
     let part = ClingoPart::new_part("base", &[]);
     let parts = vec![part];
     let ground_callback = None;
     let ground_callback_data = std::ptr::null_mut();
-    if let Err(e) = ctl.ground(parts, ground_callback, ground_callback_data) {
-        println!("{}", e);
-        return;
-    }
+    ctl.ground(parts, ground_callback, ground_callback_data)
+        .expect("Failed to ground a logic program");
 
     // solve
     let _solve_result = solve(ctl);

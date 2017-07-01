@@ -25,11 +25,6 @@ struct PropagatorT {
     states: Vec<Rc<RefCell<StateT>>>,
 }
 
-fn error_main() {
-    let error_message = clingo::error_message();
-    println!("Error {}: {}", clingo::error_code(), error_message);
-}
-
 // returns the offset'th numeric argument of the function symbol sym
 fn get_arg(sym: ClingoSymbol, offset: usize) -> Option<i32> {
     // get the arguments of the function symbol
@@ -106,9 +101,7 @@ extern "C" fn init(init_: *mut clingo_propagate_init_t, data: *mut ::std::os::ra
                 propagator.pigeons[lit.get_integer() as usize] = h;
 
                 // watch the assignment literal
-                if !init.add_watch(lit) {
-                    return false;
-                }
+                init.add_watch(lit).expect("Failed to add watch.");
 
                 // update the total number of holes
                 if h + 1 > holes {
@@ -215,7 +208,7 @@ extern "C" fn undo(
         let hole = propagator.pigeons[lit.get_integer() as usize] as usize;
 
         if let Some(x) = state.holes[hole] {
-            if equal(x, lit) {
+            if x == lit {
                 // undo the assignment
                 println!("TODO: holes{}:{:?}", hole, state.holes[hole]);
                 state.holes[hole] = None;
@@ -266,8 +259,8 @@ fn solve(ctl: &mut ClingoControl) {
     }
 
     // close the solve handle
-    let _result = handle.get().expect("Failed to get solve handle");
-    handle.close();
+    let _result = handle.get();
+    handle.close().expect("Failed to close solve handle");
 }
 
 fn main() {
@@ -295,21 +288,17 @@ fn main() {
             let prop_data_ptr = unsafe {
                 std::mem::transmute::<&mut PropagatorT, *mut ::std::os::raw::c_void>(&mut prop_data)
             };
-            if !ctl.register_propagator(&prop, prop_data_ptr, false) {
-                return error_main();
-            }
+            ctl.register_propagator(&prop, prop_data_ptr, false)
+                .expect("Failed to register propagator.");
 
             // add a logic program to the pigeon part
             // parameters for the pigeon part
             let parameters = vec!["h", "p"];
-            if let Err(e) = ctl.add(
+            ctl.add(
                 "pigeon",
                 parameters,
                 "1 { place(P,H) : H = 1..h } 1 :- P = 1..p.",
-            ){
-                println!("{}", e);
-                return;
-            }
+            ).expect("Failed to add a logic program");
 
             print!("");
 
@@ -330,16 +319,14 @@ fn main() {
             let parts = vec![part];
             let ground_callback = None;
             let ground_callback_data = std::ptr::null_mut();
-            if let Err(e) = ctl.ground(parts, ground_callback, ground_callback_data) {
-                println!("{}", e);
-                return;
-            }
+            ctl.ground(parts, ground_callback, ground_callback_data)
+                .expect("Failed to ground a logic program");
 
             // solve using a model callback
             solve(ctl);
         }
         Err(e) => {
-          println!("{}",e);
+            println!("{}", e);
         }
     }
 }

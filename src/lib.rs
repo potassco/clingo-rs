@@ -11,9 +11,9 @@ use clingo_sys::*;
 
 pub use clingo_sys::{clingo_literal_t, clingo_ast_statement_t, clingo_truth_value,
                      clingo_ast_sign, clingo_solve_mode, clingo_clause_type,
-                     clingo_ast_body_literal_type, clingo_show_type, clingo_ast_literal_type,
-                     clingo_ast_term_type, clingo_ast_statement_type, clingo_ast_term_type_t,
-                     clingo_solve_event_type_t, clingo_show_type_bitset_t,
+                     clingo_statistics_type, clingo_ast_body_literal_type, clingo_show_type,
+                     clingo_ast_literal_type, clingo_ast_term_type, clingo_ast_statement_type,
+                     clingo_ast_term_type_t, clingo_solve_event_type_t, clingo_show_type_bitset_t,
                      clingo_solve_mode_bitset_t, clingo_error, clingo_solve_result_bitset_t,
                      clingo_propagate_init_t, clingo_propagate_control_t, clingo_logger_t};
 
@@ -24,6 +24,12 @@ pub type ClingoError = clingo_error_t;
 
 #[derive(Debug, Copy, Clone)]
 pub struct ClingoLiteral(clingo_literal_t);
+impl PartialEq for ClingoLiteral {
+    fn eq(&self, other: &ClingoLiteral) -> bool {
+        self.0.eq(&other.0)
+    }
+}
+impl Eq for ClingoLiteral {}
 impl ClingoLiteral {
     pub fn negate(&self) -> ClingoLiteral {
         ClingoLiteral(-(self.0))
@@ -34,9 +40,6 @@ impl ClingoLiteral {
     pub fn get_integer(&self) -> i32 {
         self.0
     }
-}
-pub fn equal(ClingoLiteral(l1): ClingoLiteral, ClingoLiteral(l2): ClingoLiteral) -> bool {
-    l1 == l2
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -280,17 +283,17 @@ pub fn set_error(code: clingo_error, message: &str) {
     unsafe { clingo_set_error(code as clingo_error_t, message_c_str.as_ptr()) }
 }
 
-pub fn safe_clingo_parse_program(
+pub fn parse_program(
     program_: &str,
     callback: clingo_ast_callback_t,
     callback_data: *mut ::std::os::raw::c_void,
     logger: clingo_logger_t,
     logger_data: *mut ::std::os::raw::c_void,
     message_limit: ::std::os::raw::c_uint,
-) -> bool {
+) -> Result<(), &'static str> {
 
     let program = CString::new(program_).unwrap();
-    unsafe {
+    let suc = unsafe {
         clingo_parse_program(
             program.as_ptr(),
             callback,
@@ -299,7 +302,8 @@ pub fn safe_clingo_parse_program(
             logger_data,
             message_limit,
         )
-    }
+    };
+    if suc { Ok(()) } else { Err(error_message()) }
 }
 
 pub struct ClingoPropagator(clingo_propagator_t);
@@ -405,7 +409,12 @@ impl ClingoControl {
     /// **Returns** whether the call was successful; might set one of the following error codes:
     /// - ::clingo_error_bad_alloc
     /// - ::clingo_error_runtime if parsing fails
-    pub fn add(&mut self, name_: &str, parameters: Vec<&str>, program_: &str) -> Result<(), &'static str> {
+    pub fn add(
+        &mut self,
+        name_: &str,
+        parameters: Vec<&str>,
+        program_: &str,
+    ) -> Result<(), &'static str> {
 
         let name = CString::new(name_).unwrap();
         let program = CString::new(program_).unwrap();
@@ -512,30 +521,61 @@ impl ClingoControl {
 
     //     pub fn clingo_control_cleanup(control: *mut ClingoControl) -> u8;
 
+    /// Assign a truth value to an external atom.
+    ///
+    /// If the atom does not exist or is not external, this is a noop.
+    ///
+    /// **Parameters:**
+    ///
+    /// * `control` the target
+    /// * `atom` atom to assign
+    /// * `value` the truth value
+    ///
+    /// **Returns** whether the call was successful; might set one of the following error codes:
+    /// - ::clingo_error_bad_alloc
     pub fn assign_external(
         &mut self,
         ClingoSymbol(symbol): ClingoSymbol,
         value: clingo_truth_value,
-    ) -> bool {
-        unsafe {
+    ) -> Result<(), &'static str> {
+        let suc = unsafe {
             clingo_control_assign_external(&mut self.0, symbol, value as clingo_truth_value_t)
-        }
+        };
+        if suc { Ok(()) } else { Err(error_message()) }
     }
 
     //     pub fn clingo_control_release_external(control: *mut ClingoControl,
     //                                            atom: clingo_symbol_t)
     //                                            -> u8;
 
+    /// Register a custom propagator with the control object.
+    ///
+    /// If the sequential flag is set to true, the propagator is called
+    /// sequentially when solving with multiple threads.
+    ///
+    /// See the @ref Propagator module for more information.
+    ///
+    /// **Parameters:**
+    ///
+    /// * `control` the target
+    /// * `propagator` the propagator
+    /// * `data` user data passed to the propagator functions
+    /// * `sequential` whether the propagator should be called sequentially
+    ///
+    /// **Returns** whether the call was successful; might set one of the following error codes:
+    /// - ::clingo_error_bad_alloc
     pub fn register_propagator(
         &mut self,
         propagator: &ClingoPropagator,
         data: *mut ::std::os::raw::c_void,
         sequential: bool,
-    ) -> bool {
+    ) -> Result<(), &'static str> {
 
         let ptr: *const ClingoPropagator = propagator;
         let ptr2 = ptr as *const clingo_propagator;
-        unsafe { clingo_control_register_propagator(&mut self.0, ptr2, data, sequential) }
+        let suc =
+            unsafe { clingo_control_register_propagator(&mut self.0, ptr2, data, sequential) };
+        if suc { Ok(()) } else { Err(error_message()) }
     }
 
     pub fn statistics(&mut self) -> Option<&mut ClingoStatistics> {
@@ -610,32 +650,76 @@ impl ClingoControl {
         }
     }
 
-    pub fn program_builder(&mut self) -> Option<&mut ClingoProgramBuilder> {
+    /// Get an object to add non-ground directives to the program.
+    ///
+    /// See the @ref ProgramBuilder module for more information.
+    ///
+    /// **Parameters:**
+    ///
+    /// * `control` the target
+    /// * `builder` the program builder object
+    ///
+    /// **Returns** whether the call was successful
+    pub fn program_builder(&mut self) -> Result<&mut ClingoProgramBuilder, &'static str> {
 
         let mut builder = std::ptr::null_mut() as *mut clingo_program_builder_t;
-        let err = unsafe { clingo_control_program_builder(&mut self.0, &mut builder) };
-        if !err {
-            None
-        } else {
+        if unsafe { clingo_control_program_builder(&mut self.0, &mut builder) } {
             unsafe { (builder as *mut ClingoProgramBuilder).as_mut() }
+                .ok_or("Failed to obtain ProgramBuilder.")
+        } else {
+            Err(error_message())
         }
     }
 }
 
 pub struct ClingoProgramBuilder(clingo_program_builder_t);
 impl ClingoProgramBuilder {
-    pub fn begin(&mut self) -> bool {
-        unsafe { clingo_program_builder_begin(&mut self.0) }
+    /// Begin building a program.
+    ///
+    /// * `builder` - the target program builder
+    ///
+    /// **Returns** whether the call was successful
+    pub fn begin(&mut self) -> Result<(), &'static str> {
+        if unsafe { clingo_program_builder_begin(&mut self.0) } {
+            Ok(())
+        } else {
+            Err(error_message())
+        }
     }
 
-    pub fn add(&mut self, statement: &ClingoAstStatement) -> bool {
+    /// Adds a statement to the program.
+    ///
+    /// @attention @ref clingo_program_builder_begin() must be called before adding statements and @ref clingo_program_builder_end() must be called after all statements have been added.
+    ///
+    /// **Parameters:**
+    ///
+    /// * `builder` - the target program builder
+    /// * `statement` - the statement to add
+    ///
+    /// **Returns** whether the call was successful; might set one of the following error codes:
+    /// - ::clingo_error_runtime for statements of invalid form
+    /// - ::clingo_error_bad_alloc
+    pub fn add(&mut self, statement: &ClingoAstStatement) -> Result<(), &'static str> {
 
         let ClingoAstStatement(ref stm) = *statement;
-        unsafe { clingo_program_builder_add(&mut self.0, stm) }
+        if unsafe { clingo_program_builder_add(&mut self.0, stm) } {
+            Ok(())
+        } else {
+            Err(error_message())
+        }
     }
 
-    pub fn end(&mut self) -> bool {
-        unsafe { clingo_program_builder_end(&mut self.0) }
+    /// End building a program.
+    ///
+    /// * `builder` - the target program builder
+    ///
+    /// **Returns** whether the call was successful
+    pub fn end(&mut self) -> Result<(), &'static str> {
+        if unsafe { clingo_program_builder_end(&mut self.0) } {
+            Ok(())
+        } else {
+            Err(error_message())
+        }
     }
 }
 
@@ -861,7 +945,7 @@ impl ClingoAstLiteral {
 
 pub struct ClingoConfiguration(clingo_configuration_t);
 impl ClingoConfiguration {
-    pub fn configuration_root(&mut self) -> Option<ClingoId> {
+    pub fn root(&mut self) -> Option<ClingoId> {
         unsafe {
             let ClingoConfiguration(ref mut conf) = *self;
             let mut root_key = 0 as clingo_id_t;
@@ -885,11 +969,7 @@ impl ClingoConfiguration {
     //                                            size: *mut size_t)
     //                                            -> u8;
 
-    pub fn configuration_array_at(
-        &mut self,
-        ClingoId(key): ClingoId,
-        offset: usize,
-    ) -> Option<ClingoId> {
+    pub fn array_at(&mut self, ClingoId(key): ClingoId, offset: usize) -> Option<ClingoId> {
 
         let mut nkey = 0 as clingo_id_t;
         let err = unsafe { clingo_configuration_array_at(&mut self.0, key, offset, &mut nkey) };
@@ -907,11 +987,21 @@ impl ClingoConfiguration {
     //                                                 name: *mut *const c_char)
     //                                                 -> u8;
 
-    pub fn configuration_map_at(
-        &mut self,
-        ClingoId(key): ClingoId,
-        name: &str,
-    ) -> Option<ClingoId> {
+    /// Lookup a subkey under the given name.
+    ///
+    /// @pre The @link clingo_configuration_type() type@endlink of the entry must be @ref ::clingo_configuration_type_map.
+    ///
+    /// **Note:** Multiple levels can be looked up by concatenating keys with a period.
+    ///
+    /// **Parameters:**
+    ///
+    /// * `configuration` the target configuration
+    /// * `key` the key
+    /// * `name` the name to lookup the subkey
+    /// * `subkey` the resulting subkey
+    ///
+    /// **Returns** whether the call was successful
+    pub fn map_at(&mut self, ClingoId(key): ClingoId, name: &str) -> Option<ClingoId> {
 
         let mut nkey = 0 as clingo_id_t;
         let name_c_str = CString::new(name).unwrap();
@@ -937,18 +1027,50 @@ impl ClingoConfiguration {
     //                                           size: size_t)
     //                                           -> u8;
 
-    pub fn configuration_value_set(&mut self, ClingoId(key): ClingoId, value: &str) -> bool {
-        unsafe {
-            let value_c_str = CString::new(value).unwrap();
-            clingo_configuration_value_set(&mut self.0, key, value_c_str.as_ptr())
+    /// Set the value of an entry.
+    ///
+    /// @pre The @link clingo_configuration_type() type@endlink of the entry must be @ref ::clingo_configuration_type_value.
+    ///
+    /// **Parameters:**
+    ///
+    /// * `configuration` the target configuration
+    /// * `key` the key
+    /// * `value` the value to set
+    ///
+    /// **Returns** whether the call was successful
+    pub fn value_set(&mut self, ClingoId(key): ClingoId, value: &str) -> Result<(), &'static str> {
+
+        let value_c_str = CString::new(value).unwrap();
+        if unsafe { clingo_configuration_value_set(&mut self.0, key, value_c_str.as_ptr()) } {
+            Ok(())
+        } else {
+            Err(error_message())
         }
     }
 }
 
 pub struct ClingoBackend(clingo_backend_t);
 impl ClingoBackend {
-    pub fn rule(&mut self, choice: bool, head: &[ClingoAtom], body: &[ClingoLiteral]) -> bool {
-        unsafe {
+    /// Add a rule to the program.
+    ///
+    /// **Parameters:**
+    ///
+    /// * `backend` the target backend
+    /// * `choice` determines if the head is a choice or a disjunction
+    /// * `head` the head atoms
+    /// * `head_size` the number of atoms in the head
+    /// * `body` the body literals
+    /// * `body_size` the number of literals in the body
+    ///
+    /// **Returns** whether the call was successful; might set one of the following error codes:
+    /// - ::clingo_error_bad_alloc
+    pub fn rule(
+        &mut self,
+        choice: bool,
+        head: &[ClingoAtom],
+        body: &[ClingoLiteral],
+    ) -> Result<(), &'static str> {
+        if unsafe {
             clingo_backend_rule(
                 &mut self.0,
                 choice,
@@ -958,6 +1080,12 @@ impl ClingoBackend {
                 body.len(),
             )
         }
+        {
+            Ok(())
+        } else {
+            Err(error_message())
+        }
+
     }
 
     //     pub fn clingo_backend_weight_rule(backend: *mut ClingoBackend,
@@ -985,14 +1113,29 @@ impl ClingoBackend {
     //                                    type_: clingo_external_type_t)
     //                                    -> u8;
 
-    pub fn assume(&mut self, literals: &[ClingoLiteral]) -> bool {
+    /// Add an assumption directive.
+    ///
+    /// **Parameters:**
+    ///
+    /// * `backend` the target backend
+    /// * `literals` the literals to assume (positive literals are true and negative literals false for the next solve call)
+    /// * `size` the number of atoms
+    ///
+    /// **Returns** whether the call was successful; might set one of the following error codes:
+    /// - ::clingo_error_bad_alloc
+    pub fn assume(&mut self, literals: &[ClingoLiteral]) -> Result<(), &'static str> {
         let size = literals.len();
-        unsafe {
+        if unsafe {
             clingo_backend_assume(
                 &mut self.0,
                 literals.as_ptr() as *const clingo_literal_t,
                 size,
             )
+        }
+        {
+            Ok(())
+        } else {
+            Err(error_message())
         }
     }
 
@@ -1012,11 +1155,22 @@ impl ClingoBackend {
     //                                     size: size_t)
     //                                     -> u8;
 
-    pub fn add_atom(&mut self) -> Option<ClingoAtom> {
+    /// Get a fresh atom to be used in aspif directives.
+    ///
+    /// **Parameters:**
+    ///
+    /// * `backend` the target backend
+    /// * `atom` the resulting atom
+    ///
+    /// **Returns** whether the call was successful
+    pub fn add_atom(&mut self) -> Result<ClingoAtom, &'static str> {
 
         let mut atom = 0 as clingo_atom_t;
-        let err = unsafe { clingo_backend_add_atom(&mut self.0, &mut atom) };
-        if !err { None } else { Some(ClingoAtom(atom)) }
+        if unsafe { clingo_backend_add_atom(&mut self.0, &mut atom) } {
+            Ok(ClingoAtom(atom))
+        } else {
+            Err(error_message())
+        }
     }
 }
 
@@ -1029,11 +1183,21 @@ impl ClingoStatistics {
         if !err { None } else { Some(root_key) }
     }
 
-    pub fn statistics_type(&mut self, key: u64) -> Option<clingo_statistics_type_t> {
+    pub fn statistics_type(&mut self, key: u64) -> Option<clingo_statistics_type> {
 
         let mut stype = 0 as clingo_statistics_type_t;
         let err = unsafe { clingo_statistics_type(&mut self.0, key, &mut stype) };
-        if !err { None } else { Some(stype) }
+        if !err {
+            None
+        } else {
+            match stype {
+
+                0 => Some(clingo_statistics_type::clingo_statistics_type_empty),
+                1 => Some(clingo_statistics_type::clingo_statistics_type_value),
+                2 => Some(clingo_statistics_type::clingo_statistics_type_array),
+                _ => Some(clingo_statistics_type::clingo_statistics_type_map), 
+            }
+        }
     }
 
     pub fn statistics_array_size(&mut self, key: u64) -> Option<usize> {
@@ -1431,15 +1595,36 @@ impl ClingoModel {
 
 pub struct ClingoSolveControl(clingo_solve_control_t);
 impl ClingoSolveControl {
-    pub fn add_clause(&mut self, clause: &[ClingoLiteral]) -> bool {
+    /// Add a clause that applies to the current solving step during model
+    /// enumeration.
+    ///
+    ///
+    /// **Note:** The @ref Propagator module provides a more sophisticated
+    /// interface to add clauses - even on partial assignments.
+    ///
+    /// **Parameters:**
+    ///
+    /// * `control` the target
+    /// * `clause` array of literals representing the clause
+    /// * `size` the size of the literal array
+    ///
+    /// **Returns** whether the call was successful; might set one of the following error codes:
+    /// - ::clingo_error_bad_alloc
+    /// - ::clingo_error_runtime if adding the clause fails
+    pub fn add_clause(&mut self, clause: &[ClingoLiteral]) -> Result<(), &'static str> {
 
         let size = mem::size_of_val(clause);
-        unsafe {
+        if unsafe {
             clingo_solve_control_add_clause(
                 &mut self.0,
                 clause.as_ptr() as *const clingo_literal_t,
                 size,
             )
+        }
+        {
+            Ok(())
+        } else {
+            Err(error_message())
         }
     }
 }
@@ -1453,14 +1638,30 @@ impl ClingoPropagateControl {
     //     pub fn clingo_propagate_control_assignment(control: *mut ClingoPropagateControl)
     //                                           -> *mut clingo_assignment_t;
 
+    /// Add the given clause to the solver.
+    ///
+    /// This method sets its result to false if the current propagation must be stopped for the solver to backtrack.
+    ///
+    /// @attention No further calls on the control object or functions on the assignment should be called when the result of this method is false.
+    ///
+    /// **Parameters:**
+    ///
+    /// * `control` the target
+    /// * `clause` the clause to add
+    /// * `size` the size of the clause
+    /// * `type` the clause type determining its lifetime
+    /// * `result` result indicating whether propagation has to be stopped
+    ///
+    /// **Returns** whether the call was successful; might set one of the following error codes:
+    /// - ::clingo_error_bad_alloc
     pub fn add_clause(
         &mut self,
         clause: &[ClingoLiteral],
         type_: clingo_clause_type,
-    ) -> Option<bool> {
+    ) -> Result<bool, &'static str> {
         let size = mem::size_of_val(clause);
         let mut result = false;
-        let err = unsafe {
+        if unsafe {
             clingo_propagate_control_add_clause(
                 &mut self.0,
                 clause.as_ptr() as *const clingo_literal_t,
@@ -1468,15 +1669,35 @@ impl ClingoPropagateControl {
                 type_ as clingo_clause_type_t,
                 &mut result,
             )
-        };
-        if !err { None } else { Some(result) }
+        }
+        {
+            Ok(result)
+        } else {
+            Err(error_message())
+        }
 
     }
 
-    pub fn propagate(&mut self) -> Option<bool> {
+    /// Propagate implied literals (resulting from added clauses).
+    ///
+    /// This method sets its result to false if the current propagation must be stopped for the solver to backtrack.
+    ///
+    /// @attention No further calls on the control object or functions on the assignment should be called when the result of this method is false.
+    ///
+    /// **Parameters:**
+    ///
+    /// * `control` the target
+    /// * `result` result indicating whether propagation has to be stopped
+    ///
+    /// **Returns** whether the call was successful; might set one of the following error codes:
+    /// - ::clingo_error_bad_alloc
+    pub fn propagate(&mut self) -> Result<bool, &'static str> {
         let mut result = false;
-        let err = unsafe { clingo_propagate_control_propagate(&mut self.0, &mut result) };
-        if !err { None } else { Some(result) }
+        if unsafe { clingo_propagate_control_propagate(&mut self.0, &mut result) } {
+            Ok(result)
+        } else {
+            Err(error_message())
+        }
     }
 }
 
@@ -1500,8 +1721,23 @@ impl ClingoPropagateInit {
         }
     }
 
-    pub fn add_watch(&mut self, ClingoLiteral(solver_literal): ClingoLiteral) -> bool {
-        unsafe { clingo_propagate_init_add_watch(&mut self.0, solver_literal) }
+    /// Add a watch for the solver literal in the given phase.
+    ///
+    /// **Parameters:**
+    ///
+    /// * `init` the target
+    /// * `solver_literal` the solver literal
+    ///
+    /// **Returns** whether the call was successful
+    pub fn add_watch(
+        &mut self,
+        ClingoLiteral(solver_literal): ClingoLiteral,
+    ) -> Result<(), &'static str> {
+        if unsafe { clingo_propagate_init_add_watch(&mut self.0, solver_literal) } {
+            Ok(())
+        } else {
+            Err(error_message())
+        }
     }
 
     pub fn symbolic_atoms<'a>(&mut self) -> Option<&'a mut ClingoSymbolicAtoms> {
@@ -1515,7 +1751,7 @@ impl ClingoPropagateInit {
         }
     }
 
-    //     pub fn c_lingo_propagate_init_theory_atoms(init: &mut ClingoPropagateInit,
+    //     pub fn clingo_propagate_init_theory_atoms(init: &mut ClingoPropagateInit,
     //                                               atoms: *mut *mut ClingoTheoryAtoms)
     //                                               -> bool;
 
@@ -1541,7 +1777,11 @@ impl ClingoSolveHandle {
 
         let mut result = 0;
         let suc = unsafe { clingo_solve_handle_get(&mut self.0, &mut result) };
-        if suc { Ok(result) } else { Err(error_message()) }
+        if suc {
+            Ok(result)
+        } else {
+            Err(error_message())
+        }
     }
 
     /// Get the next model (or zero if there are no more models).
@@ -1587,7 +1827,7 @@ impl ClingoSolveHandle {
     /// @return whether the call was successful; might set one of the following error codes:
     /// - ::clingo_error_bad_alloc
     /// - ::clingo_error_runtime if solving fails
-    pub fn close(&mut self)  -> Result<(), &'static str>  {
+    pub fn close(&mut self) -> Result<(), &'static str> {
         let ClingoSolveHandle(ref mut handle) = *self;
         let suc = unsafe { clingo_solve_handle_close(handle) };
         if suc { Ok(()) } else { Err(error_message()) }

@@ -4,11 +4,6 @@ use std::env;
 use clingo::*;
 
 
-fn error_main() {
-    let error_message = clingo::error_message();
-    println!("Error {}: {}", clingo::error_code(), error_message);
-}
-
 fn main() {
 
     // collect clingo options from the command line
@@ -22,20 +17,17 @@ fn main() {
 
     // add a logic program to the base part
     let parameters: Vec<&str> = Vec::new();
-    if let Err(e) = ctl.add("base", parameters, "a. {b}. #external c.") {
-        println!("{}", e);
-        return;
-    }
+    ctl.add("base", parameters, "a. {b}. #external c.").expect(
+        "Failed to add a logic program",
+    );
 
     // ground the base part
     let part = ClingoPart::new_part("base", &[]);
     let parts = vec![part];
     let ground_callback = None;
     let ground_callback_data = std::ptr::null_mut();
-    if let Err(e) = ctl.ground(parts, ground_callback, ground_callback_data) {
-        println!("{}", e);
-        return;
-    }
+    ctl.ground(parts, ground_callback, ground_callback_data)
+        .expect("Failed to ground a logic program");
 
     // get symbolic atoms
     let atoms = ctl.symbolic_atoms().unwrap();

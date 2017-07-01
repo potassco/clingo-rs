@@ -7,11 +7,6 @@ use std::sync::atomic::{AtomicBool, ATOMIC_BOOL_INIT};
 use clingo::*;
 
 
-fn error_main() {
-    let error_message = clingo::error_message();
-    println!("Error {}: {}", clingo::error_code(), error_message);
-}
-
 extern "C" fn on_event(
     etype: clingo_solve_event_type_t,
     event: *mut ::std::os::raw::c_void,
@@ -41,26 +36,22 @@ fn main() {
 
     // add a logic program to the base part
     let parameters: Vec<&str> = Vec::new();
-    if let Err(e) = ctl.add(
+    ctl.add(
         "base",
         parameters,
-        "#const n = 17.1 { p(X); q(X) } 1 :- X = 1..n.:- not n+1 { p(1..n); \
-                       q(1..n) }.",
-    )
-    {
-        println!("{}",e);
-        return;
-    }
+        "#const n = 17.\
+         1 { p(X); q(X) } 1 :- X = 1..n.\
+         :- not n+1 { p(1..n); \
+         q(1..n) }.",
+    ).expect("Failed to add a logic program");
 
     // ground the base part
     let part = ClingoPart::new_part("base", &[]);
     let parts = vec![part];
     let ground_callback = None;
     let ground_callback_data = std::ptr::null_mut();
-    if let Err(e) = ctl.ground(parts, ground_callback, ground_callback_data) {
-        println!("{}", e);
-        return;
-    }
+    ctl.ground(parts, ground_callback, ground_callback_data)
+        .expect("Failed to ground a logic program");
 
     //     let mut running = ATOMIC_BOOL_INIT;
     let running = std::ptr::null_mut();
@@ -99,5 +90,5 @@ fn main() {
     let _result = handle.get().expect("Failed to get solve result");
 
     // close the handle
-    handle.close();
+    handle.close().expect("Failed to close solve handle");
 }
