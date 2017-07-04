@@ -26,7 +26,7 @@ struct PropagatorT {
 }
 
 // returns the offset'th numeric argument of the function symbol sym
-fn get_arg(sym: ClingoSymbol, offset: usize) -> Option<i32> {
+fn get_arg(sym: ClingoSymbol, offset: usize) -> Result<i32, &'static str> {
     // get the arguments of the function symbol
     let args = sym.arguments().unwrap();
     // get the requested numeric argument
@@ -167,7 +167,7 @@ extern "C" fn propagate(
 
                 // add the clause
                 if !control
-                    .add_clause(clause, clingo_clause_type::clingo_clause_type_learnt)
+                    .add_clause(clause, clingo_clause_type_learnt)
                     .unwrap()
                 {
                     return true;
@@ -222,10 +222,8 @@ fn print_model(model: &mut ClingoModel) {
 
     // retrieve the symbols in the model
     let atoms = model
-        .symbols(
-            clingo_show_type::clingo_show_type_shown as clingo_show_type_bitset_t,
-        )
-        .expect("Failed to retrieve symbols in the model");
+        .symbols(clingo_show_type_shown as clingo_show_type_bitset_t)
+        .expect("Failed to retrieve symbols in the model.");
 
     print!(" Model:");
 
@@ -238,29 +236,29 @@ fn print_model(model: &mut ClingoModel) {
 
 fn solve(ctl: &mut ClingoControl) {
 
-    let solve_mode = clingo_solve_mode::clingo_solve_mode_yield as clingo_solve_mode_bitset_t;
+    let solve_mode = clingo_solve_mode_yield as clingo_solve_mode_bitset_t;
     let assumptions = vec![];
     let solve_event_callback = None;
     let data = std::ptr::null_mut();
 
     // get a solve handle
     let handle = ctl.solve(solve_mode, assumptions, solve_event_callback, data)
-        .expect("Failed to retrieve solve handle");
+        .expect("Failed to retrieve solve handle.");
 
     // loop over all models
     loop {
         handle.resume().expect("Failed resume on solve handle.");
         match handle.model() {
             // stop if there are no more models
-            None => break,
+            Err(_) => break,
             // print the model
-            Some(model) => print_model(model),
+            Ok(model) => print_model(model),
         }
     }
 
     // close the solve handle
     let _result = handle.get();
-    handle.close().expect("Failed to close solve handle");
+    handle.close().expect("Failed to close solve handle.");
 }
 
 fn main() {
@@ -298,7 +296,7 @@ fn main() {
                 "pigeon",
                 parameters,
                 "1 { place(P,H) : H = 1..h } 1 :- P = 1..p.",
-            ).expect("Failed to add a logic program");
+            ).expect("Failed to add a logic program.");
 
             print!("");
 
@@ -320,7 +318,7 @@ fn main() {
             let ground_callback = None;
             let ground_callback_data = std::ptr::null_mut();
             ctl.ground(parts, ground_callback, ground_callback_data)
-                .expect("Failed to ground a logic program");
+                .expect("Failed to ground a logic program.");
 
             // solve using a model callback
             solve(ctl);

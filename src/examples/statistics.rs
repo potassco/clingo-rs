@@ -4,6 +4,7 @@ use std::env;
 use clingo::*;
 
 
+
 fn print_prefix(depth: u8) {
     for _ in 0..depth {
         print!("  ");
@@ -17,8 +18,8 @@ fn print_statistics(stats: &mut ClingoStatistics, key: u64, depth: u8) {
     let statistics_type = stats.statistics_type(key).unwrap();
     match statistics_type {
         // print values
-        clingo_statistics_type::clingo_statistics_type_value => {
-            let value = stats.statistics_value_get(key).expect(
+        clingo_statistics_type_value => {
+            let value = stats.value_get(key).expect(
                 "Failed to retrieve statistics value.",
             );
 
@@ -28,9 +29,9 @@ fn print_statistics(stats: &mut ClingoStatistics, key: u64, depth: u8) {
         }
 
         // print arrays
-        clingo_statistics_type::clingo_statistics_type_array => {
+        clingo_statistics_type_array => {
             // loop over array elements
-            let size = stats.statistics_array_size(key).expect(
+            let size = stats.array_size(key).expect(
                 "Failed to retrieve statistics array size.",
             );
             for i in 0..size {
@@ -48,13 +49,13 @@ fn print_statistics(stats: &mut ClingoStatistics, key: u64, depth: u8) {
         }
 
         // print maps
-        clingo_statistics_type::clingo_statistics_type_map => {
+        clingo_statistics_type_map => {
             // loop over map elements
-            let size = stats.statistics_map_size(key).unwrap();
+            let size = stats.map_size(key).unwrap();
             for i in 0..size {
                 // get and print map name (with prefix for readability)
-                let name = stats.statistics_map_subkey_name(key, i).unwrap();
-                let subkey = stats.statistics_map_at(key, name).unwrap();
+                let name = stats.map_subkey_name(key, i).unwrap();
+                let subkey = stats.map_at(key, name).unwrap();
                 print_prefix(depth);
                 print!("{}", name);
 
@@ -64,7 +65,7 @@ fn print_statistics(stats: &mut ClingoStatistics, key: u64, depth: u8) {
         }
 
         // this case won't occur if the statistics are traversed like this
-        clingo_statistics_type::clingo_statistics_type_empty => {
+        clingo_statistics_type_empty => {
             println!("clingo_statistics_type_empty");
         }
     }
@@ -74,9 +75,7 @@ fn print_model(model: &mut ClingoModel) {
 
     // retrieve the symbols in the model
     let atoms = model
-        .symbols(
-            clingo_show_type::clingo_show_type_shown as clingo_show_type_bitset_t,
-        )
+        .symbols(clingo_show_type_shown as clingo_show_type_bitset_t)
         .expect("Failed to retrieve symbols in the model.");
 
     print!("Model:");
@@ -90,7 +89,7 @@ fn print_model(model: &mut ClingoModel) {
 
 fn solve(ctl: &mut ClingoControl) {
 
-    let solve_mode = clingo_solve_mode::clingo_solve_mode_yield as clingo_solve_mode_bitset_t;
+    let solve_mode = clingo_solve_mode_yield as clingo_solve_mode_bitset_t;
     let assumptions = vec![];
     let solve_event_callback = None;
     let data = std::ptr::null_mut();
@@ -103,10 +102,10 @@ fn solve(ctl: &mut ClingoControl) {
     loop {
         handle.resume().expect("Failed resume on solve handle.");
         match handle.model() {
-            // stop if there are no more models
-            None => break,
             // print the model
-            Some(model) => print_model(model),
+            Ok(model) => print_model(model),
+            // stop if there are no more models
+            Err(_) => break,
         }
     }
 
@@ -124,7 +123,7 @@ fn main() {
     let logger = None;
     let logger_data = std::ptr::null_mut();
     let mut ctl = ClingoControl::new(options, logger, logger_data, 20)
-        .expect("Failed creating clingo_control.");
+        .expect("Failed creating ClingoControl.");
 
     // get the configuration object and its root key
     {
@@ -161,6 +160,6 @@ fn main() {
 
     // get the statistics object, get the root key, then print the statistics recursively
     let mut stats = ctl.statistics().unwrap();
-    let stats_key = stats.statistics_root().unwrap();
+    let stats_key = stats.root().unwrap();
     print_statistics(stats, stats_key, 0);
 }

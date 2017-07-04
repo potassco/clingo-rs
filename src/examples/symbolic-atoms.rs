@@ -13,12 +13,12 @@ fn main() {
     let logger: clingo_logger_t = None;
     let logger_data = std::ptr::null_mut();
     let mut ctl = ClingoControl::new(options, logger, logger_data, 20)
-        .expect("Failed creating clingo_control");
+        .expect("Failed creating ClingoControl.");
 
     // add a logic program to the base part
     let parameters: Vec<&str> = Vec::new();
     ctl.add("base", parameters, "a. {b}. #external c.").expect(
-        "Failed to add a logic program",
+        "Failed to add a logic program.",
     );
 
     // ground the base part
@@ -27,7 +27,7 @@ fn main() {
     let ground_callback = None;
     let ground_callback_data = std::ptr::null_mut();
     ctl.ground(parts, ground_callback, ground_callback_data)
-        .expect("Failed to ground a logic program");
+        .expect("Failed to ground a logic program.");
 
     // get symbolic atoms
     let atoms = ctl.symbolic_atoms().unwrap();

@@ -32,7 +32,7 @@ fn main() {
     let logger = None;
     let logger_data = std::ptr::null_mut();
     let mut ctl = ClingoControl::new(options, logger, logger_data, 20)
-        .expect("Failed creating clingo_control");
+        .expect("Failed creating ClingoControl.");
 
     // add a logic program to the base part
     let parameters: Vec<&str> = Vec::new();
@@ -43,7 +43,7 @@ fn main() {
          1 { p(X); q(X) } 1 :- X = 1..n.\
          :- not n+1 { p(1..n); \
          q(1..n) }.",
-    ).expect("Failed to add a logic program");
+    ).expect("Failed to add a logic program.");
 
     // ground the base part
     let part = ClingoPart::new_part("base", &[]);
@@ -51,7 +51,7 @@ fn main() {
     let ground_callback = None;
     let ground_callback_data = std::ptr::null_mut();
     ctl.ground(parts, ground_callback, ground_callback_data)
-        .expect("Failed to ground a logic program");
+        .expect("Failed to ground a logic program.");
 
     //     let mut running = ATOMIC_BOOL_INIT;
     let running = std::ptr::null_mut();
@@ -60,13 +60,12 @@ fn main() {
     let assumptions = vec![];
     let solve_event_callback: ClingoSolveEventCallback = Some(on_event);
     let mut handle = ctl.solve(
-        (clingo_solve_mode::clingo_solve_mode_async as clingo_solve_mode_bitset_t) +
-            (clingo_solve_mode::clingo_solve_mode_yield as
-                 clingo_solve_mode_bitset_t),
+        (clingo_solve_mode_async as clingo_solve_mode_bitset_t) +
+            (clingo_solve_mode_yield as clingo_solve_mode_bitset_t),
         assumptions,
         solve_event_callback,
         running,
-    ).expect("Failed to retrieve solve handle");
+    ).expect("Failed to retrieve solve handle.");
 
     // let's approximate pi
     let mut samples = 0;
@@ -87,8 +86,8 @@ fn main() {
     println!("pi = {}", 4 * in_circle * samples);
 
     // get the solve result
-    let _result = handle.get().expect("Failed to get solve result");
+    let _result = handle.get();
 
     // close the handle
-    handle.close().expect("Failed to close solve handle");
+    handle.close().expect("Failed to close solve handle.");
 }

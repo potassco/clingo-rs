@@ -8,9 +8,7 @@ fn print_model(model: &mut ClingoModel) {
 
     // retrieve the symbols in the model
     let atoms = model
-        .symbols(
-            clingo_show_type::clingo_show_type_shown as clingo_show_type_bitset_t,
-        )
+        .symbols(clingo_show_type_shown as clingo_show_type_bitset_t)
         .expect("Failed to retrieve symbols in the model.");
 
     print!("Model:");
@@ -24,7 +22,7 @@ fn print_model(model: &mut ClingoModel) {
 
 fn solve(ctl: &mut ClingoControl) {
 
-    let solve_mode = clingo_solve_mode::clingo_solve_mode_yield as clingo_solve_mode_bitset_t;
+    let solve_mode = clingo_solve_mode_yield as clingo_solve_mode_bitset_t;
     let assumptions = vec![];
     let solve_event_callback = None;
     let data = std::ptr::null_mut();
@@ -37,10 +35,10 @@ fn solve(ctl: &mut ClingoControl) {
     loop {
         handle.resume().expect("Failed resume on solve handle.");
         match handle.model() {
-            // stop if there are no more models
-            None => break,
             // print the model
-            Some(model) => print_model(model),
+            Ok(model) => print_model(model),
+            // stop if there are no more models
+            Err(_) => break,
         }
     }
 
