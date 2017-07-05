@@ -20,7 +20,7 @@ extern "C" fn on_event(
     //       atomic_flag *running = (atomic_flag*)data;
     //       atomic_flag_clear(running);
     //   }
-    return true;
+    true
 }
 
 fn main() {
@@ -75,7 +75,7 @@ fn main() {
     let mut rng = rand::thread_rng();
     //         while (atomic_flag_test_and_set(&running)) {
     while samples < 10000000 {
-        samples = samples + 1;
+        samples += 1;
         let x = between.ind_sample(&mut rng);
         let y = between.ind_sample(&mut rng);
         if x * x + y * y <= 1. {
@@ -86,7 +86,9 @@ fn main() {
     println!("pi = {}", 4 * in_circle * samples);
 
     // get the solve result
-    let _result = handle.get();
+    handle.get().expect(
+        "Failed to get result from solve handle.",
+    );
 
     // close the handle
     handle.close().expect("Failed to close solve handle.");

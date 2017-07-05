@@ -80,7 +80,9 @@ fn solve(ctl: &mut ClingoControl) {
     }
 
     // close the solve handle
-    let _result = handle.get();
+    handle.get().expect(
+        "Failed to get result from solve handle.",
+    );
     handle.close().expect("Failed to close solve handle.");
 }
 
@@ -109,5 +111,5 @@ fn main() {
         .expect("Failed to ground a logic program.");
 
     // solve
-    let _solve_result = solve(ctl);
+    solve(ctl);
 }

@@ -42,7 +42,9 @@ fn solve(ctl: &mut ClingoControl) {
     }
 
     // close the solve handle
-    let _result = handle.get();
+    handle.get().expect(
+        "Failed to get result from solve handle.",
+    );
     handle.close().expect("Failed to close solve handle.");
 }
 
@@ -72,13 +74,14 @@ fn main() {
         .expect("Failed to ground a logic program.");
 
     let atom_strings = ["a", "b", "c"];
+
     // get the ids of atoms a, b, and c
     let mut atom_ids = Vec::new();
     {
         // get symbolic atoms
         let atoms = ctl.symbolic_atoms().unwrap();
 
-        for atom in atom_strings.iter() {
+        for atom in &atom_strings {
             let symbol = ClingoSymbol::create_id(atom, true).unwrap();
             let atom_it = atoms.find(symbol).unwrap();
 

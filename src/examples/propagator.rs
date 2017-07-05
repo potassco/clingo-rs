@@ -47,7 +47,7 @@ extern "C" fn init(init_: *mut clingo_propagate_init_t, data: *mut ::std::os::ra
     // ensure that solve can be called multiple times
     // for simplicity, the case that additional holes or pigeons to assign are grounded is not handled here
 
-    if propagator.states.len() != 0 {
+    if !propagator.states.is_empty() {
         // in principle the number of threads can increase between solve calls by changing the configuration
         // this case is not handled (elegantly) here
         if threads > propagator.states.len() {
@@ -125,7 +125,7 @@ extern "C" fn init(init_: *mut clingo_propagate_init_t, data: *mut ::std::os::ra
     //     memset(data->states[i].holes, 0, sizeof(*data->states[i].holes) * holes);
     //     propagator.states[i as usize].borrow_mut().size) = holes as usize;
     // }
-    return true;
+    true
 }
 
 extern "C" fn propagate(
@@ -145,9 +145,7 @@ extern "C" fn propagate(
     let mut state = propagator.states[control.thread_id() as usize].borrow_mut();
 
     // apply and check the pigeon assignments done by the solver
-    for i in 0..size {
-        // the freshly assigned literal
-        let lit: ClingoLiteral = changes[i];
+    for &lit in changes.iter() {
         // a pointer to the previously assigned literal
         let idx = propagator.pigeons[lit.get_integer() as usize] as usize;
         let mut prev = state.holes[idx];
@@ -183,7 +181,7 @@ extern "C" fn propagate(
             }
         };
     }
-    return true;
+    true
 }
 
 extern "C" fn undo(
@@ -203,8 +201,7 @@ extern "C" fn undo(
     let mut state = propagator.states[control.thread_id() as usize].borrow_mut();
 
     // undo the assignments made in propagate
-    for i in 0..size {
-        let lit: ClingoLiteral = changes[i];
+    for &lit in changes.iter() {
         let hole = propagator.pigeons[lit.get_integer() as usize] as usize;
 
         if let Some(x) = state.holes[hole] {
@@ -215,7 +212,7 @@ extern "C" fn undo(
             }
         }
     }
-    return true;
+    true
 }
 
 fn print_model(model: &mut ClingoModel) {
@@ -249,15 +246,17 @@ fn solve(ctl: &mut ClingoControl) {
     loop {
         handle.resume().expect("Failed resume on solve handle.");
         match handle.model() {
-            // stop if there are no more models
-            Err(_) => break,
             // print the model
             Ok(model) => print_model(model),
+            // stop if there are no more models
+            Err(_) => break,
         }
     }
 
     // close the solve handle
-    let _result = handle.get();
+    handle.get().expect(
+        "Failed to get result from solve handle.",
+    );
     handle.close().expect("Failed to close solve handle.");
 }
 
@@ -283,10 +282,8 @@ fn main() {
     match option {
         Ok(ctl) => {
             // register the propagator
-            let prop_data_ptr = unsafe {
-                std::mem::transmute::<&mut PropagatorT, *mut ::std::os::raw::c_void>(&mut prop_data)
-            };
-            ctl.register_propagator(&prop, prop_data_ptr, false)
+            let prop_data_ptr = &mut prop_data as *mut PropagatorT;
+            ctl.register_propagator(&prop, prop_data_ptr as *mut ::std::os::raw::c_void, false)
                 .expect("Failed to register propagator.");
 
             // add a logic program to the pigeon part

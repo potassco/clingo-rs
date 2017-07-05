@@ -9,7 +9,6 @@ pub struct OnStatementData<'a> {
 }
 
 // adds atom enable to all rule bodies
-
 extern "C" fn on_statement(
     stm_: *const clingo_ast_statement_t,
     data: *mut std::os::raw::c_void,
@@ -23,7 +22,7 @@ extern "C" fn on_statement(
 
     // pass through all statements that are not rules
     if stm.get_type() != clingo_ast_statement_type_rule {
-        on_statement_data.builder.add(&stm).expect(
+        on_statement_data.builder.add(stm).expect(
             "Failed to add statement to ProgramBuilder.",
         );
         return true;
@@ -33,7 +32,7 @@ extern "C" fn on_statement(
     let body = unsafe { stm.rule() }.body();
     let mut extended_body = std::vec::Vec::with_capacity(body.len() + 1);
     for e in body {
-        extended_body.push(e.clone());
+        extended_body.push(*e);
     }
 
     // create atom enable
@@ -63,7 +62,7 @@ extern "C" fn on_statement(
     on_statement_data.builder.add(&stm2).expect(
         "Failed to add statement to ProgramBuilder.",
     );
-    return true;
+    true
 }
 
 fn print_model(model: &mut ClingoModel) {
@@ -104,7 +103,9 @@ fn solve(ctl: &mut ClingoControl) {
     }
 
     // close the solve handle
-    let _result = handle.get();
+    handle.get().expect(
+        "Failed to get result from solve handle.",
+    );
     handle.close().expect("Failed to close solve handle.");
 }
 
@@ -144,12 +145,11 @@ fn main() {
         let logger = None;
         let logger_data = std::ptr::null_mut();
         let callback: ClingoAstCallback = Some(on_statement);
-        let data_ptr =
-            unsafe { std::mem::transmute::<&OnStatementData, *mut ::std::os::raw::c_void>(&data) };
+        let data_ptr = &mut data as *mut OnStatementData;
         parse_program(
             "a :- not b. b :- not a.",
             callback,
-            data_ptr,
+            data_ptr as *mut ::std::os::raw::c_void,
             logger,
             logger_data,
             20,

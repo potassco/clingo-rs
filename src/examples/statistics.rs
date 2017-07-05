@@ -110,7 +110,9 @@ fn solve(ctl: &mut ClingoControl) {
     }
 
     // close the solve handle
-    let _result = handle.get();
+    handle.get().expect(
+        "Failed to get result from solve handle.",
+    );
     handle.close().expect("Failed to close solve handle.");
 }
 
@@ -156,7 +158,7 @@ fn main() {
     }
 
     // solve
-    let _solve_result = solve(ctl);
+    solve(ctl);
 
     // get the statistics object, get the root key, then print the statistics recursively
     let mut stats = ctl.statistics().unwrap();

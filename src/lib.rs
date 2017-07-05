@@ -111,10 +111,6 @@ impl ClingoLocation {
             end_file: self.end_file.as_ptr(),
         }
     }
-    pub fn get_endfile(&self) -> Option<usize> {
-        println!("woah:{:?}", self.end_file);
-        None
-    }
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -142,11 +138,11 @@ impl ClingoSymbol {
     /// **Note:** This is just a shortcut for clingo_symbol_create_function() with
     /// empty arguments.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
-    /// * `name` the name
-    /// * `positive` whether the symbol has a classical negation sign
-    /// * `symbol` the resulting symbol
+    /// * `name` - the name
+    /// * `positive` - whether the symbol has a classical negation sign
+    /// * `symbol` - the resulting symbol
     ///
     /// **Returns** whether the call was successful; might set one of the following error codes:
     /// - ::clingo_error_bad_alloc
@@ -166,13 +162,13 @@ impl ClingoSymbol {
     ///
     /// **Note:** To create tuples, the empty string has to be used as name.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
-    /// * `name` the name of the function
-    /// * `arguments` the arguments of the function
-    /// * `arguments_size` the number of arguments
-    /// * `positive` whether the symbol has a classical negation sign
-    /// * `symbol` the resulting symbol
+    /// * `name` - the name of the function
+    /// * `arguments` - the arguments of the function
+    /// * `arguments_size` - the number of arguments
+    /// * `positive` - whether the symbol has a classical negation sign
+    /// * `symbol` - the resulting symbol
     ///
     /// **Returns** whether the call was successful; might set one of the following error codes:
     /// - ::clingo_error_bad_alloc
@@ -202,10 +198,10 @@ impl ClingoSymbol {
 
     /// Get the number of a symbol.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
-    /// * `symbol` the target symbol
-    /// * `number` the resulting number
+    /// * `symbol` - the target symbol
+    /// * `number` - the resulting number
     ///
     /// **Returns** whether the call was successful; might set one of the following error codes:
     /// - ::clingo_error_runtime if symbol is not of type ::clingo_symbol_type_number
@@ -226,11 +222,11 @@ impl ClingoSymbol {
 
     /// Get the arguments of a symbol.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
-    /// * `symbol` the target symbol
-    /// * `arguments` the resulting arguments
-    /// * `arguments_size` the number of arguments
+    /// * `symbol` - the target symbol
+    /// * `arguments` - the resulting arguments
+    /// * `arguments_size` - the number of arguments
     ///
     /// **Returns** whether the call was successful; might set one of the following error codes:
     /// - ::clingo_error_runtime if symbol is not of type ::clingo_symbol_type_function
@@ -302,11 +298,10 @@ impl<'a> Drop for ClingoPart<'a> {
 }
 impl<'a> ClingoPart<'a> {
     pub fn new_part(name: &'a str, params: &'a [ClingoSymbol]) -> ClingoPart<'a> {
-        let part = ClingoPart {
+        ClingoPart {
             name: CString::new(name).unwrap(),
             params: params,
-        };
-        part
+        }
     }
 }
 
@@ -454,9 +449,9 @@ impl ClingoControl {
     ///
     /// After extending the logic program, the corresponding program parts are typically grounded with ::clingo_control_ground.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
-    /// * `control` the target
+    /// * `control` - the target
     /// * `name` name of the program block
     /// * `parameters` string array of parameters of the program block
     /// * `parameters_size` number of parameters
@@ -506,12 +501,12 @@ impl ClingoControl {
     ///
     ///
     /// **Note:** Parts of a logic program without an explicit <tt>\#program</tt>
-    /// specification are by default put into a program called `base` without
+    /// specification are by default put into a program called `base` - without
     /// arguments.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
-    /// * `control` the target
+    /// * `control` - the target
     /// * `parts` array of parts to ground
     /// * `parts_size` size of the parts array
     /// * `ground_callback` callback to implement external functions
@@ -581,11 +576,11 @@ impl ClingoControl {
     ///
     /// If the atom does not exist or is not external, this is a noop.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
-    /// * `control` the target
+    /// * `control` - the target
     /// * `atom` atom to assign
-    /// * `value` the truth value
+    /// * `value` - the truth value
     ///
     /// **Returns** whether the call was successful; might set one of the following error codes:
     /// - ::clingo_error_bad_alloc
@@ -611,12 +606,12 @@ impl ClingoControl {
     ///
     /// See the @ref Propagator module for more information.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
-    /// * `control` the target
-    /// * `propagator` the propagator
+    /// * `control` - the target
+    /// * `propagator` - the propagator
     /// * `data` user data passed to the propagator functions
-    /// * `sequential` whether the propagator should be called sequentially
+    /// * `sequential` - whether the propagator should be called sequentially
     ///
     /// **Returns** whether the call was successful; might set one of the following error codes:
     /// - ::clingo_error_bad_alloc
@@ -710,10 +705,10 @@ impl ClingoControl {
     ///
     /// See the @ref ProgramBuilder module for more information.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
-    /// * `control` the target
-    /// * `builder` the program builder object
+    /// * `control` - the target
+    /// * `builder` - the program builder object
     ///
     /// **Returns** whether the call was successful
     pub fn program_builder(&mut self) -> Result<&mut ClingoProgramBuilder, &'static str> {
@@ -747,7 +742,7 @@ impl ClingoProgramBuilder {
     ///
     /// @attention @ref clingo_program_builder_begin() must be called before adding statements and @ref clingo_program_builder_end() must be called after all statements have been added.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
     /// * `builder` - the target program builder
     /// * `statement` - the statement to add
@@ -1003,10 +998,10 @@ pub struct ClingoConfiguration(clingo_configuration_t);
 impl ClingoConfiguration {
     /// Get the root key of the configuration.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
-    /// * `configuration` the target configuration
-    /// * `key` the root key
+    /// * `configuration` - the target configuration
+    /// * `key` - the root key
     ///
     /// **Returns** whether the call was successful
     pub fn root(&mut self) -> Result<ClingoId, &'static str> {
@@ -1038,14 +1033,16 @@ impl ClingoConfiguration {
     ///
     ///
     /// **Note:** Some array entries, like fore example the solver configuration, can be accessed past there actual size to add subentries.
-    /// @pre The @link clingo_configuration_type() type@endlink of the entry must be @ref ::clingo_configuration_type_array.
+    /// # Pre-condition
     ///
-    /// **Parameters:**
+    /// The @link clingo_configuration_type() type@endlink of the entry must be @ref ::clingo_configuration_type_array.
     ///
-    /// * `configuration` the target configuration
-    /// * `key` the key
-    /// * `offset` the offset in the array
-    /// * `subkey` the resulting subkey
+    /// # Arguments
+    ///
+    /// * `configuration` - the target configuration
+    /// * `key` - the key
+    /// * `offset` - the offset in the array
+    /// * `subkey` - the resulting subkey
     ///
     /// **Returns** whether the call was successful
     pub fn array_at(
@@ -1075,16 +1072,18 @@ impl ClingoConfiguration {
 
     /// Lookup a subkey under the given name.
     ///
-    /// @pre The @link clingo_configuration_type() type@endlink of the entry must be @ref ::clingo_configuration_type_map.
+    /// # Pre-condition
+    ///
+    /// The @link clingo_configuration_type() type@endlink of the entry must be @ref ::clingo_configuration_type_map.
     ///
     /// **Note:** Multiple levels can be looked up by concatenating keys with a period.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
-    /// * `configuration` the target configuration
-    /// * `key` the key
-    /// * `name` the name to lookup the subkey
-    /// * `subkey` the resulting subkey
+    /// * `configuration` - the target configuration
+    /// * `key` - the key
+    /// * `name` - the name to lookup the subkey
+    /// * `subkey` - the resulting subkey
     ///
     /// **Returns** whether the call was successful
     pub fn map_at(
@@ -1123,13 +1122,15 @@ impl ClingoConfiguration {
 
     /// Set the value of an entry.
     ///
-    /// @pre The @link clingo_configuration_type() type@endlink of the entry must be @ref ::clingo_configuration_type_value.
+    /// # Pre-condition
     ///
-    /// **Parameters:**
+    /// The @link clingo_configuration_type() type@endlink of the entry must be @ref ::clingo_configuration_type_value.
     ///
-    /// * `configuration` the target configuration
-    /// * `key` the key
-    /// * `value` the value to set
+    /// # Arguments
+    ///
+    /// * `configuration` - the target configuration
+    /// * `key` - the key
+    /// * `value` - the value to set
     ///
     /// **Returns** whether the call was successful
     pub fn value_set(&mut self, ClingoId(key): ClingoId, value: &str) -> Result<(), &'static str> {
@@ -1147,14 +1148,14 @@ pub struct ClingoBackend(clingo_backend_t);
 impl ClingoBackend {
     /// Add a rule to the program.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
-    /// * `backend` the target backend
+    /// * `backend` - the target backend
     /// * `choice` determines if the head is a choice or a disjunction
-    /// * `head` the head atoms
-    /// * `head_size` the number of atoms in the head
-    /// * `body` the body literals
-    /// * `body_size` the number of literals in the body
+    /// * `head` - the head atoms
+    /// * `head_size` - the number of atoms in the head
+    /// * `body` - the body literals
+    /// * `body_size` - the number of literals in the body
     ///
     /// **Returns** whether the call was successful; might set one of the following error codes:
     /// - ::clingo_error_bad_alloc
@@ -1209,11 +1210,11 @@ impl ClingoBackend {
 
     /// Add an assumption directive.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
-    /// * `backend` the target backend
-    /// * `literals` the literals to assume (positive literals are true and negative literals false for the next solve call)
-    /// * `size` the number of atoms
+    /// * `backend` - the target backend
+    /// * `literals` - the literals to assume (positive literals are true and negative literals false for the next solve call)
+    /// * `size` - the number of atoms
     ///
     /// **Returns** whether the call was successful; might set one of the following error codes:
     /// - ::clingo_error_bad_alloc
@@ -1251,10 +1252,10 @@ impl ClingoBackend {
 
     /// Get a fresh atom to be used in aspif directives.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
-    /// * `backend` the target backend
-    /// * `atom` the resulting atom
+    /// * `backend` - the target backend
+    /// * `atom` - the resulting atom
     ///
     /// **Returns** whether the call was successful
     pub fn add_atom(&mut self) -> Result<ClingoAtom, &'static str> {
@@ -1272,10 +1273,10 @@ pub struct ClingoStatistics(clingo_statistics_t);
 impl ClingoStatistics {
     /// Get the root key of the statistics.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
-    /// * `statistics` the target statistics
-    /// * `key` the root key
+    /// * `statistics` - the target statistics
+    /// * `key` - the root key
     ///
     /// **Returns** whether the call was successful
     pub fn root(&mut self) -> Result<u64, &'static str> {
@@ -1290,11 +1291,11 @@ impl ClingoStatistics {
 
     /// Get the type of a key.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
-    /// * `statistics` the target statistics
-    /// * `key` the key
-    /// * `type` the resulting type
+    /// * `statistics` - the target statistics
+    /// * `key` - the key
+    /// * `type` - the resulting type
     ///
     /// **Returns** whether the call was successful
     pub fn statistics_type(&mut self, key: u64) -> Result<clingo_statistics_type, &'static str> {
@@ -1305,7 +1306,7 @@ impl ClingoStatistics {
                 0 => Ok(clingo_statistics_type::clingo_statistics_type_empty),
                 1 => Ok(clingo_statistics_type::clingo_statistics_type_value),
                 2 => Ok(clingo_statistics_type::clingo_statistics_type_array),
-                _ => Ok(clingo_statistics_type::clingo_statistics_type_map), 
+                _ => Ok(clingo_statistics_type::clingo_statistics_type_map),
             }
         } else {
             Err(error_message())
@@ -1314,13 +1315,15 @@ impl ClingoStatistics {
 
     /// Get the size of an array entry.
     ///
-    /// @pre The @link clingo_statistics_type() type@endlink of the entry must be @ref ::clingo_statistics_type_array.
+    /// # Pre-condition
     ///
-    /// **Parameters:**
+    /// The [statistics type](struct.ClingoStatistics.html#method.statistics_type) of the entry must be @ref ::clingo_statistics_type_array.
     ///
-    /// * `statistics` the target statistics
-    /// * `key` the key
-    /// * `size` the resulting size
+    /// # Arguments
+    ///
+    /// * `statistics` - the target statistics
+    /// * `key` - the key
+    /// * `size` - the resulting size
     ///
     /// **Returns** whether the call was successful
     pub fn array_size(&mut self, key: u64) -> Result<usize, &'static str> {
@@ -1335,14 +1338,16 @@ impl ClingoStatistics {
 
     /// Get the subkey at the given offset of an array entry.
     ///
-    /// @pre The @link clingo_statistics_type() type@endlink of the entry must be @ref ::clingo_statistics_type_array.
+    /// # Pre-condition
     ///
-    /// **Parameters:**
+    /// The [statistics type](struct.ClingoStatistics.html#method.statistics_type) of the entry must be @ref ::clingo_statistics_type_array.
     ///
-    /// * `statistics` the target statistics
-    /// * `key` the key
-    /// * `offset` the offset in the array
-    /// * `subkey` the resulting subkey
+    /// # Arguments
+    ///
+    /// * `statistics` - the target statistics
+    /// * `key` - the key
+    /// * `offset` - the offset in the array
+    /// * `subkey` - the resulting subkey
     ///
     /// **Returns** whether the call was successful
     pub fn statistics_array_at(&mut self, key: u64, offset: usize) -> Result<u64, &'static str> {
@@ -1357,13 +1362,15 @@ impl ClingoStatistics {
 
     /// Get the number of subkeys of a map entry.
     ///
-    /// @pre The @link clingo_statistics_type() type@endlink of the entry must be @ref ::clingo_statistics_type_map.
+    /// # Pre-condition
     ///
-    /// **Parameters:**
+    /// The [statistics type](struct.ClingoStatistics.html#method.statistics_type) of the entry must be [clingo_statistics_type_map](clingo_sys/enum.clingo_statistics_type.html).
     ///
-    /// * `statistics` the target statistics
-    /// * `key` the key
-    /// * `size` the resulting number
+    /// # Arguments
+    ///
+    /// * `statistics` - the target statistics
+    /// * `key` - the key
+    /// * `size` - the resulting number
     ///
     /// **Returns** whether the call was successful
     pub fn map_size(&mut self, key: u64) -> Result<usize, &'static str> {
@@ -1378,14 +1385,16 @@ impl ClingoStatistics {
 
     /// Get the name associated with the offset-th subkey.
     ///
-    /// @pre The @link clingo_statistics_type() type@endlink of the entry must be @ref ::clingo_statistics_type_map.
+    /// # Pre-condition
     ///
-    /// **Parameters:**
+    /// The [statistics type](struct.ClingoStatistics.html#method.statistics_type) of the entry must be @ref ::clingo_statistics_type_map.
     ///
-    /// * `statistics` the target statistics
-    /// * `key` the key
-    /// * `offset` the offset of the name
-    /// * `name` the resulting name
+    /// # Arguments
+    ///
+    /// * `statistics` - the target statistics
+    /// * `key` - the key
+    /// * `offset` - the offset of the name
+    /// * `name` - the resulting name
     ///
     /// **Returns** whether the call was successful
     pub fn map_subkey_name<'a>(
@@ -1404,16 +1413,18 @@ impl ClingoStatistics {
 
     /// Lookup a subkey under the given name.
     ///
-    /// @pre The @link clingo_statistics_type() type@endlink of the entry must be @ref ::clingo_statistics_type_map.
+    /// # Pre-condition
+    ///
+    /// The [statistics type](struct.ClingoStatistics.html#method.statistics_type) of the entry must be @ref ::clingo_statistics_type_map.
     ///
     /// **Note:** Multiple levels can be looked up by concatenating keys with a period.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
-    /// * `statistics` the target statistics
-    /// * `key` the key
-    /// * `name` the name to lookup the subkey
-    /// * `subkey` the resulting subkey
+    /// * `statistics` - the target statistics
+    /// * `key` - the key
+    /// * `name` - the name to lookup the subkey
+    /// * `subkey` - the resulting subkey
     ///
     /// **Returns** whether the call was successful
     pub fn map_at(&mut self, key: u64, name: &str) -> Result<u64, &'static str> {
@@ -1429,13 +1440,15 @@ impl ClingoStatistics {
 
     /// Get the value of the given entry.
     ///
-    /// @pre The @link clingo_statistics_type() type@endlink of the entry must be @ref ::clingo_statistics_type_value.
+    /// # Pre-condition
     ///
-    /// **Parameters:**
+    /// The [statistics type](struct.ClingoStatistics.html#method.statistics_type) of the entry must be @ref ::clingo_statistics_type_value.
     ///
-    /// * `statistics` the target statistics
-    /// * `key` the key
-    /// * `value` the resulting value
+    /// # Arguments
+    ///
+    /// * `statistics` - the target statistics
+    /// * `key` - the key
+    /// * `value` - the resulting value
     ///
     /// **Returns** whether the call was successful
     pub fn value_get(&mut self, key: u64) -> Result<f64, &'static str> {
@@ -1453,12 +1466,12 @@ pub struct ClingoSignature(clingo_signature_t);
 impl ClingoSignature {
     /// Create a new signature.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
     /// * `name` name of the signature
     /// * `arity` arity of the signature
     /// * `positive` false if the signature has a classical negation sign
-    /// * `signature` the resulting signature
+    /// * `signature` - the resulting signature
     ///
     /// **Returns** whether the call was successful; might set one of the following error codes:
     /// - ::clingo_error_bad_alloc
@@ -1486,11 +1499,11 @@ impl ClingoSymbolicAtoms {
     /// Get a forward iterator to the beginning of the sequence of all symbolic
     /// atoms optionally restricted to a given signature.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
-    /// * `atoms` the target
+    /// * `atoms` - the target
     /// * `signature` optional signature
-    /// * `iterator` the resulting iterator
+    /// * `iterator` - the resulting iterator
     ///
     /// **Returns** whether the call was successful
     pub fn begin(
@@ -1521,10 +1534,10 @@ impl ClingoSymbolicAtoms {
 
     /// Iterator pointing to the end of the sequence of symbolic atoms.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
-    /// * `atoms` the target
-    /// * `iterator` the resulting iterator
+    /// * `atoms` - the target
+    /// * `iterator` - the resulting iterator
     ///
     /// **Returns** whether the call was successful
     pub fn end(&mut self) -> Result<clingo_symbolic_atom_iterator_t, &'static str> {
@@ -1539,10 +1552,10 @@ impl ClingoSymbolicAtoms {
 
     /// Find a symbolic atom given its symbolic representation.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
-    /// * `atoms` the target
-    /// * `symbol` the symbol to lookup
+    /// * `atoms` - the target
+    /// * `symbol` - the symbol to lookup
     /// * `iterator` iterator pointing to the symbolic atom or to the end
     /// of the sequence if no corresponding atom is found
     ///
@@ -1562,12 +1575,12 @@ impl ClingoSymbolicAtoms {
 
     /// Check if two iterators point to the same element (or end of the sequence).
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
-    /// * `atoms` the target
-    /// * `a` the first iterator
-    /// * `b` the second iterator
-    /// * `equal` whether the two iterators are equal
+    /// * `atoms` - the target
+    /// * `a` - the first iterator
+    /// * `b` - the second iterator
+    /// * `equal` - whether the two iterators are equal
     ///
     /// **Returns** whether the call was successful
     pub fn iterator_is_equal_to(
@@ -1586,11 +1599,11 @@ impl ClingoSymbolicAtoms {
 
     /// Get the symbolic representation of an atom.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
-    /// * `atoms` the target
+    /// * `atoms` - the target
     /// * `iterator` iterator to the atom
-    /// * `symbol` the resulting symbol
+    /// * `symbol` - the resulting symbol
     ///
     /// **Returns** whether the call was successful
     pub fn symbol(
@@ -1613,11 +1626,11 @@ impl ClingoSymbolicAtoms {
     /// grounding or solving component`s simplifications can only detect this in
     /// some cases.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
-    /// * `atoms` the target
+    /// * `atoms` - the target
     /// * `iterator` iterator to the atom
-    /// * `fact` whether the atom is a fact
+    /// * `fact` - whether the atom is a fact
     ///
     /// **Returns** whether the call was successful
     pub fn is_fact(
@@ -1638,11 +1651,11 @@ impl ClingoSymbolicAtoms {
     /// An atom is external if it has been defined using an external directive and
     /// has not been released or defined by a rule.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
-    /// * `atoms` the target
+    /// * `atoms` - the target
     /// * `iterator` iterator to the atom
-    /// * `external` whether the atom is a external
+    /// * `external` - whether the atom is a external
     ///
     /// **Returns** whether the call was successful
     pub fn is_external(
@@ -1664,11 +1677,11 @@ impl ClingoSymbolicAtoms {
     /// module) or be used in rules in aspif format (see the \ref ProgramBuilder
     /// module).
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
-    /// * `atoms` the target
+    /// * `atoms` - the target
     /// * `iterator` iterator to the atom
-    /// * `literal` the associated literal
+    /// * `literal` - the associated literal
     ///
     /// **Returns** whether the call was successful
     pub fn literal(
@@ -1695,11 +1708,11 @@ impl ClingoSymbolicAtoms {
 
     /// Get an iterator to the next element in the sequence of symbolic atoms.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
-    /// * `atoms` the target
-    /// * `iterator` the current iterator
-    /// * `next` the succeeding iterator
+    /// * `atoms` - the target
+    /// * `iterator` - the current iterator
+    /// * `next` - the succeeding iterator
     ///
     /// **Returns** whether the call was successful
     pub fn next(
@@ -1735,13 +1748,15 @@ impl ClingoTheoryAtoms {
 
     /// Get the name of the given constant or function theory term.
     ///
-    /// @pre The term must be of type ::clingo_theory_term_type_function or ::clingo_theory_term_type_symbol.
+    /// # Pre-condition
     ///
-    /// **Parameters:**
+    /// The term must be of type ::clingo_theory_term_type_function or ::clingo_theory_term_type_symbol.
+    ///
+    /// # Arguments
     ///
     /// * `atoms` container where the term is stored
     /// * `term` id of the term
-    /// * `name` the resulting name
+    /// * `name` - the resulting name
     ///
     /// **Returns** whether the call was successful
     pub fn term_name<'a>(&mut self, ClingoId(term): ClingoId) -> Result<&'a str, &'static str> {
@@ -1802,10 +1817,10 @@ impl ClingoTheoryAtoms {
 
     /// Get the total number of theory atoms.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
-    /// * `atoms` the target
-    /// * `size` the resulting number
+    /// * `atoms` - the target
+    /// * `size` - the resulting number
     ///
     /// **Returns** whether the call was successful
     pub fn size(&mut self) -> Result<usize, &'static str> {
@@ -1820,11 +1835,11 @@ impl ClingoTheoryAtoms {
 
     /// Get the theory term associated with the theory atom.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
     /// * `atoms` container where the atom is stored
     /// * `atom` id of the atom
-    /// * `term` the resulting term id
+    /// * `term` - the resulting term id
     ///
     /// **Returns** whether the call was successful
     pub fn atom_term(&mut self, ClingoId(atom): ClingoId) -> Result<ClingoId, &'static str> {
@@ -1845,11 +1860,11 @@ impl ClingoTheoryAtoms {
 
     /// Whether the theory atom has a guard.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
     /// * `atoms` container where the atom is stored
     /// * `atom` id of the atom
-    /// * `has_guard` whether the theory atom has a guard
+    /// * `has_guard` - whether the theory atom has a guard
     ///
     /// **Returns** whether the call was successful
     pub fn atom_has_guard(&mut self, ClingoId(atom): ClingoId) -> Result<bool, &'static str> {
@@ -1870,11 +1885,11 @@ impl ClingoTheoryAtoms {
 
     /// Get the aspif literal associated with the given theory atom.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
     /// * `atoms` container where the atom is stored
     /// * `atom` id of the atom
-    /// * `literal` the resulting literal
+    /// * `literal` - the resulting literal
     ///
     /// **Returns** whether the call was successful
     pub fn atom_literal(
@@ -1933,10 +1948,10 @@ pub struct ClingoModel(clingo_model_t);
 impl ClingoModel {
     /// Get the type of the model.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
-    /// * `model` the target
-    /// * `type` the type of the model
+    /// * `model` - the target
+    /// * `type` - the type of the model
     ///
     /// **Returns** whether the call was successful
     pub fn model_type(&mut self) -> Result<clingo_model_type_t, &'static str> {
@@ -1951,10 +1966,10 @@ impl ClingoModel {
 
     /// Get the running number of the model.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
-    /// * `model` the target
-    /// * `number` the number of the model
+    /// * `model` - the target
+    /// * `number` - the number of the model
     ///
     /// **Returns** whether the call was successful
     pub fn number(&mut self) -> Result<u64, &'static str> {
@@ -1969,11 +1984,11 @@ impl ClingoModel {
 
     /// Get the number of symbols of the selected types in the model.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
-    /// * `model` the target
-    /// * `show` which symbols to select
-    /// * `size` the number symbols
+    /// * `model` - the target
+    /// * `show` - which symbols to select
+    /// * `size` - the number symbols
     ///
     /// **Returns** whether the call was successful; might set one of the following error codes:
     /// - ::clingo_error_bad_alloc
@@ -1988,12 +2003,12 @@ impl ClingoModel {
     /// where the first argument is the name of the CSP variable and the second one its
     /// value.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
-    /// * `model` the target
-    /// * `show` which symbols to select
-    /// * `symbols` the resulting symbols
-    /// * `size` the number of selected symbols
+    /// * `model` - the target
+    /// * `show` - which symbols to select
+    /// * `symbols` - the resulting symbols
+    /// * `size` - the number of selected symbols
     ///
     /// **Returns** whether the call was successful; might set one of the following error codes:
     /// - ::clingo_error_bad_alloc
@@ -2051,11 +2066,11 @@ impl ClingoSolveControl {
     /// **Note:** The @ref Propagator module provides a more sophisticated
     /// interface to add clauses - even on partial assignments.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
-    /// * `control` the target
+    /// * `control` - the target
     /// * `clause` array of literals representing the clause
-    /// * `size` the size of the literal array
+    /// * `size` - the size of the literal array
     ///
     /// **Returns** whether the call was successful; might set one of the following error codes:
     /// - ::clingo_error_bad_alloc
@@ -2084,9 +2099,9 @@ impl ClingoPropagateControl {
     ///
     /// Thread ids are consecutive numbers starting with zero.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
-    /// * `control` the target
+    /// * `control` - the target
     ///
     /// **Returns** the thread id
     pub fn thread_id(&mut self) -> u32 {
@@ -2102,12 +2117,12 @@ impl ClingoPropagateControl {
     ///
     /// @attention No further calls on the control object or functions on the assignment should be called when the result of this method is false.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
-    /// * `control` the target
-    /// * `clause` the clause to add
-    /// * `size` the size of the clause
-    /// * `type` the clause type determining its lifetime
+    /// * `control` - the target
+    /// * `clause` - the clause to add
+    /// * `size` - the size of the clause
+    /// * `type` - the clause type determining its lifetime
     /// * `result` result indicating whether propagation has to be stopped
     ///
     /// **Returns** whether the call was successful; might set one of the following error codes:
@@ -2142,9 +2157,9 @@ impl ClingoPropagateControl {
     ///
     /// @attention No further calls on the control object or functions on the assignment should be called when the result of this method is false.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
-    /// * `control` the target
+    /// * `control` - the target
     /// * `result` result indicating whether propagation has to be stopped
     ///
     /// **Returns** whether the call was successful; might set one of the following error codes:
@@ -2163,11 +2178,11 @@ pub struct ClingoPropagateInit(clingo_propagate_init_t);
 impl ClingoPropagateInit {
     /// Map the given program literal or condition id to its solver literal.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
-    /// * `init` the target
-    /// * `aspif_literal` the aspif literal to map
-    /// * `solver_literal` the resulting solver literal
+    /// * `init` - the target
+    /// * `aspif_literal` - the aspif literal to map
+    /// * `solver_literal` - the resulting solver literal
     ///
     /// **Returns** whether the call was successful
     pub fn solver_literal(
@@ -2180,7 +2195,6 @@ impl ClingoPropagateInit {
             clingo_propagate_init_solver_literal(&mut self.0, aspif_literal, &mut solver_literal)
         }
         {
-            // let lit = unsafe { *solver_literal };
             Ok(ClingoLiteral(solver_literal))
         } else {
             Err(error_message())
@@ -2189,10 +2203,10 @@ impl ClingoPropagateInit {
 
     /// Add a watch for the solver literal in the given phase.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
-    /// * `init` the target
-    /// * `solver_literal` the solver literal
+    /// * `init` - the target
+    /// * `solver_literal` - the solver literal
     ///
     /// **Returns** whether the call was successful
     pub fn add_watch(
@@ -2208,10 +2222,10 @@ impl ClingoPropagateInit {
 
     /// Get an object to inspect the symbolic atoms.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
-    /// * `init` the target
-    /// * `atoms` the resulting object
+    /// * `init` - the target
+    /// * `atoms` - the resulting object
     ///
     /// **Returns** whether the call was successful
     pub fn symbolic_atoms<'a>(&mut self) -> Result<&'a mut ClingoSymbolicAtoms, &'static str> {
@@ -2231,9 +2245,9 @@ impl ClingoPropagateInit {
 
     /// Get the number of threads used in subsequent solving.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
-    /// * `init` the target
+    /// * `init` - the target
     ///
     /// **Returns** the number of threads
     /// @see clingo_propagate_control_thread_id()
