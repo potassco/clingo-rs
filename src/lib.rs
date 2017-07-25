@@ -499,7 +499,6 @@ impl ClingoControl {
     ///
     /// After grounding, logic programs can be solved with ::clingo_control_solve().
     ///
-    ///
     /// **Note:** Parts of a logic program without an explicit <tt>\#program</tt>
     /// specification are by default put into a program called `base` - without
     /// arguments.
@@ -774,7 +773,7 @@ impl ClingoProgramBuilder {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone, Copy)]
 pub struct ClingoAstBodyLiteral(clingo_ast_body_literal_t);
 impl ClingoAstBodyLiteral {
     pub fn new(
@@ -784,13 +783,7 @@ impl ClingoAstBodyLiteral {
         lit_ref: &ClingoAstLiteral,
     ) -> ClingoAstBodyLiteral {
         let _bg_union_2 = clingo_ast_body_literal__bindgen_ty_1 {
-            literal: __BindgenUnionField::new(),
-            conditional: __BindgenUnionField::new(),
-            aggregate: __BindgenUnionField::new(),
-            body_aggregate: __BindgenUnionField::new(),
-            theory_atom: __BindgenUnionField::new(),
-            disjoint: __BindgenUnionField::new(),
-            bindgen_union_field: (lit_ref as *const ClingoAstLiteral) as u64,
+            literal: (lit_ref as *const ClingoAstLiteral) as *const clingo_ast_literal,
         };
         ClingoAstBodyLiteral(clingo_ast_body_literal_t {
             location: location.clingo_location(),
@@ -852,22 +845,8 @@ impl ClingoAstStatement {
     ) -> ClingoAstStatement {
 
         let external: *const ClingoAstExternal = ext;
-        let _bg_union_2 = clingo_ast_statement__bindgen_ty_1 {
-            rule: __BindgenUnionField::new(),
-            definition: __BindgenUnionField::new(),
-            show_signature: __BindgenUnionField::new(),
-            show_term: __BindgenUnionField::new(),
-            minimize: __BindgenUnionField::new(),
-            script: __BindgenUnionField::new(),
-            program: __BindgenUnionField::new(),
-            external: __BindgenUnionField::new(),
-            edge: __BindgenUnionField::new(),
-            heuristic: __BindgenUnionField::new(),
-            project_atom: __BindgenUnionField::new(),
-            project_signature: __BindgenUnionField::new(),
-            theory_definition: __BindgenUnionField::new(),
-            bindgen_union_field: external as u64,
-        };
+        let _bg_union_2 =
+            clingo_ast_statement__bindgen_ty_1 { external: external as *const clingo_ast_external };
         let stm = clingo_ast_statement_t {
             location: location.clingo_location(),
             type_: type_ as clingo_ast_statement_type_t,
@@ -880,22 +859,8 @@ impl ClingoAstStatement {
 
         let rule: *const ClingoAstRule = rule_;
 
-        let _bg_union_2 = clingo_ast_statement__bindgen_ty_1 {
-            rule: __BindgenUnionField::new(),
-            definition: __BindgenUnionField::new(),
-            show_signature: __BindgenUnionField::new(),
-            show_term: __BindgenUnionField::new(),
-            minimize: __BindgenUnionField::new(),
-            script: __BindgenUnionField::new(),
-            program: __BindgenUnionField::new(),
-            external: __BindgenUnionField::new(),
-            edge: __BindgenUnionField::new(),
-            heuristic: __BindgenUnionField::new(),
-            project_atom: __BindgenUnionField::new(),
-            project_signature: __BindgenUnionField::new(),
-            theory_definition: __BindgenUnionField::new(),
-            bindgen_union_field: rule as u64,
-        };
+        let _bg_union_2 =
+            clingo_ast_statement__bindgen_ty_1 { rule: rule as *const clingo_ast_rule };
         let stm = clingo_ast_statement_t {
             location: location.clingo_location(),
             type_: clingo_ast_statement_type::clingo_ast_statement_type_rule as
@@ -932,7 +897,7 @@ impl ClingoAstStatement {
 
     pub unsafe fn rule(&self) -> &ClingoAstRule {
         let ClingoAstStatement(ref stm) = *self;
-        let ast_rule_ptr = stm.__bindgen_anon_1.bindgen_union_field as *const clingo_ast_rule_t;
+        let ast_rule_ptr = stm.__bindgen_anon_1.rule as *const clingo_ast_rule_t;
         (ast_rule_ptr as *const ClingoAstRule).as_ref().unwrap()
     }
 }
@@ -941,17 +906,7 @@ pub struct ClingoAstTerm(clingo_ast_term_t);
 impl ClingoAstTerm {
     pub fn new_symbol(location: ClingoLocation, symbol_: ClingoSymbol) -> ClingoAstTerm {
         let ClingoSymbol(symbol) = symbol_;
-        let _bg_union_1 = clingo_ast_term__bindgen_ty_1 {
-            symbol: __BindgenUnionField::new(),
-            variable: __BindgenUnionField::new(),
-            unary_operation: __BindgenUnionField::new(),
-            binary_operation: __BindgenUnionField::new(),
-            interval: __BindgenUnionField::new(),
-            function: __BindgenUnionField::new(),
-            external_function: __BindgenUnionField::new(),
-            pool: __BindgenUnionField::new(),
-            bindgen_union_field: symbol,
-        };
+        let _bg_union_1 = clingo_ast_term__bindgen_ty_1 { symbol: symbol };
         let term = clingo_ast_term_t {
             location: location.clingo_location(),
             type_: clingo_ast_term_type::clingo_ast_term_type_symbol as clingo_ast_term_type_t,
@@ -978,11 +933,7 @@ impl ClingoAstLiteral {
 
         let symbol: *const ClingoAstTerm = sym;
         let _bg_union_2 = clingo_ast_literal__bindgen_ty_1 {
-            boolean: __BindgenUnionField::new(),
-            symbol: __BindgenUnionField::new(),
-            comparison: __BindgenUnionField::new(),
-            csp_literal: __BindgenUnionField::new(),
-            bindgen_union_field: symbol as u64,
+            symbol: symbol as *const clingo_sys::clingo_ast_term,
         };
         let lit = clingo_ast_literal_t {
             location: location.clingo_location(),
