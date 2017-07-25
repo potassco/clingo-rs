@@ -31,14 +31,14 @@
 // version 2.2 of Bison.
 
 /**
- ** \file /home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar/grammar.hh
+ ** \file /home/kaminski/git/clingo/build/debug/libgringo/src/input/groundtermgrammar/grammar.hh
  ** Define the Gringo::Input::GroundTermGrammar::parser class.
  */
 
 // C++ LALR(1) parser skeleton written by Akim Demaille.
 
-#ifndef YY_GRINGOGROUNDTERMGRAMMAR_HOME_STHIELE_DEVELOP_GIT_CLINGO_LIBGRINGO_SRC_INPUT_GROUNDTERMGRAMMAR_GRAMMAR_HH_INCLUDED
-# define YY_GRINGOGROUNDTERMGRAMMAR_HOME_STHIELE_DEVELOP_GIT_CLINGO_LIBGRINGO_SRC_INPUT_GROUNDTERMGRAMMAR_GRAMMAR_HH_INCLUDED
+#ifndef YY_GRINGOGROUNDTERMGRAMMAR_HOME_KAMINSKI_GIT_CLINGO_BUILD_DEBUG_LIBGRINGO_SRC_INPUT_GROUNDTERMGRAMMAR_GRAMMAR_HH_INCLUDED
+# define YY_GRINGOGROUNDTERMGRAMMAR_HOME_KAMINSKI_GIT_CLINGO_BUILD_DEBUG_LIBGRINGO_SRC_INPUT_GROUNDTERMGRAMMAR_GRAMMAR_HH_INCLUDED
 
 
 # include <cstdlib> // std::abort
@@ -108,9 +108,9 @@
 # define YYDEBUG 0
 #endif
 
-#line 26 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:377
+#line 26 "/home/kaminski/git/clingo/libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:377
 namespace Gringo { namespace Input { namespace GroundTermGrammar {
-#line 114 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar/grammar.hh" // lalr1.cc:377
+#line 114 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/groundtermgrammar/grammar.hh" // lalr1.cc:377
 
 
 
@@ -124,14 +124,14 @@ namespace Gringo { namespace Input { namespace GroundTermGrammar {
     /// Symbol semantic values.
     union semantic_type
     {
-    #line 63 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:377
+    #line 63 "/home/kaminski/git/clingo/libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:377
 
     char const *str;
     int         num;
     unsigned    uid;
     uint64_t    value;
 
-#line 135 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar/grammar.hh" // lalr1.cc:377
+#line 135 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/groundtermgrammar/grammar.hh" // lalr1.cc:377
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -494,11 +494,11 @@ namespace Gringo { namespace Input { namespace GroundTermGrammar {
   };
 
 
-#line 26 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:377
+#line 26 "/home/kaminski/git/clingo/libgringo/src/input/groundtermgrammar.yy" // lalr1.cc:377
 } } } // Gringo::Input::GroundTermGrammar
-#line 500 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar/grammar.hh" // lalr1.cc:377
+#line 500 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/groundtermgrammar/grammar.hh" // lalr1.cc:377
 
 
 
 
-#endif // !YY_GRINGOGROUNDTERMGRAMMAR_HOME_STHIELE_DEVELOP_GIT_CLINGO_LIBGRINGO_SRC_INPUT_GROUNDTERMGRAMMAR_GRAMMAR_HH_INCLUDED
+#endif // !YY_GRINGOGROUNDTERMGRAMMAR_HOME_KAMINSKI_GIT_CLINGO_BUILD_DEBUG_LIBGRINGO_SRC_INPUT_GROUNDTERMGRAMMAR_GRAMMAR_HH_INCLUDED

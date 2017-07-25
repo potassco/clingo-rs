@@ -31,12 +31,12 @@
 // version 2.2 of Bison.
 
 /**
- ** \file /home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar/position.hh
+ ** \file /home/kaminski/git/clingo/build/debug/libgringo/src/input/groundtermgrammar/position.hh
  ** Define the Gringo::Input::GroundTermGrammar::position class.
  */
 
-#ifndef YY_GRINGOGROUNDTERMGRAMMAR_HOME_STHIELE_DEVELOP_GIT_CLINGO_LIBGRINGO_SRC_INPUT_GROUNDTERMGRAMMAR_POSITION_HH_INCLUDED
-# define YY_GRINGOGROUNDTERMGRAMMAR_HOME_STHIELE_DEVELOP_GIT_CLINGO_LIBGRINGO_SRC_INPUT_GROUNDTERMGRAMMAR_POSITION_HH_INCLUDED
+#ifndef YY_GRINGOGROUNDTERMGRAMMAR_HOME_KAMINSKI_GIT_CLINGO_BUILD_DEBUG_LIBGRINGO_SRC_INPUT_GROUNDTERMGRAMMAR_POSITION_HH_INCLUDED
+# define YY_GRINGOGROUNDTERMGRAMMAR_HOME_KAMINSKI_GIT_CLINGO_BUILD_DEBUG_LIBGRINGO_SRC_INPUT_GROUNDTERMGRAMMAR_POSITION_HH_INCLUDED
 
 # include <algorithm> // std::max
 # include <iostream>
@@ -50,9 +50,9 @@
 #  endif
 # endif
 
-#line 26 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar.yy" // location.cc:296
+#line 26 "/home/kaminski/git/clingo/libgringo/src/input/groundtermgrammar.yy" // location.cc:296
 namespace Gringo { namespace Input { namespace GroundTermGrammar {
-#line 56 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar/position.hh" // location.cc:296
+#line 56 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/groundtermgrammar/position.hh" // location.cc:296
   /// Abstract a position.
   class position
   {
@@ -174,7 +174,7 @@ namespace Gringo { namespace Input { namespace GroundTermGrammar {
     return ostr << pos.line << '.' << pos.column;
   }
 
-#line 26 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar.yy" // location.cc:296
+#line 26 "/home/kaminski/git/clingo/libgringo/src/input/groundtermgrammar.yy" // location.cc:296
 } } } // Gringo::Input::GroundTermGrammar
-#line 180 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar/position.hh" // location.cc:296
-#endif // !YY_GRINGOGROUNDTERMGRAMMAR_HOME_STHIELE_DEVELOP_GIT_CLINGO_LIBGRINGO_SRC_INPUT_GROUNDTERMGRAMMAR_POSITION_HH_INCLUDED
+#line 180 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/groundtermgrammar/position.hh" // location.cc:296
+#endif // !YY_GRINGOGROUNDTERMGRAMMAR_HOME_KAMINSKI_GIT_CLINGO_BUILD_DEBUG_LIBGRINGO_SRC_INPUT_GROUNDTERMGRAMMAR_POSITION_HH_INCLUDED

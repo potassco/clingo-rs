@@ -31,7 +31,7 @@
 // version 2.2 of Bison.
 
 /**
- ** \file /home/sthiele/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.hh
+ ** \file /home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.hh
  ** Define the Gringo::Input::NonGroundGrammar::parser class.
  */
 
@@ -40,7 +40,7 @@
 #ifndef YY_GRINGONONGROUNDGRAMMAR_HOME_KAMINSKI_GIT_CLINGO_BUILD_DEBUG_LIBGRINGO_SRC_INPUT_NONGROUNDGRAMMAR_GRAMMAR_HH_INCLUDED
 # define YY_GRINGONONGROUNDGRAMMAR_HOME_KAMINSKI_GIT_CLINGO_BUILD_DEBUG_LIBGRINGO_SRC_INPUT_NONGROUNDGRAMMAR_GRAMMAR_HH_INCLUDED
 // //                    "%code requires" blocks.
-#line 46 "/home/sthiele/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:377
+#line 46 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:377
 
     #include "gringo/input/programbuilder.hh"
     #include "potassco/basic_types.h"
@@ -52,7 +52,7 @@
     };
 
 
-#line 56 "/home/sthiele/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.hh" // lalr1.cc:377
+#line 56 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.hh" // lalr1.cc:377
 
 
 # include <cstdlib> // std::abort
@@ -122,9 +122,9 @@
 # define YYDEBUG 0
 #endif
 
-#line 28 "/home/sthiele/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:377
+#line 28 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:377
 namespace Gringo { namespace Input { namespace NonGroundGrammar {
-#line 128 "/home/sthiele/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.hh" // lalr1.cc:377
+#line 128 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.hh" // lalr1.cc:377
 
 
 
@@ -138,7 +138,7 @@ namespace Gringo { namespace Input { namespace NonGroundGrammar {
     /// Symbol semantic values.
     union semantic_type
     {
-    #line 108 "/home/sthiele/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:377
+    #line 108 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:377
 
     IdVecUid idlist;
     CSPLitUid csplit;
@@ -208,7 +208,7 @@ namespace Gringo { namespace Input { namespace NonGroundGrammar {
     TheoryDefVecUid theoryDefs;
     TheoryAtomType theoryAtomType;
 
-#line 212 "/home/sthiele/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.hh" // lalr1.cc:377
+#line 212 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.hh" // lalr1.cc:377
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -639,9 +639,9 @@ namespace Gringo { namespace Input { namespace NonGroundGrammar {
   };
 
 
-#line 28 "/home/sthiele/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:377
+#line 28 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:377
 } } } // Gringo::Input::NonGroundGrammar
-#line 645 "/home/sthiele/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.hh" // lalr1.cc:377
+#line 645 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.hh" // lalr1.cc:377
 
 
 

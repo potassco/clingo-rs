@@ -31,18 +31,18 @@
 // version 2.2 of Bison.
 
 /**
- ** \file /home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar/stack.hh
+ ** \file /home/kaminski/git/clingo/build/debug/libgringo/src/input/groundtermgrammar/stack.hh
  ** Define the Gringo::Input::GroundTermGrammar::stack class.
  */
 
-#ifndef YY_GRINGOGROUNDTERMGRAMMAR_HOME_STHIELE_DEVELOP_GIT_CLINGO_LIBGRINGO_SRC_INPUT_GROUNDTERMGRAMMAR_STACK_HH_INCLUDED
-# define YY_GRINGOGROUNDTERMGRAMMAR_HOME_STHIELE_DEVELOP_GIT_CLINGO_LIBGRINGO_SRC_INPUT_GROUNDTERMGRAMMAR_STACK_HH_INCLUDED
+#ifndef YY_GRINGOGROUNDTERMGRAMMAR_HOME_KAMINSKI_GIT_CLINGO_BUILD_DEBUG_LIBGRINGO_SRC_INPUT_GROUNDTERMGRAMMAR_STACK_HH_INCLUDED
+# define YY_GRINGOGROUNDTERMGRAMMAR_HOME_KAMINSKI_GIT_CLINGO_BUILD_DEBUG_LIBGRINGO_SRC_INPUT_GROUNDTERMGRAMMAR_STACK_HH_INCLUDED
 
 # include <vector>
 
-#line 26 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar.yy" // stack.hh:132
+#line 26 "/home/kaminski/git/clingo/libgringo/src/input/groundtermgrammar.yy" // stack.hh:132
 namespace Gringo { namespace Input { namespace GroundTermGrammar {
-#line 46 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar/stack.hh" // stack.hh:132
+#line 46 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/groundtermgrammar/stack.hh" // stack.hh:132
   template <class T, class S = std::vector<T> >
   class stack
   {
@@ -150,8 +150,8 @@ namespace Gringo { namespace Input { namespace GroundTermGrammar {
     unsigned int range_;
   };
 
-#line 26 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar.yy" // stack.hh:132
+#line 26 "/home/kaminski/git/clingo/libgringo/src/input/groundtermgrammar.yy" // stack.hh:132
 } } } // Gringo::Input::GroundTermGrammar
-#line 156 "/home/sthiele/develop/git/clingo/libgringo/src/input/groundtermgrammar/stack.hh" // stack.hh:132
+#line 156 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/groundtermgrammar/stack.hh" // stack.hh:132
 
-#endif // !YY_GRINGOGROUNDTERMGRAMMAR_HOME_STHIELE_DEVELOP_GIT_CLINGO_LIBGRINGO_SRC_INPUT_GROUNDTERMGRAMMAR_STACK_HH_INCLUDED
+#endif // !YY_GRINGOGROUNDTERMGRAMMAR_HOME_KAMINSKI_GIT_CLINGO_BUILD_DEBUG_LIBGRINGO_SRC_INPUT_GROUNDTERMGRAMMAR_STACK_HH_INCLUDED

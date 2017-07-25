@@ -34,7 +34,7 @@
 #define yylex   GringoNonGroundGrammar_lex
 
 // First part of user declarations.
-#line 58 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:404
+#line 58 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:404
 
 
 #include "gringo/input/nongroundparser.hh"
@@ -72,7 +72,7 @@ int GringoNonGroundGrammar_lex(void *value, Gringo::Location* loc, NonGroundPars
 }
 
 
-#line 76 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:404
+#line 76 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:404
 
 # ifndef YY_NULLPTR
 #  if defined __cplusplus && 201103L <= __cplusplus
@@ -86,9 +86,9 @@ int GringoNonGroundGrammar_lex(void *value, Gringo::Location* loc, NonGroundPars
 
 // User implementation prologue.
 
-#line 90 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:412
+#line 90 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:412
 // Unqualified %code blocks.
-#line 96 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:413
+#line 96 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:413
 
 
 void NonGroundGrammar::parser::error(DefaultLocation const &l, std::string const &msg) {
@@ -96,7 +96,7 @@ void NonGroundGrammar::parser::error(DefaultLocation const &l, std::string const
 }
 
 
-#line 100 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:413
+#line 100 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:413
 
 
 #ifndef YY_
@@ -180,9 +180,9 @@ void NonGroundGrammar::parser::error(DefaultLocation const &l, std::string const
 #define YYERROR         goto yyerrorlab
 #define YYRECOVERING()  (!!yyerrstatus_)
 
-#line 28 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:479
+#line 28 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:479
 namespace Gringo { namespace Input { namespace NonGroundGrammar {
-#line 186 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:479
+#line 186 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:479
 
   /* Return YYSTR after stripping away unnecessary quotes and
      backslashes, so that it's suitable for yyerror.  The heuristic is
@@ -660,1861 +660,1867 @@ namespace Gringo { namespace Input { namespace NonGroundGrammar {
           switch (yyn)
             {
   case 7:
-#line 352 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.str) = (yystack_[0].value.str); }
-#line 666 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
-    break;
-
-  case 8:
-#line 359 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.term) = BUILDER.term(yylhs.location, BinOp::XOR, (yystack_[2].value.term), (yystack_[0].value.term)); }
-#line 672 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
-    break;
-
-  case 9:
-#line 360 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.term) = BUILDER.term(yylhs.location, BinOp::OR, (yystack_[2].value.term), (yystack_[0].value.term)); }
-#line 678 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 350 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { lexer->parseError(yylhs.location, "syntax error, unexpected ."); }
+#line 666 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 10:
-#line 361 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.term) = BUILDER.term(yylhs.location, BinOp::AND, (yystack_[2].value.term), (yystack_[0].value.term)); }
-#line 684 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 356 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.str) = (yystack_[0].value.str); }
+#line 672 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 11:
-#line 362 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.term) = BUILDER.term(yylhs.location, BinOp::ADD, (yystack_[2].value.term), (yystack_[0].value.term)); }
-#line 690 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 363 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.term) = BUILDER.term(yylhs.location, BinOp::XOR, (yystack_[2].value.term), (yystack_[0].value.term)); }
+#line 678 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 12:
-#line 363 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.term) = BUILDER.term(yylhs.location, BinOp::SUB, (yystack_[2].value.term), (yystack_[0].value.term)); }
-#line 696 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 364 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.term) = BUILDER.term(yylhs.location, BinOp::OR, (yystack_[2].value.term), (yystack_[0].value.term)); }
+#line 684 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 13:
-#line 364 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.term) = BUILDER.term(yylhs.location, BinOp::MUL, (yystack_[2].value.term), (yystack_[0].value.term)); }
-#line 702 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 365 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.term) = BUILDER.term(yylhs.location, BinOp::AND, (yystack_[2].value.term), (yystack_[0].value.term)); }
+#line 690 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 14:
-#line 365 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.term) = BUILDER.term(yylhs.location, BinOp::DIV, (yystack_[2].value.term), (yystack_[0].value.term)); }
-#line 708 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 366 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.term) = BUILDER.term(yylhs.location, BinOp::ADD, (yystack_[2].value.term), (yystack_[0].value.term)); }
+#line 696 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 15:
-#line 366 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.term) = BUILDER.term(yylhs.location, BinOp::MOD, (yystack_[2].value.term), (yystack_[0].value.term)); }
-#line 714 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 367 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.term) = BUILDER.term(yylhs.location, BinOp::SUB, (yystack_[2].value.term), (yystack_[0].value.term)); }
+#line 702 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 16:
-#line 367 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.term) = BUILDER.term(yylhs.location, BinOp::POW, (yystack_[2].value.term), (yystack_[0].value.term)); }
-#line 720 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 368 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.term) = BUILDER.term(yylhs.location, BinOp::MUL, (yystack_[2].value.term), (yystack_[0].value.term)); }
+#line 708 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 17:
-#line 368 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.term) = BUILDER.term(yylhs.location, UnOp::NEG, (yystack_[0].value.term)); }
-#line 726 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 369 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.term) = BUILDER.term(yylhs.location, BinOp::DIV, (yystack_[2].value.term), (yystack_[0].value.term)); }
+#line 714 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 18:
-#line 369 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.term) = BUILDER.term(yylhs.location, UnOp::NOT, (yystack_[0].value.term)); }
-#line 732 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 370 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.term) = BUILDER.term(yylhs.location, BinOp::MOD, (yystack_[2].value.term), (yystack_[0].value.term)); }
+#line 720 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 19:
-#line 370 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.term) = BUILDER.term(yylhs.location, BUILDER.termvec(), false); }
-#line 738 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 371 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.term) = BUILDER.term(yylhs.location, BinOp::POW, (yystack_[2].value.term), (yystack_[0].value.term)); }
+#line 726 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 20:
-#line 371 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.term) = BUILDER.term(yylhs.location, BUILDER.termvec(), true); }
-#line 744 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 372 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.term) = BUILDER.term(yylhs.location, UnOp::NEG, (yystack_[0].value.term)); }
+#line 732 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 21:
-#line 372 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.term) = BUILDER.term(yylhs.location, (yystack_[1].value.termvec), false); }
-#line 750 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 373 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.term) = BUILDER.term(yylhs.location, UnOp::NOT, (yystack_[0].value.term)); }
+#line 738 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 22:
-#line 373 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.term) = BUILDER.term(yylhs.location, (yystack_[2].value.termvec), true); }
-#line 756 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 374 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.term) = BUILDER.term(yylhs.location, BUILDER.termvec(), false); }
+#line 744 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 23:
-#line 374 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.term) = BUILDER.term(yylhs.location, String::fromRep((yystack_[3].value.str)), (yystack_[1].value.termvecvec), false); }
-#line 762 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 375 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.term) = BUILDER.term(yylhs.location, BUILDER.termvec(), true); }
+#line 750 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 24:
-#line 375 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.term) = BUILDER.term(yylhs.location, String::fromRep((yystack_[3].value.str)), (yystack_[1].value.termvecvec), true); }
-#line 768 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 376 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.term) = BUILDER.term(yylhs.location, (yystack_[1].value.termvec), false); }
+#line 756 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 25:
-#line 376 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.term) = BUILDER.term(yylhs.location, UnOp::ABS, (yystack_[1].value.term)); }
-#line 774 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 377 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.term) = BUILDER.term(yylhs.location, (yystack_[2].value.termvec), true); }
+#line 762 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 26:
-#line 377 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.term) = BUILDER.term(yylhs.location, Symbol::createId(String::fromRep((yystack_[0].value.str)))); }
-#line 780 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 378 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.term) = BUILDER.term(yylhs.location, String::fromRep((yystack_[3].value.str)), (yystack_[1].value.termvecvec), false); }
+#line 768 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 27:
-#line 378 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.term) = BUILDER.term(yylhs.location, Symbol::createNum((yystack_[0].value.num))); }
-#line 786 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 379 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.term) = BUILDER.term(yylhs.location, String::fromRep((yystack_[3].value.str)), (yystack_[1].value.termvecvec), true); }
+#line 774 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 28:
-#line 379 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.term) = BUILDER.term(yylhs.location, Symbol::createStr(String::fromRep((yystack_[0].value.str)))); }
-#line 792 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 380 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.term) = BUILDER.term(yylhs.location, UnOp::ABS, (yystack_[1].value.term)); }
+#line 780 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 29:
-#line 380 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.term) = BUILDER.term(yylhs.location, Symbol::createInf()); }
-#line 798 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 381 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.term) = BUILDER.term(yylhs.location, Symbol::createId(String::fromRep((yystack_[0].value.str)))); }
+#line 786 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 30:
-#line 381 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.term) = BUILDER.term(yylhs.location, Symbol::createSup()); }
-#line 804 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 382 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.term) = BUILDER.term(yylhs.location, Symbol::createNum((yystack_[0].value.num))); }
+#line 792 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 31:
-#line 387 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.termvec) = BUILDER.termvec(BUILDER.termvec(), (yystack_[0].value.term));  }
-#line 810 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 383 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.term) = BUILDER.term(yylhs.location, Symbol::createStr(String::fromRep((yystack_[0].value.str)))); }
+#line 798 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 32:
-#line 388 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.termvec) = BUILDER.termvec((yystack_[2].value.termvec), (yystack_[0].value.term));  }
-#line 816 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 384 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.term) = BUILDER.term(yylhs.location, Symbol::createInf()); }
+#line 804 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 33:
-#line 392 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.termvecvec) = BUILDER.termvecvec(BUILDER.termvecvec(), (yystack_[0].value.termvec));  }
-#line 822 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 385 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.term) = BUILDER.term(yylhs.location, Symbol::createSup()); }
+#line 810 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 34:
-#line 393 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.termvecvec) = BUILDER.termvecvec();  }
-#line 828 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 391 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.termvec) = BUILDER.termvec(BUILDER.termvec(), (yystack_[0].value.term));  }
+#line 816 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 35:
-#line 399 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.term) = BUILDER.term(yylhs.location, (yystack_[2].value.term), (yystack_[0].value.term)); }
-#line 834 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 392 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.termvec) = BUILDER.termvec((yystack_[2].value.termvec), (yystack_[0].value.term));  }
+#line 822 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 36:
-#line 400 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.term) = BUILDER.term(yylhs.location, BinOp::XOR, (yystack_[2].value.term), (yystack_[0].value.term)); }
-#line 840 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 396 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.termvecvec) = BUILDER.termvecvec(BUILDER.termvecvec(), (yystack_[0].value.termvec));  }
+#line 828 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 37:
-#line 401 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.term) = BUILDER.term(yylhs.location, BinOp::OR, (yystack_[2].value.term), (yystack_[0].value.term)); }
-#line 846 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 397 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.termvecvec) = BUILDER.termvecvec();  }
+#line 834 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 38:
-#line 402 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.term) = BUILDER.term(yylhs.location, BinOp::AND, (yystack_[2].value.term), (yystack_[0].value.term)); }
-#line 852 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 403 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.term) = BUILDER.term(yylhs.location, (yystack_[2].value.term), (yystack_[0].value.term)); }
+#line 840 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 39:
-#line 403 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.term) = BUILDER.term(yylhs.location, BinOp::ADD, (yystack_[2].value.term), (yystack_[0].value.term)); }
-#line 858 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 404 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.term) = BUILDER.term(yylhs.location, BinOp::XOR, (yystack_[2].value.term), (yystack_[0].value.term)); }
+#line 846 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 40:
-#line 404 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.term) = BUILDER.term(yylhs.location, BinOp::SUB, (yystack_[2].value.term), (yystack_[0].value.term)); }
-#line 864 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 405 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.term) = BUILDER.term(yylhs.location, BinOp::OR, (yystack_[2].value.term), (yystack_[0].value.term)); }
+#line 852 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 41:
-#line 405 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.term) = BUILDER.term(yylhs.location, BinOp::MUL, (yystack_[2].value.term), (yystack_[0].value.term)); }
-#line 870 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 406 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.term) = BUILDER.term(yylhs.location, BinOp::AND, (yystack_[2].value.term), (yystack_[0].value.term)); }
+#line 858 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 42:
-#line 406 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.term) = BUILDER.term(yylhs.location, BinOp::DIV, (yystack_[2].value.term), (yystack_[0].value.term)); }
-#line 876 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 407 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.term) = BUILDER.term(yylhs.location, BinOp::ADD, (yystack_[2].value.term), (yystack_[0].value.term)); }
+#line 864 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 43:
-#line 407 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.term) = BUILDER.term(yylhs.location, BinOp::MOD, (yystack_[2].value.term), (yystack_[0].value.term)); }
-#line 882 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 408 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.term) = BUILDER.term(yylhs.location, BinOp::SUB, (yystack_[2].value.term), (yystack_[0].value.term)); }
+#line 870 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 44:
-#line 408 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.term) = BUILDER.term(yylhs.location, BinOp::POW, (yystack_[2].value.term), (yystack_[0].value.term)); }
-#line 888 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 409 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.term) = BUILDER.term(yylhs.location, BinOp::MUL, (yystack_[2].value.term), (yystack_[0].value.term)); }
+#line 876 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 45:
-#line 409 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.term) = BUILDER.term(yylhs.location, UnOp::NEG, (yystack_[0].value.term)); }
-#line 894 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 410 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.term) = BUILDER.term(yylhs.location, BinOp::DIV, (yystack_[2].value.term), (yystack_[0].value.term)); }
+#line 882 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 46:
-#line 410 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.term) = BUILDER.term(yylhs.location, UnOp::NOT, (yystack_[0].value.term)); }
-#line 900 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 411 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.term) = BUILDER.term(yylhs.location, BinOp::MOD, (yystack_[2].value.term), (yystack_[0].value.term)); }
+#line 888 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 47:
-#line 411 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.term) = BUILDER.pool(yylhs.location, (yystack_[1].value.termvec)); }
-#line 906 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 412 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.term) = BUILDER.term(yylhs.location, BinOp::POW, (yystack_[2].value.term), (yystack_[0].value.term)); }
+#line 894 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 48:
-#line 412 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.term) = BUILDER.term(yylhs.location, String::fromRep((yystack_[3].value.str)), (yystack_[1].value.termvecvec), false); }
-#line 912 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 413 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.term) = BUILDER.term(yylhs.location, UnOp::NEG, (yystack_[0].value.term)); }
+#line 900 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 49:
-#line 413 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.term) = BUILDER.term(yylhs.location, String::fromRep((yystack_[3].value.str)), (yystack_[1].value.termvecvec), true); }
-#line 918 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 414 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.term) = BUILDER.term(yylhs.location, UnOp::NOT, (yystack_[0].value.term)); }
+#line 906 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 50:
-#line 414 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.term) = BUILDER.term(yylhs.location, UnOp::ABS, (yystack_[1].value.termvec)); }
-#line 924 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 415 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.term) = BUILDER.pool(yylhs.location, (yystack_[1].value.termvec)); }
+#line 912 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 51:
-#line 415 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.term) = BUILDER.term(yylhs.location, Symbol::createId(String::fromRep((yystack_[0].value.str)))); }
-#line 930 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 416 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.term) = BUILDER.term(yylhs.location, String::fromRep((yystack_[3].value.str)), (yystack_[1].value.termvecvec), false); }
+#line 918 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 52:
-#line 416 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.term) = BUILDER.term(yylhs.location, Symbol::createNum((yystack_[0].value.num))); }
-#line 936 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 417 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.term) = BUILDER.term(yylhs.location, String::fromRep((yystack_[3].value.str)), (yystack_[1].value.termvecvec), true); }
+#line 924 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 53:
-#line 417 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.term) = BUILDER.term(yylhs.location, Symbol::createStr(String::fromRep((yystack_[0].value.str)))); }
-#line 942 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 418 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.term) = BUILDER.term(yylhs.location, UnOp::ABS, (yystack_[1].value.termvec)); }
+#line 930 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 54:
-#line 418 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.term) = BUILDER.term(yylhs.location, Symbol::createInf()); }
-#line 948 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 419 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.term) = BUILDER.term(yylhs.location, Symbol::createId(String::fromRep((yystack_[0].value.str)))); }
+#line 936 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 55:
-#line 419 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.term) = BUILDER.term(yylhs.location, Symbol::createSup()); }
-#line 954 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 420 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.term) = BUILDER.term(yylhs.location, Symbol::createNum((yystack_[0].value.num))); }
+#line 942 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 56:
-#line 420 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.term) = BUILDER.term(yylhs.location, String::fromRep((yystack_[0].value.str))); }
-#line 960 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 421 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.term) = BUILDER.term(yylhs.location, Symbol::createStr(String::fromRep((yystack_[0].value.str)))); }
+#line 948 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 57:
-#line 421 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.term) = BUILDER.term(yylhs.location, String("_")); }
-#line 966 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 422 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.term) = BUILDER.term(yylhs.location, Symbol::createInf()); }
+#line 954 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 58:
-#line 427 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.termvec) = BUILDER.termvec(BUILDER.termvec(), (yystack_[0].value.term)); }
-#line 972 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 423 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.term) = BUILDER.term(yylhs.location, Symbol::createSup()); }
+#line 960 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 59:
-#line 428 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.termvec) = BUILDER.termvec((yystack_[2].value.termvec), (yystack_[0].value.term)); }
-#line 978 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 424 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.term) = BUILDER.term(yylhs.location, String::fromRep((yystack_[0].value.str))); }
+#line 966 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 60:
-#line 434 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.termvec) = BUILDER.termvec(BUILDER.termvec(), (yystack_[0].value.term)); }
-#line 984 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 425 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.term) = BUILDER.term(yylhs.location, String("_")); }
+#line 972 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 61:
-#line 435 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.termvec) = BUILDER.termvec((yystack_[2].value.termvec), (yystack_[0].value.term)); }
-#line 990 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 431 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.termvec) = BUILDER.termvec(BUILDER.termvec(), (yystack_[0].value.term)); }
+#line 978 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 62:
-#line 439 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.termvec) = (yystack_[0].value.termvec); }
-#line 996 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 432 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.termvec) = BUILDER.termvec((yystack_[2].value.termvec), (yystack_[0].value.term)); }
+#line 984 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 63:
-#line 440 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.termvec) = BUILDER.termvec(); }
-#line 1002 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 438 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.termvec) = BUILDER.termvec(BUILDER.termvec(), (yystack_[0].value.term)); }
+#line 990 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 64:
-#line 444 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.term) = BUILDER.term(yylhs.location, (yystack_[1].value.termvec), true); }
-#line 1008 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 439 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.termvec) = BUILDER.termvec((yystack_[2].value.termvec), (yystack_[0].value.term)); }
+#line 996 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 65:
-#line 445 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.term) = BUILDER.term(yylhs.location, (yystack_[0].value.termvec), false); }
-#line 1014 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 443 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.termvec) = (yystack_[0].value.termvec); }
+#line 1002 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 66:
-#line 446 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.term) = BUILDER.term(yylhs.location, BUILDER.termvec(), true); }
-#line 1020 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 444 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.termvec) = BUILDER.termvec(); }
+#line 1008 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 67:
-#line 447 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.term) = BUILDER.term(yylhs.location, BUILDER.termvec(), false); }
-#line 1026 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 448 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.term) = BUILDER.term(yylhs.location, (yystack_[1].value.termvec), true); }
+#line 1014 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 68:
-#line 450 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.termvec) = BUILDER.termvec(BUILDER.termvec(), (yystack_[1].value.term)); }
-#line 1032 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 449 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.term) = BUILDER.term(yylhs.location, (yystack_[0].value.termvec), false); }
+#line 1020 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 69:
-#line 451 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.termvec) = BUILDER.termvec((yystack_[2].value.termvec), (yystack_[1].value.term)); }
-#line 1038 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 450 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.term) = BUILDER.term(yylhs.location, BUILDER.termvec(), true); }
+#line 1026 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 70:
-#line 454 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.termvec) = BUILDER.termvec(BUILDER.termvec(), (yystack_[0].value.term)); }
-#line 1044 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 451 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.term) = BUILDER.term(yylhs.location, BUILDER.termvec(), false); }
+#line 1032 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 71:
-#line 455 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.termvec) = BUILDER.termvec((yystack_[1].value.termvec), (yystack_[0].value.term)); }
-#line 1050 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 454 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.termvec) = BUILDER.termvec(BUILDER.termvec(), (yystack_[1].value.term)); }
+#line 1038 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 72:
-#line 458 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.termvecvec) = BUILDER.termvecvec(BUILDER.termvecvec(), (yystack_[0].value.termvec)); }
-#line 1056 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 455 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.termvec) = BUILDER.termvec((yystack_[2].value.termvec), (yystack_[1].value.term)); }
+#line 1044 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 73:
-#line 459 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.termvecvec) = BUILDER.termvecvec((yystack_[2].value.termvecvec), (yystack_[0].value.termvec)); }
-#line 1062 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 458 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.termvec) = BUILDER.termvec(BUILDER.termvec(), (yystack_[0].value.term)); }
+#line 1050 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 74:
-#line 463 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.termvecvec) = BUILDER.termvecvec(BUILDER.termvecvec(), BUILDER.termvec(BUILDER.termvec(BUILDER.termvec(), (yystack_[2].value.term)), (yystack_[0].value.term))); }
-#line 1068 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 459 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.termvec) = BUILDER.termvec((yystack_[1].value.termvec), (yystack_[0].value.term)); }
+#line 1056 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 75:
-#line 464 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.termvecvec) = BUILDER.termvecvec((yystack_[4].value.termvecvec), BUILDER.termvec(BUILDER.termvec(BUILDER.termvec(), (yystack_[2].value.term)), (yystack_[0].value.term))); }
-#line 1074 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 462 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.termvecvec) = BUILDER.termvecvec(BUILDER.termvecvec(), (yystack_[0].value.termvec)); }
+#line 1062 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 76:
-#line 474 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.rel) = Relation::GT; }
-#line 1080 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 463 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.termvecvec) = BUILDER.termvecvec((yystack_[2].value.termvecvec), (yystack_[0].value.termvec)); }
+#line 1068 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 77:
-#line 475 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.rel) = Relation::LT; }
-#line 1086 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 467 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.termvecvec) = BUILDER.termvecvec(BUILDER.termvecvec(), BUILDER.termvec(BUILDER.termvec(BUILDER.termvec(), (yystack_[2].value.term)), (yystack_[0].value.term))); }
+#line 1074 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 78:
-#line 476 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.rel) = Relation::GEQ; }
-#line 1092 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 468 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.termvecvec) = BUILDER.termvecvec((yystack_[4].value.termvecvec), BUILDER.termvec(BUILDER.termvec(BUILDER.termvec(), (yystack_[2].value.term)), (yystack_[0].value.term))); }
+#line 1080 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 79:
-#line 477 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.rel) = Relation::LEQ; }
-#line 1098 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 478 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.rel) = Relation::GT; }
+#line 1086 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 80:
-#line 478 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.rel) = Relation::EQ; }
-#line 1104 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 479 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.rel) = Relation::LT; }
+#line 1092 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 81:
-#line 479 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.rel) = Relation::NEQ; }
-#line 1110 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 480 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.rel) = Relation::GEQ; }
+#line 1098 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 82:
-#line 483 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.term) = BUILDER.predRep(yylhs.location, false, String::fromRep((yystack_[0].value.str)), BUILDER.termvecvec(BUILDER.termvecvec(), BUILDER.termvec())); }
-#line 1116 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 481 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.rel) = Relation::LEQ; }
+#line 1104 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 83:
-#line 484 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.term) = BUILDER.predRep(yylhs.location, false, String::fromRep((yystack_[3].value.str)), (yystack_[1].value.termvecvec)); }
-#line 1122 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 482 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.rel) = Relation::EQ; }
+#line 1110 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 84:
-#line 485 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.term) = BUILDER.predRep(yylhs.location, true, String::fromRep((yystack_[0].value.str)), BUILDER.termvecvec(BUILDER.termvecvec(), BUILDER.termvec())); }
-#line 1128 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 483 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.rel) = Relation::NEQ; }
+#line 1116 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 85:
-#line 486 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.term) = BUILDER.predRep(yylhs.location, true, String::fromRep((yystack_[3].value.str)), (yystack_[1].value.termvecvec)); }
-#line 1134 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 487 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.term) = BUILDER.predRep(yylhs.location, false, String::fromRep((yystack_[0].value.str)), BUILDER.termvecvec(BUILDER.termvecvec(), BUILDER.termvec())); }
+#line 1122 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 86:
-#line 490 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.lit) = BUILDER.boollit(yylhs.location, true); }
-#line 1140 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 488 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.term) = BUILDER.predRep(yylhs.location, false, String::fromRep((yystack_[3].value.str)), (yystack_[1].value.termvecvec)); }
+#line 1128 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 87:
-#line 491 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.lit) = BUILDER.boollit(yylhs.location, false); }
-#line 1146 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 489 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.term) = BUILDER.predRep(yylhs.location, true, String::fromRep((yystack_[0].value.str)), BUILDER.termvecvec(BUILDER.termvecvec(), BUILDER.termvec())); }
+#line 1134 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 88:
-#line 492 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.lit) = BUILDER.boollit(yylhs.location, true); }
-#line 1152 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 490 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.term) = BUILDER.predRep(yylhs.location, true, String::fromRep((yystack_[3].value.str)), (yystack_[1].value.termvecvec)); }
+#line 1140 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 89:
-#line 493 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.lit) = BUILDER.boollit(yylhs.location, false); }
-#line 1158 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 494 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.lit) = BUILDER.boollit(yylhs.location, true); }
+#line 1146 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 90:
-#line 494 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.lit) = BUILDER.boollit(yylhs.location, true); }
-#line 1164 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 495 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.lit) = BUILDER.boollit(yylhs.location, false); }
+#line 1152 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 91:
-#line 495 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.lit) = BUILDER.boollit(yylhs.location, false); }
-#line 1170 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 496 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.lit) = BUILDER.boollit(yylhs.location, true); }
+#line 1158 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 92:
-#line 496 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.lit) = BUILDER.predlit(yylhs.location, NAF::POS, (yystack_[0].value.term)); }
-#line 1176 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 497 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.lit) = BUILDER.boollit(yylhs.location, false); }
+#line 1164 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 93:
-#line 497 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.lit) = BUILDER.predlit(yylhs.location, NAF::NOT, (yystack_[0].value.term)); }
-#line 1182 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 498 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.lit) = BUILDER.boollit(yylhs.location, true); }
+#line 1170 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 94:
-#line 498 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.lit) = BUILDER.predlit(yylhs.location, NAF::NOTNOT, (yystack_[0].value.term)); }
-#line 1188 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 499 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.lit) = BUILDER.boollit(yylhs.location, false); }
+#line 1176 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 95:
-#line 499 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.lit) = BUILDER.rellit(yylhs.location, (yystack_[1].value.rel), (yystack_[2].value.term), (yystack_[0].value.term)); }
-#line 1194 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 500 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.lit) = BUILDER.predlit(yylhs.location, NAF::POS, (yystack_[0].value.term)); }
+#line 1182 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 96:
-#line 500 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.lit) = BUILDER.rellit(yylhs.location, neg((yystack_[1].value.rel)), (yystack_[2].value.term), (yystack_[0].value.term)); }
-#line 1200 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 501 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.lit) = BUILDER.predlit(yylhs.location, NAF::NOT, (yystack_[0].value.term)); }
+#line 1188 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 97:
-#line 501 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.lit) = BUILDER.rellit(yylhs.location, (yystack_[1].value.rel), (yystack_[2].value.term), (yystack_[0].value.term)); }
-#line 1206 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 502 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.lit) = BUILDER.predlit(yylhs.location, NAF::NOTNOT, (yystack_[0].value.term)); }
+#line 1194 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 98:
-#line 502 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.lit) = BUILDER.csplit((yystack_[0].value.csplit)); }
-#line 1212 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 503 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.lit) = BUILDER.rellit(yylhs.location, (yystack_[1].value.rel), (yystack_[2].value.term), (yystack_[0].value.term)); }
+#line 1200 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 99:
-#line 506 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.cspmulterm) = BUILDER.cspmulterm(yylhs.location, (yystack_[0].value.term),                     (yystack_[2].value.term)); }
-#line 1218 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 504 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.lit) = BUILDER.rellit(yylhs.location, neg((yystack_[1].value.rel)), (yystack_[2].value.term), (yystack_[0].value.term)); }
+#line 1206 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 100:
-#line 507 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.cspmulterm) = BUILDER.cspmulterm(yylhs.location, (yystack_[3].value.term),                     (yystack_[0].value.term)); }
-#line 1224 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 505 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.lit) = BUILDER.rellit(yylhs.location, (yystack_[1].value.rel), (yystack_[2].value.term), (yystack_[0].value.term)); }
+#line 1212 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 101:
-#line 508 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.cspmulterm) = BUILDER.cspmulterm(yylhs.location, BUILDER.term(yylhs.location, Symbol::createNum(1)), (yystack_[0].value.term)); }
-#line 1230 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 506 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.lit) = BUILDER.csplit((yystack_[0].value.csplit)); }
+#line 1218 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 102:
-#line 509 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.cspmulterm) = BUILDER.cspmulterm(yylhs.location, (yystack_[0].value.term)); }
-#line 1236 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 510 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.cspmulterm) = BUILDER.cspmulterm(yylhs.location, (yystack_[0].value.term),                     (yystack_[2].value.term)); }
+#line 1224 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 103:
-#line 513 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.cspaddterm) = BUILDER.cspaddterm(yylhs.location, (yystack_[2].value.cspaddterm), (yystack_[0].value.cspmulterm), true); }
-#line 1242 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 511 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.cspmulterm) = BUILDER.cspmulterm(yylhs.location, (yystack_[3].value.term),                     (yystack_[0].value.term)); }
+#line 1230 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 104:
-#line 514 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.cspaddterm) = BUILDER.cspaddterm(yylhs.location, (yystack_[2].value.cspaddterm), (yystack_[0].value.cspmulterm), false); }
-#line 1248 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 512 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.cspmulterm) = BUILDER.cspmulterm(yylhs.location, BUILDER.term(yylhs.location, Symbol::createNum(1)), (yystack_[0].value.term)); }
+#line 1236 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 105:
-#line 515 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.cspaddterm) = BUILDER.cspaddterm(yylhs.location, (yystack_[0].value.cspmulterm)); }
-#line 1254 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 513 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.cspmulterm) = BUILDER.cspmulterm(yylhs.location, (yystack_[0].value.term)); }
+#line 1242 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 106:
-#line 519 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.rel) = Relation::GT; }
-#line 1260 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 517 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.cspaddterm) = BUILDER.cspaddterm(yylhs.location, (yystack_[2].value.cspaddterm), (yystack_[0].value.cspmulterm), true); }
+#line 1248 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 107:
-#line 520 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.rel) = Relation::LT; }
-#line 1266 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 518 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.cspaddterm) = BUILDER.cspaddterm(yylhs.location, (yystack_[2].value.cspaddterm), (yystack_[0].value.cspmulterm), false); }
+#line 1254 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 108:
-#line 521 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.rel) = Relation::GEQ; }
-#line 1272 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 519 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.cspaddterm) = BUILDER.cspaddterm(yylhs.location, (yystack_[0].value.cspmulterm)); }
+#line 1260 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 109:
-#line 522 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.rel) = Relation::LEQ; }
-#line 1278 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 523 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.rel) = Relation::GT; }
+#line 1266 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 110:
-#line 523 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.rel) = Relation::EQ; }
-#line 1284 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 524 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.rel) = Relation::LT; }
+#line 1272 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 111:
-#line 524 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.rel) = Relation::NEQ; }
-#line 1290 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 525 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.rel) = Relation::GEQ; }
+#line 1278 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 112:
-#line 528 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.csplit) = BUILDER.csplit(yylhs.location, (yystack_[2].value.csplit), (yystack_[1].value.rel), (yystack_[0].value.cspaddterm)); }
-#line 1296 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 526 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.rel) = Relation::LEQ; }
+#line 1284 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 113:
-#line 529 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.csplit) = BUILDER.csplit(yylhs.location, (yystack_[2].value.cspaddterm),   (yystack_[1].value.rel), (yystack_[0].value.cspaddterm)); }
-#line 1302 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 527 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.rel) = Relation::EQ; }
+#line 1290 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 114:
-#line 537 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.litvec) = BUILDER.litvec(BUILDER.litvec(), (yystack_[0].value.lit)); }
-#line 1308 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 528 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.rel) = Relation::NEQ; }
+#line 1296 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 115:
-#line 538 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.litvec) = BUILDER.litvec((yystack_[2].value.litvec), (yystack_[0].value.lit)); }
-#line 1314 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 532 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.csplit) = BUILDER.csplit(yylhs.location, (yystack_[2].value.csplit), (yystack_[1].value.rel), (yystack_[0].value.cspaddterm)); }
+#line 1302 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 116:
-#line 542 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.litvec) = (yystack_[0].value.litvec); }
-#line 1320 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 533 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.csplit) = BUILDER.csplit(yylhs.location, (yystack_[2].value.cspaddterm),   (yystack_[1].value.rel), (yystack_[0].value.cspaddterm)); }
+#line 1308 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 117:
-#line 543 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.litvec) = BUILDER.litvec(); }
-#line 1326 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 541 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.litvec) = BUILDER.litvec(BUILDER.litvec(), (yystack_[0].value.lit)); }
+#line 1314 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 118:
-#line 547 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.litvec) = (yystack_[0].value.litvec); }
-#line 1332 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 542 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.litvec) = BUILDER.litvec((yystack_[2].value.litvec), (yystack_[0].value.lit)); }
+#line 1320 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 119:
-#line 548 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.litvec) = BUILDER.litvec(); }
-#line 1338 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 546 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.litvec) = (yystack_[0].value.litvec); }
+#line 1326 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 120:
-#line 552 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.litvec) = (yystack_[0].value.litvec); }
-#line 1344 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 547 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.litvec) = BUILDER.litvec(); }
+#line 1332 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 121:
-#line 553 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.litvec) = BUILDER.litvec(); }
-#line 1350 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 551 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.litvec) = (yystack_[0].value.litvec); }
+#line 1338 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 122:
-#line 557 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.fun) = AggregateFunction::SUM; }
-#line 1356 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 552 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.litvec) = BUILDER.litvec(); }
+#line 1344 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 123:
-#line 558 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.fun) = AggregateFunction::SUMP; }
-#line 1362 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 556 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.litvec) = (yystack_[0].value.litvec); }
+#line 1350 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 124:
-#line 559 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.fun) = AggregateFunction::MIN; }
-#line 1368 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 557 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.litvec) = BUILDER.litvec(); }
+#line 1356 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 125:
-#line 560 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.fun) = AggregateFunction::MAX; }
-#line 1374 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 561 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.fun) = AggregateFunction::SUM; }
+#line 1362 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 126:
-#line 561 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.fun) = AggregateFunction::COUNT; }
-#line 1380 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 562 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.fun) = AggregateFunction::SUMP; }
+#line 1368 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 127:
-#line 567 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.bodyaggrelem) = { BUILDER.termvec(), (yystack_[0].value.litvec) }; }
-#line 1386 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 563 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.fun) = AggregateFunction::MIN; }
+#line 1374 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 128:
-#line 568 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.bodyaggrelem) = { (yystack_[1].value.termvec), (yystack_[0].value.litvec) }; }
-#line 1392 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 564 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.fun) = AggregateFunction::MAX; }
+#line 1380 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 129:
-#line 572 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.bodyaggrelemvec) = BUILDER.bodyaggrelemvec(BUILDER.bodyaggrelemvec(), (yystack_[0].value.bodyaggrelem).first, (yystack_[0].value.bodyaggrelem).second); }
-#line 1398 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 565 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.fun) = AggregateFunction::COUNT; }
+#line 1386 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 130:
-#line 573 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.bodyaggrelemvec) = BUILDER.bodyaggrelemvec((yystack_[2].value.bodyaggrelemvec), (yystack_[0].value.bodyaggrelem).first, (yystack_[0].value.bodyaggrelem).second); }
-#line 1404 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 571 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.bodyaggrelem) = { BUILDER.termvec(), (yystack_[0].value.litvec) }; }
+#line 1392 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 131:
-#line 579 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.lbodyaggrelem) = { (yystack_[1].value.lit), (yystack_[0].value.litvec) }; }
-#line 1410 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 572 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.bodyaggrelem) = { (yystack_[1].value.termvec), (yystack_[0].value.litvec) }; }
+#line 1398 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 132:
-#line 583 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.condlitlist) = BUILDER.condlitvec(BUILDER.condlitvec(), (yystack_[0].value.lbodyaggrelem).first, (yystack_[0].value.lbodyaggrelem).second); }
-#line 1416 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 576 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.bodyaggrelemvec) = BUILDER.bodyaggrelemvec(BUILDER.bodyaggrelemvec(), (yystack_[0].value.bodyaggrelem).first, (yystack_[0].value.bodyaggrelem).second); }
+#line 1404 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 133:
-#line 584 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.condlitlist) = BUILDER.condlitvec((yystack_[2].value.condlitlist), (yystack_[0].value.lbodyaggrelem).first, (yystack_[0].value.lbodyaggrelem).second); }
-#line 1422 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 577 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.bodyaggrelemvec) = BUILDER.bodyaggrelemvec((yystack_[2].value.bodyaggrelemvec), (yystack_[0].value.bodyaggrelem).first, (yystack_[0].value.bodyaggrelem).second); }
+#line 1410 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 134:
-#line 590 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.aggr) = { AggregateFunction::COUNT, true, BUILDER.condlitvec() }; }
-#line 1428 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 583 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.lbodyaggrelem) = { (yystack_[1].value.lit), (yystack_[0].value.litvec) }; }
+#line 1416 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 135:
-#line 591 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.aggr) = { AggregateFunction::COUNT, true, (yystack_[1].value.condlitlist) }; }
-#line 1434 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 587 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.condlitlist) = BUILDER.condlitvec(BUILDER.condlitvec(), (yystack_[0].value.lbodyaggrelem).first, (yystack_[0].value.lbodyaggrelem).second); }
+#line 1422 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 136:
-#line 592 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.aggr) = { (yystack_[2].value.fun), false, BUILDER.bodyaggrelemvec() }; }
-#line 1440 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 588 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.condlitlist) = BUILDER.condlitvec((yystack_[2].value.condlitlist), (yystack_[0].value.lbodyaggrelem).first, (yystack_[0].value.lbodyaggrelem).second); }
+#line 1428 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 137:
-#line 593 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.aggr) = { (yystack_[3].value.fun), false, (yystack_[1].value.bodyaggrelemvec) }; }
-#line 1446 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 594 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.aggr) = { AggregateFunction::COUNT, true, BUILDER.condlitvec() }; }
+#line 1434 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 138:
-#line 597 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.bound) = { Relation::LEQ, (yystack_[0].value.term) }; }
-#line 1452 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 595 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.aggr) = { AggregateFunction::COUNT, true, (yystack_[1].value.condlitlist) }; }
+#line 1440 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 139:
-#line 598 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.bound) = { (yystack_[1].value.rel), (yystack_[0].value.term) }; }
-#line 1458 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 596 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.aggr) = { (yystack_[2].value.fun), false, BUILDER.bodyaggrelemvec() }; }
+#line 1446 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 140:
-#line 599 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.bound) = { Relation::LEQ, TermUid(-1) }; }
-#line 1464 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 597 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.aggr) = { (yystack_[3].value.fun), false, (yystack_[1].value.bodyaggrelemvec) }; }
+#line 1452 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 141:
-#line 603 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.uid) = lexer->aggregate((yystack_[1].value.aggr).fun, (yystack_[1].value.aggr).choice, (yystack_[1].value.aggr).elems, lexer->boundvec(Relation::LEQ, (yystack_[2].value.term), (yystack_[0].value.bound).rel, (yystack_[0].value.bound).term)); }
-#line 1470 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 601 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.bound) = { Relation::LEQ, (yystack_[0].value.term) }; }
+#line 1458 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 142:
-#line 604 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.uid) = lexer->aggregate((yystack_[1].value.aggr).fun, (yystack_[1].value.aggr).choice, (yystack_[1].value.aggr).elems, lexer->boundvec((yystack_[2].value.rel), (yystack_[3].value.term), (yystack_[0].value.bound).rel, (yystack_[0].value.bound).term)); }
-#line 1476 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 602 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.bound) = { (yystack_[1].value.rel), (yystack_[0].value.term) }; }
+#line 1464 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 143:
-#line 605 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.uid) = lexer->aggregate((yystack_[1].value.aggr).fun, (yystack_[1].value.aggr).choice, (yystack_[1].value.aggr).elems, lexer->boundvec(Relation::LEQ, TermUid(-1), (yystack_[0].value.bound).rel, (yystack_[0].value.bound).term)); }
-#line 1482 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 603 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.bound) = { Relation::LEQ, TermUid(-1) }; }
+#line 1470 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 144:
-#line 606 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.uid) = lexer->aggregate((yystack_[0].value.theoryAtom)); }
-#line 1488 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 607 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.uid) = lexer->aggregate((yystack_[1].value.aggr).fun, (yystack_[1].value.aggr).choice, (yystack_[1].value.aggr).elems, lexer->boundvec(Relation::LEQ, (yystack_[2].value.term), (yystack_[0].value.bound).rel, (yystack_[0].value.bound).term)); }
+#line 1476 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 145:
-#line 612 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.headaggrelemvec) = BUILDER.headaggrelemvec((yystack_[5].value.headaggrelemvec), (yystack_[3].value.termvec), (yystack_[1].value.lit), (yystack_[0].value.litvec)); }
-#line 1494 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 608 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.uid) = lexer->aggregate((yystack_[1].value.aggr).fun, (yystack_[1].value.aggr).choice, (yystack_[1].value.aggr).elems, lexer->boundvec((yystack_[2].value.rel), (yystack_[3].value.term), (yystack_[0].value.bound).rel, (yystack_[0].value.bound).term)); }
+#line 1482 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 146:
-#line 613 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.headaggrelemvec) = BUILDER.headaggrelemvec(BUILDER.headaggrelemvec(), (yystack_[3].value.termvec), (yystack_[1].value.lit), (yystack_[0].value.litvec)); }
-#line 1500 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 609 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.uid) = lexer->aggregate((yystack_[1].value.aggr).fun, (yystack_[1].value.aggr).choice, (yystack_[1].value.aggr).elems, lexer->boundvec(Relation::LEQ, TermUid(-1), (yystack_[0].value.bound).rel, (yystack_[0].value.bound).term)); }
+#line 1488 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 147:
-#line 617 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.condlitlist) = BUILDER.condlitvec(BUILDER.condlitvec(), (yystack_[1].value.lit), (yystack_[0].value.litvec)); }
-#line 1506 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 610 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.uid) = lexer->aggregate((yystack_[0].value.theoryAtom)); }
+#line 1494 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 148:
-#line 618 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.condlitlist) = BUILDER.condlitvec((yystack_[3].value.condlitlist), (yystack_[1].value.lit), (yystack_[0].value.litvec)); }
-#line 1512 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 616 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.headaggrelemvec) = BUILDER.headaggrelemvec((yystack_[5].value.headaggrelemvec), (yystack_[3].value.termvec), (yystack_[1].value.lit), (yystack_[0].value.litvec)); }
+#line 1500 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 149:
-#line 624 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.aggr) = { (yystack_[2].value.fun), false, BUILDER.headaggrelemvec() }; }
-#line 1518 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 617 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.headaggrelemvec) = BUILDER.headaggrelemvec(BUILDER.headaggrelemvec(), (yystack_[3].value.termvec), (yystack_[1].value.lit), (yystack_[0].value.litvec)); }
+#line 1506 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 150:
-#line 625 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.aggr) = { (yystack_[3].value.fun), false, (yystack_[1].value.headaggrelemvec) }; }
-#line 1524 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 621 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.condlitlist) = BUILDER.condlitvec(BUILDER.condlitvec(), (yystack_[1].value.lit), (yystack_[0].value.litvec)); }
+#line 1512 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 151:
-#line 626 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.aggr) = { AggregateFunction::COUNT, true, BUILDER.condlitvec()}; }
-#line 1530 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 622 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.condlitlist) = BUILDER.condlitvec((yystack_[3].value.condlitlist), (yystack_[1].value.lit), (yystack_[0].value.litvec)); }
+#line 1518 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 152:
-#line 627 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.aggr) = { AggregateFunction::COUNT, true, (yystack_[1].value.condlitlist)}; }
-#line 1536 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 628 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.aggr) = { (yystack_[2].value.fun), false, BUILDER.headaggrelemvec() }; }
+#line 1524 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 153:
-#line 631 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.uid) = lexer->aggregate((yystack_[1].value.aggr).fun, (yystack_[1].value.aggr).choice, (yystack_[1].value.aggr).elems, lexer->boundvec(Relation::LEQ, (yystack_[2].value.term), (yystack_[0].value.bound).rel, (yystack_[0].value.bound).term)); }
-#line 1542 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 629 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.aggr) = { (yystack_[3].value.fun), false, (yystack_[1].value.headaggrelemvec) }; }
+#line 1530 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 154:
-#line 632 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.uid) = lexer->aggregate((yystack_[1].value.aggr).fun, (yystack_[1].value.aggr).choice, (yystack_[1].value.aggr).elems, lexer->boundvec((yystack_[2].value.rel), (yystack_[3].value.term), (yystack_[0].value.bound).rel, (yystack_[0].value.bound).term)); }
-#line 1548 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 630 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.aggr) = { AggregateFunction::COUNT, true, BUILDER.condlitvec()}; }
+#line 1536 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 155:
-#line 633 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.uid) = lexer->aggregate((yystack_[1].value.aggr).fun, (yystack_[1].value.aggr).choice, (yystack_[1].value.aggr).elems, lexer->boundvec(Relation::LEQ, TermUid(-1), (yystack_[0].value.bound).rel, (yystack_[0].value.bound).term)); }
-#line 1554 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 631 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.aggr) = { AggregateFunction::COUNT, true, (yystack_[1].value.condlitlist)}; }
+#line 1542 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 156:
-#line 634 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.uid) = lexer->aggregate((yystack_[0].value.theoryAtom)); }
-#line 1560 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 635 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.uid) = lexer->aggregate((yystack_[1].value.aggr).fun, (yystack_[1].value.aggr).choice, (yystack_[1].value.aggr).elems, lexer->boundvec(Relation::LEQ, (yystack_[2].value.term), (yystack_[0].value.bound).rel, (yystack_[0].value.bound).term)); }
+#line 1548 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 157:
-#line 640 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.cspelemvec) = BUILDER.cspelemvec(BUILDER.cspelemvec(), yylhs.location, (yystack_[3].value.termvec), (yystack_[1].value.cspaddterm), (yystack_[0].value.litvec)); }
-#line 1566 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 636 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.uid) = lexer->aggregate((yystack_[1].value.aggr).fun, (yystack_[1].value.aggr).choice, (yystack_[1].value.aggr).elems, lexer->boundvec((yystack_[2].value.rel), (yystack_[3].value.term), (yystack_[0].value.bound).rel, (yystack_[0].value.bound).term)); }
+#line 1554 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 158:
-#line 641 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.cspelemvec) = BUILDER.cspelemvec((yystack_[5].value.cspelemvec), yylhs.location, (yystack_[3].value.termvec), (yystack_[1].value.cspaddterm), (yystack_[0].value.litvec)); }
-#line 1572 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 637 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.uid) = lexer->aggregate((yystack_[1].value.aggr).fun, (yystack_[1].value.aggr).choice, (yystack_[1].value.aggr).elems, lexer->boundvec(Relation::LEQ, TermUid(-1), (yystack_[0].value.bound).rel, (yystack_[0].value.bound).term)); }
+#line 1560 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 159:
-#line 645 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.cspelemvec) = (yystack_[0].value.cspelemvec); }
-#line 1578 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 638 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.uid) = lexer->aggregate((yystack_[0].value.theoryAtom)); }
+#line 1566 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 160:
-#line 646 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.cspelemvec) = BUILDER.cspelemvec(); }
-#line 1584 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 644 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.cspelemvec) = BUILDER.cspelemvec(BUILDER.cspelemvec(), yylhs.location, (yystack_[3].value.termvec), (yystack_[1].value.cspaddterm), (yystack_[0].value.litvec)); }
+#line 1572 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 161:
-#line 650 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.disjoint) = { NAF::POS, (yystack_[1].value.cspelemvec) }; }
-#line 1590 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 645 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.cspelemvec) = BUILDER.cspelemvec((yystack_[5].value.cspelemvec), yylhs.location, (yystack_[3].value.termvec), (yystack_[1].value.cspaddterm), (yystack_[0].value.litvec)); }
+#line 1578 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 162:
-#line 651 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.disjoint) = { NAF::NOT, (yystack_[1].value.cspelemvec) }; }
-#line 1596 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 649 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.cspelemvec) = (yystack_[0].value.cspelemvec); }
+#line 1584 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 163:
-#line 652 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.disjoint) = { NAF::NOTNOT, (yystack_[1].value.cspelemvec) }; }
-#line 1602 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 650 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.cspelemvec) = BUILDER.cspelemvec(); }
+#line 1590 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 164:
-#line 659 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.lbodyaggrelem) = { (yystack_[2].value.lit), (yystack_[0].value.litvec) }; }
-#line 1608 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 654 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.disjoint) = { NAF::POS, (yystack_[1].value.cspelemvec) }; }
+#line 1596 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+    break;
+
+  case 165:
+#line 655 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.disjoint) = { NAF::NOT, (yystack_[1].value.cspelemvec) }; }
+#line 1602 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+    break;
+
+  case 166:
+#line 656 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.disjoint) = { NAF::NOTNOT, (yystack_[1].value.cspelemvec) }; }
+#line 1608 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 167:
-#line 671 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.condlitlist) = BUILDER.condlitvec((yystack_[2].value.condlitlist), (yystack_[1].value.lit), BUILDER.litvec()); }
-#line 1614 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
-    break;
-
-  case 168:
-#line 672 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.condlitlist) = BUILDER.condlitvec((yystack_[3].value.condlitlist), (yystack_[2].value.lit), (yystack_[1].value.litvec)); }
-#line 1620 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
-    break;
-
-  case 169:
-#line 673 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.condlitlist) = BUILDER.condlitvec(); }
-#line 1626 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 663 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.lbodyaggrelem) = { (yystack_[2].value.lit), (yystack_[0].value.litvec) }; }
+#line 1614 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 170:
-#line 678 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.condlitlist) = BUILDER.condlitvec(BUILDER.condlitvec((yystack_[2].value.condlitlist), (yystack_[1].value.lit), (yystack_[0].value.litvec)), (yystack_[4].value.lit), BUILDER.litvec()); }
-#line 1632 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 675 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.condlitlist) = BUILDER.condlitvec((yystack_[2].value.condlitlist), (yystack_[1].value.lit), BUILDER.litvec()); }
+#line 1620 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 171:
-#line 679 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.condlitlist) = BUILDER.condlitvec(BUILDER.condlitvec((yystack_[2].value.condlitlist), (yystack_[1].value.lit), (yystack_[0].value.litvec)), (yystack_[4].value.lit), BUILDER.litvec()); }
-#line 1638 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 676 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.condlitlist) = BUILDER.condlitvec((yystack_[3].value.condlitlist), (yystack_[2].value.lit), (yystack_[1].value.litvec)); }
+#line 1626 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 172:
-#line 680 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.condlitlist) = BUILDER.condlitvec(BUILDER.condlitvec((yystack_[2].value.condlitlist), (yystack_[1].value.lit), (yystack_[0].value.litvec)), (yystack_[6].value.lit), (yystack_[4].value.litvec)); }
-#line 1644 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 677 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.condlitlist) = BUILDER.condlitvec(); }
+#line 1632 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 173:
-#line 681 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.condlitlist) = BUILDER.condlitvec(BUILDER.condlitvec(), (yystack_[2].value.lit), (yystack_[0].value.litvec)); }
-#line 1650 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 682 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.condlitlist) = BUILDER.condlitvec(BUILDER.condlitvec((yystack_[2].value.condlitlist), (yystack_[1].value.lit), (yystack_[0].value.litvec)), (yystack_[4].value.lit), BUILDER.litvec()); }
+#line 1638 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 174:
-#line 688 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.body) = BUILDER.bodylit((yystack_[2].value.body), (yystack_[1].value.lit)); }
-#line 1656 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 683 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.condlitlist) = BUILDER.condlitvec(BUILDER.condlitvec((yystack_[2].value.condlitlist), (yystack_[1].value.lit), (yystack_[0].value.litvec)), (yystack_[4].value.lit), BUILDER.litvec()); }
+#line 1644 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 175:
-#line 689 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.body) = BUILDER.bodylit((yystack_[2].value.body), (yystack_[1].value.lit)); }
-#line 1662 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 684 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.condlitlist) = BUILDER.condlitvec(BUILDER.condlitvec((yystack_[2].value.condlitlist), (yystack_[1].value.lit), (yystack_[0].value.litvec)), (yystack_[6].value.lit), (yystack_[4].value.litvec)); }
+#line 1650 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 176:
-#line 690 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.body) = lexer->bodyaggregate((yystack_[2].value.body), yystack_[1].location, NAF::POS, (yystack_[1].value.uid)); }
-#line 1668 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 685 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.condlitlist) = BUILDER.condlitvec(BUILDER.condlitvec(), (yystack_[2].value.lit), (yystack_[0].value.litvec)); }
+#line 1656 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 177:
-#line 691 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.body) = lexer->bodyaggregate((yystack_[2].value.body), yystack_[1].location, NAF::POS, (yystack_[1].value.uid)); }
-#line 1674 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 692 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.body) = BUILDER.bodylit((yystack_[2].value.body), (yystack_[1].value.lit)); }
+#line 1662 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 178:
-#line 692 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.body) = lexer->bodyaggregate((yystack_[3].value.body), yystack_[1].location + yystack_[2].location, NAF::NOT, (yystack_[1].value.uid)); }
-#line 1680 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 693 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.body) = BUILDER.bodylit((yystack_[2].value.body), (yystack_[1].value.lit)); }
+#line 1668 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 179:
-#line 693 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.body) = lexer->bodyaggregate((yystack_[3].value.body), yystack_[1].location + yystack_[2].location, NAF::NOT, (yystack_[1].value.uid)); }
-#line 1686 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 694 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.body) = lexer->bodyaggregate((yystack_[2].value.body), yystack_[1].location, NAF::POS, (yystack_[1].value.uid)); }
+#line 1674 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 180:
-#line 694 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.body) = lexer->bodyaggregate((yystack_[4].value.body), yystack_[1].location + yystack_[3].location, NAF::NOTNOT, (yystack_[1].value.uid)); }
-#line 1692 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 695 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.body) = lexer->bodyaggregate((yystack_[2].value.body), yystack_[1].location, NAF::POS, (yystack_[1].value.uid)); }
+#line 1680 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 181:
-#line 695 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.body) = lexer->bodyaggregate((yystack_[4].value.body), yystack_[1].location + yystack_[3].location, NAF::NOTNOT, (yystack_[1].value.uid)); }
-#line 1698 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 696 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.body) = lexer->bodyaggregate((yystack_[3].value.body), yystack_[1].location + yystack_[2].location, NAF::NOT, (yystack_[1].value.uid)); }
+#line 1686 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 182:
-#line 696 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.body) = BUILDER.conjunction((yystack_[2].value.body), yystack_[1].location, (yystack_[1].value.lbodyaggrelem).first, (yystack_[1].value.lbodyaggrelem).second); }
-#line 1704 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 697 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.body) = lexer->bodyaggregate((yystack_[3].value.body), yystack_[1].location + yystack_[2].location, NAF::NOT, (yystack_[1].value.uid)); }
+#line 1692 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 183:
-#line 697 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.body) = BUILDER.disjoint((yystack_[2].value.body), yystack_[1].location, (yystack_[1].value.disjoint).first, (yystack_[1].value.disjoint).second); }
-#line 1710 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 698 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.body) = lexer->bodyaggregate((yystack_[4].value.body), yystack_[1].location + yystack_[3].location, NAF::NOTNOT, (yystack_[1].value.uid)); }
+#line 1698 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 184:
-#line 698 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.body) = BUILDER.body(); }
-#line 1716 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 699 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.body) = lexer->bodyaggregate((yystack_[4].value.body), yystack_[1].location + yystack_[3].location, NAF::NOTNOT, (yystack_[1].value.uid)); }
+#line 1704 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 185:
-#line 702 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.body) = BUILDER.bodylit((yystack_[2].value.body), (yystack_[1].value.lit)); }
-#line 1722 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 700 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.body) = BUILDER.conjunction((yystack_[2].value.body), yystack_[1].location, (yystack_[1].value.lbodyaggrelem).first, (yystack_[1].value.lbodyaggrelem).second); }
+#line 1710 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 186:
-#line 703 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.body) = lexer->bodyaggregate((yystack_[2].value.body), yystack_[1].location, NAF::POS, (yystack_[1].value.uid)); }
-#line 1728 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 701 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.body) = BUILDER.disjoint((yystack_[2].value.body), yystack_[1].location, (yystack_[1].value.disjoint).first, (yystack_[1].value.disjoint).second); }
+#line 1716 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 187:
-#line 704 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.body) = lexer->bodyaggregate((yystack_[3].value.body), yystack_[1].location + yystack_[2].location, NAF::NOT, (yystack_[1].value.uid)); }
-#line 1734 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 702 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.body) = BUILDER.body(); }
+#line 1722 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 188:
-#line 705 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.body) = lexer->bodyaggregate((yystack_[4].value.body), yystack_[1].location + yystack_[3].location, NAF::NOTNOT, (yystack_[1].value.uid)); }
-#line 1740 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 706 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.body) = BUILDER.bodylit((yystack_[2].value.body), (yystack_[1].value.lit)); }
+#line 1728 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 189:
-#line 706 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.body) = BUILDER.conjunction((yystack_[2].value.body), yystack_[1].location, (yystack_[1].value.lbodyaggrelem).first, (yystack_[1].value.lbodyaggrelem).second); }
-#line 1746 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 707 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.body) = lexer->bodyaggregate((yystack_[2].value.body), yystack_[1].location, NAF::POS, (yystack_[1].value.uid)); }
+#line 1734 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 190:
-#line 707 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.body) = BUILDER.disjoint((yystack_[2].value.body), yystack_[1].location, (yystack_[1].value.disjoint).first, (yystack_[1].value.disjoint).second); }
-#line 1752 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 708 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.body) = lexer->bodyaggregate((yystack_[3].value.body), yystack_[1].location + yystack_[2].location, NAF::NOT, (yystack_[1].value.uid)); }
+#line 1740 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 191:
-#line 711 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.body) = BUILDER.body(); }
-#line 1758 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 709 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.body) = lexer->bodyaggregate((yystack_[4].value.body), yystack_[1].location + yystack_[3].location, NAF::NOTNOT, (yystack_[1].value.uid)); }
+#line 1746 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 192:
-#line 712 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.body) = BUILDER.body(); }
-#line 1764 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 710 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.body) = BUILDER.conjunction((yystack_[2].value.body), yystack_[1].location, (yystack_[1].value.lbodyaggrelem).first, (yystack_[1].value.lbodyaggrelem).second); }
+#line 1752 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 193:
-#line 713 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.body) = (yystack_[0].value.body); }
-#line 1770 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 711 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.body) = BUILDER.disjoint((yystack_[2].value.body), yystack_[1].location, (yystack_[1].value.disjoint).first, (yystack_[1].value.disjoint).second); }
+#line 1758 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 194:
-#line 716 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.head) = BUILDER.headlit((yystack_[0].value.lit)); }
-#line 1776 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 715 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.body) = BUILDER.body(); }
+#line 1764 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 195:
-#line 717 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.head) = BUILDER.disjunction(yylhs.location, (yystack_[0].value.condlitlist)); }
-#line 1782 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 716 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.body) = BUILDER.body(); }
+#line 1770 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 196:
-#line 718 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.head) = lexer->headaggregate(yylhs.location, (yystack_[0].value.uid)); }
-#line 1788 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 717 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.body) = (yystack_[0].value.body); }
+#line 1776 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 197:
-#line 722 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { BUILDER.rule(yylhs.location, (yystack_[1].value.head)); }
-#line 1794 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 720 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.head) = BUILDER.headlit((yystack_[0].value.lit)); }
+#line 1782 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 198:
-#line 723 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { BUILDER.rule(yylhs.location, (yystack_[2].value.head)); }
-#line 1800 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 721 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.head) = BUILDER.disjunction(yylhs.location, (yystack_[0].value.condlitlist)); }
+#line 1788 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 199:
-#line 724 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { BUILDER.rule(yylhs.location, (yystack_[2].value.head), (yystack_[0].value.body)); }
-#line 1806 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 722 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.head) = lexer->headaggregate(yylhs.location, (yystack_[0].value.uid)); }
+#line 1794 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 200:
-#line 725 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { BUILDER.rule(yylhs.location, BUILDER.headlit(BUILDER.boollit(yylhs.location, false)), (yystack_[0].value.body)); }
-#line 1812 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 726 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { BUILDER.rule(yylhs.location, (yystack_[1].value.head)); }
+#line 1800 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 201:
-#line 726 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { BUILDER.rule(yylhs.location, BUILDER.headlit(BUILDER.boollit(yylhs.location, false)), BUILDER.body()); }
-#line 1818 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 727 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { BUILDER.rule(yylhs.location, (yystack_[2].value.head)); }
+#line 1806 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 202:
-#line 732 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { BUILDER.rule(yylhs.location, BUILDER.headlit(BUILDER.boollit(yystack_[2].location, false)), BUILDER.disjoint((yystack_[0].value.body), yystack_[2].location, inv((yystack_[2].value.disjoint).first), (yystack_[2].value.disjoint).second)); }
-#line 1824 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 728 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { BUILDER.rule(yylhs.location, (yystack_[2].value.head), (yystack_[0].value.body)); }
+#line 1812 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 203:
-#line 733 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { BUILDER.rule(yylhs.location, BUILDER.headlit(BUILDER.boollit(yystack_[2].location, false)), BUILDER.disjoint(BUILDER.body(), yystack_[2].location, inv((yystack_[2].value.disjoint).first), (yystack_[2].value.disjoint).second)); }
-#line 1830 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 729 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { BUILDER.rule(yylhs.location, BUILDER.headlit(BUILDER.boollit(yylhs.location, false)), (yystack_[0].value.body)); }
+#line 1818 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 204:
-#line 734 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { BUILDER.rule(yylhs.location, BUILDER.headlit(BUILDER.boollit(yystack_[1].location, false)), BUILDER.disjoint(BUILDER.body(), yystack_[1].location, inv((yystack_[1].value.disjoint).first), (yystack_[1].value.disjoint).second)); }
-#line 1836 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 730 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { BUILDER.rule(yylhs.location, BUILDER.headlit(BUILDER.boollit(yylhs.location, false)), BUILDER.body()); }
+#line 1824 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 205:
-#line 740 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.termvec) = (yystack_[0].value.termvec); }
-#line 1842 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 736 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { BUILDER.rule(yylhs.location, BUILDER.headlit(BUILDER.boollit(yystack_[2].location, false)), BUILDER.disjoint((yystack_[0].value.body), yystack_[2].location, inv((yystack_[2].value.disjoint).first), (yystack_[2].value.disjoint).second)); }
+#line 1830 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 206:
-#line 741 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.termvec) = BUILDER.termvec(); }
-#line 1848 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 737 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { BUILDER.rule(yylhs.location, BUILDER.headlit(BUILDER.boollit(yystack_[2].location, false)), BUILDER.disjoint(BUILDER.body(), yystack_[2].location, inv((yystack_[2].value.disjoint).first), (yystack_[2].value.disjoint).second)); }
+#line 1836 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 207:
-#line 745 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.termpair) = {(yystack_[2].value.term), (yystack_[0].value.term)}; }
-#line 1854 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 738 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { BUILDER.rule(yylhs.location, BUILDER.headlit(BUILDER.boollit(yystack_[1].location, false)), BUILDER.disjoint(BUILDER.body(), yystack_[1].location, inv((yystack_[1].value.disjoint).first), (yystack_[1].value.disjoint).second)); }
+#line 1842 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 208:
-#line 746 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.termpair) = {(yystack_[0].value.term), BUILDER.term(yylhs.location, Symbol::createNum(0))}; }
-#line 1860 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 744 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.termvec) = (yystack_[0].value.termvec); }
+#line 1848 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 209:
-#line 750 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.body) = BUILDER.bodylit(BUILDER.body(), (yystack_[0].value.lit)); }
-#line 1866 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 745 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.termvec) = BUILDER.termvec(); }
+#line 1854 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 210:
-#line 751 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.body) = BUILDER.bodylit((yystack_[2].value.body), (yystack_[0].value.lit)); }
-#line 1872 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 749 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.termpair) = {(yystack_[2].value.term), (yystack_[0].value.term)}; }
+#line 1860 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 211:
-#line 755 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.body) = (yystack_[0].value.body); }
-#line 1878 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 750 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.termpair) = {(yystack_[0].value.term), BUILDER.term(yylhs.location, Symbol::createNum(0))}; }
+#line 1866 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 212:
-#line 756 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.body) = BUILDER.body(); }
-#line 1884 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 754 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.body) = BUILDER.bodylit(BUILDER.body(), (yystack_[0].value.lit)); }
+#line 1872 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 213:
-#line 757 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.body) = BUILDER.body(); }
-#line 1890 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 755 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.body) = BUILDER.bodylit((yystack_[2].value.body), (yystack_[0].value.lit)); }
+#line 1878 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 214:
-#line 761 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { BUILDER.optimize(yylhs.location, (yystack_[2].value.termpair).first, (yystack_[2].value.termpair).second, (yystack_[1].value.termvec), (yystack_[4].value.body)); }
-#line 1896 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 759 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.body) = (yystack_[0].value.body); }
+#line 1884 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 215:
-#line 762 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { BUILDER.optimize(yylhs.location, (yystack_[2].value.termpair).first, (yystack_[2].value.termpair).second, (yystack_[1].value.termvec), BUILDER.body()); }
-#line 1902 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 760 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.body) = BUILDER.body(); }
+#line 1890 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 216:
-#line 766 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { BUILDER.optimize(yylhs.location, BUILDER.term(yystack_[2].location, UnOp::NEG, (yystack_[2].value.termpair).first), (yystack_[2].value.termpair).second, (yystack_[1].value.termvec), (yystack_[0].value.body)); }
-#line 1908 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 761 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.body) = BUILDER.body(); }
+#line 1896 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 217:
-#line 767 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { BUILDER.optimize(yylhs.location, BUILDER.term(yystack_[2].location, UnOp::NEG, (yystack_[2].value.termpair).first), (yystack_[2].value.termpair).second, (yystack_[1].value.termvec), (yystack_[0].value.body)); }
-#line 1914 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 765 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { BUILDER.optimize(yylhs.location, (yystack_[2].value.termpair).first, (yystack_[2].value.termpair).second, (yystack_[1].value.termvec), (yystack_[4].value.body)); }
+#line 1902 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 218:
-#line 771 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { BUILDER.optimize(yylhs.location, (yystack_[2].value.termpair).first, (yystack_[2].value.termpair).second, (yystack_[1].value.termvec), (yystack_[0].value.body)); }
-#line 1920 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 766 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { BUILDER.optimize(yylhs.location, (yystack_[2].value.termpair).first, (yystack_[2].value.termpair).second, (yystack_[1].value.termvec), BUILDER.body()); }
+#line 1908 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 219:
-#line 772 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 770 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { BUILDER.optimize(yylhs.location, BUILDER.term(yystack_[2].location, UnOp::NEG, (yystack_[2].value.termpair).first), (yystack_[2].value.termpair).second, (yystack_[1].value.termvec), (yystack_[0].value.body)); }
+#line 1914 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+    break;
+
+  case 220:
+#line 771 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { BUILDER.optimize(yylhs.location, BUILDER.term(yystack_[2].location, UnOp::NEG, (yystack_[2].value.termpair).first), (yystack_[2].value.termpair).second, (yystack_[1].value.termvec), (yystack_[0].value.body)); }
+#line 1920 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+    break;
+
+  case 221:
+#line 775 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { BUILDER.optimize(yylhs.location, (yystack_[2].value.termpair).first, (yystack_[2].value.termpair).second, (yystack_[1].value.termvec), (yystack_[0].value.body)); }
-#line 1926 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1926 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
-  case 224:
-#line 785 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { BUILDER.showsig(yylhs.location, Sig(String::fromRep((yystack_[3].value.str)), (yystack_[1].value.num), false), false); }
-#line 1932 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
-    break;
-
-  case 225:
-#line 786 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { BUILDER.showsig(yylhs.location, Sig(String::fromRep((yystack_[3].value.str)), (yystack_[1].value.num), true), false); }
-#line 1938 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
-    break;
-
-  case 226:
-#line 787 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { BUILDER.showsig(yylhs.location, Sig("", 0, false), false); }
-#line 1944 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+  case 222:
+#line 776 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { BUILDER.optimize(yylhs.location, (yystack_[2].value.termpair).first, (yystack_[2].value.termpair).second, (yystack_[1].value.termvec), (yystack_[0].value.body)); }
+#line 1932 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 227:
-#line 788 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { BUILDER.show(yylhs.location, (yystack_[2].value.term), (yystack_[0].value.body), false); }
-#line 1950 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 789 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { BUILDER.showsig(yylhs.location, Sig(String::fromRep((yystack_[3].value.str)), (yystack_[1].value.num), false), false); }
+#line 1938 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 228:
-#line 789 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { BUILDER.show(yylhs.location, (yystack_[1].value.term), BUILDER.body(), false); }
-#line 1956 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 790 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { BUILDER.showsig(yylhs.location, Sig(String::fromRep((yystack_[3].value.str)), (yystack_[1].value.num), true), false); }
+#line 1944 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 229:
-#line 790 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { BUILDER.showsig(yylhs.location, Sig(String::fromRep((yystack_[3].value.str)), (yystack_[1].value.num), false), true); }
-#line 1962 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 791 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { BUILDER.showsig(yylhs.location, Sig("", 0, false), false); }
+#line 1950 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 230:
-#line 791 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { BUILDER.show(yylhs.location, (yystack_[2].value.term), (yystack_[0].value.body), true); }
-#line 1968 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 792 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { BUILDER.show(yylhs.location, (yystack_[2].value.term), (yystack_[0].value.body), false); }
+#line 1956 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 231:
-#line 792 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { BUILDER.show(yylhs.location, (yystack_[1].value.term), BUILDER.body(), true); }
-#line 1974 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 793 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { BUILDER.show(yylhs.location, (yystack_[1].value.term), BUILDER.body(), false); }
+#line 1962 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 232:
-#line 798 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { BUILDER.edge(yylhs.location, (yystack_[2].value.termvecvec), (yystack_[0].value.body)); }
-#line 1980 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 794 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { BUILDER.showsig(yylhs.location, Sig(String::fromRep((yystack_[3].value.str)), (yystack_[1].value.num), false), true); }
+#line 1968 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 233:
-#line 804 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { BUILDER.heuristic(yylhs.location, (yystack_[8].value.term), (yystack_[7].value.body), (yystack_[5].value.term), (yystack_[3].value.term), (yystack_[1].value.term)); }
-#line 1986 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 795 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { BUILDER.show(yylhs.location, (yystack_[2].value.term), (yystack_[0].value.body), true); }
+#line 1974 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 234:
-#line 805 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { BUILDER.heuristic(yylhs.location, (yystack_[6].value.term), (yystack_[5].value.body), (yystack_[3].value.term), BUILDER.term(yylhs.location, Symbol::createNum(0)), (yystack_[1].value.term)); }
-#line 1992 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 796 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { BUILDER.show(yylhs.location, (yystack_[1].value.term), BUILDER.body(), true); }
+#line 1980 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 235:
-#line 811 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { BUILDER.project(yylhs.location, Sig(String::fromRep((yystack_[3].value.str)), (yystack_[1].value.num), false)); }
-#line 1998 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 802 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { BUILDER.edge(yylhs.location, (yystack_[2].value.termvecvec), (yystack_[0].value.body)); }
+#line 1986 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 236:
-#line 812 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { BUILDER.project(yylhs.location, Sig(String::fromRep((yystack_[3].value.str)), (yystack_[1].value.num), true)); }
-#line 2004 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 808 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { BUILDER.heuristic(yylhs.location, (yystack_[8].value.term), (yystack_[7].value.body), (yystack_[5].value.term), (yystack_[3].value.term), (yystack_[1].value.term)); }
+#line 1992 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 237:
-#line 813 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { BUILDER.project(yylhs.location, (yystack_[1].value.term), (yystack_[0].value.body)); }
-#line 2010 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 809 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { BUILDER.heuristic(yylhs.location, (yystack_[6].value.term), (yystack_[5].value.body), (yystack_[3].value.term), BUILDER.term(yylhs.location, Symbol::createNum(0)), (yystack_[1].value.term)); }
+#line 1998 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 238:
-#line 819 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    {  BUILDER.define(yylhs.location, String::fromRep((yystack_[2].value.str)), (yystack_[0].value.term), false, LOGGER); }
-#line 2016 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 815 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { BUILDER.project(yylhs.location, Sig(String::fromRep((yystack_[3].value.str)), (yystack_[1].value.num), false)); }
+#line 2004 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 239:
-#line 823 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    {  BUILDER.define(yylhs.location, String::fromRep((yystack_[3].value.str)), (yystack_[1].value.term), true, LOGGER); }
-#line 2022 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 816 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { BUILDER.project(yylhs.location, Sig(String::fromRep((yystack_[3].value.str)), (yystack_[1].value.num), true)); }
+#line 2010 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 240:
-#line 829 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { BUILDER.python(yylhs.location, String::fromRep((yystack_[1].value.str))); }
-#line 2028 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 817 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { BUILDER.project(yylhs.location, (yystack_[1].value.term), (yystack_[0].value.body)); }
+#line 2016 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 241:
-#line 830 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { BUILDER.lua(yylhs.location, String::fromRep((yystack_[1].value.str))); }
-#line 2034 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 823 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    {  BUILDER.define(yylhs.location, String::fromRep((yystack_[2].value.str)), (yystack_[0].value.term), false, LOGGER); }
+#line 2022 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 242:
-#line 836 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { lexer->include(String::fromRep((yystack_[1].value.str)), yylhs.location, false, LOGGER); }
-#line 2040 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 827 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    {  BUILDER.define(yylhs.location, String::fromRep((yystack_[3].value.str)), (yystack_[1].value.term), true, LOGGER); }
+#line 2028 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 243:
-#line 837 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { lexer->include(String::fromRep((yystack_[2].value.str)), yylhs.location, true, LOGGER); }
-#line 2046 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 833 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { BUILDER.python(yylhs.location, String::fromRep((yystack_[1].value.str))); }
+#line 2034 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 244:
-#line 843 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.idlist) = BUILDER.idvec((yystack_[2].value.idlist), yystack_[0].location, String::fromRep((yystack_[0].value.str))); }
-#line 2052 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 834 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { BUILDER.lua(yylhs.location, String::fromRep((yystack_[1].value.str))); }
+#line 2040 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 245:
-#line 844 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.idlist) = BUILDER.idvec(BUILDER.idvec(), yystack_[0].location, String::fromRep((yystack_[0].value.str))); }
-#line 2058 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 840 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { lexer->include(String::fromRep((yystack_[1].value.str)), yylhs.location, false, LOGGER); }
+#line 2046 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 246:
-#line 848 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.idlist) = BUILDER.idvec(); }
-#line 2064 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 841 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { lexer->include(String::fromRep((yystack_[2].value.str)), yylhs.location, true, LOGGER); }
+#line 2052 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 247:
-#line 849 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.idlist) = (yystack_[0].value.idlist); }
-#line 2070 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 847 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.idlist) = BUILDER.idvec((yystack_[2].value.idlist), yystack_[0].location, String::fromRep((yystack_[0].value.str))); }
+#line 2058 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 248:
-#line 853 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { BUILDER.block(yylhs.location, String::fromRep((yystack_[4].value.str)), (yystack_[2].value.idlist)); }
-#line 2076 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 848 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.idlist) = BUILDER.idvec(BUILDER.idvec(), yystack_[0].location, String::fromRep((yystack_[0].value.str))); }
+#line 2064 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 249:
-#line 854 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { BUILDER.block(yylhs.location, String::fromRep((yystack_[1].value.str)), BUILDER.idvec()); }
-#line 2082 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 852 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.idlist) = BUILDER.idvec(); }
+#line 2070 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 250:
-#line 860 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { BUILDER.external(yylhs.location, (yystack_[2].value.term), (yystack_[0].value.body)); }
-#line 2088 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 853 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.idlist) = (yystack_[0].value.idlist); }
+#line 2076 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 251:
-#line 861 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { BUILDER.external(yylhs.location, (yystack_[2].value.term), BUILDER.body()); }
-#line 2094 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 857 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { BUILDER.block(yylhs.location, String::fromRep((yystack_[4].value.str)), (yystack_[2].value.idlist)); }
+#line 2082 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 252:
-#line 862 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { BUILDER.external(yylhs.location, (yystack_[1].value.term), BUILDER.body()); }
-#line 2100 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 858 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { BUILDER.block(yylhs.location, String::fromRep((yystack_[1].value.str)), BUILDER.idvec()); }
+#line 2088 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 253:
-#line 870 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.theoryOps) = BUILDER.theoryops((yystack_[1].value.theoryOps), String::fromRep((yystack_[0].value.str))); }
-#line 2106 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 864 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { BUILDER.external(yylhs.location, (yystack_[2].value.term), (yystack_[0].value.body)); }
+#line 2094 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 254:
-#line 871 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.theoryOps) = BUILDER.theoryops(BUILDER.theoryops(), String::fromRep((yystack_[0].value.str))); }
-#line 2112 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 865 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { BUILDER.external(yylhs.location, (yystack_[2].value.term), BUILDER.body()); }
+#line 2100 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 255:
-#line 875 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.theoryTerm) = BUILDER.theorytermset(yylhs.location, (yystack_[1].value.theoryOpterms)); }
-#line 2118 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 866 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { BUILDER.external(yylhs.location, (yystack_[1].value.term), BUILDER.body()); }
+#line 2106 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 256:
-#line 876 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.theoryTerm) = BUILDER.theoryoptermlist(yylhs.location, (yystack_[1].value.theoryOpterms)); }
-#line 2124 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 874 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.theoryOps) = BUILDER.theoryops((yystack_[1].value.theoryOps), String::fromRep((yystack_[0].value.str))); }
+#line 2112 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 257:
-#line 877 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.theoryTerm) = BUILDER.theorytermtuple(yylhs.location, BUILDER.theoryopterms()); }
-#line 2130 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 875 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.theoryOps) = BUILDER.theoryops(BUILDER.theoryops(), String::fromRep((yystack_[0].value.str))); }
+#line 2118 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 258:
-#line 878 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.theoryTerm) = BUILDER.theorytermopterm(yylhs.location, (yystack_[1].value.theoryOpterm)); }
-#line 2136 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 879 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.theoryTerm) = BUILDER.theorytermset(yylhs.location, (yystack_[1].value.theoryOpterms)); }
+#line 2124 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 259:
-#line 879 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.theoryTerm) = BUILDER.theorytermtuple(yylhs.location, BUILDER.theoryopterms(BUILDER.theoryopterms(), yystack_[2].location, (yystack_[2].value.theoryOpterm))); }
-#line 2142 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 880 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.theoryTerm) = BUILDER.theoryoptermlist(yylhs.location, (yystack_[1].value.theoryOpterms)); }
+#line 2130 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 260:
-#line 880 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.theoryTerm) = BUILDER.theorytermtuple(yylhs.location, BUILDER.theoryopterms(yystack_[3].location, (yystack_[3].value.theoryOpterm), (yystack_[1].value.theoryOpterms))); }
-#line 2148 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 881 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.theoryTerm) = BUILDER.theorytermtuple(yylhs.location, BUILDER.theoryopterms()); }
+#line 2136 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 261:
-#line 881 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.theoryTerm) = BUILDER.theorytermfun(yylhs.location, String::fromRep((yystack_[3].value.str)), (yystack_[1].value.theoryOpterms)); }
-#line 2154 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 882 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.theoryTerm) = BUILDER.theorytermopterm(yylhs.location, (yystack_[1].value.theoryOpterm)); }
+#line 2142 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 262:
-#line 882 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.theoryTerm) = BUILDER.theorytermvalue(yylhs.location, Symbol::createId(String::fromRep((yystack_[0].value.str)))); }
-#line 2160 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 883 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.theoryTerm) = BUILDER.theorytermtuple(yylhs.location, BUILDER.theoryopterms(BUILDER.theoryopterms(), yystack_[2].location, (yystack_[2].value.theoryOpterm))); }
+#line 2148 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 263:
-#line 883 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.theoryTerm) = BUILDER.theorytermvalue(yylhs.location, Symbol::createNum((yystack_[0].value.num))); }
-#line 2166 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 884 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.theoryTerm) = BUILDER.theorytermtuple(yylhs.location, BUILDER.theoryopterms(yystack_[3].location, (yystack_[3].value.theoryOpterm), (yystack_[1].value.theoryOpterms))); }
+#line 2154 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 264:
-#line 884 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.theoryTerm) = BUILDER.theorytermvalue(yylhs.location, Symbol::createStr(String::fromRep((yystack_[0].value.str)))); }
-#line 2172 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 885 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.theoryTerm) = BUILDER.theorytermfun(yylhs.location, String::fromRep((yystack_[3].value.str)), (yystack_[1].value.theoryOpterms)); }
+#line 2160 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 265:
-#line 885 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.theoryTerm) = BUILDER.theorytermvalue(yylhs.location, Symbol::createInf()); }
-#line 2178 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 886 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.theoryTerm) = BUILDER.theorytermvalue(yylhs.location, Symbol::createId(String::fromRep((yystack_[0].value.str)))); }
+#line 2166 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 266:
-#line 886 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.theoryTerm) = BUILDER.theorytermvalue(yylhs.location, Symbol::createSup()); }
-#line 2184 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 887 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.theoryTerm) = BUILDER.theorytermvalue(yylhs.location, Symbol::createNum((yystack_[0].value.num))); }
+#line 2172 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 267:
-#line 887 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.theoryTerm) = BUILDER.theorytermvar(yylhs.location, String::fromRep((yystack_[0].value.str))); }
-#line 2190 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 888 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.theoryTerm) = BUILDER.theorytermvalue(yylhs.location, Symbol::createStr(String::fromRep((yystack_[0].value.str)))); }
+#line 2178 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 268:
-#line 891 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.theoryOpterm) = BUILDER.theoryopterm((yystack_[2].value.theoryOpterm), (yystack_[1].value.theoryOps), (yystack_[0].value.theoryTerm)); }
-#line 2196 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 889 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.theoryTerm) = BUILDER.theorytermvalue(yylhs.location, Symbol::createInf()); }
+#line 2184 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 269:
-#line 892 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.theoryOpterm) = BUILDER.theoryopterm((yystack_[1].value.theoryOps), (yystack_[0].value.theoryTerm)); }
-#line 2202 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 890 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.theoryTerm) = BUILDER.theorytermvalue(yylhs.location, Symbol::createSup()); }
+#line 2190 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 270:
-#line 893 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.theoryOpterm) = BUILDER.theoryopterm(BUILDER.theoryops(), (yystack_[0].value.theoryTerm)); }
-#line 2208 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 891 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.theoryTerm) = BUILDER.theorytermvar(yylhs.location, String::fromRep((yystack_[0].value.str))); }
+#line 2196 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 271:
-#line 897 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.theoryOpterms) = BUILDER.theoryopterms((yystack_[2].value.theoryOpterms), yystack_[0].location, (yystack_[0].value.theoryOpterm)); }
-#line 2214 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 895 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.theoryOpterm) = BUILDER.theoryopterm((yystack_[2].value.theoryOpterm), (yystack_[1].value.theoryOps), (yystack_[0].value.theoryTerm)); }
+#line 2202 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 272:
-#line 898 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.theoryOpterms) = BUILDER.theoryopterms(BUILDER.theoryopterms(), yystack_[0].location, (yystack_[0].value.theoryOpterm)); }
-#line 2220 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 896 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.theoryOpterm) = BUILDER.theoryopterm((yystack_[1].value.theoryOps), (yystack_[0].value.theoryTerm)); }
+#line 2208 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 273:
-#line 902 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.theoryOpterms) = (yystack_[0].value.theoryOpterms); }
-#line 2226 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 897 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.theoryOpterm) = BUILDER.theoryopterm(BUILDER.theoryops(), (yystack_[0].value.theoryTerm)); }
+#line 2214 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 274:
-#line 903 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.theoryOpterms) = BUILDER.theoryopterms(); }
-#line 2232 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 901 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.theoryOpterms) = BUILDER.theoryopterms((yystack_[2].value.theoryOpterms), yystack_[0].location, (yystack_[0].value.theoryOpterm)); }
+#line 2220 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 275:
-#line 907 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.theoryElem) = { (yystack_[2].value.theoryOpterms), (yystack_[0].value.litvec) }; }
-#line 2238 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 902 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.theoryOpterms) = BUILDER.theoryopterms(BUILDER.theoryopterms(), yystack_[0].location, (yystack_[0].value.theoryOpterm)); }
+#line 2226 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 276:
-#line 908 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.theoryElem) = { BUILDER.theoryopterms(), (yystack_[0].value.litvec) }; }
-#line 2244 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 906 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.theoryOpterms) = (yystack_[0].value.theoryOpterms); }
+#line 2232 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 277:
-#line 912 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.theoryElems) = BUILDER.theoryelems((yystack_[3].value.theoryElems), (yystack_[0].value.theoryElem).first, (yystack_[0].value.theoryElem).second); }
-#line 2250 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 907 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.theoryOpterms) = BUILDER.theoryopterms(); }
+#line 2238 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 278:
-#line 913 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.theoryElems) = BUILDER.theoryelems(BUILDER.theoryelems(), (yystack_[0].value.theoryElem).first, (yystack_[0].value.theoryElem).second); }
-#line 2256 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 911 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.theoryElem) = { (yystack_[2].value.theoryOpterms), (yystack_[0].value.litvec) }; }
+#line 2244 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 279:
-#line 917 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.theoryElems) = (yystack_[0].value.theoryElems); }
-#line 2262 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 912 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.theoryElem) = { BUILDER.theoryopterms(), (yystack_[0].value.litvec) }; }
+#line 2250 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 280:
-#line 918 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.theoryElems) = BUILDER.theoryelems(); }
-#line 2268 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 916 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.theoryElems) = BUILDER.theoryelems((yystack_[3].value.theoryElems), (yystack_[0].value.theoryElem).first, (yystack_[0].value.theoryElem).second); }
+#line 2256 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 281:
-#line 922 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.term) = BUILDER.term(yylhs.location, String::fromRep((yystack_[0].value.str)), BUILDER.termvecvec(BUILDER.termvecvec(), BUILDER.termvec()), false); }
-#line 2274 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 917 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.theoryElems) = BUILDER.theoryelems(BUILDER.theoryelems(), (yystack_[0].value.theoryElem).first, (yystack_[0].value.theoryElem).second); }
+#line 2262 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 282:
-#line 923 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.term) = BUILDER.term(yylhs.location, String::fromRep((yystack_[3].value.str)), (yystack_[1].value.termvecvec), false); }
-#line 2280 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 921 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.theoryElems) = (yystack_[0].value.theoryElems); }
+#line 2268 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 283:
-#line 926 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.theoryAtom) = BUILDER.theoryatom((yystack_[6].value.term), (yystack_[3].value.theoryElems)); }
-#line 2286 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 922 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.theoryElems) = BUILDER.theoryelems(); }
+#line 2274 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 284:
-#line 927 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.theoryAtom) = BUILDER.theoryatom((yystack_[8].value.term), (yystack_[5].value.theoryElems), String::fromRep((yystack_[2].value.str)), yystack_[1].location, (yystack_[1].value.theoryOpterm)); }
-#line 2292 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 926 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.term) = BUILDER.term(yylhs.location, String::fromRep((yystack_[0].value.str)), BUILDER.termvecvec(BUILDER.termvecvec(), BUILDER.termvec()), false); }
+#line 2280 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 285:
-#line 933 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.theoryOps) = BUILDER.theoryops(BUILDER.theoryops(), String::fromRep((yystack_[0].value.str))); }
-#line 2298 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 927 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.term) = BUILDER.term(yylhs.location, String::fromRep((yystack_[3].value.str)), (yystack_[1].value.termvecvec), false); }
+#line 2286 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 286:
-#line 934 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.theoryOps) = BUILDER.theoryops((yystack_[2].value.theoryOps), String::fromRep((yystack_[0].value.str))); }
-#line 2304 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 930 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.theoryAtom) = BUILDER.theoryatom((yystack_[6].value.term), (yystack_[3].value.theoryElems)); }
+#line 2292 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 287:
-#line 938 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.theoryOps) = (yystack_[0].value.theoryOps); }
-#line 2310 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 931 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.theoryAtom) = BUILDER.theoryatom((yystack_[8].value.term), (yystack_[5].value.theoryElems), String::fromRep((yystack_[2].value.str)), yystack_[1].location, (yystack_[1].value.theoryOpterm)); }
+#line 2298 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 288:
-#line 939 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.theoryOps) = BUILDER.theoryops(); }
-#line 2316 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 937 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.theoryOps) = BUILDER.theoryops(BUILDER.theoryops(), String::fromRep((yystack_[0].value.str))); }
+#line 2304 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 289:
-#line 943 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.theoryOpDef) = BUILDER.theoryopdef(yylhs.location, String::fromRep((yystack_[5].value.str)), (yystack_[2].value.num), TheoryOperatorType::Unary); }
-#line 2322 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 938 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.theoryOps) = BUILDER.theoryops((yystack_[2].value.theoryOps), String::fromRep((yystack_[0].value.str))); }
+#line 2310 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 290:
-#line 944 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.theoryOpDef) = BUILDER.theoryopdef(yylhs.location, String::fromRep((yystack_[7].value.str)), (yystack_[4].value.num), TheoryOperatorType::BinaryLeft); }
-#line 2328 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 942 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.theoryOps) = (yystack_[0].value.theoryOps); }
+#line 2316 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 291:
-#line 945 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.theoryOpDef) = BUILDER.theoryopdef(yylhs.location, String::fromRep((yystack_[7].value.str)), (yystack_[4].value.num), TheoryOperatorType::BinaryRight); }
-#line 2334 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 943 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.theoryOps) = BUILDER.theoryops(); }
+#line 2322 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 292:
-#line 949 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.theoryOpDefs) = BUILDER.theoryopdefs(BUILDER.theoryopdefs(), (yystack_[0].value.theoryOpDef)); }
-#line 2340 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 947 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.theoryOpDef) = BUILDER.theoryopdef(yylhs.location, String::fromRep((yystack_[5].value.str)), (yystack_[2].value.num), TheoryOperatorType::Unary); }
+#line 2328 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 293:
-#line 950 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.theoryOpDefs) = BUILDER.theoryopdefs((yystack_[3].value.theoryOpDefs), (yystack_[0].value.theoryOpDef)); }
-#line 2346 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 948 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.theoryOpDef) = BUILDER.theoryopdef(yylhs.location, String::fromRep((yystack_[7].value.str)), (yystack_[4].value.num), TheoryOperatorType::BinaryLeft); }
+#line 2334 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 294:
-#line 954 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.theoryOpDefs) = (yystack_[0].value.theoryOpDefs); }
-#line 2352 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 949 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.theoryOpDef) = BUILDER.theoryopdef(yylhs.location, String::fromRep((yystack_[7].value.str)), (yystack_[4].value.num), TheoryOperatorType::BinaryRight); }
+#line 2340 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 295:
-#line 955 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.theoryOpDefs) = BUILDER.theoryopdefs(); }
-#line 2358 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 953 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.theoryOpDefs) = BUILDER.theoryopdefs(BUILDER.theoryopdefs(), (yystack_[0].value.theoryOpDef)); }
+#line 2346 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 296:
-#line 959 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.str) = (yystack_[0].value.str); }
-#line 2364 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 954 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.theoryOpDefs) = BUILDER.theoryopdefs((yystack_[3].value.theoryOpDefs), (yystack_[0].value.theoryOpDef)); }
+#line 2352 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 297:
-#line 960 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.str) = String::toRep("left"); }
-#line 2370 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 958 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.theoryOpDefs) = (yystack_[0].value.theoryOpDefs); }
+#line 2358 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 298:
-#line 961 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.str) = String::toRep("right"); }
-#line 2376 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 959 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.theoryOpDefs) = BUILDER.theoryopdefs(); }
+#line 2364 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 299:
-#line 962 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.str) = String::toRep("unary"); }
-#line 2382 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 963 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.str) = (yystack_[0].value.str); }
+#line 2370 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 300:
-#line 963 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.str) = String::toRep("binary"); }
-#line 2388 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 964 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.str) = String::toRep("left"); }
+#line 2376 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 301:
-#line 964 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.str) = String::toRep("head"); }
-#line 2394 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 965 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.str) = String::toRep("right"); }
+#line 2382 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 302:
-#line 965 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.str) = String::toRep("body"); }
-#line 2400 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 966 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.str) = String::toRep("unary"); }
+#line 2388 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 303:
-#line 966 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.str) = String::toRep("any"); }
-#line 2406 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 967 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.str) = String::toRep("binary"); }
+#line 2394 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 304:
-#line 967 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.str) = String::toRep("directive"); }
-#line 2412 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 968 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.str) = String::toRep("head"); }
+#line 2400 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 305:
-#line 971 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.theoryTermDef) = BUILDER.theorytermdef(yylhs.location, String::fromRep((yystack_[5].value.str)), (yystack_[2].value.theoryOpDefs), LOGGER); }
-#line 2418 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 969 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.str) = String::toRep("body"); }
+#line 2406 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 306:
-#line 975 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.theoryAtomType) = TheoryAtomType::Head; }
-#line 2424 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 970 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.str) = String::toRep("any"); }
+#line 2412 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 307:
-#line 976 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.theoryAtomType) = TheoryAtomType::Body; }
-#line 2430 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 971 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.str) = String::toRep("directive"); }
+#line 2418 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 308:
-#line 977 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.theoryAtomType) = TheoryAtomType::Any; }
-#line 2436 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 975 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.theoryTermDef) = BUILDER.theorytermdef(yylhs.location, String::fromRep((yystack_[5].value.str)), (yystack_[2].value.theoryOpDefs), LOGGER); }
+#line 2424 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 309:
-#line 978 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.theoryAtomType) = TheoryAtomType::Directive; }
-#line 2442 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 979 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.theoryAtomType) = TheoryAtomType::Head; }
+#line 2430 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 310:
-#line 983 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.theoryAtomDef) = BUILDER.theoryatomdef(yylhs.location, String::fromRep((yystack_[14].value.str)), (yystack_[12].value.num), String::fromRep((yystack_[10].value.str)), (yystack_[0].value.theoryAtomType), (yystack_[6].value.theoryOps), String::fromRep((yystack_[2].value.str))); }
-#line 2448 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 980 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.theoryAtomType) = TheoryAtomType::Body; }
+#line 2436 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 311:
-#line 984 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.theoryAtomDef) = BUILDER.theoryatomdef(yylhs.location, String::fromRep((yystack_[6].value.str)), (yystack_[4].value.num), String::fromRep((yystack_[2].value.str)), (yystack_[0].value.theoryAtomType)); }
-#line 2454 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 981 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.theoryAtomType) = TheoryAtomType::Any; }
+#line 2442 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 312:
-#line 988 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.theoryDefs) = BUILDER.theorydefs((yystack_[2].value.theoryDefs), (yystack_[0].value.theoryAtomDef)); }
-#line 2460 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 982 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.theoryAtomType) = TheoryAtomType::Directive; }
+#line 2448 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 313:
-#line 989 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.theoryDefs) = BUILDER.theorydefs((yystack_[2].value.theoryDefs), (yystack_[0].value.theoryTermDef)); }
-#line 2466 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 987 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.theoryAtomDef) = BUILDER.theoryatomdef(yylhs.location, String::fromRep((yystack_[14].value.str)), (yystack_[12].value.num), String::fromRep((yystack_[10].value.str)), (yystack_[0].value.theoryAtomType), (yystack_[6].value.theoryOps), String::fromRep((yystack_[2].value.str))); }
+#line 2454 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 314:
-#line 990 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.theoryDefs) = BUILDER.theorydefs(BUILDER.theorydefs(), (yystack_[0].value.theoryAtomDef)); }
-#line 2472 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 988 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.theoryAtomDef) = BUILDER.theoryatomdef(yylhs.location, String::fromRep((yystack_[6].value.str)), (yystack_[4].value.num), String::fromRep((yystack_[2].value.str)), (yystack_[0].value.theoryAtomType)); }
+#line 2460 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 315:
-#line 991 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.theoryDefs) = BUILDER.theorydefs(BUILDER.theorydefs(), (yystack_[0].value.theoryTermDef)); }
-#line 2478 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 992 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.theoryDefs) = BUILDER.theorydefs((yystack_[2].value.theoryDefs), (yystack_[0].value.theoryAtomDef)); }
+#line 2466 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 316:
-#line 995 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.theoryDefs) = (yystack_[0].value.theoryDefs); }
-#line 2484 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 993 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.theoryDefs) = BUILDER.theorydefs((yystack_[2].value.theoryDefs), (yystack_[0].value.theoryTermDef)); }
+#line 2472 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 317:
-#line 996 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { (yylhs.value.theoryDefs) = BUILDER.theorydefs(); }
-#line 2490 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 994 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.theoryDefs) = BUILDER.theorydefs(BUILDER.theorydefs(), (yystack_[0].value.theoryAtomDef)); }
+#line 2478 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 318:
-#line 1000 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { BUILDER.theorydef(yylhs.location, String::fromRep((yystack_[6].value.str)), (yystack_[3].value.theoryDefs), LOGGER); }
-#line 2496 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 995 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.theoryDefs) = BUILDER.theorydefs(BUILDER.theorydefs(), (yystack_[0].value.theoryTermDef)); }
+#line 2484 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 319:
-#line 1006 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { lexer->theoryLexing(TheoryLexing::Theory); }
-#line 2502 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 999 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.theoryDefs) = (yystack_[0].value.theoryDefs); }
+#line 2490 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 320:
-#line 1010 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
-    { lexer->theoryLexing(TheoryLexing::Definition); }
-#line 2508 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 1000 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { (yylhs.value.theoryDefs) = BUILDER.theorydefs(); }
+#line 2496 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
   case 321:
-#line 1014 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+#line 1004 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { BUILDER.theorydef(yylhs.location, String::fromRep((yystack_[6].value.str)), (yystack_[3].value.theoryDefs), LOGGER); }
+#line 2502 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+    break;
+
+  case 322:
+#line 1010 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { lexer->theoryLexing(TheoryLexing::Theory); }
+#line 2508 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+    break;
+
+  case 323:
+#line 1014 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
+    { lexer->theoryLexing(TheoryLexing::Definition); }
+#line 2514 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+    break;
+
+  case 324:
+#line 1018 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:859
     { lexer->theoryLexing(TheoryLexing::Disabled); }
-#line 2514 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2520 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
     break;
 
 
-#line 2518 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
+#line 2524 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:859
             default:
               break;
             }
@@ -2769,732 +2775,742 @@ namespace Gringo { namespace Input { namespace NonGroundGrammar {
   }
 
 
-  const short int parser::yypact_ninf_ = -514;
+  const short int parser::yypact_ninf_ = -478;
 
-  const short int parser::yytable_ninf_ = -322;
+  const short int parser::yytable_ninf_ = -325;
 
   const short int
   parser::yypact_[] =
   {
-     152,  -514,   -13,    85,   914,  -514,    94,  -514,  -514,  -514,
-     -13,   -13,  1354,   -13,  -514,  1354,    69,    70,  -514,   108,
-      24,  -514,   376,  1223,  -514,   142,  -514,   146,   560,   149,
-      91,    70,    30,  1354,  -514,  -514,  -514,  -514,   -13,  1354,
-     174,   -13,  -514,  -514,   176,   178,  -514,  -514,   983,  -514,
-    1154,  1448,  -514,    48,  -514,  1015,   612,   187,  1047,  -514,
-     160,  -514,   186,  -514,  1388,   214,   219,  -514,   225,  1354,
-     231,  -514,   245,  1704,   662,   -13,   240,    67,  -514,   336,
-    -514,   -13,   248,  -514,  1020,  1594,   271,    73,  -514,  1815,
-     278,   249,  1223,   256,  1254,  1263,  1354,  -514,  1640,  1354,
-     -13,    98,   151,   151,   -13,   -13,   247,  1883,  -514,   141,
-    1815,    14,   273,   283,  -514,  -514,  -514,   288,  -514,  -514,
-    1153,  1624,  -514,  1354,  1354,  1354,  -514,   318,  1354,  -514,
-    -514,  -514,  -514,  1354,  1354,  -514,  1354,  1354,  1354,  1354,
-    1354,  1056,  1047,   802,  -514,  -514,  -514,  -514,  1281,  1281,
-    -514,  -514,  -514,  -514,  -514,  -514,  1281,  1281,  1290,  1815,
-    1354,  -514,  -514,   308,  -514,   322,   -13,  1388,  -514,   829,
-    1388,  -514,  1388,  -514,  -514,   317,   309,  -514,  1354,   323,
-    1354,  1354,  1388,  1354,   342,   354,  -514,   188,   337,  1354,
-     348,  -514,   760,   651,  1498,   117,   345,  1047,    68,    35,
-      42,  -514,   346,  -514,  1160,  1354,   802,  -514,  -514,   802,
-    1354,  -514,   339,  -514,   358,  1721,   392,   212,   380,   392,
-     250,  1670,  -514,  -514,  1750,   235,   124,   327,   386,  -514,
-    -514,   377,   373,   388,   368,  1354,  -514,   -13,  1354,  -514,
-    1354,  1354,   420,   662,   421,  -514,  -514,  1624,  -514,  1354,
-    -514,   286,   207,   499,  1354,  1866,   410,   410,   410,   532,
-     410,   207,    65,  1815,  1047,  -514,  -514,    39,   802,   802,
-    1755,  -514,  -514,   331,   331,  -514,   452,   254,  1815,  -514,
-    -514,  -514,  -514,   424,  -514,   414,  -514,   309,    45,  -514,
-    1839,  1388,  1388,  1388,  1388,  1388,  1388,  1388,  1388,  1388,
-    1388,   299,   443,   310,   314,   464,  1815,  1354,  1281,  -514,
-    1354,  1354,   335,  -514,  -514,  -514,   271,  -514,   262,   719,
-    1548,   134,  1113,  1047,   802,  -514,  -514,  -514,  1196,  -514,
-    -514,  -514,  -514,  -514,  -514,  -514,  -514,   445,   461,  -514,
-     271,  1815,  -514,  -514,  1354,  1354,   465,   450,  1354,  -514,
-     465,   451,  1354,  -514,  -514,  -514,  1354,   151,  1354,   400,
-     459,  -514,  -514,  1354,   403,   404,   462,   349,  -514,   478,
-     440,  1815,   392,   392,   154,   266,   662,  1354,  1815,  1552,
-    1354,  1815,  -514,   802,  -514,   407,   407,   802,  -514,  1354,
-    1388,  -514,  1381,  -514,  -514,   482,   444,   227,   643,   457,
-     457,   457,   636,   457,   227,   389,  -514,  -514,   898,   898,
-    1882,  -514,  -514,  -514,  -514,  -514,   460,  1893,  -514,   408,
-     489,  -514,   454,  -514,   508,  -514,  -514,  -514,   267,   511,
-     370,  -514,  -514,  -514,   802,  1548,   153,  1113,  -514,  -514,
-    -514,  1047,  -514,  -514,   802,  -514,   418,  -514,   272,  -514,
-    -514,  1815,   342,   802,  -514,  -514,   392,  -514,  -514,   392,
-    -514,  1815,  -514,  1779,   496,  -514,  1687,   503,   504,  -514,
-    1894,   -13,   513,   474,   483,   797,  -514,  -514,  -514,  -514,
-    -514,  -514,  -514,  -514,  -514,  -514,  -514,  -514,  -514,   276,
-    -514,   280,  1815,  -514,  -514,   802,   802,  -514,    23,    23,
-     271,   530,   490,  -514,   309,  1388,  -514,   489,   491,   495,
-    -514,    46,   898,  -514,  -514,  1893,   898,   271,   498,   502,
-     802,  -514,  1281,  -514,  -514,  1113,  -514,  -514,  -514,  -514,
-    -514,  -514,  -514,  1347,  -514,   538,   465,   465,  1354,  -514,
-    1354,  1354,  -514,  -514,  -514,  -514,  -514,  -514,   514,   518,
-    -514,   154,  -514,   407,   461,  -514,  -514,   802,  -514,  -514,
-    -514,  1903,  -514,   505,  -514,   408,  -514,   898,   480,  -514,
-     267,  -514,   802,  -514,  -514,  1815,  1807,  1206,   472,   485,
-     546,  -514,  -514,    23,   271,  -514,    54,  -514,  -514,   898,
-    -514,  -514,  -514,  1354,  -514,   566,  -514,  -514,   454,  -514,
-    -514,  -514,  -514,   408,  1831,   797,   569,   528,   533,  -514,
-    -514,   571,   501,   485,  -514,   136,   574,  -514,  -514,  -514,
-    -514,  -514,  -514,   551,   355,   500,  -514,   587,  -514,   589,
-    -514,   364,   523,   564,  -514,  -514,  -514,   590,   797,   604,
-     136,  -514
+     159,  -478,   -20,    67,   842,  -478,    72,    47,  -478,  -478,
+     -20,   -20,  1371,   -20,  -478,  1371,   116,  -478,     2,  -478,
+     136,    21,  -478,   346,  1202,  -478,   128,  -478,   162,  1162,
+     161,    22,     2,    37,  1371,  -478,  -478,  -478,  -478,   -20,
+    1371,   190,   -20,  -478,  -478,  -478,   194,   196,  -478,  -478,
+     708,  -478,    93,  1494,  -478,   123,  -478,  1464,  1483,   188,
+    1008,  -478,   137,  -478,   154,  -478,   166,  -478,    26,   199,
+    -478,   222,  1371,   243,  -478,   269,   287,  1233,   -20,   249,
+      53,  -478,   650,  -478,   -20,   267,  -478,   719,  1640,   296,
+     180,  -478,  1870,   300,   281,  1202,   268,  1264,  1271,  1371,
+    -478,  1686,  1371,   -20,    96,   139,   139,   -20,   -20,   293,
+     339,  -478,    61,  1870,   151,   308,   317,  -478,  -478,  -478,
+     325,  -478,  -478,  1131,  1670,  -478,  1371,  1371,  1371,  -478,
+     349,  1371,  -478,  -478,  -478,  -478,  1371,  1371,  -478,  1371,
+    1371,  1371,  1371,  1371,  1060,  1008,  1021,  -478,  -478,  -478,
+    -478,  1302,  1302,  -478,  -478,  -478,  -478,  -478,  -478,  1302,
+    1302,  1333,  1870,  1371,  -478,  -478,   343,  -478,   354,   -20,
+     166,  -478,  1429,   166,  -478,   166,  -478,  -478,   345,  1907,
+    -478,  -478,  1371,   338,  1371,  1371,   166,  1371,   383,   388,
+    -478,   186,   363,  1371,   378,  -478,   584,   935,  1544,    63,
+     379,  1008,    46,    38,    64,  -478,   389,  -478,  1171,  1371,
+    1021,  -478,  -478,  1021,  1371,  -478,   381,  -478,   398,   635,
+     433,   236,   426,   433,   237,  1716,  -478,  -478,  1762,   215,
+      98,   373,   437,  -478,  -478,   427,   411,   414,   393,  1371,
+    -478,   -20,  1371,  -478,  1371,  1371,   431,  1233,   445,  -478,
+    -478,  1670,  -478,  1371,  -478,   228,   214,   777,  1371,  1928,
+     434,   434,   434,  1018,   434,   214,   523,  1870,  1008,  -478,
+    -478,    43,  1021,  1021,  1767,  -478,  -478,   303,   303,  -478,
+     473,   257,  1870,  -478,  -478,  -478,  -478,   448,  -478,   441,
+    -478,  1907,    69,  -478,  1877,   166,   166,   166,   166,   166,
+     166,   166,   166,   166,   166,   273,   728,   286,   330,  1901,
+    1870,  1371,  1302,  -478,  1371,  1371,   335,  -478,  -478,  -478,
+     296,  -478,   263,   948,  1594,    59,  1073,  1008,  1021,  -478,
+    -478,  -478,   416,  -478,  -478,  -478,  -478,  -478,  -478,  -478,
+    -478,   463,   483,  -478,   296,  1870,  -478,  -478,  1371,  1371,
+     486,   471,  1371,  -478,   486,   478,  1371,  -478,  -478,  -478,
+    1371,   139,  1371,   438,   484,  -478,  -478,  1371,   442,   447,
+     499,   348,  -478,   529,   489,  1870,   433,   433,   550,   290,
+    1233,  1371,  1870,   298,  1371,  1870,  -478,  1021,  -478,   408,
+     408,  1021,  -478,  1371,   166,  -478,  1407,  -478,  -478,   531,
+     491,   311,  1144,   498,   498,   498,  1127,   498,   311,  1518,
+    -478,  -478,   423,   423,  1944,  -478,  -478,  -478,  -478,  -478,
+     509,   825,  -478,   458,   539,  -478,   504,  -478,   541,  -478,
+    -478,  -478,   178,   548,   376,  -478,  -478,  -478,  1021,  1594,
+     103,  1073,  -478,  -478,  -478,  1008,  -478,  -478,  1021,  -478,
+     429,  -478,   314,  -478,  -478,  1870,   383,  1021,  -478,  -478,
+     433,  -478,  -478,   433,  -478,  1870,  -478,  1791,   533,  -478,
+    1733,   535,   536,  -478,   435,   -20,   537,   515,   516,   622,
+    -478,  -478,  -478,  -478,  -478,  -478,  -478,  -478,  -478,  -478,
+    -478,  -478,  -478,   318,  -478,   326,  1870,  -478,  -478,  1021,
+    1021,  -478,   153,   153,   296,   564,   524,  -478,  1907,   166,
+    -478,   539,   527,   528,  -478,    49,   423,  -478,  -478,   825,
+     423,   296,   525,   534,  1021,  -478,  1302,  -478,  -478,  1073,
+    -478,  -478,  -478,  -478,  -478,  -478,  -478,  1364,  -478,   570,
+     486,   486,  1371,  -478,  1371,  1371,  -478,  -478,  -478,  -478,
+    -478,  -478,   526,   551,  -478,   550,  -478,   408,   483,  -478,
+    -478,  1021,  -478,  -478,  -478,  1954,  -478,   543,  -478,   458,
+    -478,   423,   495,  -478,   178,  -478,  1021,  -478,  -478,  1870,
+    1819,  1843,   512,   506,   573,  -478,  -478,   153,   296,  -478,
+      73,  -478,  -478,   423,  -478,  -478,  -478,  1371,  -478,   594,
+    -478,  -478,   504,  -478,  -478,  -478,  -478,   458,  1850,   622,
+     595,   556,   560,  -478,  -478,   600,   530,   506,  -478,   184,
+     601,  -478,  -478,  -478,  -478,  -478,  -478,   579,   366,   542,
+    -478,   605,  -478,   606,  -478,   371,   552,   568,  -478,  -478,
+    -478,   609,   622,   610,   184,  -478
   };
 
   const unsigned short int
   parser::yydefact_[] =
   {
-       0,     5,     0,     0,     0,     7,     0,     3,     1,   321,
-       0,     0,     0,     0,   126,     0,     0,     0,    89,   184,
-       0,    54,     0,    67,   125,     0,   124,     0,     0,     0,
-       0,     0,     0,     0,   122,   123,    55,    86,     0,     0,
-     184,     0,    52,    57,     0,     0,    53,    56,     0,     4,
-      51,   102,    92,   194,   105,     0,    98,     0,   140,   196,
-       0,   195,     0,   156,     0,     0,   281,   319,     0,     0,
-      51,    46,     0,   101,   160,     0,    82,     0,   201,     0,
-     200,     0,     0,   151,     0,   102,   119,     0,    66,    60,
-      65,    70,    67,     0,     0,     0,     0,   226,     0,     0,
-       0,    82,     0,     0,     0,     0,     0,    51,    45,     0,
-      58,     0,     0,     0,   320,   240,   241,     0,    90,    87,
-       0,     0,    93,    63,     0,     0,    80,     0,     0,    78,
-      76,    79,    77,     0,     0,    81,     0,     0,     0,     0,
-       0,     0,   140,     0,   169,   165,   166,   169,     0,     0,
-     109,   107,   106,   108,   110,   111,     0,     0,    63,   138,
-       0,   155,   204,   184,   197,   184,     0,     0,    29,     0,
-       0,    30,     0,    27,    28,    26,   238,     6,    63,     0,
-      63,    63,     0,     0,    62,     0,   159,     0,    84,    63,
-     184,   252,     0,     0,   102,     0,     0,   140,     0,     0,
-       0,   144,     0,   242,     0,     0,   117,   147,   152,     0,
-      64,    68,    71,    47,     0,   208,   206,     0,     0,   206,
-       0,     0,   184,   228,     0,     0,    84,     0,   184,   191,
-     237,     0,     0,     0,     0,    63,   249,   246,     0,    50,
-       0,     0,     0,   160,     0,    91,    88,     0,    94,     0,
-      72,     0,    39,    38,     0,    35,    43,    41,    44,    37,
-      42,    40,    36,    95,   140,   153,   114,   173,     0,     0,
-     102,   103,   104,   113,   112,   149,     0,     0,   139,   203,
-     202,   198,   199,     0,    18,     0,    19,    31,     0,    17,
-       0,    34,     0,     0,     0,     0,     0,     0,     0,     0,
-       0,     0,   280,     0,     0,     0,    99,     0,     0,   161,
-      63,    63,     0,   251,   250,   134,   119,   132,     0,     0,
-       0,     0,     0,   140,   117,   174,   185,   175,     0,   143,
-     176,   186,   177,   190,   183,   189,   182,     0,   116,   118,
-     119,    61,    69,   221,     0,     0,   213,     0,     0,   220,
-     213,     0,     0,   184,   231,   227,     0,     0,     0,     0,
-       0,   192,   193,     0,     0,     0,     0,     0,   245,   247,
-       0,    59,   206,   206,   317,     0,   160,     0,    96,    48,
-      63,   100,   154,     0,   169,   121,   121,     0,   150,    63,
-      34,    20,     0,    21,    25,    33,     0,    11,    10,    15,
-      13,    16,     9,    14,    12,     8,   282,   265,   274,   274,
-       0,   266,   263,   264,   267,   254,   262,     0,   270,   272,
-     321,   278,   279,   319,     0,    49,    48,   239,   119,     0,
-       0,    83,   131,   135,     0,     0,     0,     0,   178,   187,
-     179,   140,   141,   164,   117,   136,   119,   129,     0,   243,
-     148,   207,   205,   212,   216,   223,   206,   218,   222,   206,
-     230,    74,   232,     0,     0,   235,     0,     0,     0,   224,
-      48,     0,     0,     0,     0,     0,   303,   299,   300,   297,
-     298,   301,   302,   304,   296,   319,   315,   314,   316,     0,
-     162,     0,    97,    73,   115,     0,     0,   167,   170,   171,
-     119,     0,     0,    22,    32,     0,    23,   273,     0,     0,
-     257,     0,   274,   253,   269,     0,     0,   119,     0,     0,
-     117,   157,     0,    85,   133,     0,   180,   188,   181,   142,
-     127,   128,   137,     0,   209,   211,   213,   213,     0,   236,
-       0,     0,   229,   225,   244,   248,   215,   214,     0,     0,
-     321,     0,   163,   121,   120,   168,   146,     0,    24,   255,
-     256,     0,   258,     0,   268,   271,   275,   321,   321,   276,
-     119,   130,     0,   217,   219,    75,     0,     0,     0,   295,
-       0,   313,   312,   172,   119,   259,     0,   261,   277,     0,
-     283,   158,   210,     0,   234,     0,   320,   292,   294,   320,
-     318,   145,   260,   321,     0,     0,     0,     0,     0,   284,
-     233,     0,     0,     0,   305,   319,     0,   293,   308,   306,
-     307,   309,   311,     0,     0,   288,   289,     0,   285,   287,
-     320,     0,     0,     0,   290,   291,   286,     0,     0,     0,
-       0,   310
+       0,     5,     0,     0,     0,    10,     0,     0,     1,   324,
+       0,     0,     0,     0,   129,     0,     0,     7,     0,    92,
+     187,     0,    57,     0,    70,   128,     0,   127,     0,     0,
+       0,     0,     0,     0,     0,   125,   126,    58,    89,     0,
+       0,   187,     0,     6,    55,    60,     0,     0,    56,    59,
+       0,     4,    54,   105,    95,   197,   108,     0,   101,     0,
+     143,   199,     0,   198,     0,   159,     0,     3,     0,   284,
+     322,     0,     0,    54,    49,     0,   104,   163,     0,    85,
+       0,   204,     0,   203,     0,     0,   154,     0,   105,   122,
+       0,    69,    63,    68,    73,    70,     0,     0,     0,     0,
+     229,     0,     0,     0,    85,     0,     0,     0,     0,     0,
+      54,    48,     0,    61,     0,     0,     0,   323,   243,   244,
+       0,    93,    90,     0,     0,    96,    66,     0,     0,    83,
+       0,     0,    81,    79,    82,    80,     0,     0,    84,     0,
+       0,     0,     0,     0,     0,   143,     0,   172,   168,   169,
+     172,     0,     0,   112,   110,   109,   111,   113,   114,     0,
+       0,    66,   141,     0,   158,   207,   187,   200,   187,     0,
+       0,    32,     0,     0,    33,     0,    30,    31,    29,   241,
+       8,     9,    66,     0,    66,    66,     0,     0,    65,     0,
+     162,     0,    87,    66,   187,   255,     0,     0,   105,     0,
+       0,   143,     0,     0,     0,   147,     0,   245,     0,     0,
+     120,   150,   155,     0,    67,    71,    74,    50,     0,   211,
+     209,     0,     0,   209,     0,     0,   187,   231,     0,     0,
+      87,     0,   187,   194,   240,     0,     0,     0,     0,    66,
+     252,   249,     0,    53,     0,     0,     0,   163,     0,    94,
+      91,     0,    97,     0,    75,     0,    42,    41,     0,    38,
+      46,    44,    47,    40,    45,    43,    39,    98,   143,   156,
+     117,   176,     0,     0,   105,   106,   107,   116,   115,   152,
+       0,     0,   142,   206,   205,   201,   202,     0,    21,     0,
+      22,    34,     0,    20,     0,    37,     0,     0,     0,     0,
+       0,     0,     0,     0,     0,     0,   283,     0,     0,     0,
+     102,     0,     0,   164,    66,    66,     0,   254,   253,   137,
+     122,   135,     0,     0,     0,     0,     0,   143,   120,   177,
+     188,   178,     0,   146,   179,   189,   180,   193,   186,   192,
+     185,     0,   119,   121,   122,    64,    72,   224,     0,     0,
+     216,     0,     0,   223,   216,     0,     0,   187,   234,   230,
+       0,     0,     0,     0,     0,   195,   196,     0,     0,     0,
+       0,     0,   248,   250,     0,    62,   209,   209,   320,     0,
+     163,     0,    99,    51,    66,   103,   157,     0,   172,   124,
+     124,     0,   153,    66,    37,    23,     0,    24,    28,    36,
+       0,    14,    13,    18,    16,    19,    12,    17,    15,    11,
+     285,   268,   277,   277,     0,   269,   266,   267,   270,   257,
+     265,     0,   273,   275,   324,   281,   282,   322,     0,    52,
+      51,   242,   122,     0,     0,    86,   134,   138,     0,     0,
+       0,     0,   181,   190,   182,   143,   144,   167,   120,   139,
+     122,   132,     0,   246,   151,   210,   208,   215,   219,   226,
+     209,   221,   225,   209,   233,    77,   235,     0,     0,   238,
+       0,     0,     0,   227,    51,     0,     0,     0,     0,     0,
+     306,   302,   303,   300,   301,   304,   305,   307,   299,   322,
+     318,   317,   319,     0,   165,     0,   100,    76,   118,     0,
+       0,   170,   173,   174,   122,     0,     0,    25,    35,     0,
+      26,   276,     0,     0,   260,     0,   277,   256,   272,     0,
+       0,   122,     0,     0,   120,   160,     0,    88,   136,     0,
+     183,   191,   184,   145,   130,   131,   140,     0,   212,   214,
+     216,   216,     0,   239,     0,     0,   232,   228,   247,   251,
+     218,   217,     0,     0,   324,     0,   166,   124,   123,   171,
+     149,     0,    27,   258,   259,     0,   261,     0,   271,   274,
+     278,   324,   324,   279,   122,   133,     0,   220,   222,    78,
+       0,     0,     0,   298,     0,   316,   315,   175,   122,   262,
+       0,   264,   280,     0,   286,   161,   213,     0,   237,     0,
+     323,   295,   297,   323,   321,   148,   263,   324,     0,     0,
+       0,     0,     0,   287,   236,     0,     0,     0,   308,   322,
+       0,   296,   311,   309,   310,   312,   314,     0,     0,   291,
+     292,     0,   288,   290,   323,     0,     0,     0,   293,   294,
+     289,     0,     0,     0,     0,   313
   };
 
   const short int
   parser::yypgoto_[] =
   {
-    -514,  -514,  -514,  -514,    -2,   -51,   446,   228,   468,  -514,
-     -18,   -50,   529,  -514,  -514,  -128,  -514,   -41,    17,    66,
-     296,  -153,   570,  -514,  -137,  -301,  -300,  -359,    33,    87,
-    -514,   201,  -514,  -182,  -125,  -158,  -514,  -514,     8,  -514,
-    -514,  -205,   558,  -514,   -31,  -122,  -514,  -514,   -33,   -89,
-    -514,  -200,   -44,  -514,  -324,  -514,  -514,  -514,  -514,  -514,
-    -377,  -363,  -369,  -284,  -364,    74,  -514,  -514,  -514,   641,
-    -514,  -514,    36,  -514,  -514,  -454,    99,    12,   102,  -514,
-    -514,  -390,  -513,    -8
+    -478,  -478,  -478,  -478,    -2,   -56,   449,   250,   392,  -478,
+     -21,   -64,   553,  -478,  -478,  -127,  -478,   -49,     4,    11,
+     319,  -154,   591,  -478,  -139,  -302,  -252,  -366,    41,    94,
+    -478,   217,  -478,  -186,  -131,  -164,  -478,  -478,    -1,  -478,
+    -478,  -203,   571,  -478,   -35,  -132,  -478,  -478,   -16,   -83,
+    -478,  -195,   -79,  -478,  -327,  -478,  -478,  -478,  -478,  -478,
+    -380,  -372,  -367,  -289,  -375,    81,  -478,  -478,  -478,   653,
+    -478,  -478,    42,  -478,  -478,  -433,   111,    27,   115,  -478,
+    -478,  -385,  -477,    -8
   };
 
   const short int
   parser::yydefgoto_[] =
   {
-      -1,     3,     4,    49,    70,   287,   395,   396,    89,   111,
-     184,   250,    91,    92,    93,   251,   225,   160,    52,   266,
-      54,    55,   156,    56,   338,   339,   207,   498,   196,   447,
-     448,   317,   318,   197,   161,   198,   277,    87,    58,    59,
-     186,   187,    60,   200,   555,   268,    61,    79,    80,   230,
-      62,   346,   216,   535,   454,   217,   220,     7,   369,   370,
-     417,   418,   419,   507,   508,   421,   422,   423,    67,   201,
-     629,   630,   597,   598,   599,   485,   486,   622,   487,   488,
-     489,   179,   242,   424
+      -1,     3,     4,    51,    73,   291,   399,   400,    92,   114,
+     188,   254,    94,    95,    96,   255,   229,   163,    54,   270,
+      56,    57,   159,    58,   342,   343,   211,   502,   200,   451,
+     452,   321,   322,   201,   164,   202,   281,    90,    60,    61,
+     190,   191,    62,   204,   559,   272,    63,    82,    83,   234,
+      64,   350,   220,   539,   458,   221,   224,     7,   373,   374,
+     421,   422,   423,   511,   512,   425,   426,   427,    70,   205,
+     633,   634,   601,   602,   603,   489,   490,   626,   491,   492,
+     493,   183,   246,   428
   };
 
   const short int
   parser::yytable_[] =
   {
-       6,    65,    50,   273,   274,    90,   267,   113,    66,    68,
-     141,    72,   323,   176,   231,    76,   432,   265,   420,   350,
-      50,   548,   147,   443,   185,   269,   457,   499,   101,    76,
-     106,   107,   518,   519,    77,   321,   109,    57,   375,   114,
-     450,   511,   515,   104,   205,   509,    50,   102,   103,   383,
-     301,   219,   303,   304,   514,   392,   561,   143,   144,   142,
-     333,   312,   175,    81,   516,   122,   238,   335,   124,   125,
-      53,     5,   329,   188,    90,   145,   190,    50,   330,   202,
-     249,   239,    50,   606,    57,     8,   608,   334,    86,   105,
-     146,   145,   191,   331,   336,   549,   393,   562,   226,    64,
-     145,   122,   232,   233,    74,   602,   146,   367,   276,   133,
-     134,    82,   136,   137,     5,   146,   284,   633,    50,   289,
-     332,   290,   208,   138,   139,   209,   324,   325,   521,    75,
-     280,   305,   282,    78,   515,   415,   189,   248,   323,   382,
-     441,    50,   326,   530,   438,   195,   531,   565,   563,   264,
-     100,   611,   564,   322,     5,   428,   227,   314,   475,   439,
-     228,   436,   311,   526,   283,   175,   236,   175,   175,   327,
-     175,   491,   473,   474,    57,     5,   229,    94,   527,   237,
-     175,    95,   359,   430,   639,   162,   440,    99,   515,   355,
-      50,    50,   163,   185,   583,   362,   372,   373,   442,   112,
-     556,   115,    50,   116,    50,   528,   377,    50,   607,   618,
-     122,   164,   573,   574,   619,   620,   621,   566,   165,   569,
-     603,   248,   158,     1,     2,   623,   515,   476,   477,   478,
-     479,   480,   481,   482,   483,   368,   384,   309,     5,   177,
-     310,   397,   398,   399,   400,   401,   402,   403,   404,   405,
-     182,   133,   134,   323,   136,   441,   536,   178,   316,   537,
-     429,   347,   495,   180,   348,   138,    50,    50,   462,   181,
-     591,   294,   295,   203,   296,   340,   206,   586,   189,   437,
-     206,   148,   149,   420,   601,   298,   357,   358,   210,   175,
-     175,   175,   175,   175,   175,   175,   175,   175,   175,   351,
-     416,   211,   352,   388,   456,   234,   389,   213,   459,   240,
-     446,   433,   292,   293,   434,   490,   529,    50,   310,   241,
-     460,   532,    50,   243,   533,   550,   185,   452,   551,   552,
-     493,   254,   310,   279,   385,   386,   248,   379,   380,   501,
-      10,   504,    11,   441,    12,   148,   149,   281,    14,    15,
-     406,   380,   307,   294,   295,   291,   296,   297,   302,   554,
-      16,   425,   380,   308,    18,   426,   380,   298,   299,   570,
-      21,   192,   484,   313,    23,   311,    24,   337,    26,   300,
-     328,    50,    11,   343,    12,    50,   431,   380,   175,    15,
-     175,   342,   292,   293,   525,    33,    34,    35,    36,    37,
-     470,   380,   345,    39,    18,   349,   416,   416,   416,   360,
-      21,   361,   517,   363,    23,   416,   496,   497,    42,    43,
-       5,   523,   380,    46,    47,    83,   193,   206,   307,   626,
-     627,   364,    50,   294,   295,    33,   296,   297,    36,    37,
-     634,   635,    50,    39,   271,   272,   365,   298,   299,   494,
-     366,    50,  -321,   500,   504,   374,   376,   136,    42,    43,
-       5,   387,   390,    46,    47,   391,    84,   292,   293,   544,
-     449,   383,    51,   484,   453,   455,   458,   407,   408,   409,
-      71,   410,   464,    73,   465,   467,   468,   469,   471,   427,
-      85,   472,   505,    50,    50,   506,    98,   415,   512,   516,
-     316,   108,   124,   175,   296,   411,  -319,   110,   294,   295,
-     416,   296,   297,   416,   416,   446,   121,   520,    50,   534,
-     522,   539,   298,   299,   546,   412,   159,     5,   542,   543,
-     413,   414,   415,   547,   300,   124,   125,   108,   545,   557,
-     559,   558,   580,   133,   134,   560,   136,   194,   572,   484,
-     567,   568,   121,   579,   595,    50,   587,   138,   139,   416,
-     590,   553,   215,   215,   221,   416,    11,   224,    12,   589,
-      50,   600,   578,    96,   596,   605,   133,   134,   612,   136,
-     613,   615,   614,   616,   624,    97,   625,   416,   247,   628,
-     138,   139,   252,   253,    21,   609,   255,   631,    23,   632,
-     638,   256,   257,   484,   258,   259,   260,   261,   262,   263,
-     159,    85,   636,   637,   640,   288,   270,   270,   502,    69,
-     571,   212,    36,   584,   270,   270,   157,    39,   278,   150,
-     151,   152,   153,   154,   155,   524,   484,   199,   592,   292,
-     293,   588,    42,    43,     5,    63,   292,    46,    47,   617,
-     581,   306,   641,   582,     0,    10,     0,    11,     0,    12,
-      85,   320,     0,    14,     0,   159,     0,     0,    11,     0,
-      12,   -63,   247,   263,    85,   117,     0,    85,   341,   118,
-     294,   295,     0,   296,     0,    21,   192,   294,   295,    23,
-     296,    24,     0,    26,   298,   299,    21,     0,     0,     0,
-      23,   298,   299,     0,     0,     0,   371,     0,   215,   215,
-      33,    34,    35,    36,   119,     0,     0,   378,    39,     0,
-       0,    69,   381,    10,    36,    11,     0,    12,     0,    39,
-       0,    14,   159,    42,    43,     5,    85,    85,    46,    47,
-       0,   319,     0,   244,    42,    43,     5,   245,     0,    46,
-      47,     0,     0,    21,   192,     0,     0,    23,     0,    24,
-       0,    26,     0,     0,     0,     0,    11,     0,    12,     0,
-       0,     0,     0,    15,     0,   341,   270,     0,    33,    34,
-      35,    36,   246,     0,     0,     0,    39,   435,    18,     0,
-     263,   159,    85,     0,    21,     0,     0,     0,    23,     0,
-       0,    42,    43,     5,     0,     0,    46,    47,    11,   315,
-      12,     0,   451,     0,     0,    15,   215,     0,     0,    33,
-     215,     0,    36,    37,   461,     0,   463,    39,     0,     0,
-      18,   466,     0,     0,     0,   166,    21,   167,     0,   285,
-      23,     0,    42,    43,     5,   492,     0,    46,    47,     0,
-      84,    85,     0,     0,     0,    85,     0,     0,     0,     0,
-       0,    33,     0,   168,    36,    37,     0,   169,     0,    39,
-     476,   477,   478,   479,   480,   481,   482,   483,     0,     0,
-     286,     5,     0,     0,    42,    43,     5,     0,   170,    46,
-      47,   171,    84,     0,     0,     0,   172,     0,     0,     0,
-       0,     0,    85,     0,     0,   378,     0,     0,     0,   159,
-       0,   173,    85,     5,    -2,     9,   174,     0,    10,     0,
-      11,    85,    12,     0,     0,    13,    14,    15,     0,     0,
-       0,     0,   407,   408,   409,     0,   410,     0,    16,     0,
-       0,    17,    18,     0,     0,     0,    19,    20,    21,    22,
-       0,     0,    23,     0,    24,    25,    26,    27,     0,     0,
-     411,     0,     0,    85,    85,     0,     0,    28,    29,    30,
-      31,    32,     0,    33,    34,    35,    36,    37,    38,     0,
-     412,    39,     5,    40,     0,   413,   414,   415,    85,    11,
-     270,    12,     0,   492,     0,    41,    42,    43,     5,    44,
-      45,    46,    47,     0,    48,     0,   575,   117,   576,   577,
-       0,   118,     0,     0,     0,     0,     0,    21,     0,     0,
-       0,    23,     0,     0,     0,    85,    11,     0,    12,   148,
-     149,     0,   150,   151,   152,   153,   154,   155,     0,     0,
-      85,     0,    33,     0,     0,    36,   119,     0,   118,     0,
-      39,     0,   126,    11,    21,    12,     0,     0,    23,     0,
-       0,   604,    11,     0,    12,    42,    43,     5,    14,     0,
-      46,    47,     0,   120,     0,     0,     0,   129,   130,    33,
-       0,    21,    36,   119,   131,    23,   132,    39,     0,     0,
-      21,    22,     0,   135,    23,     0,    24,     0,    26,     0,
-       0,     0,    42,    43,     5,     0,    69,    46,    47,    36,
-     204,     0,     0,     0,    39,    69,    34,    35,    36,    11,
-       0,    12,     0,    39,     0,    14,     0,     0,     0,    42,
-      43,     5,     0,     0,    46,    47,     0,     0,    42,    43,
-       5,     0,     0,    46,    47,     0,     0,    21,   192,     0,
-       0,    23,     0,    24,     0,    26,     0,     0,     0,    11,
-       0,    12,     0,   -82,   -82,     0,    11,     0,    12,     0,
-       0,     0,    69,    34,    35,    36,     0,   244,     0,   -82,
-      39,   245,     0,     0,     0,     0,   -82,    21,   245,     0,
-       0,    23,   123,     0,    21,    42,    43,     5,    23,     0,
-      46,    47,    11,   -82,    12,   444,   -82,     0,     0,   124,
-     125,     0,    33,     0,     0,    36,   246,     0,     0,    33,
-      39,   -82,    36,   246,     0,     0,     0,    39,     0,    11,
-      21,    12,   128,    88,    23,    42,    43,     5,     0,     0,
-      46,    47,    42,    43,     5,   445,     0,    46,    47,     0,
-     133,   134,     0,   136,   137,    69,   594,    21,    36,     0,
-      11,    23,    12,    39,   138,   139,     0,     0,     0,    11,
-       0,    12,     0,     0,     0,     0,   140,     0,    42,    43,
-       5,     0,    69,    46,    47,    36,     0,    11,    21,    12,
-      39,     0,    23,     0,    15,     0,    11,    21,    12,     0,
-       0,    23,     0,   214,     0,    42,    43,     5,     0,     0,
-      46,    47,   218,    69,     0,    21,    36,     0,     0,    23,
-       0,    39,    69,     0,    21,    36,     0,     0,    23,     0,
-      39,     0,     0,     0,     0,     0,    42,    43,     5,   275,
-      69,    46,    47,    36,     0,    42,    43,     5,    39,    69,
-      46,    47,    36,    11,     0,    12,   444,    39,     0,     0,
-      11,     0,    12,    42,    43,     5,     0,     0,    46,    47,
-       0,     0,    42,    43,     5,     0,     0,    46,    47,     0,
-       0,    21,     0,     0,     0,    23,     0,   166,    21,   167,
-       0,     0,    23,     0,   166,     0,   167,     0,     0,     0,
-       0,     0,     0,     0,     0,     0,    69,     0,     0,    36,
-       0,     0,     0,    69,    39,   168,    36,     0,     0,   169,
-       0,    39,   168,     0,     0,     0,   169,     0,     0,    42,
-      43,     5,   503,     0,    46,    47,    42,    43,     5,     0,
-     170,    46,    47,   171,     0,     0,     0,   170,   172,     0,
-     171,   124,   125,   126,     0,   172,     0,     0,     0,     0,
-      14,     0,     0,   173,   127,     5,     0,     0,   174,     0,
-     173,     0,     5,     0,   128,   174,     0,     0,   129,   130,
-       0,     0,     0,    22,     0,   131,     0,   132,    24,     0,
-      26,     0,   133,   134,   135,   136,   137,     0,     0,     0,
-       0,   124,   125,   126,     0,     0,   138,   139,    34,    35,
-      14,     0,     0,     0,   127,     0,     0,     0,   140,     0,
-       0,     0,     0,     0,   128,     0,     0,     0,   129,   130,
-       0,     0,     0,   192,     0,   131,     0,   132,    24,     0,
-      26,     0,   133,   134,   135,   136,   137,     0,     0,     0,
-       0,   124,   125,   126,     0,     0,   138,   139,    34,    35,
-      14,   -83,   -83,     0,     0,     0,     0,     0,   140,     0,
-       0,     0,     0,     0,   128,     0,     0,   -83,   129,   130,
-       0,     0,     0,   192,   -83,   131,     0,   132,    24,     0,
-      26,     0,   133,   134,   135,   136,   137,   124,   125,   126,
-       0,   -83,     0,     0,   -83,     0,   138,   139,    34,    35,
-     127,     0,     0,     0,     0,     0,     0,     0,   140,   -83,
-     128,     0,     0,     0,   129,   130,     0,   124,   125,   126,
-       0,   131,     0,   132,     0,     0,     0,     0,   133,   134,
-     135,   136,   137,   124,   125,     0,     0,     0,     0,   222,
-     128,     0,   138,   139,   129,   130,     0,     0,     0,     0,
-       0,   131,     0,   132,   140,   223,   128,     0,   133,   134,
-     135,   136,   137,   124,   125,     0,     0,     0,     0,   353,
-       0,     0,   138,   139,   133,   134,     0,   136,   137,     0,
-     124,   125,     0,   540,   140,   354,   128,   541,   138,   139,
-       0,     0,     0,     0,     0,     0,     0,   124,   125,     0,
-     140,     0,     0,   128,   133,   134,     0,   136,   137,     0,
-     183,     0,     0,     0,   124,   125,     0,   344,   138,   139,
-     128,   133,   134,     0,   136,   137,     0,     0,     0,     0,
-     140,     0,     0,     0,     0,   138,   139,   128,   133,   134,
-       0,   136,   137,   124,   125,     0,     0,   140,   124,   125,
-     356,     0,   138,   139,     0,   133,   134,     0,   136,   137,
-       0,   127,     0,     0,   140,     0,   128,     0,     0,   138,
-     139,   128,   124,   125,     0,     0,     0,     0,     0,   538,
-       0,   140,     0,     0,   133,   134,     0,   136,   137,   133,
-     134,     0,   136,   137,     0,   128,     0,     0,   138,   139,
-     124,   125,     0,   138,   139,     0,     0,   593,   124,   125,
-     140,     0,     0,   133,   134,   140,   136,   137,     0,     0,
-       0,     0,     0,   128,   124,   125,     0,   138,   139,     0,
-       0,   128,   292,   293,     0,     0,     0,     0,     0,   140,
-       0,   133,   134,     0,   136,   137,     0,   128,     0,   133,
-     134,     0,   136,   137,     0,   138,   139,     0,     0,   124,
-     125,     0,     0,   138,   139,   133,   134,   140,   136,   137,
-       0,   610,     0,   294,   295,   140,   296,   297,     0,   138,
-     139,     0,   -84,   -84,     0,     0,     0,   298,   299,     0,
-       0,   140,     0,   -85,   -85,     0,   394,     0,   -84,   300,
-     133,   134,     0,   136,   137,   -84,   407,   408,   409,   -85,
-     410,   235,     0,     0,   138,   139,   -85,   407,   408,   409,
-       0,   410,   -84,   510,     0,   -84,   140,   407,   408,   409,
-       0,   410,     0,   -85,   411,     0,   -85,     0,     0,     0,
-     -84,     0,     0,     0,   585,   411,     0,     0,     0,     0,
-       0,   -85,     0,     0,   412,   411,     5,     0,     0,   413,
-     414,   415,     0,     0,     0,   412,     0,     5,     0,     0,
-     413,   414,   513,     0,     0,   412,     0,     5,     0,     0,
-     413,   414,   415
+       6,    68,    52,    93,   144,   277,   278,   271,    69,    71,
+     179,    75,   327,   189,   269,    55,    79,   424,   273,   223,
+     150,    52,    80,   235,   503,   116,   447,   461,   354,   104,
+      79,   109,   110,   325,    89,   105,   106,   112,   513,   209,
+     117,   522,   523,   519,   379,    59,   552,   515,    52,   518,
+     107,   180,   145,   387,   125,   305,   334,   307,   308,   565,
+      84,    78,   194,   337,   178,     5,   316,     8,   436,   442,
+     333,   335,   328,   329,    93,   253,   192,    66,   195,   396,
+      52,   103,   206,   520,   443,    52,   240,     5,   330,   339,
+     338,   125,   454,   199,    59,   148,   108,   280,   336,   241,
+     566,   230,   -85,   -85,   553,   236,   237,     5,   181,    85,
+     149,   444,   371,   530,   288,   331,   340,   293,   -85,   294,
+     397,    52,     5,   610,   606,   -85,   612,   252,   531,    67,
+     309,   126,   146,   147,   193,   519,   315,   386,   327,   419,
+     445,   567,   -85,   268,    52,   -85,   534,   568,   232,   326,
+     284,    77,   286,   569,   231,   532,   363,   637,   432,   440,
+     -85,    81,   165,    97,   233,   376,   377,   287,   178,   166,
+     178,   178,   169,   178,   170,   148,   615,   495,   318,   167,
+     525,   477,   478,   189,   178,    59,   168,   210,   434,   519,
+     149,   587,   151,   152,    52,    52,   446,    98,   535,   102,
+     171,   125,   381,   242,   172,   148,    52,   320,    52,   643,
+     359,    52,   252,   577,   578,   115,   366,   611,   243,   118,
+     149,   119,   573,   161,   344,   173,   607,   519,   174,   212,
+       1,     2,   213,   175,   627,   313,   388,   182,   314,   372,
+     401,   402,   403,   404,   405,   406,   407,   408,   409,   176,
+     433,     5,   560,   327,   177,   445,   499,   622,   136,   137,
+     184,   139,   623,   624,   625,   540,   361,   362,   541,   570,
+      52,    52,   141,   460,   186,   441,   590,   463,   466,   383,
+     384,   185,   424,   389,   390,   351,   355,   193,   352,   356,
+     127,   128,   207,   178,   178,   178,   178,   178,   178,   178,
+     178,   178,   178,   187,   420,   210,   392,   -86,   -86,   393,
+     214,   450,   437,   131,   533,   438,   189,   151,   152,   217,
+     497,    52,   595,   -86,   410,   384,    52,   252,   456,   505,
+     -86,   136,   137,   215,   139,   140,   605,   429,   384,   494,
+     508,   464,   314,   445,   244,   141,   142,   -86,   -87,   -87,
+     -86,   238,    11,   245,    12,   298,   299,   143,   300,    15,
+     247,   558,   258,   536,   -87,   -86,   537,   554,   283,   302,
+     555,   -87,   574,   306,    19,   556,   488,   239,   314,   285,
+      22,   430,   384,   295,    24,    52,   435,   384,   -87,    52,
+     529,   -87,   178,   311,   178,    86,    53,   312,   498,   474,
+     384,   315,   504,   317,    74,    34,   -87,    76,    37,    38,
+     420,   420,   420,    40,   332,    88,   521,   500,   501,   420,
+     341,   101,    11,   347,    12,   448,   111,   527,   384,    44,
+      45,     5,   113,   346,    48,    49,    52,    87,   210,   311,
+     630,   631,   124,   349,   -88,   -88,    52,   638,   639,   320,
+      22,   353,   162,   508,    24,    52,   364,   411,   412,   413,
+     -88,   414,   365,   367,   111,   449,   378,   -88,   538,   368,
+     275,   276,   369,   548,   198,    72,   370,   488,    37,   124,
+     380,   139,   391,    40,   -88,   415,   394,   -88,   453,   219,
+     219,   225,   395,   387,   228,   457,   459,    52,    52,    44,
+      45,     5,   -88,   462,    48,    49,   416,   178,     5,   469,
+     557,   417,   418,   419,   420,   251,   450,   420,   420,   256,
+     257,   468,    52,   259,   473,   471,   127,   128,   260,   261,
+     472,   262,   263,   264,   265,   266,   267,   162,    88,   475,
+     476,   509,   510,   274,   274,   300,   584,   516,   419,   520,
+     524,   274,   274,   488,   479,   282,  -322,   526,   543,    52,
+     546,   547,   549,   420,   594,   550,   551,   136,   137,   420,
+     139,   140,   588,   561,    52,   562,   563,   571,   564,   310,
+     576,   141,   142,   572,   582,   593,   583,   596,    88,   324,
+      11,   420,    12,   162,   591,   599,   600,    15,   604,   613,
+     251,   267,    88,   609,   616,    88,   345,   488,   617,   618,
+     619,   628,    19,   620,   629,   635,   636,   641,    22,   642,
+     644,   292,    24,   480,   481,   482,   483,   484,   485,   486,
+     487,   575,   632,   319,   375,     5,   219,   219,   127,   128,
+     488,   348,   640,    34,   506,   382,    37,    38,   216,   160,
+     385,    40,   592,   203,    10,   528,    11,    65,    12,   621,
+     162,   131,    14,    15,    88,    88,   585,    44,    45,     5,
+     586,   645,    48,    49,    16,    87,     0,     0,    19,   136,
+     137,     0,   139,   140,    22,   196,     0,     0,    24,     0,
+      25,     0,    27,   141,   142,   480,   481,   482,   483,   484,
+     485,   486,   487,   345,   274,   143,     0,     5,     0,    34,
+      35,    36,    37,    38,    11,   439,    12,    40,   267,   162,
+      88,     0,     0,     0,     0,    11,     0,    12,     0,     0,
+       0,     0,   120,    44,    45,     5,   121,  -324,    48,    49,
+     455,   197,    22,     0,   219,     0,    24,   121,   219,     0,
+       0,     0,   465,    22,   467,     0,     0,    24,     0,   470,
+       0,     0,   411,   412,   413,     0,   414,    34,     0,     0,
+      37,   122,     0,   496,     0,    40,     0,     0,    34,    88,
+     127,    37,   122,    88,     0,     0,    40,     0,     0,     0,
+     415,    44,    45,     5,     0,     0,    48,    49,     0,   123,
+       0,     0,    44,    45,     5,     0,     0,    48,    49,     0,
+     208,   416,     0,     5,     0,     0,   417,   418,   419,     0,
+       0,   136,   137,     0,   139,     0,     0,     0,     0,     0,
+      88,     0,     0,   382,     0,   141,   142,   162,     0,     0,
+      88,     0,    -2,     9,     0,     0,    10,     0,    11,    88,
+      12,     0,     0,    13,    14,    15,     0,     0,     0,   411,
+     412,   413,     0,   414,     0,     0,    16,    17,     0,    18,
+      19,     0,     0,     0,    20,    21,    22,    23,     0,     0,
+      24,     0,    25,    26,    27,    28,     0,   415,     0,     0,
+       0,    88,    88,     0,     0,    29,    30,    31,    32,    33,
+       0,    34,    35,    36,    37,    38,    39,     0,   416,    40,
+       5,    41,     0,   417,   418,   517,    88,     0,   274,     0,
+       0,   496,     0,    42,    43,    44,    45,     5,    46,    47,
+      48,    49,     0,    50,   579,     0,   580,   581,     0,    10,
+       0,    11,     0,    12,     0,     0,     0,    14,     0,     0,
+       0,     0,    10,    88,    11,     0,    12,     0,     0,   120,
+      14,     0,     0,   121,     0,     0,     0,     0,    88,    22,
+     196,     0,   248,    24,     0,    25,   249,    27,     0,     0,
+       0,     0,    22,   196,     0,     0,    24,     0,    25,   608,
+      27,     0,     0,     0,    34,    35,    36,    37,   122,     0,
+       0,     0,    40,     0,     0,     0,     0,    34,    35,    36,
+      37,   250,     0,   129,    11,    40,    12,     0,    44,    45,
+       5,   127,   128,    48,    49,     0,   323,    11,     0,    12,
+       0,    44,    45,     5,    15,     0,    48,    49,   132,   133,
+       0,     0,    22,     0,     0,   134,    24,   135,     0,    19,
+       0,     0,     0,     0,   138,    22,     0,     0,     0,    24,
+       0,     0,   136,   137,     0,   139,    11,    72,    12,     0,
+      37,     0,    14,     0,     0,    40,   141,   142,     0,    11,
+      34,    12,     0,    37,    38,    14,     0,     0,    40,     0,
+       0,    44,    45,     5,    22,    23,    48,    49,    24,     0,
+      25,     0,    27,     0,    44,    45,     5,    22,   196,    48,
+      49,    24,    87,    25,     0,    27,     0,     0,     0,    72,
+      35,    36,    37,     0,     0,     0,     0,    40,     0,     0,
+     296,   297,    72,    35,    36,    37,     0,    11,     0,    12,
+      40,     0,     0,    44,    45,     5,     0,   296,    48,    49,
+       0,     0,     0,     0,     0,   248,    44,    45,     5,   249,
+       0,    48,    49,     0,     0,    22,     0,     0,    11,    24,
+      12,   298,   299,     0,   300,    99,     0,    11,     0,    12,
+       0,     0,     0,     0,     0,   302,   303,   100,   298,   299,
+      34,   300,     0,    37,   250,     0,    22,     0,    40,   249,
+      24,     0,   302,   303,     0,    22,     0,     0,    11,    24,
+      12,     0,    91,     0,    44,    45,     5,     0,     0,    48,
+      49,    72,     0,     0,    37,     0,     0,     0,     0,    40,
+      34,     0,     0,    37,   250,     0,    22,     0,    40,    11,
+      24,    12,   -66,     0,     0,    44,    45,     5,     0,     0,
+      48,    49,     0,     0,    44,    45,     5,     0,     0,    48,
+      49,    72,     0,     0,    37,     0,     0,    22,     0,    40,
+      11,    24,    12,     0,     0,     0,     0,    11,     0,    12,
+       0,     0,     0,     0,     0,    44,    45,     5,     0,     0,
+      48,    49,    72,     0,     0,    37,     0,     0,    22,     0,
+      40,     0,    24,     0,     0,    22,     0,     0,    11,    24,
+      12,     0,     0,   218,     0,    15,    44,    45,     5,     0,
+     222,    48,    49,    72,     0,     0,    37,     0,     0,     0,
+      72,    40,     0,    37,     0,     0,    22,     0,    40,    11,
+      24,    12,     0,     0,     0,     0,     0,    44,    45,     5,
+       0,     0,    48,    49,    44,    45,     5,     0,     0,    48,
+      49,    72,     0,     0,    37,     0,     0,    22,     0,    40,
+      11,    24,    12,   448,     0,     0,     0,    11,     0,    12,
+       0,     0,   279,     0,     0,    44,    45,     5,     0,     0,
+      48,    49,    72,     0,     0,    37,     0,     0,    22,     0,
+      40,     0,    24,     0,     0,    22,     0,     0,     0,    24,
+       0,     0,     0,   169,     0,   170,    44,    45,     5,     0,
+       0,    48,    49,    72,     0,     0,    37,     0,     0,     0,
+      72,    40,     0,    37,     0,   169,     0,   170,    40,   289,
+       0,   171,     0,     0,     0,   172,     0,    44,    45,     5,
+       0,     0,    48,    49,    44,    45,     5,     0,   507,    48,
+      49,     0,     0,   171,     0,     0,   173,   172,     0,   174,
+       0,     0,     0,     0,   175,     0,     0,     0,   151,   152,
+     290,   153,   154,   155,   156,   157,   158,     0,   173,     0,
+     176,   174,     5,     0,     0,   177,   175,   127,   128,   129,
+     153,   154,   155,   156,   157,   158,    14,     0,     0,     0,
+     130,     0,   176,     0,     5,     0,     0,   177,     0,     0,
+     131,   296,   297,     0,   132,   133,     0,     0,     0,    23,
+       0,   134,     0,   135,    25,     0,    27,     0,   136,   137,
+     138,   139,   140,     0,     0,     0,     0,   127,   128,   129,
+       0,     0,   141,   142,    35,    36,    14,     0,     0,     0,
+     130,     0,   298,   299,   143,   300,   301,     0,     0,     0,
+     131,     0,     0,     0,   132,   133,   302,   303,     0,   196,
+       0,   134,     0,   135,    25,     0,    27,     0,   136,   137,
+     138,   139,   140,     0,     0,     0,     0,   127,   128,   129,
+       0,     0,   141,   142,    35,    36,    14,     0,     0,     0,
+       0,     0,     0,     0,   143,     0,     0,     0,     0,     0,
+     131,     0,     0,     0,   132,   133,     0,     0,     0,   196,
+       0,   134,     0,   135,    25,     0,    27,     0,   136,   137,
+     138,   139,   140,   127,   128,   129,     0,     0,     0,     0,
+       0,     0,   141,   142,    35,    36,   130,     0,     0,     0,
+       0,     0,     0,     0,   143,     0,   131,     0,     0,     0,
+     132,   133,     0,   127,   128,   129,     0,   134,     0,   135,
+       0,     0,     0,     0,   136,   137,   138,   139,   140,   127,
+     128,     0,     0,     0,     0,   226,   131,     0,   141,   142,
+     132,   133,     0,     0,     0,     0,     0,   134,     0,   135,
+     143,   227,   131,     0,   136,   137,   138,   139,   140,   127,
+     128,     0,     0,     0,     0,   357,     0,     0,   141,   142,
+     136,   137,     0,   139,   140,     0,   127,   128,     0,   544,
+     143,   358,   131,   545,   141,   142,     0,     0,     0,     0,
+       0,     0,     0,     0,     0,     0,   143,     0,     0,   131,
+     136,   137,     0,   139,   140,   127,   128,     0,     0,     0,
+     127,   128,   360,     0,   141,   142,     0,   136,   137,     0,
+     139,   140,     0,   130,     0,     0,   143,     0,   131,     0,
+       0,   141,   142,   131,   127,   128,     0,     0,     0,     0,
+       0,   542,     0,   143,     0,     0,   136,   137,     0,   139,
+     140,   136,   137,     0,   139,   140,     0,   131,     0,     0,
+     141,   142,   127,   128,     0,   141,   142,     0,     0,   597,
+       0,     0,   143,     0,     0,   136,   137,   143,   139,   140,
+       0,     0,     0,     0,     0,   131,   127,   128,     0,   141,
+     142,     0,     0,   127,   128,     0,     0,     0,     0,     0,
+       0,   143,     0,   136,   137,     0,   139,   140,     0,   131,
+       0,     0,     0,   127,   128,     0,   131,   141,   142,     0,
+     296,   297,     0,     0,     0,     0,     0,   136,   137,   143,
+     139,   140,     0,   598,   136,   137,   131,   139,   140,     0,
+     614,   141,   142,     0,   296,   297,     0,     0,   141,   142,
+     296,   297,     0,   143,   136,   137,     0,   139,   140,     0,
+     143,   298,   299,     0,   300,   301,   431,     0,   141,   142,
+       0,   127,   128,     0,     0,   302,   303,     0,     0,     0,
+     143,     0,     0,     0,   398,   298,   299,   304,   300,   301,
+       0,   298,   299,     0,   300,   301,     0,     0,     0,   302,
+     303,     0,     0,     0,     0,   302,   303,     0,     0,     0,
+       0,   304,   136,   137,     0,   139,   140,   304,   411,   412,
+     413,     0,   414,     0,     0,     0,   141,   142,   411,   412,
+     413,     0,   414,     0,     0,   514,     0,     0,   143,     0,
+       0,     0,     0,     0,     0,   589,   415,     0,     0,     0,
+       0,     0,     0,     0,     0,     0,   415,     0,     0,     0,
+       0,     0,     0,     0,     0,     0,     0,   416,     0,     5,
+       0,     0,   417,   418,   419,     0,     0,   416,     0,     5,
+       0,     0,   417,   418,   419
   };
 
   const short int
   parser::yycheck_[] =
   {
-       2,     9,     4,   156,   157,    23,   143,    40,    10,    11,
-      51,    13,   194,    64,   103,    17,   316,   142,   302,   219,
-      22,   475,    53,   324,    74,   147,   350,   386,    30,    31,
-      32,    33,   422,   423,    17,   193,    38,     4,   243,    41,
-     340,   410,   419,    13,    85,   409,    48,    30,    31,    10,
-     178,    95,   180,   181,   417,    10,    10,     9,    10,    51,
-      25,   189,    64,    39,    10,    48,    52,    25,     3,     4,
-       4,    84,   197,    75,    92,    52,     9,    79,    10,    81,
-     121,    67,    84,   596,    51,     0,   599,    52,    22,    59,
-      67,    52,    25,    25,    52,   485,    51,    51,   100,     5,
-      52,    84,   104,   105,    35,    51,    67,   235,   158,    44,
-      45,    87,    47,    48,    84,    67,   167,   630,   120,   170,
-      52,   172,    49,    58,    59,    52,     9,    10,   428,    59,
-     163,   182,   165,    25,   511,    89,    38,   120,   320,   264,
-     322,   143,    25,   444,    10,    79,   446,   516,   512,   141,
-      59,   605,   515,   194,    84,   308,    58,   190,     4,    25,
-       9,   319,    38,    10,   166,   167,    25,   169,   170,    52,
-     172,   376,   372,   373,   141,    84,    25,    35,    25,    38,
-     182,    35,    58,   311,   638,    25,    52,    38,   565,   222,
-     192,   193,    32,   243,   553,   228,   240,   241,   323,    25,
-     500,    25,   204,    25,   206,    52,   247,   209,   598,    73,
-     193,    25,   536,   537,    78,    79,    80,   517,    32,   520,
-     589,   204,    35,    71,    72,   615,   603,    73,    74,    75,
-      76,    77,    78,    79,    80,   237,   267,    49,    84,    25,
-      52,   292,   293,   294,   295,   296,   297,   298,   299,   300,
-       5,    44,    45,   435,    47,   437,   456,    38,   192,   459,
-     310,    49,   384,    38,    52,    58,   268,   269,   357,    38,
-     570,    44,    45,    25,    47,   209,     9,   561,    38,   320,
-       9,    14,    15,   567,   584,    58,    51,    52,    10,   291,
-     292,   293,   294,   295,   296,   297,   298,   299,   300,    49,
-     302,    52,    52,    49,   348,    58,    52,    51,   352,    36,
-     328,    49,     3,     4,    52,    49,   441,   319,    52,    36,
-     353,    49,   324,    35,    52,    49,   376,   345,    52,    49,
-     380,    13,    52,    25,   268,   269,   319,    51,    52,   389,
-       4,   392,     6,   525,     8,    14,    15,    25,    12,    13,
-      51,    52,    10,    44,    45,    38,    47,    48,    35,   496,
-      24,    51,    52,     9,    28,    51,    52,    58,    59,   522,
-      34,    35,   374,    25,    38,    38,    40,    31,    42,    70,
-      35,   383,     6,    25,     8,   387,    51,    52,   390,    13,
-     392,    52,     3,     4,   435,    59,    60,    61,    62,    63,
-      51,    52,    10,    67,    28,    25,   408,   409,   410,    82,
-      34,    25,   420,    36,    38,   417,     9,    10,    82,    83,
-      84,    51,    52,    87,    88,    49,    90,     9,    10,    74,
-      75,    58,   434,    44,    45,    59,    47,    48,    62,    63,
-      76,    77,   444,    67,   148,   149,    58,    58,    59,   383,
-      82,   453,     9,   387,   505,    35,    35,    47,    82,    83,
-      84,     9,    38,    87,    88,    51,    90,     3,     4,   471,
-      25,    10,     4,   475,     9,    25,    25,    34,    35,    36,
-      12,    38,    82,    15,    25,    82,    82,    25,    10,    25,
-      22,    51,    10,   495,   496,    51,    28,    89,    38,    10,
-     434,    33,     3,   505,    47,    62,    52,    39,    44,    45,
-     512,    47,    48,   515,   516,   533,    48,     9,   520,   453,
-       9,    25,    58,    59,    50,    82,    58,    84,    25,    25,
-      87,    88,    89,    50,    70,     3,     4,    69,    25,     9,
-      49,    51,   550,    44,    45,    50,    47,    79,    10,   551,
-      52,    49,    84,    35,    82,   557,    51,    58,    59,   561,
-     568,   495,    94,    95,    96,   567,     6,    99,     8,    89,
-     572,    25,    58,    13,    89,     9,    44,    45,     9,    47,
-      52,    10,    49,    82,    10,    25,    35,   589,   120,    89,
-      58,    59,   124,   125,    34,   603,   128,    10,    38,    10,
-      10,   133,   134,   605,   136,   137,   138,   139,   140,   141,
-     142,   143,    89,    49,    10,   169,   148,   149,   390,    59,
-     533,    92,    62,   557,   156,   157,    56,    67,   160,    17,
-      18,    19,    20,    21,    22,   434,   638,    79,   572,     3,
-       4,   567,    82,    83,    84,     4,     3,    87,    88,   613,
-     551,   183,   640,   551,    -1,     4,    -1,     6,    -1,     8,
-     192,   193,    -1,    12,    -1,   197,    -1,    -1,     6,    -1,
-       8,     9,   204,   205,   206,    24,    -1,   209,   210,    28,
-      44,    45,    -1,    47,    -1,    34,    35,    44,    45,    38,
-      47,    40,    -1,    42,    58,    59,    34,    -1,    -1,    -1,
-      38,    58,    59,    -1,    -1,    -1,   238,    -1,   240,   241,
-      59,    60,    61,    62,    63,    -1,    -1,   249,    67,    -1,
-      -1,    59,   254,     4,    62,     6,    -1,     8,    -1,    67,
-      -1,    12,   264,    82,    83,    84,   268,   269,    87,    88,
-      -1,    90,    -1,    24,    82,    83,    84,    28,    -1,    87,
-      88,    -1,    -1,    34,    35,    -1,    -1,    38,    -1,    40,
-      -1,    42,    -1,    -1,    -1,    -1,     6,    -1,     8,    -1,
-      -1,    -1,    -1,    13,    -1,   307,   308,    -1,    59,    60,
-      61,    62,    63,    -1,    -1,    -1,    67,   319,    28,    -1,
-     322,   323,   324,    -1,    34,    -1,    -1,    -1,    38,    -1,
-      -1,    82,    83,    84,    -1,    -1,    87,    88,     6,    49,
-       8,    -1,   344,    -1,    -1,    13,   348,    -1,    -1,    59,
-     352,    -1,    62,    63,   356,    -1,   358,    67,    -1,    -1,
-      28,   363,    -1,    -1,    -1,     6,    34,     8,    -1,    10,
-      38,    -1,    82,    83,    84,   377,    -1,    87,    88,    -1,
-      90,   383,    -1,    -1,    -1,   387,    -1,    -1,    -1,    -1,
-      -1,    59,    -1,    34,    62,    63,    -1,    38,    -1,    67,
-      73,    74,    75,    76,    77,    78,    79,    80,    -1,    -1,
-      51,    84,    -1,    -1,    82,    83,    84,    -1,    59,    87,
-      88,    62,    90,    -1,    -1,    -1,    67,    -1,    -1,    -1,
-      -1,    -1,   434,    -1,    -1,   437,    -1,    -1,    -1,   441,
-      -1,    82,   444,    84,     0,     1,    87,    -1,     4,    -1,
-       6,   453,     8,    -1,    -1,    11,    12,    13,    -1,    -1,
-      -1,    -1,    34,    35,    36,    -1,    38,    -1,    24,    -1,
-      -1,    27,    28,    -1,    -1,    -1,    32,    33,    34,    35,
-      -1,    -1,    38,    -1,    40,    41,    42,    43,    -1,    -1,
-      62,    -1,    -1,   495,   496,    -1,    -1,    53,    54,    55,
-      56,    57,    -1,    59,    60,    61,    62,    63,    64,    -1,
-      82,    67,    84,    69,    -1,    87,    88,    89,   520,     6,
-     522,     8,    -1,   525,    -1,    81,    82,    83,    84,    85,
-      86,    87,    88,    -1,    90,    -1,   538,    24,   540,   541,
-      -1,    28,    -1,    -1,    -1,    -1,    -1,    34,    -1,    -1,
-      -1,    38,    -1,    -1,    -1,   557,     6,    -1,     8,    14,
-      15,    -1,    17,    18,    19,    20,    21,    22,    -1,    -1,
-     572,    -1,    59,    -1,    -1,    62,    63,    -1,    28,    -1,
-      67,    -1,     5,     6,    34,     8,    -1,    -1,    38,    -1,
-      -1,   593,     6,    -1,     8,    82,    83,    84,    12,    -1,
-      87,    88,    -1,    90,    -1,    -1,    -1,    30,    31,    59,
-      -1,    34,    62,    63,    37,    38,    39,    67,    -1,    -1,
-      34,    35,    -1,    46,    38,    -1,    40,    -1,    42,    -1,
-      -1,    -1,    82,    83,    84,    -1,    59,    87,    88,    62,
-      90,    -1,    -1,    -1,    67,    59,    60,    61,    62,     6,
-      -1,     8,    -1,    67,    -1,    12,    -1,    -1,    -1,    82,
-      83,    84,    -1,    -1,    87,    88,    -1,    -1,    82,    83,
-      84,    -1,    -1,    87,    88,    -1,    -1,    34,    35,    -1,
-      -1,    38,    -1,    40,    -1,    42,    -1,    -1,    -1,     6,
-      -1,     8,    -1,     9,    10,    -1,     6,    -1,     8,    -1,
-      -1,    -1,    59,    60,    61,    62,    -1,    24,    -1,    25,
-      67,    28,    -1,    -1,    -1,    -1,    32,    34,    28,    -1,
-      -1,    38,    38,    -1,    34,    82,    83,    84,    38,    -1,
-      87,    88,     6,    49,     8,     9,    52,    -1,    -1,     3,
-       4,    -1,    59,    -1,    -1,    62,    63,    -1,    -1,    59,
-      67,    67,    62,    63,    -1,    -1,    -1,    67,    -1,     6,
-      34,     8,    26,    10,    38,    82,    83,    84,    -1,    -1,
-      87,    88,    82,    83,    84,    49,    -1,    87,    88,    -1,
-      44,    45,    -1,    47,    48,    59,    50,    34,    62,    -1,
-       6,    38,     8,    67,    58,    59,    -1,    -1,    -1,     6,
-      -1,     8,    -1,    -1,    -1,    -1,    70,    -1,    82,    83,
-      84,    -1,    59,    87,    88,    62,    -1,     6,    34,     8,
-      67,    -1,    38,    -1,    13,    -1,     6,    34,     8,    -1,
-      -1,    38,    -1,    49,    -1,    82,    83,    84,    -1,    -1,
-      87,    88,    49,    59,    -1,    34,    62,    -1,    -1,    38,
-      -1,    67,    59,    -1,    34,    62,    -1,    -1,    38,    -1,
-      67,    -1,    -1,    -1,    -1,    -1,    82,    83,    84,    49,
-      59,    87,    88,    62,    -1,    82,    83,    84,    67,    59,
-      87,    88,    62,     6,    -1,     8,     9,    67,    -1,    -1,
-       6,    -1,     8,    82,    83,    84,    -1,    -1,    87,    88,
-      -1,    -1,    82,    83,    84,    -1,    -1,    87,    88,    -1,
-      -1,    34,    -1,    -1,    -1,    38,    -1,     6,    34,     8,
-      -1,    -1,    38,    -1,     6,    -1,     8,    -1,    -1,    -1,
-      -1,    -1,    -1,    -1,    -1,    -1,    59,    -1,    -1,    62,
-      -1,    -1,    -1,    59,    67,    34,    62,    -1,    -1,    38,
-      -1,    67,    34,    -1,    -1,    -1,    38,    -1,    -1,    82,
-      83,    84,    51,    -1,    87,    88,    82,    83,    84,    -1,
-      59,    87,    88,    62,    -1,    -1,    -1,    59,    67,    -1,
-      62,     3,     4,     5,    -1,    67,    -1,    -1,    -1,    -1,
-      12,    -1,    -1,    82,    16,    84,    -1,    -1,    87,    -1,
-      82,    -1,    84,    -1,    26,    87,    -1,    -1,    30,    31,
-      -1,    -1,    -1,    35,    -1,    37,    -1,    39,    40,    -1,
-      42,    -1,    44,    45,    46,    47,    48,    -1,    -1,    -1,
-      -1,     3,     4,     5,    -1,    -1,    58,    59,    60,    61,
-      12,    -1,    -1,    -1,    16,    -1,    -1,    -1,    70,    -1,
-      -1,    -1,    -1,    -1,    26,    -1,    -1,    -1,    30,    31,
-      -1,    -1,    -1,    35,    -1,    37,    -1,    39,    40,    -1,
-      42,    -1,    44,    45,    46,    47,    48,    -1,    -1,    -1,
-      -1,     3,     4,     5,    -1,    -1,    58,    59,    60,    61,
-      12,     9,    10,    -1,    -1,    -1,    -1,    -1,    70,    -1,
-      -1,    -1,    -1,    -1,    26,    -1,    -1,    25,    30,    31,
-      -1,    -1,    -1,    35,    32,    37,    -1,    39,    40,    -1,
-      42,    -1,    44,    45,    46,    47,    48,     3,     4,     5,
-      -1,    49,    -1,    -1,    52,    -1,    58,    59,    60,    61,
-      16,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    70,    67,
-      26,    -1,    -1,    -1,    30,    31,    -1,     3,     4,     5,
-      -1,    37,    -1,    39,    -1,    -1,    -1,    -1,    44,    45,
-      46,    47,    48,     3,     4,    -1,    -1,    -1,    -1,     9,
-      26,    -1,    58,    59,    30,    31,    -1,    -1,    -1,    -1,
-      -1,    37,    -1,    39,    70,    25,    26,    -1,    44,    45,
-      46,    47,    48,     3,     4,    -1,    -1,    -1,    -1,     9,
-      -1,    -1,    58,    59,    44,    45,    -1,    47,    48,    -1,
-       3,     4,    -1,     6,    70,    25,    26,    10,    58,    59,
-      -1,    -1,    -1,    -1,    -1,    -1,    -1,     3,     4,    -1,
-      70,    -1,    -1,    26,    44,    45,    -1,    47,    48,    -1,
-      16,    -1,    -1,    -1,     3,     4,    -1,     6,    58,    59,
-      26,    44,    45,    -1,    47,    48,    -1,    -1,    -1,    -1,
-      70,    -1,    -1,    -1,    -1,    58,    59,    26,    44,    45,
-      -1,    47,    48,     3,     4,    -1,    -1,    70,     3,     4,
-      10,    -1,    58,    59,    -1,    44,    45,    -1,    47,    48,
-      -1,    16,    -1,    -1,    70,    -1,    26,    -1,    -1,    58,
-      59,    26,     3,     4,    -1,    -1,    -1,    -1,    -1,    10,
-      -1,    70,    -1,    -1,    44,    45,    -1,    47,    48,    44,
-      45,    -1,    47,    48,    -1,    26,    -1,    -1,    58,    59,
-       3,     4,    -1,    58,    59,    -1,    -1,    10,     3,     4,
-      70,    -1,    -1,    44,    45,    70,    47,    48,    -1,    -1,
-      -1,    -1,    -1,    26,     3,     4,    -1,    58,    59,    -1,
-      -1,    26,     3,     4,    -1,    -1,    -1,    -1,    -1,    70,
-      -1,    44,    45,    -1,    47,    48,    -1,    26,    -1,    44,
-      45,    -1,    47,    48,    -1,    58,    59,    -1,    -1,     3,
-       4,    -1,    -1,    58,    59,    44,    45,    70,    47,    48,
-      -1,    50,    -1,    44,    45,    70,    47,    48,    -1,    58,
-      59,    -1,     9,    10,    -1,    -1,    -1,    58,    59,    -1,
-      -1,    70,    -1,     9,    10,    -1,    67,    -1,    25,    70,
-      44,    45,    -1,    47,    48,    32,    34,    35,    36,    25,
-      38,    38,    -1,    -1,    58,    59,    32,    34,    35,    36,
-      -1,    38,    49,    51,    -1,    52,    70,    34,    35,    36,
-      -1,    38,    -1,    49,    62,    -1,    52,    -1,    -1,    -1,
-      67,    -1,    -1,    -1,    51,    62,    -1,    -1,    -1,    -1,
-      -1,    67,    -1,    -1,    82,    62,    84,    -1,    -1,    87,
-      88,    89,    -1,    -1,    -1,    82,    -1,    84,    -1,    -1,
-      87,    88,    89,    -1,    -1,    82,    -1,    84,    -1,    -1,
-      87,    88,    89
+       2,     9,     4,    24,    53,   159,   160,   146,    10,    11,
+      66,    13,   198,    77,   145,     4,    18,   306,   150,    98,
+      55,    23,    18,   106,   390,    41,   328,   354,   223,    31,
+      32,    33,    34,   197,    23,    31,    32,    39,   413,    88,
+      42,   426,   427,   423,   247,     4,   479,   414,    50,   421,
+      13,    25,    53,    10,    50,   182,    10,   184,   185,    10,
+      39,    59,     9,    25,    66,    85,   193,     0,   320,    10,
+     201,    25,     9,    10,    95,   124,    78,     5,    25,    10,
+      82,    59,    84,    10,    25,    87,    25,    85,    25,    25,
+      52,    87,   344,    82,    53,    52,    59,   161,    52,    38,
+      51,   103,     9,    10,   489,   107,   108,    85,    82,    88,
+      67,    52,   239,    10,   170,    52,    52,   173,    25,   175,
+      51,   123,    85,   600,    51,    32,   603,   123,    25,    82,
+     186,    38,     9,    10,    38,   515,    38,   268,   324,    90,
+     326,   516,    49,   144,   146,    52,   448,   519,     9,   198,
+     166,    35,   168,   520,    58,    52,    58,   634,   312,   323,
+      67,    25,    25,    35,    25,   244,   245,   169,   170,    32,
+     172,   173,     6,   175,     8,    52,   609,   380,   194,    25,
+     432,   376,   377,   247,   186,   144,    32,     9,   315,   569,
+      67,   557,    14,    15,   196,   197,   327,    35,   450,    38,
+      34,   197,   251,    52,    38,    52,   208,   196,   210,   642,
+     226,   213,   208,   540,   541,    25,   232,   602,    67,    25,
+      67,    25,   524,    35,   213,    59,   593,   607,    62,    49,
+      71,    72,    52,    67,   619,    49,   271,    38,    52,   241,
+     296,   297,   298,   299,   300,   301,   302,   303,   304,    83,
+     314,    85,   504,   439,    88,   441,   388,    73,    44,    45,
+      38,    47,    78,    79,    80,   460,    51,    52,   463,   521,
+     272,   273,    58,   352,     5,   324,   565,   356,   361,    51,
+      52,    38,   571,   272,   273,    49,    49,    38,    52,    52,
+       3,     4,    25,   295,   296,   297,   298,   299,   300,   301,
+     302,   303,   304,    16,   306,     9,    49,     9,    10,    52,
+      10,   332,    49,    26,   445,    52,   380,    14,    15,    51,
+     384,   323,   574,    25,    51,    52,   328,   323,   349,   393,
+      32,    44,    45,    52,    47,    48,   588,    51,    52,    49,
+     396,   357,    52,   529,    36,    58,    59,    49,     9,    10,
+      52,    58,     6,    36,     8,    44,    45,    70,    47,    13,
+      35,   500,    13,    49,    25,    67,    52,    49,    25,    58,
+      52,    32,   526,    35,    28,    49,   378,    38,    52,    25,
+      34,    51,    52,    38,    38,   387,    51,    52,    49,   391,
+     439,    52,   394,    10,   396,    49,     4,     9,   387,    51,
+      52,    38,   391,    25,    12,    59,    67,    15,    62,    63,
+     412,   413,   414,    67,    35,    23,   424,     9,    10,   421,
+      31,    29,     6,    25,     8,     9,    34,    51,    52,    83,
+      84,    85,    40,    52,    88,    89,   438,    91,     9,    10,
+      74,    75,    50,    10,     9,    10,   448,    76,    77,   438,
+      34,    25,    60,   509,    38,   457,    83,    34,    35,    36,
+      25,    38,    25,    36,    72,    49,    35,    32,   457,    58,
+     151,   152,    58,   475,    82,    59,    83,   479,    62,    87,
+      35,    47,     9,    67,    49,    62,    38,    52,    25,    97,
+      98,    99,    51,    10,   102,     9,    25,   499,   500,    83,
+      84,    85,    67,    25,    88,    89,    83,   509,    85,    25,
+     499,    88,    89,    90,   516,   123,   537,   519,   520,   127,
+     128,    83,   524,   131,    25,    83,     3,     4,   136,   137,
+      83,   139,   140,   141,   142,   143,   144,   145,   146,    10,
+      51,    10,    51,   151,   152,    47,   554,    38,    90,    10,
+       9,   159,   160,   555,     4,   163,    52,     9,    25,   561,
+      25,    25,    25,   565,   572,    50,    50,    44,    45,   571,
+      47,    48,   561,     9,   576,    51,    49,    52,    50,   187,
+      10,    58,    59,    49,    58,    90,    35,   576,   196,   197,
+       6,   593,     8,   201,    51,    83,    90,    13,    25,   607,
+     208,   209,   210,     9,     9,   213,   214,   609,    52,    49,
+      10,    10,    28,    83,    35,    10,    10,    49,    34,    10,
+      10,   172,    38,    73,    74,    75,    76,    77,    78,    79,
+      80,   537,    90,    49,   242,    85,   244,   245,     3,     4,
+     642,     6,    90,    59,   394,   253,    62,    63,    95,    58,
+     258,    67,   571,    82,     4,   438,     6,     4,     8,   617,
+     268,    26,    12,    13,   272,   273,   555,    83,    84,    85,
+     555,   644,    88,    89,    24,    91,    -1,    -1,    28,    44,
+      45,    -1,    47,    48,    34,    35,    -1,    -1,    38,    -1,
+      40,    -1,    42,    58,    59,    73,    74,    75,    76,    77,
+      78,    79,    80,   311,   312,    70,    -1,    85,    -1,    59,
+      60,    61,    62,    63,     6,   323,     8,    67,   326,   327,
+     328,    -1,    -1,    -1,    -1,     6,    -1,     8,    -1,    -1,
+      -1,    -1,    24,    83,    84,    85,    28,     9,    88,    89,
+     348,    91,    34,    -1,   352,    -1,    38,    28,   356,    -1,
+      -1,    -1,   360,    34,   362,    -1,    -1,    38,    -1,   367,
+      -1,    -1,    34,    35,    36,    -1,    38,    59,    -1,    -1,
+      62,    63,    -1,   381,    -1,    67,    -1,    -1,    59,   387,
+       3,    62,    63,   391,    -1,    -1,    67,    -1,    -1,    -1,
+      62,    83,    84,    85,    -1,    -1,    88,    89,    -1,    91,
+      -1,    -1,    83,    84,    85,    -1,    -1,    88,    89,    -1,
+      91,    83,    -1,    85,    -1,    -1,    88,    89,    90,    -1,
+      -1,    44,    45,    -1,    47,    -1,    -1,    -1,    -1,    -1,
+     438,    -1,    -1,   441,    -1,    58,    59,   445,    -1,    -1,
+     448,    -1,     0,     1,    -1,    -1,     4,    -1,     6,   457,
+       8,    -1,    -1,    11,    12,    13,    -1,    -1,    -1,    34,
+      35,    36,    -1,    38,    -1,    -1,    24,    25,    -1,    27,
+      28,    -1,    -1,    -1,    32,    33,    34,    35,    -1,    -1,
+      38,    -1,    40,    41,    42,    43,    -1,    62,    -1,    -1,
+      -1,   499,   500,    -1,    -1,    53,    54,    55,    56,    57,
+      -1,    59,    60,    61,    62,    63,    64,    -1,    83,    67,
+      85,    69,    -1,    88,    89,    90,   524,    -1,   526,    -1,
+      -1,   529,    -1,    81,    82,    83,    84,    85,    86,    87,
+      88,    89,    -1,    91,   542,    -1,   544,   545,    -1,     4,
+      -1,     6,    -1,     8,    -1,    -1,    -1,    12,    -1,    -1,
+      -1,    -1,     4,   561,     6,    -1,     8,    -1,    -1,    24,
+      12,    -1,    -1,    28,    -1,    -1,    -1,    -1,   576,    34,
+      35,    -1,    24,    38,    -1,    40,    28,    42,    -1,    -1,
+      -1,    -1,    34,    35,    -1,    -1,    38,    -1,    40,   597,
+      42,    -1,    -1,    -1,    59,    60,    61,    62,    63,    -1,
+      -1,    -1,    67,    -1,    -1,    -1,    -1,    59,    60,    61,
+      62,    63,    -1,     5,     6,    67,     8,    -1,    83,    84,
+      85,     3,     4,    88,    89,    -1,    91,     6,    -1,     8,
+      -1,    83,    84,    85,    13,    -1,    88,    89,    30,    31,
+      -1,    -1,    34,    -1,    -1,    37,    38,    39,    -1,    28,
+      -1,    -1,    -1,    -1,    46,    34,    -1,    -1,    -1,    38,
+      -1,    -1,    44,    45,    -1,    47,     6,    59,     8,    -1,
+      62,    -1,    12,    -1,    -1,    67,    58,    59,    -1,     6,
+      59,     8,    -1,    62,    63,    12,    -1,    -1,    67,    -1,
+      -1,    83,    84,    85,    34,    35,    88,    89,    38,    -1,
+      40,    -1,    42,    -1,    83,    84,    85,    34,    35,    88,
+      89,    38,    91,    40,    -1,    42,    -1,    -1,    -1,    59,
+      60,    61,    62,    -1,    -1,    -1,    -1,    67,    -1,    -1,
+       3,     4,    59,    60,    61,    62,    -1,     6,    -1,     8,
+      67,    -1,    -1,    83,    84,    85,    -1,     3,    88,    89,
+      -1,    -1,    -1,    -1,    -1,    24,    83,    84,    85,    28,
+      -1,    88,    89,    -1,    -1,    34,    -1,    -1,     6,    38,
+       8,    44,    45,    -1,    47,    13,    -1,     6,    -1,     8,
+      -1,    -1,    -1,    -1,    -1,    58,    59,    25,    44,    45,
+      59,    47,    -1,    62,    63,    -1,    34,    -1,    67,    28,
+      38,    -1,    58,    59,    -1,    34,    -1,    -1,     6,    38,
+       8,    -1,    10,    -1,    83,    84,    85,    -1,    -1,    88,
+      89,    59,    -1,    -1,    62,    -1,    -1,    -1,    -1,    67,
+      59,    -1,    -1,    62,    63,    -1,    34,    -1,    67,     6,
+      38,     8,     9,    -1,    -1,    83,    84,    85,    -1,    -1,
+      88,    89,    -1,    -1,    83,    84,    85,    -1,    -1,    88,
+      89,    59,    -1,    -1,    62,    -1,    -1,    34,    -1,    67,
+       6,    38,     8,    -1,    -1,    -1,    -1,     6,    -1,     8,
+      -1,    -1,    -1,    -1,    -1,    83,    84,    85,    -1,    -1,
+      88,    89,    59,    -1,    -1,    62,    -1,    -1,    34,    -1,
+      67,    -1,    38,    -1,    -1,    34,    -1,    -1,     6,    38,
+       8,    -1,    -1,    49,    -1,    13,    83,    84,    85,    -1,
+      49,    88,    89,    59,    -1,    -1,    62,    -1,    -1,    -1,
+      59,    67,    -1,    62,    -1,    -1,    34,    -1,    67,     6,
+      38,     8,    -1,    -1,    -1,    -1,    -1,    83,    84,    85,
+      -1,    -1,    88,    89,    83,    84,    85,    -1,    -1,    88,
+      89,    59,    -1,    -1,    62,    -1,    -1,    34,    -1,    67,
+       6,    38,     8,     9,    -1,    -1,    -1,     6,    -1,     8,
+      -1,    -1,    49,    -1,    -1,    83,    84,    85,    -1,    -1,
+      88,    89,    59,    -1,    -1,    62,    -1,    -1,    34,    -1,
+      67,    -1,    38,    -1,    -1,    34,    -1,    -1,    -1,    38,
+      -1,    -1,    -1,     6,    -1,     8,    83,    84,    85,    -1,
+      -1,    88,    89,    59,    -1,    -1,    62,    -1,    -1,    -1,
+      59,    67,    -1,    62,    -1,     6,    -1,     8,    67,    10,
+      -1,    34,    -1,    -1,    -1,    38,    -1,    83,    84,    85,
+      -1,    -1,    88,    89,    83,    84,    85,    -1,    51,    88,
+      89,    -1,    -1,    34,    -1,    -1,    59,    38,    -1,    62,
+      -1,    -1,    -1,    -1,    67,    -1,    -1,    -1,    14,    15,
+      51,    17,    18,    19,    20,    21,    22,    -1,    59,    -1,
+      83,    62,    85,    -1,    -1,    88,    67,     3,     4,     5,
+      17,    18,    19,    20,    21,    22,    12,    -1,    -1,    -1,
+      16,    -1,    83,    -1,    85,    -1,    -1,    88,    -1,    -1,
+      26,     3,     4,    -1,    30,    31,    -1,    -1,    -1,    35,
+      -1,    37,    -1,    39,    40,    -1,    42,    -1,    44,    45,
+      46,    47,    48,    -1,    -1,    -1,    -1,     3,     4,     5,
+      -1,    -1,    58,    59,    60,    61,    12,    -1,    -1,    -1,
+      16,    -1,    44,    45,    70,    47,    48,    -1,    -1,    -1,
+      26,    -1,    -1,    -1,    30,    31,    58,    59,    -1,    35,
+      -1,    37,    -1,    39,    40,    -1,    42,    -1,    44,    45,
+      46,    47,    48,    -1,    -1,    -1,    -1,     3,     4,     5,
+      -1,    -1,    58,    59,    60,    61,    12,    -1,    -1,    -1,
+      -1,    -1,    -1,    -1,    70,    -1,    -1,    -1,    -1,    -1,
+      26,    -1,    -1,    -1,    30,    31,    -1,    -1,    -1,    35,
+      -1,    37,    -1,    39,    40,    -1,    42,    -1,    44,    45,
+      46,    47,    48,     3,     4,     5,    -1,    -1,    -1,    -1,
+      -1,    -1,    58,    59,    60,    61,    16,    -1,    -1,    -1,
+      -1,    -1,    -1,    -1,    70,    -1,    26,    -1,    -1,    -1,
+      30,    31,    -1,     3,     4,     5,    -1,    37,    -1,    39,
+      -1,    -1,    -1,    -1,    44,    45,    46,    47,    48,     3,
+       4,    -1,    -1,    -1,    -1,     9,    26,    -1,    58,    59,
+      30,    31,    -1,    -1,    -1,    -1,    -1,    37,    -1,    39,
+      70,    25,    26,    -1,    44,    45,    46,    47,    48,     3,
+       4,    -1,    -1,    -1,    -1,     9,    -1,    -1,    58,    59,
+      44,    45,    -1,    47,    48,    -1,     3,     4,    -1,     6,
+      70,    25,    26,    10,    58,    59,    -1,    -1,    -1,    -1,
+      -1,    -1,    -1,    -1,    -1,    -1,    70,    -1,    -1,    26,
+      44,    45,    -1,    47,    48,     3,     4,    -1,    -1,    -1,
+       3,     4,    10,    -1,    58,    59,    -1,    44,    45,    -1,
+      47,    48,    -1,    16,    -1,    -1,    70,    -1,    26,    -1,
+      -1,    58,    59,    26,     3,     4,    -1,    -1,    -1,    -1,
+      -1,    10,    -1,    70,    -1,    -1,    44,    45,    -1,    47,
+      48,    44,    45,    -1,    47,    48,    -1,    26,    -1,    -1,
+      58,    59,     3,     4,    -1,    58,    59,    -1,    -1,    10,
+      -1,    -1,    70,    -1,    -1,    44,    45,    70,    47,    48,
+      -1,    -1,    -1,    -1,    -1,    26,     3,     4,    -1,    58,
+      59,    -1,    -1,     3,     4,    -1,    -1,    -1,    -1,    -1,
+      -1,    70,    -1,    44,    45,    -1,    47,    48,    -1,    26,
+      -1,    -1,    -1,     3,     4,    -1,    26,    58,    59,    -1,
+       3,     4,    -1,    -1,    -1,    -1,    -1,    44,    45,    70,
+      47,    48,    -1,    50,    44,    45,    26,    47,    48,    -1,
+      50,    58,    59,    -1,     3,     4,    -1,    -1,    58,    59,
+       3,     4,    -1,    70,    44,    45,    -1,    47,    48,    -1,
+      70,    44,    45,    -1,    47,    48,    25,    -1,    58,    59,
+      -1,     3,     4,    -1,    -1,    58,    59,    -1,    -1,    -1,
+      70,    -1,    -1,    -1,    67,    44,    45,    70,    47,    48,
+      -1,    44,    45,    -1,    47,    48,    -1,    -1,    -1,    58,
+      59,    -1,    -1,    -1,    -1,    58,    59,    -1,    -1,    -1,
+      -1,    70,    44,    45,    -1,    47,    48,    70,    34,    35,
+      36,    -1,    38,    -1,    -1,    -1,    58,    59,    34,    35,
+      36,    -1,    38,    -1,    -1,    51,    -1,    -1,    70,    -1,
+      -1,    -1,    -1,    -1,    -1,    51,    62,    -1,    -1,    -1,
+      -1,    -1,    -1,    -1,    -1,    -1,    62,    -1,    -1,    -1,
+      -1,    -1,    -1,    -1,    -1,    -1,    -1,    83,    -1,    85,
+      -1,    -1,    88,    89,    90,    -1,    -1,    83,    -1,    85,
+      -1,    -1,    88,    89,    90
   };
 
   const unsigned char
   parser::yystos_[] =
   {
-       0,    71,    72,    92,    93,    84,    95,   148,     0,     1,
-       4,     6,     8,    11,    12,    13,    24,    27,    28,    32,
-      33,    34,    35,    38,    40,    41,    42,    43,    53,    54,
-      55,    56,    57,    59,    60,    61,    62,    63,    64,    67,
-      69,    81,    82,    83,    85,    86,    87,    88,    90,    94,
-      95,    99,   109,   110,   111,   112,   114,   119,   129,   130,
-     133,   137,   141,   160,     5,   174,    95,   159,    95,    59,
-      95,    99,    95,    99,    35,    59,    95,   109,    25,   138,
-     139,    39,    87,    49,    90,    99,   110,   128,    10,    99,
-     101,   103,   104,   105,    35,    35,    13,    25,    99,    38,
-      59,    95,   109,   109,    13,    59,    95,    95,    99,    95,
-      99,   100,    25,   139,    95,    25,    25,    24,    28,    63,
-      90,    99,   109,    38,     3,     4,     5,    16,    26,    30,
-      31,    37,    39,    44,    45,    46,    47,    48,    58,    59,
-      70,   108,   129,     9,    10,    52,    67,   135,    14,    15,
-      17,    18,    19,    20,    21,    22,   113,   113,    35,    99,
-     108,   125,    25,    32,    25,    32,     6,     8,    34,    38,
-      59,    62,    67,    82,    87,    95,    96,    25,    38,   172,
-      38,    38,     5,    16,   101,   102,   131,   132,    95,    38,
-       9,    25,    35,    90,    99,   110,   119,   124,   126,   133,
-     134,   160,    95,    25,    90,   108,     9,   117,    49,    52,
-      10,    52,   103,    51,    49,    99,   143,   146,    49,   143,
-     147,    99,     9,    25,    99,   107,    95,    58,     9,    25,
-     140,   140,    95,    95,    58,    38,    25,    38,    52,    67,
-      36,    36,   173,    35,    24,    28,    63,    99,   109,   108,
-     102,   106,    99,    99,    13,    99,    99,    99,    99,    99,
-      99,    99,    99,    99,   129,   125,   110,   115,   136,   136,
-      99,   111,   111,   112,   112,    49,   102,   127,    99,    25,
-     139,    25,   139,    95,    96,    10,    51,    96,    97,    96,
-      96,    38,     3,     4,    44,    45,    47,    48,    58,    59,
-      70,   106,    35,   106,   106,    96,    99,    10,     9,    49,
-      52,    38,   106,    25,   139,    49,   110,   122,   123,    90,
-      99,   126,   108,   124,     9,    10,    25,    52,    35,   125,
-      10,    25,    52,    25,    52,    25,    52,    31,   115,   116,
-     110,    99,    52,    25,     6,    10,   142,    49,    52,    25,
-     142,    49,    52,     9,    25,   139,    10,    51,    52,    58,
-      82,    25,   139,    36,    58,    58,    82,   106,    95,   149,
-     150,    99,   143,   143,    35,   132,    35,   108,    99,    51,
-      52,    99,   125,    10,   135,   110,   110,     9,    49,    52,
-      38,    51,    10,    51,    67,    97,    98,    96,    96,    96,
-      96,    96,    96,    96,    96,    96,    51,    34,    35,    36,
-      38,    62,    82,    87,    88,    89,    95,   151,   152,   153,
-     154,   156,   157,   158,   174,    51,    51,    25,   112,   102,
-     106,    51,   117,    49,    52,    99,   126,   108,    10,    25,
-      52,   124,   125,   116,     9,    49,   101,   120,   121,    25,
-     117,    99,   101,     9,   145,    25,   143,   145,    25,   143,
-     139,    99,   140,    99,    82,    25,    99,    82,    82,    25,
-      51,    10,    51,   142,   142,     4,    73,    74,    75,    76,
-      77,    78,    79,    80,    95,   166,   167,   169,   170,   171,
-      49,   132,    99,   102,   110,   136,     9,    10,   118,   118,
-     110,   102,    98,    51,    96,    10,    51,   154,   155,   155,
-      51,   153,    38,    89,   152,   151,    10,   174,   172,   172,
-       9,   117,     9,    51,   122,   108,    10,    25,    52,   125,
-     116,   117,    49,    52,   110,   144,   142,   142,    10,    25,
-       6,    10,    25,    25,    95,    25,    50,    50,   166,   172,
-      49,    52,    49,   110,   115,   135,   117,     9,    51,    49,
-      50,    10,    51,   155,   152,   153,   117,    52,    49,   116,
-     112,   120,    10,   145,   145,    99,    99,    99,    58,    35,
-     174,   167,   169,   118,   110,    51,   154,    51,   156,    89,
-     174,   117,   110,    10,    50,    82,    89,   163,   164,   165,
-      25,   117,    51,   153,    99,     9,   173,   172,   173,   174,
-      50,   166,     9,    52,    49,    10,    82,   163,    73,    78,
-      79,    80,   168,   172,    10,    35,    74,    75,    89,   161,
-     162,    10,    10,   173,    76,    77,    89,    49,    10,   166,
-      10,   168
+       0,    71,    72,    93,    94,    85,    96,   149,     0,     1,
+       4,     6,     8,    11,    12,    13,    24,    25,    27,    28,
+      32,    33,    34,    35,    38,    40,    41,    42,    43,    53,
+      54,    55,    56,    57,    59,    60,    61,    62,    63,    64,
+      67,    69,    81,    82,    83,    84,    86,    87,    88,    89,
+      91,    95,    96,   100,   110,   111,   112,   113,   115,   120,
+     130,   131,   134,   138,   142,   161,     5,    82,   175,    96,
+     160,    96,    59,    96,   100,    96,   100,    35,    59,    96,
+     110,    25,   139,   140,    39,    88,    49,    91,   100,   111,
+     129,    10,   100,   102,   104,   105,   106,    35,    35,    13,
+      25,   100,    38,    59,    96,   110,   110,    13,    59,    96,
+      96,   100,    96,   100,   101,    25,   140,    96,    25,    25,
+      24,    28,    63,    91,   100,   110,    38,     3,     4,     5,
+      16,    26,    30,    31,    37,    39,    44,    45,    46,    47,
+      48,    58,    59,    70,   109,   130,     9,    10,    52,    67,
+     136,    14,    15,    17,    18,    19,    20,    21,    22,   114,
+     114,    35,   100,   109,   126,    25,    32,    25,    32,     6,
+       8,    34,    38,    59,    62,    67,    83,    88,    96,    97,
+      25,    82,    38,   173,    38,    38,     5,    16,   102,   103,
+     132,   133,    96,    38,     9,    25,    35,    91,   100,   111,
+     120,   125,   127,   134,   135,   161,    96,    25,    91,   109,
+       9,   118,    49,    52,    10,    52,   104,    51,    49,   100,
+     144,   147,    49,   144,   148,   100,     9,    25,   100,   108,
+      96,    58,     9,    25,   141,   141,    96,    96,    58,    38,
+      25,    38,    52,    67,    36,    36,   174,    35,    24,    28,
+      63,   100,   110,   109,   103,   107,   100,   100,    13,   100,
+     100,   100,   100,   100,   100,   100,   100,   100,   130,   126,
+     111,   116,   137,   137,   100,   112,   112,   113,   113,    49,
+     103,   128,   100,    25,   140,    25,   140,    96,    97,    10,
+      51,    97,    98,    97,    97,    38,     3,     4,    44,    45,
+      47,    48,    58,    59,    70,   107,    35,   107,   107,    97,
+     100,    10,     9,    49,    52,    38,   107,    25,   140,    49,
+     111,   123,   124,    91,   100,   127,   109,   125,     9,    10,
+      25,    52,    35,   126,    10,    25,    52,    25,    52,    25,
+      52,    31,   116,   117,   111,   100,    52,    25,     6,    10,
+     143,    49,    52,    25,   143,    49,    52,     9,    25,   140,
+      10,    51,    52,    58,    83,    25,   140,    36,    58,    58,
+      83,   107,    96,   150,   151,   100,   144,   144,    35,   133,
+      35,   109,   100,    51,    52,   100,   126,    10,   136,   111,
+     111,     9,    49,    52,    38,    51,    10,    51,    67,    98,
+      99,    97,    97,    97,    97,    97,    97,    97,    97,    97,
+      51,    34,    35,    36,    38,    62,    83,    88,    89,    90,
+      96,   152,   153,   154,   155,   157,   158,   159,   175,    51,
+      51,    25,   113,   103,   107,    51,   118,    49,    52,   100,
+     127,   109,    10,    25,    52,   125,   126,   117,     9,    49,
+     102,   121,   122,    25,   118,   100,   102,     9,   146,    25,
+     144,   146,    25,   144,   140,   100,   141,   100,    83,    25,
+     100,    83,    83,    25,    51,    10,    51,   143,   143,     4,
+      73,    74,    75,    76,    77,    78,    79,    80,    96,   167,
+     168,   170,   171,   172,    49,   133,   100,   103,   111,   137,
+       9,    10,   119,   119,   111,   103,    99,    51,    97,    10,
+      51,   155,   156,   156,    51,   154,    38,    90,   153,   152,
+      10,   175,   173,   173,     9,   118,     9,    51,   123,   109,
+      10,    25,    52,   126,   117,   118,    49,    52,   111,   145,
+     143,   143,    10,    25,     6,    10,    25,    25,    96,    25,
+      50,    50,   167,   173,    49,    52,    49,   111,   116,   136,
+     118,     9,    51,    49,    50,    10,    51,   156,   153,   154,
+     118,    52,    49,   117,   113,   121,    10,   146,   146,   100,
+     100,   100,    58,    35,   175,   168,   170,   119,   111,    51,
+     155,    51,   157,    90,   175,   118,   111,    10,    50,    83,
+      90,   164,   165,   166,    25,   118,    51,   154,   100,     9,
+     174,   173,   174,   175,    50,   167,     9,    52,    49,    10,
+      83,   164,    73,    78,    79,    80,   169,   173,    10,    35,
+      74,    75,    90,   162,   163,    10,    10,   174,    76,    77,
+      90,    49,    10,   167,    10,   169
   };
 
   const unsigned char
   parser::yyr1_[] =
   {
-       0,    91,    92,    92,    93,    93,    94,    95,    96,    96,
-      96,    96,    96,    96,    96,    96,    96,    96,    96,    96,
-      96,    96,    96,    96,    96,    96,    96,    96,    96,    96,
-      96,    97,    97,    98,    98,    99,    99,    99,    99,    99,
-      99,    99,    99,    99,    99,    99,    99,    99,    99,    99,
-      99,    99,    99,    99,    99,    99,    99,    99,   100,   100,
-     101,   101,   102,   102,   103,   103,   103,   103,   104,   104,
-     105,   105,   106,   106,   107,   107,   108,   108,   108,   108,
-     108,   108,   109,   109,   109,   109,   110,   110,   110,   110,
-     110,   110,   110,   110,   110,   110,   110,   110,   110,   111,
-     111,   111,   111,   112,   112,   112,   113,   113,   113,   113,
-     113,   113,   114,   114,   115,   115,   116,   116,   117,   117,
-     118,   118,   119,   119,   119,   119,   119,   120,   120,   121,
-     121,   122,   123,   123,   124,   124,   124,   124,   125,   125,
-     125,   126,   126,   126,   126,   127,   127,   128,   128,   129,
-     129,   129,   129,   130,   130,   130,   130,   131,   131,   132,
-     132,   133,   133,   133,   134,   135,   135,   136,   136,   136,
-     137,   137,   137,   137,   138,   138,   138,   138,   138,   138,
-     138,   138,   138,   138,   138,   139,   139,   139,   139,   139,
-     139,   140,   140,   140,   141,   141,   141,    94,    94,    94,
-      94,    94,    94,    94,    94,   142,   142,   143,   143,   144,
-     144,   145,   145,   145,    94,    94,   146,   146,   147,   147,
-      94,    94,    94,    94,    94,    94,    94,    94,    94,    94,
-      94,    94,    94,    94,    94,    94,    94,    94,   148,    94,
-      94,    94,    94,    94,   149,   149,   150,   150,    94,    94,
-      94,    94,    94,   151,   151,   152,   152,   152,   152,   152,
-     152,   152,   152,   152,   152,   152,   152,   152,   153,   153,
-     153,   154,   154,   155,   155,   156,   156,   157,   157,   158,
-     158,   159,   159,   160,   160,   161,   161,   162,   162,   163,
-     163,   163,   164,   164,   165,   165,   166,   166,   166,   166,
-     166,   166,   166,   166,   166,   167,   168,   168,   168,   168,
-     169,   169,   170,   170,   170,   170,   171,   171,    94,   172,
-     173,   174
+       0,    92,    93,    93,    94,    94,    95,    95,    95,    95,
+      96,    97,    97,    97,    97,    97,    97,    97,    97,    97,
+      97,    97,    97,    97,    97,    97,    97,    97,    97,    97,
+      97,    97,    97,    97,    98,    98,    99,    99,   100,   100,
+     100,   100,   100,   100,   100,   100,   100,   100,   100,   100,
+     100,   100,   100,   100,   100,   100,   100,   100,   100,   100,
+     100,   101,   101,   102,   102,   103,   103,   104,   104,   104,
+     104,   105,   105,   106,   106,   107,   107,   108,   108,   109,
+     109,   109,   109,   109,   109,   110,   110,   110,   110,   111,
+     111,   111,   111,   111,   111,   111,   111,   111,   111,   111,
+     111,   111,   112,   112,   112,   112,   113,   113,   113,   114,
+     114,   114,   114,   114,   114,   115,   115,   116,   116,   117,
+     117,   118,   118,   119,   119,   120,   120,   120,   120,   120,
+     121,   121,   122,   122,   123,   124,   124,   125,   125,   125,
+     125,   126,   126,   126,   127,   127,   127,   127,   128,   128,
+     129,   129,   130,   130,   130,   130,   131,   131,   131,   131,
+     132,   132,   133,   133,   134,   134,   134,   135,   136,   136,
+     137,   137,   137,   138,   138,   138,   138,   139,   139,   139,
+     139,   139,   139,   139,   139,   139,   139,   139,   140,   140,
+     140,   140,   140,   140,   141,   141,   141,   142,   142,   142,
+      95,    95,    95,    95,    95,    95,    95,    95,   143,   143,
+     144,   144,   145,   145,   146,   146,   146,    95,    95,   147,
+     147,   148,   148,    95,    95,    95,    95,    95,    95,    95,
+      95,    95,    95,    95,    95,    95,    95,    95,    95,    95,
+      95,   149,    95,    95,    95,    95,    95,   150,   150,   151,
+     151,    95,    95,    95,    95,    95,   152,   152,   153,   153,
+     153,   153,   153,   153,   153,   153,   153,   153,   153,   153,
+     153,   154,   154,   154,   155,   155,   156,   156,   157,   157,
+     158,   158,   159,   159,   160,   160,   161,   161,   162,   162,
+     163,   163,   164,   164,   164,   165,   165,   166,   166,   167,
+     167,   167,   167,   167,   167,   167,   167,   167,   168,   169,
+     169,   169,   169,   170,   170,   171,   171,   171,   171,   172,
+     172,    95,   173,   174,   175
   };
 
   const unsigned char
   parser::yyr2_[] =
   {
-       0,     2,     2,     2,     2,     0,     3,     1,     3,     3,
-       3,     3,     3,     3,     3,     3,     3,     2,     2,     2,
-       3,     3,     4,     4,     5,     3,     1,     1,     1,     1,
-       1,     1,     3,     1,     0,     3,     3,     3,     3,     3,
-       3,     3,     3,     3,     3,     2,     2,     3,     4,     5,
-       3,     1,     1,     1,     1,     1,     1,     1,     1,     3,
-       1,     3,     1,     0,     2,     1,     1,     0,     2,     3,
-       1,     2,     1,     3,     3,     5,     1,     1,     1,     1,
-       1,     1,     1,     4,     2,     5,     1,     2,     3,     1,
-       2,     3,     1,     2,     3,     3,     4,     5,     1,     4,
-       4,     2,     1,     3,     3,     1,     1,     1,     1,     1,
-       1,     1,     3,     3,     1,     3,     1,     0,     2,     0,
-       2,     0,     1,     1,     1,     1,     1,     2,     2,     1,
-       3,     2,     1,     3,     2,     3,     3,     4,     1,     2,
-       0,     3,     4,     2,     1,     6,     4,     2,     4,     3,
-       4,     2,     3,     3,     4,     2,     1,     4,     6,     1,
-       0,     4,     5,     6,     3,     1,     1,     3,     4,     0,
-       5,     5,     7,     3,     3,     3,     3,     3,     4,     4,
-       5,     5,     3,     3,     0,     3,     3,     4,     5,     3,
-       3,     1,     2,     2,     1,     1,     1,     2,     3,     3,
-       2,     2,     3,     3,     2,     2,     0,     3,     1,     1,
-       3,     2,     1,     0,     6,     6,     3,     5,     3,     5,
-       4,     4,     5,     5,     5,     6,     2,     4,     3,     6,
-       5,     4,     5,    10,     8,     5,     6,     3,     3,     5,
-       2,     2,     3,     5,     3,     1,     0,     1,     6,     3,
-       4,     4,     3,     2,     1,     3,     3,     2,     3,     4,
-       5,     4,     1,     1,     1,     1,     1,     1,     3,     2,
-       1,     3,     1,     1,     0,     3,     3,     4,     1,     1,
-       0,     1,     4,     8,    10,     1,     3,     1,     0,     6,
-       8,     8,     1,     4,     1,     0,     1,     1,     1,     1,
-       1,     1,     1,     1,     1,     6,     1,     1,     1,     1,
-      16,     8,     3,     3,     1,     1,     1,     0,     8,     0,
-       0,     0
+       0,     2,     2,     3,     2,     0,     1,     1,     3,     3,
+       1,     3,     3,     3,     3,     3,     3,     3,     3,     3,
+       2,     2,     2,     3,     3,     4,     4,     5,     3,     1,
+       1,     1,     1,     1,     1,     3,     1,     0,     3,     3,
+       3,     3,     3,     3,     3,     3,     3,     3,     2,     2,
+       3,     4,     5,     3,     1,     1,     1,     1,     1,     1,
+       1,     1,     3,     1,     3,     1,     0,     2,     1,     1,
+       0,     2,     3,     1,     2,     1,     3,     3,     5,     1,
+       1,     1,     1,     1,     1,     1,     4,     2,     5,     1,
+       2,     3,     1,     2,     3,     1,     2,     3,     3,     4,
+       5,     1,     4,     4,     2,     1,     3,     3,     1,     1,
+       1,     1,     1,     1,     1,     3,     3,     1,     3,     1,
+       0,     2,     0,     2,     0,     1,     1,     1,     1,     1,
+       2,     2,     1,     3,     2,     1,     3,     2,     3,     3,
+       4,     1,     2,     0,     3,     4,     2,     1,     6,     4,
+       2,     4,     3,     4,     2,     3,     3,     4,     2,     1,
+       4,     6,     1,     0,     4,     5,     6,     3,     1,     1,
+       3,     4,     0,     5,     5,     7,     3,     3,     3,     3,
+       3,     4,     4,     5,     5,     3,     3,     0,     3,     3,
+       4,     5,     3,     3,     1,     2,     2,     1,     1,     1,
+       2,     3,     3,     2,     2,     3,     3,     2,     2,     0,
+       3,     1,     1,     3,     2,     1,     0,     6,     6,     3,
+       5,     3,     5,     4,     4,     5,     5,     5,     6,     2,
+       4,     3,     6,     5,     4,     5,    10,     8,     5,     6,
+       3,     3,     5,     2,     2,     3,     5,     3,     1,     0,
+       1,     6,     3,     4,     4,     3,     2,     1,     3,     3,
+       2,     3,     4,     5,     4,     1,     1,     1,     1,     1,
+       1,     3,     2,     1,     3,     1,     1,     0,     3,     3,
+       4,     1,     1,     0,     1,     4,     8,    10,     1,     3,
+       1,     0,     6,     8,     8,     1,     4,     1,     0,     1,
+       1,     1,     1,     1,     1,     1,     1,     1,     6,     1,
+       1,     1,     1,    16,     8,     3,     3,     1,     1,     1,
+       0,     8,     0,     0,     0
   };
 
 
@@ -3518,70 +3534,71 @@ namespace Gringo { namespace Input { namespace NonGroundGrammar {
   "UBNOT", "UMINUS", "\"|\"", "\"#volatile\"", "\":~\"", "\"^\"",
   "\"<program>\"", "\"<define>\"", "\"any\"", "\"unary\"", "\"binary\"",
   "\"left\"", "\"right\"", "\"head\"", "\"body\"", "\"directive\"",
-  "\"#theory\"", "\"<NUMBER>\"", "\"<ANONYMOUS>\"", "\"<IDENTIFIER>\"",
-  "\"<PYTHON>\"", "\"<LUA>\"", "\"<STRING>\"", "\"<VARIABLE>\"",
-  "\"<THEORYOP>\"", "\"not\"", "$accept", "start", "program", "statement",
-  "identifier", "constterm", "consttermvec", "constargvec", "term",
-  "unaryargvec", "ntermvec", "termvec", "tuple", "tuplevec_sem",
-  "tuplevec", "argvec", "binaryargvec", "cmp", "atom", "literal",
-  "csp_mul_term", "csp_add_term", "csp_rel", "csp_literal", "nlitvec",
-  "litvec", "optcondition", "noptcondition", "aggregatefunction",
-  "bodyaggrelem", "bodyaggrelemvec", "altbodyaggrelem",
-  "altbodyaggrelemvec", "bodyaggregate", "upper", "lubodyaggregate",
-  "headaggrelemvec", "altheadaggrelemvec", "headaggregate",
-  "luheadaggregate", "ncspelemvec", "cspelemvec", "disjoint",
-  "conjunction", "dsym", "disjunctionsep", "disjunction", "bodycomma",
-  "bodydot", "bodyconddot", "head", "optimizetuple", "optimizeweight",
-  "optimizelitvec", "optimizecond", "maxelemlist", "minelemlist", "define",
-  "nidlist", "idlist", "theory_op_list", "theory_term", "theory_opterm",
-  "theory_opterm_nlist", "theory_opterm_list", "theory_atom_element",
-  "theory_atom_element_nlist", "theory_atom_element_list",
-  "theory_atom_name", "theory_atom", "theory_operator_nlist",
-  "theory_operator_list", "theory_operator_definition",
-  "theory_operator_definition_nlist", "theory_operator_definiton_list",
-  "theory_definition_identifier", "theory_term_definition",
-  "theory_atom_type", "theory_atom_definition", "theory_definition_nlist",
-  "theory_definition_list", "enable_theory_lexing",
-  "enable_theory_definition_lexing", "disable_theory_lexing", YY_NULLPTR
+  "\"#theory\"", "\"EOF\"", "\"<NUMBER>\"", "\"<ANONYMOUS>\"",
+  "\"<IDENTIFIER>\"", "\"<PYTHON>\"", "\"<LUA>\"", "\"<STRING>\"",
+  "\"<VARIABLE>\"", "\"<THEORYOP>\"", "\"not\"", "$accept", "start",
+  "program", "statement", "identifier", "constterm", "consttermvec",
+  "constargvec", "term", "unaryargvec", "ntermvec", "termvec", "tuple",
+  "tuplevec_sem", "tuplevec", "argvec", "binaryargvec", "cmp", "atom",
+  "literal", "csp_mul_term", "csp_add_term", "csp_rel", "csp_literal",
+  "nlitvec", "litvec", "optcondition", "noptcondition",
+  "aggregatefunction", "bodyaggrelem", "bodyaggrelemvec",
+  "altbodyaggrelem", "altbodyaggrelemvec", "bodyaggregate", "upper",
+  "lubodyaggregate", "headaggrelemvec", "altheadaggrelemvec",
+  "headaggregate", "luheadaggregate", "ncspelemvec", "cspelemvec",
+  "disjoint", "conjunction", "dsym", "disjunctionsep", "disjunction",
+  "bodycomma", "bodydot", "bodyconddot", "head", "optimizetuple",
+  "optimizeweight", "optimizelitvec", "optimizecond", "maxelemlist",
+  "minelemlist", "define", "nidlist", "idlist", "theory_op_list",
+  "theory_term", "theory_opterm", "theory_opterm_nlist",
+  "theory_opterm_list", "theory_atom_element", "theory_atom_element_nlist",
+  "theory_atom_element_list", "theory_atom_name", "theory_atom",
+  "theory_operator_nlist", "theory_operator_list",
+  "theory_operator_definition", "theory_operator_definition_nlist",
+  "theory_operator_definiton_list", "theory_definition_identifier",
+  "theory_term_definition", "theory_atom_type", "theory_atom_definition",
+  "theory_definition_nlist", "theory_definition_list",
+  "enable_theory_lexing", "enable_theory_definition_lexing",
+  "disable_theory_lexing", YY_NULLPTR
   };
 
 #if YYDEBUG
   const unsigned short int
   parser::yyrline_[] =
   {
-       0,   336,   336,   337,   341,   342,   348,   352,   359,   360,
-     361,   362,   363,   364,   365,   366,   367,   368,   369,   370,
-     371,   372,   373,   374,   375,   376,   377,   378,   379,   380,
-     381,   387,   388,   392,   393,   399,   400,   401,   402,   403,
-     404,   405,   406,   407,   408,   409,   410,   411,   412,   413,
-     414,   415,   416,   417,   418,   419,   420,   421,   427,   428,
-     434,   435,   439,   440,   444,   445,   446,   447,   450,   451,
-     454,   455,   458,   459,   463,   464,   474,   475,   476,   477,
-     478,   479,   483,   484,   485,   486,   490,   491,   492,   493,
-     494,   495,   496,   497,   498,   499,   500,   501,   502,   506,
-     507,   508,   509,   513,   514,   515,   519,   520,   521,   522,
-     523,   524,   528,   529,   537,   538,   542,   543,   547,   548,
-     552,   553,   557,   558,   559,   560,   561,   567,   568,   572,
-     573,   579,   583,   584,   590,   591,   592,   593,   597,   598,
-     599,   603,   604,   605,   606,   612,   613,   617,   618,   624,
-     625,   626,   627,   631,   632,   633,   634,   640,   641,   645,
-     646,   650,   651,   652,   659,   666,   667,   671,   672,   673,
-     678,   679,   680,   681,   688,   689,   690,   691,   692,   693,
-     694,   695,   696,   697,   698,   702,   703,   704,   705,   706,
-     707,   711,   712,   713,   716,   717,   718,   722,   723,   724,
-     725,   726,   732,   733,   734,   740,   741,   745,   746,   750,
-     751,   755,   756,   757,   761,   762,   766,   767,   771,   772,
-     776,   777,   778,   779,   785,   786,   787,   788,   789,   790,
-     791,   792,   798,   804,   805,   811,   812,   813,   819,   823,
-     829,   830,   836,   837,   843,   844,   848,   849,   853,   854,
-     860,   861,   862,   870,   871,   875,   876,   877,   878,   879,
-     880,   881,   882,   883,   884,   885,   886,   887,   891,   892,
-     893,   897,   898,   902,   903,   907,   908,   912,   913,   917,
-     918,   922,   923,   926,   927,   933,   934,   938,   939,   943,
-     944,   945,   949,   950,   954,   955,   959,   960,   961,   962,
-     963,   964,   965,   966,   967,   971,   975,   976,   977,   978,
-     982,   984,   988,   989,   990,   991,   995,   996,  1000,  1006,
-    1010,  1014
+       0,   337,   337,   338,   342,   343,   349,   350,   351,   352,
+     356,   363,   364,   365,   366,   367,   368,   369,   370,   371,
+     372,   373,   374,   375,   376,   377,   378,   379,   380,   381,
+     382,   383,   384,   385,   391,   392,   396,   397,   403,   404,
+     405,   406,   407,   408,   409,   410,   411,   412,   413,   414,
+     415,   416,   417,   418,   419,   420,   421,   422,   423,   424,
+     425,   431,   432,   438,   439,   443,   444,   448,   449,   450,
+     451,   454,   455,   458,   459,   462,   463,   467,   468,   478,
+     479,   480,   481,   482,   483,   487,   488,   489,   490,   494,
+     495,   496,   497,   498,   499,   500,   501,   502,   503,   504,
+     505,   506,   510,   511,   512,   513,   517,   518,   519,   523,
+     524,   525,   526,   527,   528,   532,   533,   541,   542,   546,
+     547,   551,   552,   556,   557,   561,   562,   563,   564,   565,
+     571,   572,   576,   577,   583,   587,   588,   594,   595,   596,
+     597,   601,   602,   603,   607,   608,   609,   610,   616,   617,
+     621,   622,   628,   629,   630,   631,   635,   636,   637,   638,
+     644,   645,   649,   650,   654,   655,   656,   663,   670,   671,
+     675,   676,   677,   682,   683,   684,   685,   692,   693,   694,
+     695,   696,   697,   698,   699,   700,   701,   702,   706,   707,
+     708,   709,   710,   711,   715,   716,   717,   720,   721,   722,
+     726,   727,   728,   729,   730,   736,   737,   738,   744,   745,
+     749,   750,   754,   755,   759,   760,   761,   765,   766,   770,
+     771,   775,   776,   780,   781,   782,   783,   789,   790,   791,
+     792,   793,   794,   795,   796,   802,   808,   809,   815,   816,
+     817,   823,   827,   833,   834,   840,   841,   847,   848,   852,
+     853,   857,   858,   864,   865,   866,   874,   875,   879,   880,
+     881,   882,   883,   884,   885,   886,   887,   888,   889,   890,
+     891,   895,   896,   897,   901,   902,   906,   907,   911,   912,
+     916,   917,   921,   922,   926,   927,   930,   931,   937,   938,
+     942,   943,   947,   948,   949,   953,   954,   958,   959,   963,
+     964,   965,   966,   967,   968,   969,   970,   971,   975,   979,
+     980,   981,   982,   986,   988,   992,   993,   994,   995,   999,
+    1000,  1004,  1010,  1014,  1018
   };
 
   // Print the state stack on the debug stream.
@@ -3656,9 +3673,9 @@ namespace Gringo { namespace Input { namespace NonGroundGrammar {
       55,    56,    57,    58,    59,    60,    61,    62,    63,    64,
       65,    66,    67,    68,    69,    70,    71,    72,    73,    74,
       75,    76,    77,    78,    79,    80,    81,    82,    83,    84,
-      85,    86,    87,    88,    89,    90
+      85,    86,    87,    88,    89,    90,    91
     };
-    const unsigned int user_token_number_max_ = 345;
+    const unsigned int user_token_number_max_ = 346;
     const token_number_type undef_token_ = 2;
 
     if (static_cast<int>(t) <= yyeof_)
@@ -3669,6 +3686,6 @@ namespace Gringo { namespace Input { namespace NonGroundGrammar {
       return undef_token_;
   }
 
-#line 28 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:1167
+#line 28 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:1167
 } } } // Gringo::Input::NonGroundGrammar
-#line 3675 "/home/sthiele/develop/git/clingo/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:1167
+#line 3692 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.cc" // lalr1.cc:1167
