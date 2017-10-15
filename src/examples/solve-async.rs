@@ -3,7 +3,7 @@ extern crate rand;
 
 use std::env;
 use rand::distributions::{IndependentSample, Range};
-use std::sync::atomic::{AtomicBool, ATOMIC_BOOL_INIT};
+use std::sync::atomic::{AtomicBool, Ordering};
 use clingo::*;
 
 
@@ -13,13 +13,10 @@ extern "C" fn on_event(
     data: *mut ::std::os::raw::c_void,
     goon: *mut bool,
 ) -> bool {
-    //   (void)type;
-    //   (void)event;
-    //   (void)goon; // this is true by default
-    //   if (type == clingo_solve_event_type_finish) {
-    //       atomic_flag *running = (atomic_flag*)data;
-    //       atomic_flag_clear(running);
-    //   }
+    if etype == clingo_solve_event_type_finish as u32 {
+        let atomic_bool = unsafe { (data as *mut AtomicBool).as_ref() }.unwrap();
+        atomic_bool.store(false, Ordering::Relaxed);
+    }
     true
 }
 
@@ -31,7 +28,7 @@ fn main() {
     // create a control object and pass command line arguments
     let logger = None;
     let logger_data = std::ptr::null_mut();
-    let mut ctl = ClingoControl::new(options, logger, logger_data, 20)
+    let ctl = ClingoControl::new(options, logger, logger_data, 20)
         .expect("Failed creating ClingoControl.");
 
     // add a logic program to the base part
@@ -53,37 +50,35 @@ fn main() {
     ctl.ground(parts, ground_callback, ground_callback_data)
         .expect("Failed to ground a logic program.");
 
-    //     let mut running = ATOMIC_BOOL_INIT;
-    let running = std::ptr::null_mut();
-
+    
     // create a solve handle with an attached vent handler
     let assumptions = vec![];
     let solve_event_callback: ClingoSolveEventCallback = Some(on_event);
-    let mut handle = ctl.solve(
+    let mut running = AtomicBool::new(true);
+    let running_ref = &mut running as *mut std::sync::atomic::AtomicBool;
+    let handle = ctl.solve(
         (clingo_solve_mode_async as clingo_solve_mode_bitset_t) +
             (clingo_solve_mode_yield as clingo_solve_mode_bitset_t),
         assumptions,
         solve_event_callback,
-        running,
+        running_ref as *mut std::os::raw::c_void,
     ).expect("Failed to retrieve solve handle.");
 
     // let's approximate pi
-    let mut samples = 0;
-    let mut in_circle = 0;
-
+    let mut samples = 0.;
+    let mut in_circle = 0.;
     let between = Range::new(-1f64, 1.);
     let mut rng = rand::thread_rng();
-    //         while (atomic_flag_test_and_set(&running)) {
-    while samples < 10000000 {
-        samples += 1;
+
+    while running.load(Ordering::Relaxed) {
+        samples += 1.;
         let x = between.ind_sample(&mut rng);
         let y = between.ind_sample(&mut rng);
         if x * x + y * y <= 1. {
-            in_circle += 1;
+            in_circle += 1.;
         }
     }
-
-    println!("pi = {}", 4 * in_circle * samples);
+    println!("pi = {}", 4. * in_circle / samples);
 
     // get the solve result
     handle.get().expect(

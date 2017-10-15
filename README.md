@@ -15,6 +15,7 @@ Rust bindings to the [clingo](https://github.com/potassco/clingo) library
     cargo run --example=symbol 0
     cargo run --example=control 0
     cargo run --example=model 0
+    cargo run --example=solve-async 0
     cargo run --example=configuration
     cargo run --example=statistics 0
     cargo run --example=symbolic-atoms 0

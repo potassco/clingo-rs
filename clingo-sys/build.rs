@@ -14,7 +14,7 @@ fn main() {
             .unwrap();
 
         Command::new("git")
-            .args(&["checkout", "tags/v5.2.0"])
+            .args(&["checkout", "tags/v5.2.1"])
             .current_dir("./clingo")
             .status()
             .unwrap();
@@ -27,7 +27,7 @@ fn main() {
     }
 
     // libpotassco
-    gcc::Config::new()
+    gcc::Build::new()
         .cpp(true)
         .flag("-std=c++11")
         .define("NDEBUG", Some("1"))
@@ -47,7 +47,7 @@ fn main() {
         .compile("libpotassco.a");
 
     // libclasp
-    gcc::Config::new()
+    gcc::Build::new()
         .cpp(true)
         .flag("-std=c++11")
         .define("NDEBUG", Some("1"))
@@ -87,7 +87,7 @@ fn main() {
         .compile("libclasp.a");
 
     // libgringo
-    gcc::Config::new()
+    gcc::Build::new()
         .cpp(true)
         .flag("-std=c++11")
         .define("NDEBUG", Some("1"))
@@ -126,7 +126,7 @@ fn main() {
         .compile("libgringo.a");
 
     // libclingo
-    gcc::Config::new()
+    gcc::Build::new()
         .cpp(true)
         .flag("-std=c++11")
         .define("NDEBUG", Some("1"))
@@ -148,7 +148,7 @@ fn main() {
         .compile("libclingo.a");
 
     // libreify
-    gcc::Config::new()
+    gcc::Build::new()
         .cpp(true)
         .flag("-std=c++11")
         .define("NDEBUG", Some("1"))

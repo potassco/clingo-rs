@@ -10,6 +10,7 @@ use libc::c_char;
 use clingo_sys::*;
 pub use clingo_sys::clingo_show_type::*;
 pub use clingo_sys::clingo_solve_mode::*;
+pub use clingo_sys::clingo_solve_event_type::*;
 pub use clingo_sys::clingo_statistics_type::*;
 pub use clingo_sys::clingo_clause_type::*;
 pub use clingo_sys::clingo_truth_value::*;
@@ -2288,6 +2289,6 @@ mod tests {
         let (ma, mi, re) = version();
         assert!(ma == 5);
         assert!(mi == 2);
-        assert!(re == 0);
+        assert!(re == 1);
     }
 }
