@@ -9,9 +9,9 @@ use clingo::*;
 
 extern "C" fn on_event(
     etype: clingo_solve_event_type_t,
-    event: *mut ::std::os::raw::c_void,
+    _event: *mut ::std::os::raw::c_void,
     data: *mut ::std::os::raw::c_void,
-    goon: *mut bool,
+    _goon: *mut bool,
 ) -> bool {
     if etype == clingo_solve_event_type_finish as u32 {
         let atomic_bool = unsafe { (data as *mut AtomicBool).as_ref() }.unwrap();
