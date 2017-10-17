@@ -18,7 +18,7 @@ extern "C" fn on_statement(
         (std::mem::transmute::<*const clingo_ast_statement_t, *const ClingoAstStatement>(stm_))
             .as_ref()
     }.unwrap();
-    let mut on_statement_data = unsafe { (data as *mut OnStatementData).as_mut() }.unwrap();
+    let on_statement_data = unsafe { (data as *mut OnStatementData).as_mut() }.unwrap();
 
     // pass through all statements that are not rules
     if stm.get_type() != clingo_ast_statement_type_rule {
@@ -116,14 +116,14 @@ fn main() {
 
     let logger = None;
     let logger_data = std::ptr::null_mut();
-    let mut ctl = ClingoControl::new(options, logger, logger_data, 20)
+    let ctl = ClingoControl::new(options, logger, logger_data, 20)
         .expect("Failed creating ClingoControl.");
 
     let sym = ClingoSymbol::create_id("enable", true).unwrap();
 
     {
         // get the program builder
-        let mut builder = ctl.program_builder().unwrap();
+        let builder = ctl.program_builder().unwrap();
 
         // initialize the location
         let location = ClingoLocation::new(0, 0, 0, 0, "<rewrite>", "<rewrite>");

@@ -8,7 +8,7 @@ license = "MIT"
 repository = "https://github.com/sthiele/clingo-rs"
 
 [dependencies]
-clingo-sys = "0.2.0"
+clingo-sys = { path = "./clingo-sys" }
 libc = "0.2.20"
 rand = "0.3"
 

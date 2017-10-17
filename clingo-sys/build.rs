@@ -29,7 +29,7 @@ fn main() {
     // libpotassco
     gcc::Build::new()
         .cpp(true)
-        .flag("-std=c++11")
+        .flag("-std=c++11").warnings(false)
         .define("NDEBUG", Some("1"))
         .file("clingo/clasp/libpotassco/src/application.cpp")
         .file("clingo/clasp/libpotassco/src/aspif.cpp")
@@ -49,7 +49,7 @@ fn main() {
     // libclasp
     gcc::Build::new()
         .cpp(true)
-        .flag("-std=c++11")
+        .flag("-std=c++11").warnings(false)
         .define("NDEBUG", Some("1"))
         .define("WITH_THREADS", Some("0"))
         .file("clingo/clasp/src/asp_preprocessor.cpp")
@@ -89,7 +89,7 @@ fn main() {
     // libgringo
     gcc::Build::new()
         .cpp(true)
-        .flag("-std=c++11")
+        .flag("-std=c++11").warnings(false)
         .define("NDEBUG", Some("1"))
         .file("clingo/libgringo/src/backend.cc")
         .file("clingo/libgringo/src/primes.cc")
@@ -128,7 +128,7 @@ fn main() {
     // libclingo
     gcc::Build::new()
         .cpp(true)
-        .flag("-std=c++11")
+        .flag("-std=c++11").warnings(false)
         .define("NDEBUG", Some("1"))
         .define("WITH_THREADS", Some("0"))
         .file("clingo/libclingo/src/ast.cc")
@@ -150,7 +150,7 @@ fn main() {
     // libreify
     gcc::Build::new()
         .cpp(true)
-        .flag("-std=c++11")
+        .flag("-std=c++11").warnings(false)
         .define("NDEBUG", Some("1"))
         .file("clingo/libreify/src/program.cc")
         .include("clingo/libreify")

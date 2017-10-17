@@ -35,10 +35,13 @@ fn get_arg(sym: ClingoSymbol, offset: usize) -> Result<i32, &'static str> {
 
 extern "C" fn init(init_: *mut clingo_propagate_init_t, data: *mut ::std::os::raw::c_void) -> bool {
 
-    println!("init!");
+    let init = unsafe { (init_ as *mut ClingoPropagateInit).as_mut() }.unwrap();
+    let propagator = unsafe { (data as *mut PropagatorT).as_mut() }.unwrap();
 
-    let mut init = unsafe { (init_ as *mut ClingoPropagateInit).as_mut() }.unwrap();
-    let mut propagator = unsafe { (data as *mut PropagatorT).as_mut() }.unwrap();
+    // stores the (numeric) maximum of the solver literals capturing pigeon placements
+    // note that the code below assumes that this literal is not negative
+    // which holds for the pigeon problem but not in general
+    let mut max = 0;
 
     // the total number of holes pigeons can be assigned too
     let mut holes = 0;
@@ -50,6 +53,7 @@ extern "C" fn init(init_: *mut clingo_propagate_init_t, data: *mut ::std::os::ra
     if !propagator.states.is_empty() {
         // in principle the number of threads can increase between solve calls by changing the configuration
         // this case is not handled (elegantly) here
+        println!("hi propagator.states.is_not_empty");
         if threads > propagator.states.len() {
             clingo::set_error(
                 clingo_error::clingo_error_runtime,
@@ -77,9 +81,15 @@ extern "C" fn init(init_: *mut clingo_propagate_init_t, data: *mut ::std::os::ra
     // loop over the place/2 atoms in two passes
     // the first pass determines the maximum placement literal
     // the second pass allocates memory for data structures based on the first pass
-    for pass in 0..1 {
+    for pass in 0..2 {
+
         // get an iterator to the first place/2 atom
         let mut atoms_it = atoms.begin(Some(&sig)).unwrap();
+
+        if pass == 1 {
+            // allocate memory for the assignemnt literal -> hole mapping
+            propagator.pigeons = vec![0; max + 1];;
+        }
 
         loop {
             // stop iteration if the end is reached
@@ -89,16 +99,23 @@ extern "C" fn init(init_: *mut clingo_propagate_init_t, data: *mut ::std::os::ra
             }
 
             // get the solver literal for the placement atom
-            let mut lit = atoms.literal(atoms_it).unwrap();
-            lit = init.solver_literal(lit).unwrap();
+            let lit = init.solver_literal(atoms.literal(atoms_it).unwrap())
+                .unwrap();
+            let lit_id = lit.get_integer() as usize;
 
-            if pass != 0 {
+            if pass == 0 {
+                // determine the maximum literal
+                if lit_id > max {
+                    max = lit_id;
+                }
+            } else {
+
                 // extract the hole number from the atom
                 let sym = atoms.symbol(atoms_it).unwrap();
                 let h = get_arg(sym, 1).unwrap();
 
                 // initialize the assignemnt literal -> hole mapping
-                propagator.pigeons[lit.get_integer() as usize] = h;
+                propagator.pigeons[lit_id] = h;
 
                 // watch the assignment literal
                 init.add_watch(lit).expect("Failed to add watch.");
@@ -114,17 +131,12 @@ extern "C" fn init(init_: *mut clingo_propagate_init_t, data: *mut ::std::os::ra
     }
 
     // initialize the per solver thread state information
-    // for i in 0..threads {
-    //     if (!((*propagator).states[i].holes = (clingo_literal_t*)malloc(sizeof(*data->states[i].holes) * holes))) {
-    //         safe_clingo_set_error(clingo_error::clingo_error_bad_alloc as clingo_error_t, "allocation failed");
-    //         return false;
-    //     }
-    // initially no pigeons are assigned to any holes
-    // so the hole -> literal mapping is initialized with zero
-    // which is not a valid literal
-    //     memset(data->states[i].holes, 0, sizeof(*data->states[i].holes) * holes);
-    //     propagator.states[i as usize].borrow_mut().size) = holes as usize;
-    // }
+    for i in 0..threads {
+        // initially no pigeons are assigned to any holes
+        // so the hole -> literal mapping is initialized with zero
+        // which is not a valid literal
+        propagator.states[i].borrow_mut().holes = vec![None; holes as usize];
+    }
     true
 }
 
@@ -135,9 +147,7 @@ extern "C" fn propagate(
     data: *mut ::std::os::raw::c_void,
 ) -> bool {
 
-    println!("propagate!");
-
-    let mut control = unsafe { (control_ as *mut ClingoPropagateControl).as_mut() }.unwrap();
+    let control = unsafe { (control_ as *mut ClingoPropagateControl).as_mut() }.unwrap();
     let changes = unsafe { std::slice::from_raw_parts(changes_ as *const ClingoLiteral, size) };
     let propagator = unsafe { (data as *mut PropagatorT).as_ref() }.unwrap();
 
@@ -178,6 +188,7 @@ extern "C" fn propagate(
 
                 // must not happen because the clause above is conflicting by construction
                 // assert!(false);
+                println!("assert!(false) line 194 propagator.rs");
             }
         };
     }
@@ -191,9 +202,7 @@ extern "C" fn undo(
     data: *mut ::std::os::raw::c_void,
 ) -> bool {
 
-    println!("undo!");
-
-    let mut control = unsafe { (control_ as *mut ClingoPropagateControl).as_mut() }.unwrap();
+    let control = unsafe { (control_ as *mut ClingoPropagateControl).as_mut() }.unwrap();
     let changes = unsafe { std::slice::from_raw_parts(changes_ as *const ClingoLiteral, size) };
     let propagator = unsafe { (data as *mut PropagatorT).as_ref() }.unwrap();
 
@@ -207,7 +216,6 @@ extern "C" fn undo(
         if let Some(x) = state.holes[hole] {
             if x == lit {
                 // undo the assignment
-                println!("TODO: holes{}:{:?}", hole, state.holes[hole]);
                 state.holes[hole] = None;
             }
         }
@@ -300,16 +308,15 @@ fn main() {
             // ground the pigeon part
 
             // set the number of holes
-            let arg0 = ClingoSymbol::create_number(3);
+            let arg0 = ClingoSymbol::create_number(8);
             // set the number of pigeons
-            let arg1 = ClingoSymbol::create_number(3);
+            let arg1 = ClingoSymbol::create_number(9);
 
             let mut args = Vec::new();
             args.push(arg0);
             args.push(arg1);
 
             // the pigeon program part having the number of holes and pigeons as parameters
-
             let part = ClingoPart::new_part("pigeon", args.as_slice());
             let parts = vec![part];
             let ground_callback = None;

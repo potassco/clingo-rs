@@ -124,7 +124,7 @@ fn main() {
     // create a control object and pass command line arguments
     let logger = None;
     let logger_data = std::ptr::null_mut();
-    let mut ctl = ClingoControl::new(options, logger, logger_data, 20)
+    let ctl = ClingoControl::new(options, logger, logger_data, 20)
         .expect("Failed creating ClingoControl.");
 
     // get the configuration object and its root key
@@ -161,7 +161,7 @@ fn main() {
     solve(ctl);
 
     // get the statistics object, get the root key, then print the statistics recursively
-    let mut stats = ctl.statistics().unwrap();
+    let stats = ctl.statistics().unwrap();
     let stats_key = stats.root().unwrap();
     print_statistics(stats, stats_key, 0);
 }

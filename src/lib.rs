@@ -4,7 +4,6 @@ extern crate clingo_sys;
 
 use std::ffi::CStr;
 use std::ffi::CString;
-use std::mem;
 use libc::c_int;
 use libc::c_char;
 use clingo_sys::*;
@@ -2029,12 +2028,11 @@ impl ClingoSolveControl {
     /// - ::clingo_error_runtime if adding the clause fails
     pub fn add_clause(&mut self, clause: &[ClingoLiteral]) -> Result<(), &'static str> {
 
-        let size = mem::size_of_val(clause);
         if unsafe {
             clingo_solve_control_add_clause(
                 &mut self.0,
                 clause.as_ptr() as *const clingo_literal_t,
-                size,
+                clause.len(),
             )
         }
         {
@@ -2084,13 +2082,12 @@ impl ClingoPropagateControl {
         clause: &[ClingoLiteral],
         type_: clingo_clause_type,
     ) -> Result<bool, &'static str> {
-        let size = mem::size_of_val(clause);
         let mut result = false;
         if unsafe {
             clingo_propagate_control_add_clause(
                 &mut self.0,
                 clause.as_ptr() as *const clingo_literal_t,
-                size,
+                clause.len(),
                 type_ as clingo_clause_type_t,
                 &mut result,
             )

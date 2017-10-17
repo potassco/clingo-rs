@@ -50,7 +50,6 @@ fn main() {
     ctl.ground(parts, ground_callback, ground_callback_data)
         .expect("Failed to ground a logic program.");
 
-    
     // create a solve handle with an attached vent handler
     let assumptions = vec![];
     let solve_event_callback: ClingoSolveEventCallback = Some(on_event);
