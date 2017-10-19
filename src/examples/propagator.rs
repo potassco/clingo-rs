@@ -79,7 +79,6 @@ fn get_arg(sym: ClingoSymbol, offset: usize) -> Result<i32, &'static str> {
 }
 
 struct Prop;
-
 impl ClingoPropagatorBuilder<PropagatorT> for Prop {
     fn init(init: &mut ClingoPropagateInit, propagator: &mut PropagatorT) -> bool {
 
@@ -100,10 +99,7 @@ impl ClingoPropagatorBuilder<PropagatorT> for Prop {
             // this case is not handled (elegantly) here
             println!("hi propagator.states.is_not_empty");
             if threads > propagator.states.len() {
-                clingo::set_error(
-                    clingo_error::clingo_error_runtime,
-                    "more threads than states",
-                );
+                clingo::set_error(clingo_error_runtime, "more threads than states");
             }
             return true;
         }
@@ -267,7 +263,6 @@ fn main() {
 
     // create a propagator with the functions above
     // using the default implementation for the model check
-    //     let prop = ClingoPropagator::new(Some(init), Some(propagate), Some(undo), None);
     let prop = Prop::new();
 
     // user data for the propagator
@@ -303,7 +298,7 @@ fn main() {
             // set the number of holes
             let arg0 = ClingoSymbol::create_number(8);
             // set the number of pigeons
-            let arg1 = ClingoSymbol::create_number(9);
+            let arg1 = ClingoSymbol::create_number(8);
 
             let mut args = Vec::new();
             args.push(arg0);
