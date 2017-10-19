@@ -358,41 +358,82 @@ pub fn parse_program(
 }
 
 pub struct ClingoPropagator(clingo_propagator_t);
-impl ClingoPropagator {
-    pub fn new(
-        init: Option<
-            unsafe extern "C" fn(init: *mut clingo_propagate_init_t,
-                                 data: *mut ::std::os::raw::c_void)
-                                 -> bool,
-        >,
-        propagate: Option<
-            unsafe extern "C" fn(control: *mut clingo_propagate_control_t,
-                                 changes: *const clingo_literal_t,
-                                 size: usize,
-                                 data: *mut ::std::os::raw::c_void)
-                                 -> bool,
-        >,
-        undo: Option<
-            unsafe extern "C" fn(control: *mut clingo_propagate_control_t,
-                                 changes: *const clingo_literal_t,
-                                 size: usize,
-                                 data: *mut ::std::os::raw::c_void)
-                                 -> bool,
-        >,
-        check: Option<
-            unsafe extern "C" fn(control: *mut clingo_propagate_control_t,
-                                 data: *mut ::std::os::raw::c_void)
-                                 -> bool,
-        >,
-    ) -> ClingoPropagator {
+
+pub struct ClingoPropagatorInit(clingo_propagate_init_t);
+
+pub trait ClingoPropagatorBuilder<T> {
+    fn init(_init: &mut ClingoPropagateInit, _data: &mut T) -> bool {
+        true
+    }
+    fn propagate(
+        _control: &mut ClingoPropagateControl,
+        _changes: &[ClingoLiteral],
+        _data: &mut T,
+    ) -> bool {
+        true
+    }
+    fn undo(
+        _control: &mut ClingoPropagateControl,
+        _changes: &[ClingoLiteral],
+        _data: &mut T,
+    ) -> bool {
+        true
+    }
+    fn check(_control: &mut ClingoPropagateControl, _data: &mut T) -> bool {
+        true
+    }
+    /// Get a ClingoPropagator
+    fn new() -> ClingoPropagator {
 
         let prop = clingo_propagator_t {
-            init: init,
-            propagate: propagate,
-            undo: undo,
-            check: check,
+            init: Some(Self::unsafe_init),
+            propagate: Some(Self::unsafe_propagate),
+            undo: Some(Self::unsafe_undo),
+            check: Some(Self::unsafe_check),
         };
         ClingoPropagator(prop)
+    }
+    #[doc(hidden)]
+    unsafe extern "C" fn unsafe_init(
+        init_: *mut clingo_propagate_init_t,
+        data: *mut ::std::os::raw::c_void,
+    ) -> bool {
+        let init = (init_ as *mut ClingoPropagateInit).as_mut().unwrap();
+        let propagator = (data as *mut T).as_mut().unwrap();
+        Self::init(init, propagator)
+    }
+    #[doc(hidden)]
+    unsafe extern "C" fn unsafe_propagate(
+        control_: *mut clingo_propagate_control_t,
+        changes_: *const clingo_literal_t,
+        size: usize,
+        data: *mut ::std::os::raw::c_void,
+    ) -> bool {
+        let control = (control_ as *mut ClingoPropagateControl).as_mut().unwrap();
+        let changes = std::slice::from_raw_parts(changes_ as *const ClingoLiteral, size);
+        let propagator = (data as *mut T).as_mut().unwrap();
+        Self::propagate(control, changes, propagator)
+    }
+    #[doc(hidden)]
+    unsafe extern "C" fn unsafe_undo(
+        control_: *mut clingo_propagate_control_t,
+        changes_: *const clingo_literal_t,
+        size: usize,
+        data: *mut ::std::os::raw::c_void,
+    ) -> bool {
+        let control = (control_ as *mut ClingoPropagateControl).as_mut().unwrap();
+        let changes = std::slice::from_raw_parts(changes_ as *const ClingoLiteral, size);
+        let propagator = (data as *mut T).as_mut().unwrap();
+        Self::undo(control, changes, propagator)
+    }
+    #[doc(hidden)]
+    unsafe extern "C" fn unsafe_check(
+        control_: *mut clingo_propagate_control_t,
+        data: *mut ::std::os::raw::c_void,
+    ) -> bool {
+        let control = (control_ as *mut ClingoPropagateControl).as_mut().unwrap();
+        let propagator = (data as *mut T).as_mut().unwrap();
+        Self::check(control, propagator)
     }
 }
 
