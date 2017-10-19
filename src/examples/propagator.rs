@@ -1,4 +1,3 @@
-extern crate libc;
 extern crate clingo;
 
 use std::env;
@@ -8,221 +7,6 @@ use std::rc::Rc;
 use clingo::*;
 
 
-// state information for individual solving threads
-#[derive(Debug)]
-struct StateT {
-    // assignment of pigeons to holes
-    // (hole number -> pigeon placement literal or zero)
-    holes: Vec<Option<ClingoLiteral>>,
-}
-
-// state information for the propagator
-struct PropagatorT {
-    // mapping from solver literals capturing pigeon placements to hole numbers
-    // (solver literal -> hole number or zero)
-    pigeons: Vec<i32>,
-    // array of states
-    states: Vec<Rc<RefCell<StateT>>>,
-}
-
-// returns the offset'th numeric argument of the function symbol sym
-fn get_arg(sym: ClingoSymbol, offset: usize) -> Result<i32, &'static str> {
-    // get the arguments of the function symbol
-    let args = sym.arguments().unwrap();
-    // get the requested numeric argument
-    args[offset as usize].number()
-}
-
-extern "C" fn init(init_: *mut clingo_propagate_init_t, data: *mut ::std::os::raw::c_void) -> bool {
-
-    let init = unsafe { (init_ as *mut ClingoPropagateInit).as_mut() }.unwrap();
-    let propagator = unsafe { (data as *mut PropagatorT).as_mut() }.unwrap();
-
-    // stores the (numeric) maximum of the solver literals capturing pigeon placements
-    // note that the code below assumes that this literal is not negative
-    // which holds for the pigeon problem but not in general
-    let mut max = 0;
-
-    // the total number of holes pigeons can be assigned too
-    let mut holes = 0;
-    let threads = init.number_of_threads();
-
-    // ensure that solve can be called multiple times
-    // for simplicity, the case that additional holes or pigeons to assign are grounded is not handled here
-
-    if !propagator.states.is_empty() {
-        // in principle the number of threads can increase between solve calls by changing the configuration
-        // this case is not handled (elegantly) here
-        println!("hi propagator.states.is_not_empty");
-        if threads > propagator.states.len() {
-            clingo::set_error(
-                clingo_error::clingo_error_runtime,
-                "more threads than states",
-            );
-        }
-        return true;
-    }
-
-    let s1_holes: Vec<Option<ClingoLiteral>> = vec![];
-    let state1 = Rc::new(RefCell::new(StateT { holes: s1_holes }));
-    propagator.states = vec![state1];
-
-    // the propagator monitors place/2 atoms and dectects conflicting assignments
-    // first get the symbolic atoms handle
-    let atoms = init.symbolic_atoms().unwrap();
-
-    // create place/2 signature to filter symbolic atoms with
-    let sig = ClingoSignature::create("place", 2, true).unwrap();
-
-    // get an iterator after the last place/2 atom
-    // (atom order corresponds to grounding order (and is unpredictable))
-    let atoms_ie = atoms.end().unwrap();
-
-    // loop over the place/2 atoms in two passes
-    // the first pass determines the maximum placement literal
-    // the second pass allocates memory for data structures based on the first pass
-    for pass in 0..2 {
-
-        // get an iterator to the first place/2 atom
-        let mut atoms_it = atoms.begin(Some(&sig)).unwrap();
-
-        if pass == 1 {
-            // allocate memory for the assignemnt literal -> hole mapping
-            propagator.pigeons = vec![0; max + 1];;
-        }
-
-        loop {
-            // stop iteration if the end is reached
-            let equal = atoms.iterator_is_equal_to(atoms_it, atoms_ie).unwrap();
-            if equal {
-                break;
-            }
-
-            // get the solver literal for the placement atom
-            let lit = init.solver_literal(atoms.literal(atoms_it).unwrap())
-                .unwrap();
-            let lit_id = lit.get_integer() as usize;
-
-            if pass == 0 {
-                // determine the maximum literal
-                if lit_id > max {
-                    max = lit_id;
-                }
-            } else {
-
-                // extract the hole number from the atom
-                let sym = atoms.symbol(atoms_it).unwrap();
-                let h = get_arg(sym, 1).unwrap();
-
-                // initialize the assignemnt literal -> hole mapping
-                propagator.pigeons[lit_id] = h;
-
-                // watch the assignment literal
-                init.add_watch(lit).expect("Failed to add watch.");
-
-                // update the total number of holes
-                if h + 1 > holes {
-                    holes = h + 1;
-                }
-            }
-            // advance to the next placement atom
-            atoms_it = atoms.next(atoms_it).unwrap();
-        }
-    }
-
-    // initialize the per solver thread state information
-    for i in 0..threads {
-        // initially no pigeons are assigned to any holes
-        // so the hole -> literal mapping is initialized with zero
-        // which is not a valid literal
-        propagator.states[i].borrow_mut().holes = vec![None; holes as usize];
-    }
-    true
-}
-
-extern "C" fn propagate(
-    control_: *mut clingo_propagate_control_t,
-    changes_: *const clingo_literal_t,
-    size: usize,
-    data: *mut ::std::os::raw::c_void,
-) -> bool {
-
-    let control = unsafe { (control_ as *mut ClingoPropagateControl).as_mut() }.unwrap();
-    let changes = unsafe { std::slice::from_raw_parts(changes_ as *const ClingoLiteral, size) };
-    let propagator = unsafe { (data as *mut PropagatorT).as_ref() }.unwrap();
-
-    // get the thread specific state
-    let mut state = propagator.states[control.thread_id() as usize].borrow_mut();
-
-    // apply and check the pigeon assignments done by the solver
-    for &lit in changes.iter() {
-        // a pointer to the previously assigned literal
-        let idx = propagator.pigeons[lit.get_integer() as usize] as usize;
-        let mut prev = state.holes[idx];
-
-        // update the placement if no literal was assigned previously
-        match prev {
-            None => {
-                prev = Some(lit);
-                state.holes[idx] = prev;
-            }
-            // create a conflicting clause and propagate it
-            Some(x) => {
-                // current and previous literal must not hold together
-                let clause: &[ClingoLiteral] = &[lit.negate(), x.negate()];
-                // stores the result when adding a clause or propagationg
-                // if result is false propagation must stop for the solver to backtrack
-
-                // add the clause
-                if !control
-                    .add_clause(clause, clingo_clause_type_learnt)
-                    .unwrap()
-                {
-                    return true;
-                }
-
-                // propagate it
-                if !control.propagate().unwrap() {
-                    return true;
-                }
-
-                // must not happen because the clause above is conflicting by construction
-                // assert!(false);
-                println!("assert!(false) line 194 propagator.rs");
-            }
-        };
-    }
-    true
-}
-
-extern "C" fn undo(
-    control_: *mut clingo_propagate_control_t,
-    changes_: *const clingo_literal_t,
-    size: usize,
-    data: *mut ::std::os::raw::c_void,
-) -> bool {
-
-    let control = unsafe { (control_ as *mut ClingoPropagateControl).as_mut() }.unwrap();
-    let changes = unsafe { std::slice::from_raw_parts(changes_ as *const ClingoLiteral, size) };
-    let propagator = unsafe { (data as *mut PropagatorT).as_ref() }.unwrap();
-
-    // get the thread specific state
-    let mut state = propagator.states[control.thread_id() as usize].borrow_mut();
-
-    // undo the assignments made in propagate
-    for &lit in changes.iter() {
-        let hole = propagator.pigeons[lit.get_integer() as usize] as usize;
-
-        if let Some(x) = state.holes[hole] {
-            if x == lit {
-                // undo the assignment
-                state.holes[hole] = None;
-            }
-        }
-    }
-    true
-}
-
 fn print_model(model: &mut ClingoModel) {
 
     // retrieve the symbols in the model
@@ -230,7 +14,7 @@ fn print_model(model: &mut ClingoModel) {
         .symbols(clingo_show_type_shown as clingo_show_type_bitset_t)
         .expect("Failed to retrieve symbols in the model.");
 
-    print!(" Model:");
+    print!("Model:");
 
     for atom in atoms {
         // retrieve and print the symbol's string
@@ -268,6 +52,214 @@ fn solve(ctl: &mut ClingoControl) {
     handle.close().expect("Failed to close solve handle.");
 }
 
+
+// state information for individual solving threads
+#[derive(Debug)]
+struct StateT {
+    // assignment of pigeons to holes
+    // (hole number -> pigeon placement literal or zero)
+    holes: Vec<Option<ClingoLiteral>>,
+}
+
+// state information for the propagator
+struct PropagatorT {
+    // mapping from solver literals capturing pigeon placements to hole numbers
+    // (solver literal -> hole number or zero)
+    pigeons: Vec<i32>,
+    // array of states
+    states: Vec<Rc<RefCell<StateT>>>,
+}
+
+// returns the offset'th numeric argument of the function symbol sym
+fn get_arg(sym: ClingoSymbol, offset: usize) -> Result<i32, &'static str> {
+    // get the arguments of the function symbol
+    let args = sym.arguments().unwrap();
+    // get the requested numeric argument
+    args[offset as usize].number()
+}
+
+struct Prop;
+
+impl ClingoPropagatorBuilder<PropagatorT> for Prop {
+    fn init(init: &mut ClingoPropagateInit, propagator: &mut PropagatorT) -> bool {
+
+        // stores the (numeric) maximum of the solver literals capturing pigeon placements
+        // note that the code below assumes that this literal is not negative
+        // which holds for the pigeon problem but not in general
+        let mut max = 0;
+
+        // the total number of holes pigeons can be assigned too
+        let mut holes = 0;
+        let threads = init.number_of_threads();
+
+        // ensure that solve can be called multiple times
+        // for simplicity, the case that additional holes or pigeons to assign are grounded is not handled here
+
+        if !propagator.states.is_empty() {
+            // in principle the number of threads can increase between solve calls by changing the configuration
+            // this case is not handled (elegantly) here
+            println!("hi propagator.states.is_not_empty");
+            if threads > propagator.states.len() {
+                clingo::set_error(
+                    clingo_error::clingo_error_runtime,
+                    "more threads than states",
+                );
+            }
+            return true;
+        }
+
+        let s1_holes: Vec<Option<ClingoLiteral>> = vec![];
+        let state1 = Rc::new(RefCell::new(StateT { holes: s1_holes }));
+        propagator.states = vec![state1];
+
+        // the propagator monitors place/2 atoms and dectects conflicting assignments
+        // first get the symbolic atoms handle
+        let atoms = init.symbolic_atoms().unwrap();
+
+        // create place/2 signature to filter symbolic atoms with
+        let sig = ClingoSignature::create("place", 2, true).unwrap();
+
+        // get an iterator after the last place/2 atom
+        // (atom order corresponds to grounding order (and is unpredictable))
+        let atoms_ie = atoms.end().unwrap();
+
+        // loop over the place/2 atoms in two passes
+        // the first pass determines the maximum placement literal
+        // the second pass allocates memory for data structures based on the first pass
+        for pass in 0..2 {
+
+            // get an iterator to the first place/2 atom
+            let mut atoms_it = atoms.begin(Some(&sig)).unwrap();
+
+            if pass == 1 {
+                // allocate memory for the assignemnt literal -> hole mapping
+                propagator.pigeons = vec![0; max + 1];;
+            }
+
+            loop {
+                // stop iteration if the end is reached
+                let equal = atoms.iterator_is_equal_to(atoms_it, atoms_ie).unwrap();
+                if equal {
+                    break;
+                }
+
+                // get the solver literal for the placement atom
+                let lit = init.solver_literal(atoms.literal(atoms_it).unwrap())
+                    .unwrap();
+                let lit_id = lit.get_integer() as usize;
+
+                if pass == 0 {
+                    // determine the maximum literal
+                    if lit_id > max {
+                        max = lit_id;
+                    }
+                } else {
+
+                    // extract the hole number from the atom
+                    let sym = atoms.symbol(atoms_it).unwrap();
+                    let h = get_arg(sym, 1).unwrap();
+
+                    // initialize the assignemnt literal -> hole mapping
+                    propagator.pigeons[lit_id] = h;
+
+                    // watch the assignment literal
+                    init.add_watch(lit).expect("Failed to add watch.");
+
+                    // update the total number of holes
+                    if h + 1 > holes {
+                        holes = h + 1;
+                    }
+                }
+                // advance to the next placement atom
+                atoms_it = atoms.next(atoms_it).unwrap();
+            }
+        }
+
+        // initialize the per solver thread state information
+        for i in 0..threads {
+            // initially no pigeons are assigned to any holes
+            // so the hole -> literal mapping is initialized with zero
+            // which is not a valid literal
+            propagator.states[i].borrow_mut().holes = vec![None; holes as usize];
+        }
+        true
+    }
+
+    fn propagate(
+        control: &mut ClingoPropagateControl,
+        changes: &[ClingoLiteral],
+        propagator: &mut PropagatorT,
+    ) -> bool {
+
+        // get the thread specific state
+        let mut state = propagator.states[control.thread_id() as usize].borrow_mut();
+
+        // apply and check the pigeon assignments done by the solver
+        for &lit in changes.iter() {
+            // a pointer to the previously assigned literal
+            let idx = propagator.pigeons[lit.get_integer() as usize] as usize;
+            let mut prev = state.holes[idx];
+
+            // update the placement if no literal was assigned previously
+            match prev {
+                None => {
+                    prev = Some(lit);
+                    state.holes[idx] = prev;
+                }
+                // create a conflicting clause and propagate it
+                Some(x) => {
+                    // current and previous literal must not hold together
+                    let clause: &[ClingoLiteral] = &[lit.negate(), x.negate()];
+                    // stores the result when adding a clause or propagationg
+                    // if result is false propagation must stop for the solver to backtrack
+
+                    // add the clause
+                    if !control
+                        .add_clause(clause, clingo_clause_type_learnt)
+                        .unwrap()
+                    {
+                        return true;
+                    }
+
+                    // propagate it
+                    if !control.propagate().unwrap() {
+                        return true;
+                    }
+
+                    // must not happen because the clause above is conflicting by construction
+                    // assert!(false);
+                    println!("assert!(false) line 194 propagator.rs");
+                }
+            };
+        }
+        true
+    }
+
+    fn undo(
+        control: &mut ClingoPropagateControl,
+        changes: &[ClingoLiteral],
+        propagator: &mut PropagatorT,
+    ) -> bool {
+
+        // get the thread specific state
+        let mut state = propagator.states[control.thread_id() as usize].borrow_mut();
+
+        // undo the assignments made in propagate
+        for &lit in changes.iter() {
+            let hole = propagator.pigeons[lit.get_integer() as usize] as usize;
+
+            if let Some(x) = state.holes[hole] {
+                if x == lit {
+                    // undo the assignment
+                    state.holes[hole] = None;
+                }
+            }
+        }
+        true
+    }
+}
+
+
 fn main() {
 
     // collect clingo options from the command line
@@ -275,7 +267,8 @@ fn main() {
 
     // create a propagator with the functions above
     // using the default implementation for the model check
-    let prop = ClingoPropagator::new(Some(init), Some(propagate), Some(undo), None);
+    //     let prop = ClingoPropagator::new(Some(init), Some(propagate), Some(undo), None);
+    let prop = Prop::new();
 
     // user data for the propagator
     let mut prop_data = PropagatorT {
