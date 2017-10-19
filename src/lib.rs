@@ -18,16 +18,28 @@ pub use clingo_sys::clingo_ast_term_type::*;
 pub use clingo_sys::clingo_ast_literal_type::*;
 pub use clingo_sys::clingo_ast_body_literal_type::*;
 pub use clingo_sys::clingo_ast_statement_type::*;
+pub use clingo_sys::clingo_error::*;
 
-pub use clingo_sys::{clingo_literal_t, clingo_ast_statement_t, clingo_ast_term_type_t,
-                     clingo_solve_event_type_t, clingo_show_type_bitset_t,
-                     clingo_solve_mode_bitset_t, clingo_error, clingo_solve_result_bitset_t,
-                     clingo_propagate_init_t, clingo_propagate_control_t, clingo_logger_t};
+pub use clingo_sys::{clingo_ast_statement_t, clingo_ast_term_type_t, clingo_solve_event_type_t,
+                     clingo_show_type_bitset_t, clingo_solve_mode_bitset_t,
+                     clingo_solve_result_bitset_t, clingo_logger_t};
 
 pub type ClingoAstCallback = clingo_ast_callback_t;
 pub type ClingoSolveEventCallback = clingo_solve_event_callback_t;
-pub type ClingoError = clingo_error_t;
+pub type ClingoError = clingo_error;
 
+
+pub trait ClingoSolveEventHandler<T> {
+    fn cb(type_: clingo_solve_event_type, data: &mut T, goon: &mut bool) -> bool {
+        true
+    }
+    unsafe extern "C" fn unsafe_cb(
+        type_: clingo_solve_event_type_t,
+        event: *mut ::std::os::raw::c_void,
+        data: *mut ::std::os::raw::c_void,
+        goon: *mut bool,
+    ) -> bool;
+}
 
 #[derive(Debug, Copy, Clone)]
 pub struct ClingoLiteral(clingo_literal_t);
@@ -313,8 +325,15 @@ fn from_clingo_part(spart: &ClingoPart) -> clingo_part {
     }
 }
 
-pub fn error_code() -> clingo_error_t {
-    unsafe { clingo_error_code() }
+pub fn error() -> ClingoError {
+    let code = unsafe { clingo_error_code() };
+    match code {
+        0 => clingo_error_success,
+        1 => clingo_error_runtime,
+        2 => clingo_error_logic,
+        3 => clingo_error_bad_alloc,
+        _ => clingo_error_unknown,
+    }
 }
 
 pub fn error_message() -> &'static str {
@@ -328,7 +347,7 @@ pub fn error_message() -> &'static str {
     }
 }
 
-pub fn set_error(code: clingo_error, message: &str) {
+pub fn set_error(code: ClingoError, message: &str) {
 
     let message_c_str = CString::new(message).unwrap();
     unsafe { clingo_set_error(code as clingo_error_t, message_c_str.as_ptr()) }
@@ -358,8 +377,6 @@ pub fn parse_program(
 }
 
 pub struct ClingoPropagator(clingo_propagator_t);
-
-pub struct ClingoPropagatorInit(clingo_propagate_init_t);
 
 pub trait ClingoPropagatorBuilder<T> {
     fn init(_init: &mut ClingoPropagateInit, _data: &mut T) -> bool {
