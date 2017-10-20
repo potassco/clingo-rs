@@ -53,12 +53,12 @@ fn main() {
     let solve_event_handler = MySEHandler;
     let mut running = AtomicBool::new(true);
 
-    // create a solve handle with an attached vent handler
-    let handle = ctl.solve(
+    // create a solve handle with an attached event handler
+    let handle = ctl.solve_with_event_handler(
         (clingo_solve_mode_async as clingo_solve_mode_bitset_t) +
             (clingo_solve_mode_yield as clingo_solve_mode_bitset_t),
         vec![],
-        Some(solve_event_handler),
+        solve_event_handler,
         &mut running,
     ).expect("Failed to retrieve solve handle.");
 

@@ -470,6 +470,16 @@ pub trait ClingoPropagatorBuilder<T> {
     }
 }
 
+
+// pub struct ClingoControlBuilder {
+//         logger: clingo_logger_t,
+//         logger_data: *mut ::std::os::raw::c_void,
+//         ground_callback: clingo_ground_callback_t,
+//         ground_callback_data: *mut ::std::os::raw::c_void,
+//         solve_event_handler : ClingoSolveEventHandler<D>,
+// }
+
+
 #[derive(Debug)]
 pub struct ClingoControl(clingo_control_t);
 impl Drop for ClingoControl {
@@ -616,19 +626,15 @@ impl ClingoControl {
     }
 
 
-    pub fn solve<D, T: ClingoSolveEventHandler<D>>(
+    pub fn solve_with_event_handler<D, T: ClingoSolveEventHandler<D>>(
         &mut self,
         mode: clingo_solve_mode_bitset_t,
         assumptions: Vec<clingo_symbolic_literal_t>,
-        handler: Option<T>,
+        handler: T,
         data_: &mut D,
     ) -> Option<&mut ClingoSolveHandle> {
 
         let mut handle = std::ptr::null_mut() as *mut clingo_solve_handle_t;
-        let notify = match handler {
-            None => None,
-            Some(h) => Some(T::unsafe_solve_callback as clingo_solve_event_callback),
-        };
 
         let data = data_ as *mut D;
         let err = unsafe {
@@ -637,7 +643,7 @@ impl ClingoControl {
                 mode,
                 assumptions.as_ptr(),
                 assumptions.len(),
-                notify,
+                Some(T::unsafe_solve_callback as clingo_solve_event_callback),
                 data as *mut ::std::os::raw::c_void,
                 &mut handle,
             )
@@ -648,7 +654,32 @@ impl ClingoControl {
             unsafe { (handle as *mut ClingoSolveHandle).as_mut() }
         }
     }
+    pub fn solve(
+        &mut self,
+        mode: clingo_solve_mode_bitset_t,
+        assumptions: Vec<clingo_symbolic_literal_t>,
 
+    ) -> Option<&mut ClingoSolveHandle> {
+
+        let mut handle = std::ptr::null_mut() as *mut clingo_solve_handle_t;
+
+        let err = unsafe {
+            clingo_control_solve(
+                &mut self.0,
+                mode,
+                assumptions.as_ptr(),
+                assumptions.len(),
+                None,
+                std::ptr::null_mut() as *mut ::std::os::raw::c_void,
+                &mut handle,
+            )
+        };
+        if !err {
+            None
+        } else {
+            unsafe { (handle as *mut ClingoSolveHandle).as_mut() }
+        }
+    }
     //     pub fn clingo_control_cleanup(control: *mut ClingoControl) -> u8;
 
     /// Assign a truth value to an external atom.

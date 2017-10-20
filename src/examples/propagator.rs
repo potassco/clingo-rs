@@ -27,11 +27,9 @@ fn solve(ctl: &mut ClingoControl) {
 
     let solve_mode = clingo_solve_mode_yield as clingo_solve_mode_bitset_t;
     let assumptions = vec![];
-    let solve_event_callback = None;
-    let data = std::ptr::null_mut();
 
     // get a solve handle
-    let handle = ctl.solve(solve_mode, assumptions, solve_event_callback, data)
+    let handle = ctl.solve(solve_mode, assumptions)
         .expect("Failed to retrieve solve handle.");
 
     // loop over all models
@@ -79,7 +77,7 @@ fn get_arg(sym: ClingoSymbol, offset: usize) -> Result<i32, &'static str> {
 }
 
 struct MyPropagator;
-impl ClingoPropagatorBuilder<PropagatorT> for Prop {
+impl ClingoPropagatorBuilder<PropagatorT> for MyPropagator {
     fn init(init: &mut ClingoPropagateInit, propagator: &mut PropagatorT) -> bool {
 
         // stores the (numeric) maximum of the solver literals capturing pigeon placements

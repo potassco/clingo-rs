@@ -84,11 +84,9 @@ fn print_model(model: &mut ClingoModel) {
 fn solve(ctl: &mut ClingoControl) {
     let solve_mode = clingo_solve_mode_yield as clingo_solve_mode_bitset_t;
     let assumptions = vec![];
-    let solve_event_callback = None;
-    let data = std::ptr::null_mut();
 
     // get a solve handle
-    let handle = ctl.solve(solve_mode, assumptions, solve_event_callback, data)
+    let handle = ctl.solve(solve_mode, assumptions)
         .expect("Failed retrieving solve handle.");
 
     // loop over all models
