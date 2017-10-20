@@ -6,18 +6,18 @@ use rand::distributions::{IndependentSample, Range};
 use std::sync::atomic::{AtomicBool, Ordering};
 use clingo::*;
 
-
-extern "C" fn on_event(
-    etype: clingo_solve_event_type_t,
-    _event: *mut ::std::os::raw::c_void,
-    data: *mut ::std::os::raw::c_void,
-    _goon: *mut bool,
-) -> bool {
-    if etype == clingo_solve_event_type_finish as u32 {
-        let atomic_bool = unsafe { (data as *mut AtomicBool).as_ref() }.unwrap();
-        atomic_bool.store(false, Ordering::Relaxed);
+struct MySEHandler;
+impl ClingoSolveEventHandler<AtomicBool> for MySEHandler {
+    fn on_solve_event(
+        type_: ClingoSolveEventType,
+        data: &mut AtomicBool,
+        _goon: &mut bool,
+    ) -> bool {
+        if type_ == clingo_solve_event_type_finish {
+            data.store(false, Ordering::Relaxed);
+        }
+        true
     }
-    true
 }
 
 fn main() {
@@ -50,17 +50,16 @@ fn main() {
     ctl.ground(parts, ground_callback, ground_callback_data)
         .expect("Failed to ground a logic program.");
 
-    // create a solve handle with an attached vent handler
-    let assumptions = vec![];
-    let solve_event_callback: ClingoSolveEventCallback = Some(on_event);
+    let solve_event_handler = MySEHandler;
     let mut running = AtomicBool::new(true);
-    let running_ref = &mut running as *mut std::sync::atomic::AtomicBool;
+
+    // create a solve handle with an attached vent handler
     let handle = ctl.solve(
         (clingo_solve_mode_async as clingo_solve_mode_bitset_t) +
             (clingo_solve_mode_yield as clingo_solve_mode_bitset_t),
-        assumptions,
-        solve_event_callback,
-        running_ref as *mut std::os::raw::c_void,
+        vec![],
+        Some(solve_event_handler),
+        &mut running,
     ).expect("Failed to retrieve solve handle.");
 
     // let's approximate pi

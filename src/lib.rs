@@ -9,7 +9,6 @@ use libc::c_char;
 use clingo_sys::*;
 pub use clingo_sys::clingo_show_type::*;
 pub use clingo_sys::clingo_solve_mode::*;
-pub use clingo_sys::clingo_solve_event_type::*;
 pub use clingo_sys::clingo_statistics_type::*;
 pub use clingo_sys::clingo_clause_type::*;
 pub use clingo_sys::clingo_truth_value::*;
@@ -18,7 +17,6 @@ pub use clingo_sys::clingo_ast_term_type::*;
 pub use clingo_sys::clingo_ast_literal_type::*;
 pub use clingo_sys::clingo_ast_body_literal_type::*;
 pub use clingo_sys::clingo_ast_statement_type::*;
-pub use clingo_sys::clingo_error::*;
 
 pub use clingo_sys::{clingo_ast_statement_t, clingo_ast_term_type_t, clingo_solve_event_type_t,
                      clingo_show_type_bitset_t, clingo_solve_mode_bitset_t,
@@ -26,23 +24,37 @@ pub use clingo_sys::{clingo_ast_statement_t, clingo_ast_term_type_t, clingo_solv
 
 pub type ClingoAstCallback = clingo_ast_callback_t;
 pub type ClingoSolveEventCallback = clingo_solve_event_callback_t;
+
+pub use clingo_sys::clingo_error::*;
 pub type ClingoError = clingo_error;
+pub use clingo_sys::clingo_solve_event_type::*;
+pub type ClingoSolveEventType = clingo_solve_event_type;
+type clingo_solve_event_callback = unsafe extern "C" fn(type_: clingo_solve_event_type_t,
+                                                        event: *mut ::std::os::raw::c_void,
+                                                        data: *mut ::std::os::raw::c_void,
+                                                        goon: *mut bool)
+                                                        -> bool;
 
 
 pub trait ClingoSolveEventHandler<T> {
-    fn cb(
-        type_: clingo_solve_event_type,
-        data: &mut T,
-        goon: &mut bool,
-    ) -> bool {
-        true
-    }
-    unsafe extern "C" fn unsafe_cb(
+    fn on_solve_event(type_: ClingoSolveEventType, data: &mut T, goon: &mut bool) -> bool;
+    #[doc(hidden)]
+    unsafe extern "C" fn unsafe_solve_callback(
         type_: clingo_solve_event_type_t,
         event: *mut ::std::os::raw::c_void,
-        data: *mut ::std::os::raw::c_void,
-        goon: *mut bool,
-    ) -> bool;
+        data_: *mut ::std::os::raw::c_void,
+        goon_: *mut bool,
+    ) -> bool {
+
+        let event_type = match type_ {
+            0 => clingo_solve_event_type_model,
+            1 => clingo_solve_event_type_finish,
+            _ => return false,
+        };
+        let data = (data_ as *mut T).as_mut().unwrap();
+        let goon = goon_.as_mut().unwrap();
+        Self::on_solve_event(event_type, data, goon)
+    }
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -403,8 +415,6 @@ pub trait ClingoPropagatorBuilder<T> {
     fn check(_control: &mut ClingoPropagateControl, _data: &mut T) -> bool {
         true
     }
-//     /// Get the propagator data
-//     fn data() -> &T;
     /// Get a ClingoPropagator
     fn new() -> ClingoPropagator {
 
@@ -605,16 +615,22 @@ impl ClingoControl {
         if suc { Ok(()) } else { Err(error_message()) }
     }
 
-    pub fn solve(
+
+    pub fn solve<D, T: ClingoSolveEventHandler<D>>(
         &mut self,
         mode: clingo_solve_mode_bitset_t,
         assumptions: Vec<clingo_symbolic_literal_t>,
-        notify: clingo_solve_event_callback_t,
-        data: *mut ::std::os::raw::c_void,
+        handler: Option<T>,
+        data_: &mut D,
     ) -> Option<&mut ClingoSolveHandle> {
 
         let mut handle = std::ptr::null_mut() as *mut clingo_solve_handle_t;
+        let notify = match handler {
+            None => None,
+            Some(h) => Some(T::unsafe_solve_callback as clingo_solve_event_callback),
+        };
 
+        let data = data_ as *mut D;
         let err = unsafe {
             clingo_control_solve(
                 &mut self.0,
@@ -622,7 +638,7 @@ impl ClingoControl {
                 assumptions.as_ptr(),
                 assumptions.len(),
                 notify,
-                data,
+                data as *mut ::std::os::raw::c_void,
                 &mut handle,
             )
         };
@@ -678,7 +694,7 @@ impl ClingoControl {
     ///
     /// **Returns** whether the call was successful; might set one of the following error codes:
     /// - ::clingo_error_bad_alloc
-    pub fn register_propagator<D,T:ClingoPropagatorBuilder<D>>(
+    pub fn register_propagator<D, T: ClingoPropagatorBuilder<D>>(
         &mut self,
         propagator_builder: &T,
         data: &mut D,
@@ -688,8 +704,14 @@ impl ClingoControl {
         let propagator = T::new();
         let propagator_ptr: *const ClingoPropagator = &propagator;
         let data_ptr = data as *mut D;
-        let suc =
-            unsafe { clingo_control_register_propagator(&mut self.0, propagator_ptr as *const clingo_propagator, data_ptr as *mut ::std::os::raw::c_void, sequential) };
+        let suc = unsafe {
+            clingo_control_register_propagator(
+                &mut self.0,
+                propagator_ptr as *const clingo_propagator,
+                data_ptr as *mut ::std::os::raw::c_void,
+                sequential,
+            )
+        };
         if suc { Ok(()) } else { Err(error_message()) }
     }
 
