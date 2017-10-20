@@ -30,7 +30,11 @@ pub type ClingoError = clingo_error;
 
 
 pub trait ClingoSolveEventHandler<T> {
-    fn cb(type_: clingo_solve_event_type, data: &mut T, goon: &mut bool) -> bool {
+    fn cb(
+        type_: clingo_solve_event_type,
+        data: &mut T,
+        goon: &mut bool,
+    ) -> bool {
         true
     }
     unsafe extern "C" fn unsafe_cb(
@@ -399,6 +403,8 @@ pub trait ClingoPropagatorBuilder<T> {
     fn check(_control: &mut ClingoPropagateControl, _data: &mut T) -> bool {
         true
     }
+//     /// Get the propagator data
+//     fn data() -> &T;
     /// Get a ClingoPropagator
     fn new() -> ClingoPropagator {
 
@@ -672,17 +678,18 @@ impl ClingoControl {
     ///
     /// **Returns** whether the call was successful; might set one of the following error codes:
     /// - ::clingo_error_bad_alloc
-    pub fn register_propagator(
+    pub fn register_propagator<D,T:ClingoPropagatorBuilder<D>>(
         &mut self,
-        propagator: &ClingoPropagator,
-        data: *mut ::std::os::raw::c_void,
+        propagator_builder: &T,
+        data: &mut D,
         sequential: bool,
     ) -> Result<(), &'static str> {
 
-        let ptr: *const ClingoPropagator = propagator;
-        let ptr2 = ptr as *const clingo_propagator;
+        let propagator = T::new();
+        let propagator_ptr: *const ClingoPropagator = &propagator;
+        let data_ptr = data as *mut D;
         let suc =
-            unsafe { clingo_control_register_propagator(&mut self.0, ptr2, data, sequential) };
+            unsafe { clingo_control_register_propagator(&mut self.0, propagator_ptr as *const clingo_propagator, data_ptr as *mut ::std::os::raw::c_void, sequential) };
         if suc { Ok(()) } else { Err(error_message()) }
     }
 

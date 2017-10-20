@@ -263,7 +263,7 @@ fn main() {
 
     // create a propagator with the functions above
     // using the default implementation for the model check
-    let prop = Prop::new();
+    let prop = Prop;
 
     // user data for the propagator
     let mut prop_data = PropagatorT {
@@ -278,8 +278,7 @@ fn main() {
     match option {
         Ok(ctl) => {
             // register the propagator
-            let prop_data_ptr = &mut prop_data as *mut PropagatorT;
-            ctl.register_propagator(&prop, prop_data_ptr as *mut ::std::os::raw::c_void, false)
+            ctl.register_propagator(&prop, &mut prop_data, false)
                 .expect("Failed to register propagator.");
 
             // add a logic program to the pigeon part
