@@ -126,6 +126,9 @@ fn main() {
         // initialize the location
         let location = ClingoLocation::new(0, 0, 0, 0, "<rewrite>", "<rewrite>");
 
+        {       let x = location.get_end_file();
+                println!("location {:?}",x);
+        }
         // initilize atom to add
         let atom = ClingoAstTerm::new_symbol(location, sym);
 

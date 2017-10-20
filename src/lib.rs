@@ -185,6 +185,9 @@ impl ClingoLocation {
             end_file: self.end_file.as_ptr(),
         }
     }
+    pub fn get_end_file(&self) -> &CString {
+      &self.end_file
+    }
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -371,22 +374,22 @@ impl<'a> Drop for ClingoPart<'a> {
     }
 }
 impl<'a> ClingoPart<'a> {
-    pub fn new_part(name: &'a str, params: &'a [ClingoSymbol]) -> ClingoPart<'a> {
+    pub fn new_part(name: &str, params: &'a [ClingoSymbol]) -> ClingoPart<'a> {
         ClingoPart {
             name: CString::new(name).unwrap(),
             params: params,
         }
     }
-}
 
-fn from_clingo_part(spart: &ClingoPart) -> clingo_part {
-    clingo_part {
-        name: spart.name.as_ptr(),
-        params: spart.params.as_ptr() as *const clingo_symbol_t,
-        size: spart.params.len(),
+
+    fn from(&self) -> clingo_part {
+        clingo_part {
+            name: self.name.as_ptr(),
+            params: self.params.as_ptr() as *const clingo_symbol_t,
+            size: self.params.len(),
+        }
     }
 }
-
 pub fn error() -> ClingoError {
     let code = unsafe { clingo_error_code() };
     match code {
@@ -643,7 +646,7 @@ impl ClingoControl {
 
         let parts = sparts
             .iter()
-            .map(|arg| from_clingo_part(arg))
+            .map(|arg| arg.from())
             .collect::<Vec<clingo_part>>();
         let parts_size = parts.len();
 
@@ -668,7 +671,7 @@ impl ClingoControl {
 
         let parts = sparts
             .iter()
-            .map(|arg| from_clingo_part(arg))
+            .map(|arg| arg.from())
             .collect::<Vec<clingo_part>>();
         let parts_size = parts.len();
 
@@ -2045,11 +2048,11 @@ impl ClingoTheoryAtoms {
     //                                               size: size_t)
     //                                               -> u8;
 }
-pub struct UNSAFEClingoTheoryAtomsIterator {
+pub struct UNSAFE_ClingoTheoryAtomsIterator {
     count: usize,
     size: usize,
 }
-impl Iterator for UNSAFEClingoTheoryAtomsIterator {
+impl Iterator for UNSAFE_ClingoTheoryAtomsIterator {
     type Item = ClingoId;
 
     fn next(&mut self) -> Option<ClingoId> {
@@ -2064,9 +2067,9 @@ impl Iterator for UNSAFEClingoTheoryAtomsIterator {
         }
     }
 }
-impl UNSAFEClingoTheoryAtomsIterator {
-    pub fn from(cta: &mut ClingoTheoryAtoms) -> UNSAFEClingoTheoryAtomsIterator {
-        UNSAFEClingoTheoryAtomsIterator {
+impl UNSAFE_ClingoTheoryAtomsIterator {
+    pub fn from(cta: &mut ClingoTheoryAtoms) -> UNSAFE_ClingoTheoryAtomsIterator {
+        UNSAFE_ClingoTheoryAtomsIterator {
             count: 0,
             size: cta.size().unwrap(),
         }

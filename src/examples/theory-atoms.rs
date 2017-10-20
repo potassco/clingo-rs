@@ -57,7 +57,7 @@ fn get_theory_atom_literal(ctl: &mut ClingoControl) -> std::option::Option<Cling
     println!("number of grounded theory atoms: {}", size);
 
     // verify that theory atom b has a guard
-    for atom in UNSAFEClingoTheoryAtomsIterator::from(atoms) {
+    for atom in UNSAFE_ClingoTheoryAtomsIterator::from(atoms) {
 
         // get the term associated with the theory atom
         let term = atoms.atom_term(atom as ClingoId).unwrap();
