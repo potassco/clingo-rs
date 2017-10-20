@@ -24,9 +24,7 @@ fn main() {
     // ground the base part
     let part = ClingoPart::new_part("base", &[]);
     let parts = vec![part];
-    let ground_callback = None;
-    let ground_callback_data = std::ptr::null_mut();
-    ctl.ground(parts, ground_callback, ground_callback_data)
+    ctl.ground(parts)
         .expect("Failed to ground a logic program.");
 
     // get symbolic atoms

@@ -23,7 +23,6 @@ pub use clingo_sys::{clingo_ast_statement_t, clingo_ast_term_type_t, clingo_solv
                      clingo_solve_result_bitset_t, clingo_logger_t};
 
 pub type ClingoAstCallback = clingo_ast_callback_t;
-pub type ClingoSolveEventCallback = clingo_solve_event_callback_t;
 
 pub use clingo_sys::clingo_error::*;
 pub type ClingoError = clingo_error;
@@ -34,6 +33,15 @@ type clingo_solve_event_callback = unsafe extern "C" fn(type_: clingo_solve_even
                                                         data: *mut ::std::os::raw::c_void,
                                                         goon: *mut bool)
                                                         -> bool;
+type clingo_ground_callback =
+        unsafe extern "C" fn(location: *const clingo_location_t,
+                             name: *const ::std::os::raw::c_char,
+                             arguments: *const clingo_symbol_t,
+                             arguments_size: usize,
+                             data: *mut ::std::os::raw::c_void,
+                             symbol_callback: clingo_symbol_callback_t,
+                             symbol_callback_data: *mut ::std::os::raw::c_void)
+                             -> bool;
 
 
 pub trait ClingoSolveEventHandler<T> {
@@ -56,6 +64,44 @@ pub trait ClingoSolveEventHandler<T> {
         Self::on_solve_event(event_type, data, goon)
     }
 }
+
+pub trait ClingoGroundEventHandler<T> {
+    fn on_ground_event(
+          location: *const clingo_location_t,
+                             name: *const ::std::os::raw::c_char,
+                             arguments: *const clingo_symbol_t,
+                             arguments_size: usize,
+                             data: *mut ::std::os::raw::c_void,
+                             symbol_callback: clingo_symbol_callback_t,
+                             symbol_callback_data: *mut ::std::os::raw::c_void) -> bool;
+    #[doc(hidden)]
+    unsafe extern "C" fn unsafe_ground_callback(
+          location: *const clingo_location_t,
+                             name: *const ::std::os::raw::c_char,
+                             arguments: *const clingo_symbol_t,
+                             arguments_size: usize,
+                             data: *mut ::std::os::raw::c_void,
+                             symbol_callback: clingo_symbol_callback_t,
+                             symbol_callback_data: *mut ::std::os::raw::c_void
+    ) -> bool {
+
+//         let event_type = match type_ {
+//             0 => clingo_solve_event_type_model,
+//             1 => clingo_solve_event_type_finish,
+//             _ => return false,
+//         };
+//         let data = (data_ as *mut T).as_mut().unwrap();
+//         let goon = goon_.as_mut().unwrap();
+        Self::on_ground_event(location,
+                             name,
+                             arguments,
+                             arguments_size,
+                             data,
+                             symbol_callback,
+                             symbol_callback_data)
+    }
+}
+
 
 #[derive(Debug, Copy, Clone)]
 pub struct ClingoLiteral(clingo_literal_t);
@@ -470,16 +516,6 @@ pub trait ClingoPropagatorBuilder<T> {
     }
 }
 
-
-// pub struct ClingoControlBuilder {
-//         logger: clingo_logger_t,
-//         logger_data: *mut ::std::os::raw::c_void,
-//         ground_callback: clingo_ground_callback_t,
-//         ground_callback_data: *mut ::std::os::raw::c_void,
-//         solve_event_handler : ClingoSolveEventHandler<D>,
-// }
-
-
 #[derive(Debug)]
 pub struct ClingoControl(clingo_control_t);
 impl Drop for ClingoControl {
@@ -603,8 +639,6 @@ impl ClingoControl {
     pub fn ground(
         &mut self,
         sparts: Vec<ClingoPart>,
-        ground_callback: clingo_ground_callback_t,
-        ground_callback_data: *mut ::std::os::raw::c_void,
     ) -> Result<(), &'static str> {
 
         let parts = sparts
@@ -618,14 +652,65 @@ impl ClingoControl {
                 &mut self.0,
                 parts.as_ptr(),
                 parts_size,
-                ground_callback,
-                ground_callback_data,
+                None,
+                std::ptr::null_mut() as *mut ::std::os::raw::c_void,
             )
         };
         if suc { Ok(()) } else { Err(error_message()) }
     }
 
+    pub fn ground_with_event_handler<D, T: ClingoGroundEventHandler<D>>(
+        &mut self,
+        sparts: Vec<ClingoPart>,
+        handler: T,
+        data_: &mut D,
+    ) -> Result<(), &'static str> {
 
+        let parts = sparts
+            .iter()
+            .map(|arg| from_clingo_part(arg))
+            .collect::<Vec<clingo_part>>();
+        let parts_size = parts.len();
+
+        let data = data_ as *mut D;
+        let suc = unsafe {
+            clingo_control_ground(
+                &mut self.0,
+                parts.as_ptr(),
+                parts_size,
+                Some(T::unsafe_ground_callback as clingo_ground_callback),
+                data as *mut ::std::os::raw::c_void,
+            )
+        };
+        if suc { Ok(()) } else { Err(error_message()) }
+    }
+
+    pub fn solve(
+        &mut self,
+        mode: clingo_solve_mode_bitset_t,
+        assumptions: Vec<clingo_symbolic_literal_t>,
+
+    ) -> Option<&mut ClingoSolveHandle> {
+
+        let mut handle = std::ptr::null_mut() as *mut clingo_solve_handle_t;
+
+        let err = unsafe {
+            clingo_control_solve(
+                &mut self.0,
+                mode,
+                assumptions.as_ptr(),
+                assumptions.len(),
+                None,
+                std::ptr::null_mut() as *mut ::std::os::raw::c_void,
+                &mut handle,
+            )
+        };
+        if !err {
+            None
+        } else {
+            unsafe { (handle as *mut ClingoSolveHandle).as_mut() }
+        }
+    }
     pub fn solve_with_event_handler<D, T: ClingoSolveEventHandler<D>>(
         &mut self,
         mode: clingo_solve_mode_bitset_t,
@@ -654,32 +739,7 @@ impl ClingoControl {
             unsafe { (handle as *mut ClingoSolveHandle).as_mut() }
         }
     }
-    pub fn solve(
-        &mut self,
-        mode: clingo_solve_mode_bitset_t,
-        assumptions: Vec<clingo_symbolic_literal_t>,
 
-    ) -> Option<&mut ClingoSolveHandle> {
-
-        let mut handle = std::ptr::null_mut() as *mut clingo_solve_handle_t;
-
-        let err = unsafe {
-            clingo_control_solve(
-                &mut self.0,
-                mode,
-                assumptions.as_ptr(),
-                assumptions.len(),
-                None,
-                std::ptr::null_mut() as *mut ::std::os::raw::c_void,
-                &mut handle,
-            )
-        };
-        if !err {
-            None
-        } else {
-            unsafe { (handle as *mut ClingoSolveHandle).as_mut() }
-        }
-    }
     //     pub fn clingo_control_cleanup(control: *mut ClingoControl) -> u8;
 
     /// Assign a truth value to an external atom.
