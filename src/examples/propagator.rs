@@ -78,7 +78,7 @@ fn get_arg(sym: ClingoSymbol, offset: usize) -> Result<i32, &'static str> {
     args[offset as usize].number()
 }
 
-struct Prop;
+struct MyPropagator;
 impl ClingoPropagatorBuilder<PropagatorT> for Prop {
     fn init(init: &mut ClingoPropagateInit, propagator: &mut PropagatorT) -> bool {
 
@@ -263,7 +263,7 @@ fn main() {
 
     // create a propagator with the functions above
     // using the default implementation for the model check
-    let prop = Prop;
+    let prop = MyPropagator;
 
     // user data for the propagator
     let mut prop_data = PropagatorT {
