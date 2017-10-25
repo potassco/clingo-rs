@@ -372,7 +372,7 @@ pub struct ClingoPart<'a> {
 }
 impl<'a> Drop for ClingoPart<'a> {
     fn drop(&mut self) {
-        // println!("droped ClingoPart!");
+        println!("droped ClingoPart!");
     }
 }
 impl<'a> ClingoPart<'a> {
@@ -525,7 +525,15 @@ pub trait ClingoPropagatorBuilder<T> {
 // #[derive(Debug)]
 pub struct ClingoControl
 {
-  ctl: Unique<clingo_control_t>
+  ctl: Unique<clingo_control_t>,
+  args : std::vec::Vec<CString>,
+  c_args : std::vec::Vec<*const c_char>,
+
+  name : Option<CString>,
+  parameters : std::vec::Vec<CString>,
+  c_parameters : std::vec::Vec<*const c_char>,
+  program : Option<CString>,
+  parts : Vec<clingo_part>,
 }
 
 impl Drop for ClingoControl {
@@ -589,7 +597,15 @@ impl ClingoControl {
             )
         };
         if suc {
-            unsafe { Ok(ClingoControl { ctl: Unique::new(ctl).unwrap() }) }
+            unsafe { Ok(ClingoControl { ctl: Unique::new(ctl).unwrap(),
+                                        args : args,
+                                        c_args : c_args,
+                                        name : None,
+                                        parameters : vec![],
+                                        c_parameters : vec![],
+                                        program : None,
+                                        parts : vec![],
+                      }) }
         } else {
             Err(error_message())
         }
@@ -622,28 +638,33 @@ impl ClingoControl {
     ) -> Result<(), &'static str> {
 
         let name = CString::new(name_).unwrap();
+        let name_ptr = name.as_ptr();
+        self.name = Some(name);
+
         let program = CString::new(program_).unwrap();
+        let program_ptr = program.as_ptr();
+        self.program = Some(program);
 
         let parameters_size = parameters.len();
 
         // create a vector of zero terminated strings
-        let args = parameters
+        self.parameters = parameters
             .into_iter()
             .map(|arg| CString::new(arg).unwrap())
             .collect::<Vec<CString>>();
 
         // convert the strings to raw pointers
-        let c_args = args.iter()
+        self.c_parameters = self.parameters.iter()
             .map(|arg| arg.as_ptr())
             .collect::<Vec<*const c_char>>();
 
         let suc = unsafe {
             clingo_control_add(
                 self.ctl.as_ptr(),
-                name.as_ptr(),
-                c_args.as_ptr(),
+                name_ptr,
+                self.c_parameters.as_ptr(),
                 parameters_size,
-                program.as_ptr(),
+                program_ptr,
             )
         };
         if suc { Ok(()) } else { Err(error_message()) }
@@ -675,16 +696,16 @@ impl ClingoControl {
         sparts: Vec<ClingoPart>,
     ) -> Result<(), &'static str> {
 
-        let parts = sparts
+        self.parts = sparts
             .iter()
             .map(|arg| arg.from())
             .collect::<Vec<clingo_part>>();
-        let parts_size = parts.len();
+        let parts_size = sparts.len();
 
         let suc = unsafe {
             clingo_control_ground(
                 self.ctl.as_ptr(),
-                parts.as_ptr(),
+                self.parts.as_ptr(),
                 parts_size,
                 None,
                 std::ptr::null_mut() as *mut ::std::os::raw::c_void,
@@ -700,17 +721,17 @@ impl ClingoControl {
         data_: &mut D,
     ) -> Result<(), &'static str> {
 
-        let parts = sparts
+        self.parts = sparts
             .iter()
             .map(|arg| arg.from())
             .collect::<Vec<clingo_part>>();
-        let parts_size = parts.len();
+        let parts_size = sparts.len();
 
         let data = data_ as *mut D;
         let suc = unsafe {
             clingo_control_ground(
                 self.ctl.as_ptr(),
-                parts.as_ptr(),
+                self.parts.as_ptr(),
                 parts_size,
                 Some(T::unsafe_ground_callback as clingo_ground_callback),
                 data as *mut ::std::os::raw::c_void,
