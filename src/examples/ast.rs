@@ -130,7 +130,7 @@ fn main() {
                 println!("location {:?}",x);
         }
         // initilize atom to add
-        let atom = ClingoAstTerm::new_symbol(location, sym);
+        let atom = ClingoAstTerm::new_symbol(location, &sym);
 
         let mut data = OnStatementData {
             atom: atom,
@@ -185,14 +185,14 @@ fn main() {
 
     // solve with external enable = true
     println!("Solving with enable = true...");
-    ctl.assign_external(sym, clingo_truth_value_true).expect(
+    ctl.assign_external(&sym, clingo_truth_value_true).expect(
         "Failed to assign #external enable true.",
     );
     solve(&mut ctl);
 
     // solve with external enable = false
     println!("Solving with enable = false...");
-    ctl.assign_external(sym, clingo_truth_value_false).expect(
+    ctl.assign_external(&sym, clingo_truth_value_false).expect(
         "Failed to assign #external enable false.",
     );
     solve(&mut ctl);

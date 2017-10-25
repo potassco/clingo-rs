@@ -146,7 +146,7 @@ pub struct ClingoLocation {
 }
 impl Drop for ClingoLocation {
     fn drop(&mut self) {
-        // println!("droped ClingoLocation!");
+        println!("droped ClingoLocation!");
     }
 }
 impl ClingoLocation {
@@ -192,11 +192,21 @@ impl ClingoLocation {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
-pub struct ClingoSymbol(clingo_symbol_t);
+#[derive(Debug, Clone)]
+pub struct ClingoSymbol{
+    symbol : clingo_symbol_t,
+    c_string : Option<CString>,
+}
+impl Drop for ClingoSymbol {
+    fn drop(&mut self) {
+        println!("droped ClingoSymbol!");
+        println!("sym {}",self.symbol);
+        println!("c_str {:?}", self.c_string);
+    }
+}
 impl PartialEq for ClingoSymbol {
     fn eq(&self, other: &ClingoSymbol) -> bool {
-        unsafe { clingo_symbol_is_equal_to(self.0, other.0) }
+        unsafe { clingo_symbol_is_equal_to(self.symbol, other.symbol) }
     }
 }
 impl Eq for ClingoSymbol {}
@@ -204,7 +214,7 @@ impl ClingoSymbol {
     pub fn create_number(number: c_int) -> ClingoSymbol {
         let mut symbol = 0 as clingo_symbol_t;
         unsafe { clingo_symbol_create_number(number, &mut symbol) };
-        ClingoSymbol(symbol)
+        ClingoSymbol{symbol : symbol, c_string : None,}
     }
 
     //     pub fn clingo_symbol_create_supremum(symbol: *mut clingo_symbol_t);
@@ -230,7 +240,8 @@ impl ClingoSymbol {
         let mut symbol = 0 as clingo_symbol_t;
         let name_c_str = CString::new(name).unwrap();
         if unsafe { clingo_symbol_create_id(name_c_str.as_ptr(), positive, &mut symbol) } {
-            Ok(ClingoSymbol(symbol))
+        println!("create ClingoSymbol! sym {} {:?}",symbol, name_c_str);
+            Ok(ClingoSymbol{symbol: symbol, c_string : Some(name_c_str)})
         } else {
             Err(error_message())
         }
@@ -269,7 +280,7 @@ impl ClingoSymbol {
             )
         }
         {
-            Ok(ClingoSymbol(symbol))
+            Ok(ClingoSymbol{symbol: symbol, c_string : Some(name_c_str),})
         } else {
             Err(error_message())
         }
@@ -287,7 +298,7 @@ impl ClingoSymbol {
     pub fn number(&self) -> Result<i32, &'static str> {
 
         let mut number = 0;
-        if unsafe { clingo_symbol_number(self.0, &mut number) } {
+        if unsafe { clingo_symbol_number(self.symbol, &mut number) } {
             Ok(number)
         } else {
             Err(error_message())
@@ -313,11 +324,11 @@ impl ClingoSymbol {
 
         let mut symbol_ptr = std::ptr::null() as *const clingo_symbol_t;
         let mut size: usize = 0;
-        if unsafe { clingo_symbol_arguments(self.0, &mut symbol_ptr, &mut size) } {
+        if unsafe { clingo_symbol_arguments(self.symbol, &mut symbol_ptr, &mut size) } {
             let mut symbols = Vec::<ClingoSymbol>::with_capacity(size);
             for _ in 0..size {
                 let nsymbol = unsafe { *symbol_ptr };
-                symbols.push(ClingoSymbol(nsymbol));
+                symbols.push(ClingoSymbol{ symbol : nsymbol, c_string : None});
                 symbol_ptr = unsafe { symbol_ptr.offset(1) };
             }
             Ok(symbols)
@@ -332,14 +343,14 @@ impl ClingoSymbol {
     pub fn to_string(&self) -> Option<String> {
 
         let mut size: usize = 0;
-        let err = unsafe { clingo_symbol_to_string_size(self.0, &mut size) };
+        let err = unsafe { clingo_symbol_to_string_size(self.symbol, &mut size) };
         if !err {
             None
         } else {
             let a1 = vec![1; size];
             let cstring = unsafe { CString::from_vec_unchecked(a1) };
             let err =
-                unsafe { clingo_symbol_to_string(self.0, cstring.as_ptr() as *mut c_char, size) };
+                unsafe { clingo_symbol_to_string(self.symbol, cstring.as_ptr() as *mut c_char, size) };
             if !err {
                 None
             } else {
@@ -349,11 +360,11 @@ impl ClingoSymbol {
     }
 
     pub fn is_less_than(&self, other: &ClingoSymbol) -> bool {
-        unsafe { clingo_symbol_is_less_than(self.0, other.0) }
+        unsafe { clingo_symbol_is_less_than(self.symbol, other.symbol) }
     }
 
     pub fn hash(&self) -> usize {
-        unsafe { clingo_symbol_hash(self.0) }
+        unsafe { clingo_symbol_hash(self.symbol) }
     }
 }
 
@@ -811,11 +822,11 @@ impl ClingoControl {
     /// - ::clingo_error_bad_alloc
     pub fn assign_external(
         &mut self,
-        ClingoSymbol(symbol): ClingoSymbol,
+        c_symbol: &ClingoSymbol,
         value: clingo_truth_value,
     ) -> Result<(), &'static str> {
         let suc = unsafe {
-            clingo_control_assign_external(self.ctl.as_ptr(), symbol, value as clingo_truth_value_t)
+            clingo_control_assign_external(self.ctl.as_ptr(), c_symbol.symbol, value as clingo_truth_value_t)
         };
         if suc { Ok(()) } else { Err(error_message()) }
     }
@@ -1136,10 +1147,17 @@ impl ClingoAstStatement {
 }
 
 pub struct ClingoAstTerm(clingo_ast_term_t);
+impl Drop for ClingoAstTerm {
+    fn drop(&mut self) {
+        println!("droped ClingoAstTerm!");
+println!("sym {}", unsafe {self.0.__bindgen_anon_1.symbol} );
+    }
+}
 impl ClingoAstTerm {
-    pub fn new_symbol(location: ClingoLocation, symbol_: ClingoSymbol) -> ClingoAstTerm {
-        let ClingoSymbol(symbol) = symbol_;
-        let _bg_union_1 = clingo_ast_term__bindgen_ty_1 { symbol: symbol };
+    pub fn new_symbol(location: ClingoLocation,
+        c_symbol: &ClingoSymbol) -> ClingoAstTerm {
+//         let ClingoSymbol(symbol) = symbol_;
+        let _bg_union_1 = clingo_ast_term__bindgen_ty_1 { symbol: c_symbol.symbol };
         let term = clingo_ast_term_t {
             location: location.clingo_location(),
             type_: clingo_ast_term_type::clingo_ast_term_type_symbol as clingo_ast_term_type_t,
@@ -1746,11 +1764,11 @@ impl ClingoSymbolicAtoms {
     /// **Returns** whether the call was successful
     pub fn find(
         &mut self,
-        ClingoSymbol(symbol): ClingoSymbol,
+        c_symbol: ClingoSymbol,
     ) -> Result<clingo_symbolic_atom_iterator_t, &'static str> {
 
         let mut iterator = 0 as clingo_symbolic_atom_iterator_t;
-        if unsafe { clingo_symbolic_atoms_find(&mut self.0, symbol, &mut iterator) } {
+        if unsafe { clingo_symbolic_atoms_find(&mut self.0, c_symbol.symbol, &mut iterator) } {
             Ok(iterator)
         } else {
             Err(error_message())
@@ -1797,7 +1815,7 @@ impl ClingoSymbolicAtoms {
 
         let mut symbol = 0 as clingo_symbol_t;
         if unsafe { clingo_symbolic_atoms_symbol(&mut self.0, iterator, &mut symbol) } {
-            Ok(ClingoSymbol(symbol))
+            Ok(ClingoSymbol{symbol : symbol, c_string : None,})
         } else {
             Err(error_message())
         }
