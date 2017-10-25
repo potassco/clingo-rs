@@ -114,7 +114,7 @@ fn main() {
 
     let logger = None;
     let logger_data = std::ptr::null_mut();
-    let ctl = ClingoControl::new(options, logger, logger_data, 20)
+    let mut ctl = ClingoControl::new(options, logger, logger_data, 20)
         .expect("Failed creating ClingoControl.");
 
     let sym = ClingoSymbol::create_id("enable", true).unwrap();
@@ -181,19 +181,19 @@ fn main() {
 
     // solve with external enable = false
     println!("Solving with enable = false...");
-    solve(ctl);
+    solve(&mut ctl);
 
     // solve with external enable = true
     println!("Solving with enable = true...");
     ctl.assign_external(sym, clingo_truth_value_true).expect(
         "Failed to assign #external enable true.",
     );
-    solve(ctl);
+    solve(&mut ctl);
 
     // solve with external enable = false
     println!("Solving with enable = false...");
     ctl.assign_external(sym, clingo_truth_value_false).expect(
         "Failed to assign #external enable false.",
     );
-    solve(ctl);
+    solve(&mut ctl);
 }

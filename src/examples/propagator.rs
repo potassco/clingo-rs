@@ -274,7 +274,7 @@ fn main() {
     let logger_data = std::ptr::null_mut();
     let option = ClingoControl::new(options, logger, logger_data, 20);
     match option {
-        Ok(ctl) => {
+        Ok(mut ctl) => {
             // register the propagator
             ctl.register_propagator(&prop, &mut prop_data, false)
                 .expect("Failed to register propagator.");
@@ -308,7 +308,7 @@ fn main() {
                 .expect("Failed to ground a logic program.");
 
             // solve using a model callback
-            solve(ctl);
+            solve(&mut ctl);
         }
         Err(e) => {
             println!("{}", e);

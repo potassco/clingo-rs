@@ -55,7 +55,7 @@ fn main() {
     // create a control object and pass command line arguments
     let logger = None;
     let logger_data = std::ptr::null_mut();
-    let ctl = ClingoControl::new(options, logger, logger_data, 20)
+    let mut ctl = ClingoControl::new(options, logger, logger_data, 20)
         .expect("Failed creating ClingoControl.");
 
     // add a logic program to the base part
@@ -72,5 +72,5 @@ fn main() {
         .expect("Failed to ground a logic program.");
 
     // solve
-    solve(ctl);
+    solve(&mut ctl);
 }

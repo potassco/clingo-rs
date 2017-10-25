@@ -88,7 +88,7 @@ fn main() {
     // create a control object and pass command line arguments
     let logger = None;
     let logger_data = std::ptr::null_mut();
-    let ctl = ClingoControl::new(options, logger, logger_data, 20)
+    let mut ctl = ClingoControl::new(options, logger, logger_data, 20)
         .expect("Failed creating clingo_control.");
 
     // add a logic program to the base part
@@ -114,7 +114,7 @@ fn main() {
     // use the backend to assume that the theory atom is true
     // (note that only symbolic literals can be passed as assumptions to a solve call;
     // the backend accepts any aspif literal)
-    if let Some(lit) = get_theory_atom_literal(ctl) {
+    if let Some(lit) = get_theory_atom_literal(&mut ctl) {
         // get the backend
         let backend = ctl.backend().unwrap();
         // add the assumption
@@ -122,5 +122,5 @@ fn main() {
     }
 
     // solve
-    solve(ctl);
+    solve(&mut ctl);
 }

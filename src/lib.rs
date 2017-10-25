@@ -1,6 +1,8 @@
-
+#![feature(unique)]
 extern crate libc;
 extern crate clingo_sys;
+use std::mem;
+use std::ptr::Unique;
 
 use std::ffi::CStr;
 use std::ffi::CString;
@@ -443,6 +445,7 @@ pub fn parse_program(
 
 pub struct ClingoPropagator(clingo_propagator_t);
 
+
 pub trait ClingoPropagatorBuilder<T> {
     fn init(_init: &mut ClingoPropagateInit, _data: &mut T) -> bool {
         true
@@ -519,20 +522,48 @@ pub trait ClingoPropagatorBuilder<T> {
     }
 }
 
-#[derive(Debug)]
-pub struct ClingoControl(clingo_control_t);
+// #[derive(Debug)]
+pub struct ClingoControl
+{
+  ctl: Unique<clingo_control_t>
+}
+
 impl Drop for ClingoControl {
     fn drop(&mut self) {
-        unsafe { clingo_control_free(&mut self.0) }
+        println!("drop ClingoControl");
+        unsafe { clingo_control_free(self.ctl.as_ptr()) }
     }
 }
 impl ClingoControl {
-    pub fn new<'a>(
+    /// Create a new control object.
+    ///
+    /// A control object has to be freed using clingo_control_free().
+    ///
+    /// **Note:** Only gringo options (without <code>\-\-output</code>) and clasp`s options are supported as arguments,
+    /// except basic options such as <code>\-\-help</code>.
+    /// Furthermore, a control object is blocked while a search call is active;
+    /// you must not call any member function during search.
+    ///
+    /// If the logger is NULL, messages are printed to stderr.
+    ///
+    /// **Parameters:**
+    ///
+    /// * `arguments` - C string array of command line arguments
+    /// * `arguments_size` - size of the arguments array
+    /// * `logger` - callback functions for warnings and info messages
+    /// * `logger_data` - user data for the logger callback
+    /// * `message_limit` - maximum number of times the logger callback is called
+    /// * `control` - resulting control object
+    ///
+    /// **Returns** whether the call was successful; might set one of the following error codes:
+    /// - ::clingo_error_bad_alloc
+    /// - ::clingo_error_runtime if argument parsing fails
+    pub fn new(
         arguments: std::vec::Vec<String>,
         logger: clingo_logger_t,
         logger_data: *mut ::std::os::raw::c_void,
         message_limit: ::std::os::raw::c_uint,
-    ) -> Result<&'a mut ClingoControl, &'static str> {
+    ) -> Result<ClingoControl, &'static str> {
 
         // create a vector of zero terminated strings
         let mut args: Vec<CString> = Vec::new();
@@ -545,7 +576,7 @@ impl ClingoControl {
             .map(|arg| arg.as_ptr())
             .collect::<Vec<*const c_char>>();
 
-        let mut ctl = std::ptr::null_mut();
+        let mut ctl = unsafe{ mem::uninitialized()};
 
         let suc = unsafe {
             clingo_control_new(
@@ -558,7 +589,7 @@ impl ClingoControl {
             )
         };
         if suc {
-            unsafe { Ok(&mut *(ctl as *mut ClingoControl)) }
+            unsafe { Ok(ClingoControl { ctl: Unique::new(ctl).unwrap() }) }
         } else {
             Err(error_message())
         }
@@ -608,7 +639,7 @@ impl ClingoControl {
 
         let suc = unsafe {
             clingo_control_add(
-                &mut self.0,
+                self.ctl.as_ptr(),
                 name.as_ptr(),
                 c_args.as_ptr(),
                 parameters_size,
@@ -652,7 +683,7 @@ impl ClingoControl {
 
         let suc = unsafe {
             clingo_control_ground(
-                &mut self.0,
+                self.ctl.as_ptr(),
                 parts.as_ptr(),
                 parts_size,
                 None,
@@ -678,7 +709,7 @@ impl ClingoControl {
         let data = data_ as *mut D;
         let suc = unsafe {
             clingo_control_ground(
-                &mut self.0,
+                self.ctl.as_ptr(),
                 parts.as_ptr(),
                 parts_size,
                 Some(T::unsafe_ground_callback as clingo_ground_callback),
@@ -699,7 +730,7 @@ impl ClingoControl {
 
         let err = unsafe {
             clingo_control_solve(
-                &mut self.0,
+                self.ctl.as_ptr(),
                 mode,
                 assumptions.as_ptr(),
                 assumptions.len(),
@@ -727,7 +758,7 @@ impl ClingoControl {
         let data = data_ as *mut D;
         let err = unsafe {
             clingo_control_solve(
-                &mut self.0,
+                self.ctl.as_ptr(),
                 mode,
                 assumptions.as_ptr(),
                 assumptions.len(),
@@ -763,7 +794,7 @@ impl ClingoControl {
         value: clingo_truth_value,
     ) -> Result<(), &'static str> {
         let suc = unsafe {
-            clingo_control_assign_external(&mut self.0, symbol, value as clingo_truth_value_t)
+            clingo_control_assign_external(self.ctl.as_ptr(), symbol, value as clingo_truth_value_t)
         };
         if suc { Ok(()) } else { Err(error_message()) }
     }
@@ -800,7 +831,7 @@ impl ClingoControl {
         let data_ptr = data as *mut D;
         let suc = unsafe {
             clingo_control_register_propagator(
-                &mut self.0,
+                self.ctl.as_ptr(),
                 propagator_ptr as *const clingo_propagator,
                 data_ptr as *mut ::std::os::raw::c_void,
                 sequential,
@@ -813,7 +844,7 @@ impl ClingoControl {
 
         let mut stat = std::ptr::null_mut() as *mut clingo_statistics_t;
 
-        let err = unsafe { clingo_control_statistics(&mut self.0, &mut stat) };
+        let err = unsafe { clingo_control_statistics(self.ctl.as_ptr(), &mut stat) };
         if !err {
             None
         } else {
@@ -826,7 +857,7 @@ impl ClingoControl {
     pub fn configuration(&mut self) -> Option<&mut ClingoConfiguration> {
 
         let mut conf = std::ptr::null_mut() as *mut clingo_configuration_t;
-        let err = unsafe { clingo_control_configuration(&mut self.0, &mut conf) };
+        let err = unsafe { clingo_control_configuration(self.ctl.as_ptr(), &mut conf) };
         if !err {
             None
         } else {
@@ -851,7 +882,7 @@ impl ClingoControl {
     pub fn symbolic_atoms(&mut self) -> Option<&mut ClingoSymbolicAtoms> {
 
         let mut atoms = std::ptr::null_mut() as *mut clingo_symbolic_atoms_t;
-        let err = unsafe { clingo_control_symbolic_atoms(&mut self.0, &mut atoms) };
+        let err = unsafe { clingo_control_symbolic_atoms(self.ctl.as_ptr(), &mut atoms) };
         if !err {
             None
         } else {
@@ -862,7 +893,7 @@ impl ClingoControl {
     pub fn theory_atoms(&mut self) -> Option<&mut ClingoTheoryAtoms> {
 
         let mut atoms = std::ptr::null_mut() as *mut clingo_theory_atoms_t;
-        let err = unsafe { clingo_control_theory_atoms(&mut self.0, &mut atoms) };
+        let err = unsafe { clingo_control_theory_atoms(self.ctl.as_ptr(), &mut atoms) };
         if !err {
             None
         } else {
@@ -873,7 +904,7 @@ impl ClingoControl {
     pub fn backend(&mut self) -> Option<&mut ClingoBackend> {
 
         let mut backend = std::ptr::null_mut();
-        let err = unsafe { clingo_control_backend(&mut self.0, &mut backend) };
+        let err = unsafe { clingo_control_backend(self.ctl.as_ptr(), &mut backend) };
         if !err {
             None
         } else {
@@ -894,7 +925,7 @@ impl ClingoControl {
     pub fn program_builder(&mut self) -> Result<&mut ClingoProgramBuilder, &'static str> {
 
         let mut builder = std::ptr::null_mut() as *mut clingo_program_builder_t;
-        if unsafe { clingo_control_program_builder(&mut self.0, &mut builder) } {
+        if unsafe { clingo_control_program_builder(self.ctl.as_ptr(), &mut builder) } {
             unsafe { (builder as *mut ClingoProgramBuilder).as_mut() }
                 .ok_or("Failed to obtain ProgramBuilder.")
         } else {
