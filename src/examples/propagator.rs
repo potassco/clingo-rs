@@ -293,9 +293,9 @@ fn main() {
             // ground the pigeon part
 
             // set the number of holes
-            let arg0 = ClingoSymbol::create_number(8);
+            let arg0 = create_number(8);
             // set the number of pigeons
-            let arg1 = ClingoSymbol::create_number(8);
+            let arg1 = create_number(8);
 
             let mut args = Vec::new();
             args.push(arg0);

@@ -71,6 +71,7 @@ fn main() {
 
     let atom_strings = ["a", "b", "c"];
 
+let mut store = CStringStore::new();
     // get the ids of atoms a, b, and c
     let mut atom_ids = Vec::new();
     {
@@ -78,7 +79,7 @@ fn main() {
         let atoms = ctl.symbolic_atoms().unwrap();
 
         for atom in &atom_strings {
-            let symbol = ClingoSymbol::create_id(atom, true).unwrap();
+            let symbol = store.create_id(atom, true).unwrap();
             let atom_it = atoms.find(symbol).unwrap();
 
             // get the atom's id

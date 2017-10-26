@@ -117,11 +117,22 @@ fn main() {
     let mut ctl = ClingoControl::new(options, logger, logger_data, 20)
         .expect("Failed creating ClingoControl.");
 
-    let sym = ClingoSymbol::create_id("enable", true).unwrap();
+let mut store = CStringStore::new();
 
+    let sym = store.create_id("enable", true).unwrap();
+
+let parser;
+let ext;
     {
+let mut data;
+
         // get the program builder
         let builder = ctl.program_builder().unwrap();
+
+        // begin building a program
+        builder.begin().expect(
+            "Failed building logic program.",
+        );
 
         // initialize the location
         let location = ClingoLocation::new(0, 0, 0, 0, "<rewrite>", "<rewrite>");
@@ -132,32 +143,22 @@ fn main() {
         // initilize atom to add
         let atom = ClingoAstTerm::new_symbol(location, &sym);
 
-        let mut data = OnStatementData {
+        data = OnStatementData {
             atom: atom,
             builder: builder,
         };
 
-        // begin building a program
-        data.builder.begin().expect(
-            "Failed building logic program.",
-        );
-
         // get the AST of the program
-        let logger = None;
-        let logger_data = std::ptr::null_mut();
         let callback: ClingoAstCallback = Some(on_statement);
         let data_ptr = &mut data as *mut OnStatementData;
-        parse_program(
-            "a :- not b. b :- not a.",
+        parser = ClingoParser::new("a :- not b. b :- not a.");
+        parser.parse_program(
             callback,
             data_ptr as *mut ::std::os::raw::c_void,
-            logger,
-            logger_data,
-            20,
         ).expect("Failed to parse logic program.");
 
         // add the external statement: #external enable.
-        let ext = ClingoAstExternal::new(data.atom, &[]);
+        ext = ClingoAstExternal::new(data.atom, &[]);
 
         let location2 = ClingoLocation::new(0, 0, 0, 0, "<rewrite>", "<rewrite>");
 
@@ -174,11 +175,12 @@ fn main() {
     }
 
     // ground the base part
+    {
     let part = ClingoPart::new_part("base", &[]);
     let parts = vec![part];
     ctl.ground(parts)
         .expect("Failed to ground a logic program.");
-
+    }
     // solve with external enable = false
     println!("Solving with enable = false...");
     solve(&mut ctl);
@@ -196,4 +198,6 @@ fn main() {
         "Failed to assign #external enable false.",
     );
     solve(&mut ctl);
+    println!("{:?}",ext);
+//     println!("{:?}",data.atom);
 }
