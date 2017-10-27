@@ -26,8 +26,9 @@ fn solve(ctl: &mut ClingoControl) {
     let assumptions = vec![];
 
     // get a solve handle
-    let handle = ctl.solve(solve_mode, assumptions)
-        .expect("Failed retrieving solve handle.");
+    let handle = ctl.solve(solve_mode, assumptions).expect(
+        "Failed retrieving solve handle.",
+    );
 
     // loop over all models
     loop {
@@ -91,8 +92,9 @@ fn main() {
     // ground the base part
     let part = ClingoPart::new_part("base", &[]);
     let parts = vec![part];
-    ctl.ground(parts)
-        .expect("Failed to ground a logic program.");
+    ctl.ground(parts).expect(
+        "Failed to ground a logic program.",
+    );
 
     // solve
     solve(&mut ctl);

@@ -29,8 +29,9 @@ fn solve(ctl: &mut ClingoControl) {
     let assumptions = vec![];
 
     // get a solve handle
-    let handle = ctl.solve(solve_mode, assumptions)
-        .expect("Failed to retrieve solve handle.");
+    let handle = ctl.solve(solve_mode, assumptions).expect(
+        "Failed to retrieve solve handle.",
+    );
 
     // loop over all models
     loop {
@@ -304,8 +305,9 @@ fn main() {
             // the pigeon program part having the number of holes and pigeons as parameters
             let part = ClingoPart::new_part("pigeon", args.as_slice());
             let parts = vec![part];
-            ctl.ground(parts)
-                .expect("Failed to ground a logic program.");
+            ctl.ground(parts).expect(
+                "Failed to ground a logic program.",
+            );
 
             // solve using a model callback
             solve(&mut ctl);

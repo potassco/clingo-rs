@@ -4,7 +4,7 @@ use clingo::*;
 
 
 fn main() {
-let mut store = CStringStore::new();
+    let mut store = CStringStore::new();
 
     // create a number, identifier (function without arguments), and a function symbol
     let number_symbol = create_number(42);

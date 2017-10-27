@@ -45,8 +45,9 @@ fn main() {
     // ground the base part
     let part = ClingoPart::new_part("base", &[]);
     let parts = vec![part];
-    ctl.ground(parts)
-        .expect("Failed to ground a logic program.");
+    ctl.ground(parts).expect(
+        "Failed to ground a logic program.",
+    );
 
     let solve_event_handler = MySEHandler;
     let mut running = AtomicBool::new(true);

@@ -6,6 +6,10 @@ use clingo::*;
 pub struct OnStatementData<'a> {
     atom: ClingoAstTerm,
     builder: &'a mut ClingoProgramBuilder,
+    cal_store: std::vec::Vec<ClingoAstLiteral>,
+    bl_store: std::vec::Vec<std::vec::Vec<ClingoAstBodyLiteral>>,
+    car_store: std::vec::Vec<ClingoAstRule>,
+    stm_store: std::vec::Vec<ClingoAstStatement>,
 }
 
 // adds atom enable to all rule bodies
@@ -13,7 +17,7 @@ extern "C" fn on_statement(
     stm_: *const clingo_ast_statement_t,
     data: *mut std::os::raw::c_void,
 ) -> bool {
-
+    println!("hi on_statement");
     let stm = unsafe {
         (std::mem::transmute::<*const clingo_ast_statement_t, *const ClingoAstStatement>(stm_))
             .as_ref()
@@ -32,7 +36,7 @@ extern "C" fn on_statement(
     let body = unsafe { stm.rule() }.body();
     let mut extended_body = std::vec::Vec::with_capacity(body.len() + 1);
     for e in body {
-        extended_body.push(*e);
+        extended_body.push(e.clone());
     }
 
     // create atom enable
@@ -42,7 +46,6 @@ extern "C" fn on_statement(
         clingo_ast_literal_type_symbolic,
         &on_statement_data.atom,
     );
-
     // add atom enable to the rule body
     let y: ClingoAstBodyLiteral = ClingoAstBodyLiteral::new(
         on_statement_data.atom.location(),
@@ -50,18 +53,27 @@ extern "C" fn on_statement(
         clingo_ast_body_literal_type_literal,
         &lit,
     );
+    on_statement_data.cal_store.push(lit);
     extended_body.push(y);
 
     // initialize the rule
-    let rule = ClingoAstRule::new(unsafe { stm.rule() }.head(), &extended_body);
+    let head = unsafe { stm.rule() }.head();
+    let rule = ClingoAstRule::new(head, &extended_body);
+
+
+    //save the body
+    on_statement_data.bl_store.push(extended_body);
 
     // initialize the statement
     let stm2 = ClingoAstStatement::new_rule(stm.location(), &rule);
+
+    on_statement_data.car_store.push(rule);
 
     // add the rewritten statement to the program
     on_statement_data.builder.add(&stm2).expect(
         "Failed to add statement to ProgramBuilder.",
     );
+    on_statement_data.stm_store.push(stm2);
     true
 }
 
@@ -82,12 +94,16 @@ fn print_model(model: &mut ClingoModel) {
 }
 
 fn solve(ctl: &mut ClingoControl) {
+
     let solve_mode = clingo_solve_mode_yield as clingo_solve_mode_bitset_t;
     let assumptions = vec![];
 
+    println!("solve");
     // get a solve handle
-    let handle = ctl.solve(solve_mode, assumptions)
-        .expect("Failed retrieving solve handle.");
+    let handle = ctl.solve(solve_mode, assumptions).expect(
+        "Failed retrieving solve handle.",
+    );
+    println!("last");
 
     // loop over all models
     loop {
@@ -117,53 +133,49 @@ fn main() {
     let mut ctl = ClingoControl::new(options, logger, logger_data, 20)
         .expect("Failed creating ClingoControl.");
 
-let mut store = CStringStore::new();
-
+    let mut store = CStringStore::new();
     let sym = store.create_id("enable", true).unwrap();
+    let sym2 = sym.clone();
+    let ext;
+    let stm;
 
-let parser;
-let ext;
     {
-let mut data;
-
         // get the program builder
         let builder = ctl.program_builder().unwrap();
 
         // begin building a program
-        builder.begin().expect(
-            "Failed building logic program.",
-        );
+        builder.begin().expect("Failed building logic program.");
 
         // initialize the location
-        let location = ClingoLocation::new(0, 0, 0, 0, "<rewrite>", "<rewrite>");
+        let location = store.create_clingo_location(0, 0, 0, 0, "<rewrite>", "<rewrite>");
 
-        {       let x = location.get_end_file();
-                println!("location {:?}",x);
-        }
         // initilize atom to add
-        let atom = ClingoAstTerm::new_symbol(location, &sym);
+        let atom = ClingoAstTerm::new_symbol(location, sym);
 
-        data = OnStatementData {
+        let mut data = OnStatementData {
             atom: atom,
             builder: builder,
+            cal_store: vec![],
+            bl_store: vec![],
+            car_store: vec![],
+            stm_store: vec![],
         };
 
         // get the AST of the program
         let callback: ClingoAstCallback = Some(on_statement);
         let data_ptr = &mut data as *mut OnStatementData;
-        parser = ClingoParser::new("a :- not b. b :- not a.");
-        parser.parse_program(
-            callback,
-            data_ptr as *mut ::std::os::raw::c_void,
-        ).expect("Failed to parse logic program.");
+        store
+            .parse_program(
+                "a :- not b. b :- not a.",
+                callback,
+                data_ptr as *mut ::std::os::raw::c_void,
+            )
+            .expect("Failed to parse logic program.");
 
         // add the external statement: #external enable.
-        ext = ClingoAstExternal::new(data.atom, &[]);
+        ext = ClingoAstExternal::new(atom, &[]);
 
-        let location2 = ClingoLocation::new(0, 0, 0, 0, "<rewrite>", "<rewrite>");
-
-        let stm =
-            ClingoAstStatement::new_external(location2, clingo_ast_statement_type_external, &ext);
+        stm = ClingoAstStatement::new_external(location, clingo_ast_statement_type_external, &ext);
         data.builder.add(&stm).expect(
             "Failed to add statement to ProgramBuilder.",
         );
@@ -175,29 +187,28 @@ let mut data;
     }
 
     // ground the base part
-    {
     let part = ClingoPart::new_part("base", &[]);
     let parts = vec![part];
-    ctl.ground(parts)
-        .expect("Failed to ground a logic program.");
-    }
+    ctl.ground(parts).expect(
+        "Failed to ground a logic program.",
+    );
+
     // solve with external enable = false
     println!("Solving with enable = false...");
     solve(&mut ctl);
 
     // solve with external enable = true
     println!("Solving with enable = true...");
-    ctl.assign_external(&sym, clingo_truth_value_true).expect(
+    ctl.assign_external(&sym2, clingo_truth_value_true).expect(
         "Failed to assign #external enable true.",
     );
     solve(&mut ctl);
 
     // solve with external enable = false
     println!("Solving with enable = false...");
-    ctl.assign_external(&sym, clingo_truth_value_false).expect(
-        "Failed to assign #external enable false.",
-    );
+    ctl.assign_external(&sym2, clingo_truth_value_false)
+        .expect("Failed to assign #external enable false.");
     solve(&mut ctl);
-    println!("{:?}",ext);
-//     println!("{:?}",data.atom);
+    println!("ext {:?}", ext);
+    println!("stm {:?}", stm);
 }

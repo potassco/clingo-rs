@@ -93,8 +93,9 @@ fn solve(ctl: &mut ClingoControl) {
     let assumptions = vec![];
 
     // get a solve handle
-    let handle = ctl.solve(solve_mode, assumptions)
-        .expect("Failed retrieving solve handle.");
+    let handle = ctl.solve(solve_mode, assumptions).expect(
+        "Failed retrieving solve handle.",
+    );
 
     // loop over all models
     loop {
