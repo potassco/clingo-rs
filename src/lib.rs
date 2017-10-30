@@ -99,7 +99,6 @@ pub enum clingo_statistics_type {
     map = 3,
 }
 pub use clingo_sys::{clingo_ast_statement_t, clingo_ast_term_type_t, clingo_logger_t};
-use clingo_sys::clingo_solve_result_bitset_t;
 pub use clingo_sys::clingo_show_type_bitset_t;
 pub use clingo_sys::clingo_solve_mode_bitset_t;
 pub type ClingoAstCallback = clingo_ast_callback_t;
