@@ -13,7 +13,7 @@ impl ClingoSolveEventHandler<AtomicBool> for MySEHandler {
         data: &mut AtomicBool,
         _goon: &mut bool,
     ) -> bool {
-        if type_ == clingo_solve_event_type_finish {
+        if type_ == ClingoSolveEventType::finish {
             data.store(false, Ordering::Relaxed);
         }
         true
@@ -54,8 +54,8 @@ fn main() {
 
     // create a solve handle with an attached event handler
     let handle = ctl.solve_with_event_handler(
-        (clingo_solve_mode_async as clingo_solve_mode_bitset_t) +
-            (clingo_solve_mode_yield as clingo_solve_mode_bitset_t),
+        (clingo_solve_mode::mode_async as clingo_solve_mode_bitset_t) +
+            (clingo_solve_mode::mode_yield as clingo_solve_mode_bitset_t),
         vec![],
         solve_event_handler,
         &mut running,

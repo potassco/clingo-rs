@@ -11,7 +11,7 @@ fn print_model(model: &mut ClingoModel) {
 
     // retrieve the symbols in the model
     let atoms = model
-        .symbols(clingo_show_type_shown as clingo_show_type_bitset_t)
+        .symbols(clingo_show_type::shown as clingo_show_type_bitset_t)
         .expect("Failed to retrieve symbols in the model.");
 
     print!("Model:");
@@ -25,7 +25,7 @@ fn print_model(model: &mut ClingoModel) {
 
 fn solve(ctl: &mut ClingoControl) {
 
-    let solve_mode = clingo_solve_mode_yield as clingo_solve_mode_bitset_t;
+    let solve_mode = clingo_solve_mode::mode_yield;
     let assumptions = vec![];
 
     // get a solve handle
@@ -98,7 +98,7 @@ impl ClingoPropagatorBuilder<PropagatorT> for MyPropagator {
             // this case is not handled (elegantly) here
             println!("hi propagator.states.is_not_empty");
             if threads > propagator.states.len() {
-                clingo::set_error(clingo_error_runtime, "more threads than states");
+                clingo::set_error(clingo_error::runtime, "more threads than states");
             }
             return true;
         }
@@ -210,7 +210,7 @@ impl ClingoPropagatorBuilder<PropagatorT> for MyPropagator {
 
                     // add the clause
                     if !control
-                        .add_clause(clause, clingo_clause_type_learnt)
+                        .add_clause(clause, clingo_clause_type::type_learnt)
                         .unwrap()
                     {
                         return true;

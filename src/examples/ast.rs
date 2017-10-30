@@ -25,7 +25,7 @@ extern "C" fn on_statement(
     let on_statement_data = unsafe { (data as *mut OnStatementData).as_mut() }.unwrap();
 
     // pass through all statements that are not rules
-    if stm.get_type() != clingo_ast_statement_type_rule {
+    if stm.get_type() != clingo_ast_statement_type::type_rule {
         on_statement_data.builder.add(stm).expect(
             "Failed to add statement to ProgramBuilder.",
         );
@@ -42,15 +42,15 @@ extern "C" fn on_statement(
     // create atom enable
     let lit = ClingoAstLiteral::new(
         on_statement_data.atom.location(),
-        clingo_ast_sign_none,
-        clingo_ast_literal_type_symbolic,
+        clingo_ast_sign::none,
+        clingo_ast_literal_type::symbolic,
         &on_statement_data.atom,
     );
     // add atom enable to the rule body
     let y: ClingoAstBodyLiteral = ClingoAstBodyLiteral::new(
         on_statement_data.atom.location(),
-        clingo_ast_sign_none,
-        clingo_ast_body_literal_type_literal,
+        clingo_ast_sign::none,
+        clingo_ast_body_literal_type::literal,
         &lit,
     );
     on_statement_data.cal_store.push(lit);
@@ -81,7 +81,7 @@ fn print_model(model: &mut ClingoModel) {
 
     // retrieve the symbols in the model
     let atoms = model
-        .symbols(clingo_show_type_shown as clingo_show_type_bitset_t)
+        .symbols(clingo_show_type::shown as clingo_show_type_bitset_t)
         .expect("Failed to retrieve symbols in the model.");
 
     print!("Model:");
@@ -95,7 +95,7 @@ fn print_model(model: &mut ClingoModel) {
 
 fn solve(ctl: &mut ClingoControl) {
 
-    let solve_mode = clingo_solve_mode_yield as clingo_solve_mode_bitset_t;
+    let solve_mode = clingo_solve_mode::mode_yield;
     let assumptions = vec![];
 
     println!("solve");
@@ -175,7 +175,11 @@ fn main() {
         // add the external statement: #external enable.
         ext = ClingoAstExternal::new(atom, &[]);
 
-        stm = ClingoAstStatement::new_external(location, clingo_ast_statement_type_external, &ext);
+        stm = ClingoAstStatement::new_external(
+            location,
+            clingo_ast_statement_type::type_external,
+            &ext,
+        );
         data.builder.add(&stm).expect(
             "Failed to add statement to ProgramBuilder.",
         );
@@ -199,14 +203,13 @@ fn main() {
 
     // solve with external enable = true
     println!("Solving with enable = true...");
-    ctl.assign_external(&sym2, clingo_truth_value_true).expect(
-        "Failed to assign #external enable true.",
-    );
+    ctl.assign_external(&sym2, clingo_truth_value::value_true)
+        .expect("Failed to assign #external enable true.");
     solve(&mut ctl);
 
     // solve with external enable = false
     println!("Solving with enable = false...");
-    ctl.assign_external(&sym2, clingo_truth_value_false)
+    ctl.assign_external(&sym2, clingo_truth_value::value_false)
         .expect("Failed to assign #external enable false.");
     solve(&mut ctl);
     println!("ext {:?}", ext);
