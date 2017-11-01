@@ -22,7 +22,7 @@ fn print_model(model: &mut ClingoModel, label: &str, show: clingo_show_type_bits
 
 fn solve(ctl: &mut ClingoControl) {
 
-    let solve_mode = clingo_solve_mode::mode_yield;
+    let solve_mode = ClingoSolveMode::Yield;
     let assumptions = vec![];
 
     // get a solve handle
@@ -54,23 +54,23 @@ fn solve(ctl: &mut ClingoControl) {
             print_model(
                 model,
                 "  shown",
-                clingo_show_type::shown as clingo_show_type_bitset_t,
+                ClingoShowType::Shown as clingo_show_type_bitset_t,
             );
             print_model(
                 model,
                 "  atoms",
-                clingo_show_type::atoms as clingo_show_type_bitset_t,
+                ClingoShowType::Atoms as clingo_show_type_bitset_t,
             );
             print_model(
                 model,
                 "  terms",
-                clingo_show_type::terms as clingo_show_type_bitset_t,
+                ClingoShowType::Terms as clingo_show_type_bitset_t,
             );
             print_model(
                 model,
                 " ~atoms",
-                (clingo_show_type::complement as clingo_show_type_bitset_t +
-                     clingo_show_type::atoms as clingo_show_type_bitset_t),
+                (ClingoShowType::Complement as clingo_show_type_bitset_t +
+                     ClingoShowType::Atoms as clingo_show_type_bitset_t),
             );
         } else {
             // stop if there are no more models

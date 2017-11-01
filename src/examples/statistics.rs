@@ -18,7 +18,7 @@ fn print_statistics(stats: &mut ClingoStatistics, key: u64, depth: u8) {
     let statistics_type = stats.statistics_type(key).unwrap();
     match statistics_type {
         // print values
-        clingo_statistics_type::value => {
+        ClingoStatisticsType::Value => {
             let value = stats.value_get(key).expect(
                 "Failed to retrieve statistics value.",
             );
@@ -29,7 +29,7 @@ fn print_statistics(stats: &mut ClingoStatistics, key: u64, depth: u8) {
         }
 
         // print arrays
-        clingo_statistics_type::array => {
+        ClingoStatisticsType::Array => {
             // loop over array elements
             let size = stats.array_size(key).expect(
                 "Failed to retrieve statistics array size.",
@@ -49,7 +49,7 @@ fn print_statistics(stats: &mut ClingoStatistics, key: u64, depth: u8) {
         }
 
         // print maps
-        clingo_statistics_type::map => {
+        ClingoStatisticsType::Map => {
             // loop over map elements
             let size = stats.map_size(key).unwrap();
             for i in 0..size {
@@ -65,8 +65,8 @@ fn print_statistics(stats: &mut ClingoStatistics, key: u64, depth: u8) {
         }
 
         // this case won't occur if the statistics are traversed like this
-        clingo_statistics_type::empty => {
-            println!("clingo_statistics_type_empty");
+        ClingoStatisticsType::Empty => {
+            println!("ClingoStatisticsType::Empty");
         }
     }
 }
@@ -75,7 +75,7 @@ fn print_model(model: &mut ClingoModel) {
 
     // retrieve the symbols in the model
     let atoms = model
-        .symbols(clingo_show_type::shown as clingo_show_type_bitset_t)
+        .symbols(ClingoShowType::Shown as clingo_show_type_bitset_t)
         .expect("Failed to retrieve symbols in the model.");
 
     print!("Model:");
@@ -89,7 +89,7 @@ fn print_model(model: &mut ClingoModel) {
 
 fn solve(ctl: &mut ClingoControl) {
 
-    let solve_mode = clingo_solve_mode::mode_yield;
+    let solve_mode = ClingoSolveMode::Yield;
     let assumptions = vec![];
 
     // get a solve handle

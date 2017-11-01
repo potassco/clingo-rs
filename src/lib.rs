@@ -13,114 +13,100 @@ use clingo_sys::*;
 
 
 #[derive(Debug, Copy, Clone)]
-pub enum clingo_error {
-    success = 0,
-    runtime = 1,
-    logic = 2,
-    bad_alloc = 3,
-    unknown = 4,
+pub enum ClingoError {
+    Success = 0,
+    Runtime = 1,
+    Logic = 2,
+    BadAlloc = 3,
+    Unknown = 4,
 }
 #[derive(Debug, Copy, Clone)]
-pub enum clingo_solve_mode {
-    mode_async = 1, //clingo_solve_mode_clingo_solve_mode_async,
-    mode_yield = 2, //clingo_solve_mode_clingo_solve_mode_yield,
+pub enum ClingoSolveMode {
+    Async = clingo_solve_mode_clingo_solve_mode_async as isize,
+    Yield = clingo_solve_mode_clingo_solve_mode_yield as isize,
 }
 #[derive(Debug, Copy, Clone)]
-pub enum clingo_show_type {
-    csp = 1,
-    shown = 2,
-    atoms = 4,
-    terms = 8,
-    extra = 16,
-    all = 31,
-    complement = 32,
+pub enum ClingoShowType {
+    CSP = 1,
+    Shown = 2,
+    Atoms = 4,
+    Terms = 8,
+    Extra = 16,
+    All = 31,
+    Complement = 32,
 }
 #[derive(Debug, Copy, Clone)]
-pub enum clingo_truth_value {
-    value_free = 0,
-    value_true = 1,
-    value_false = 2,
+pub enum ClingoTruthValue {
+    Free = 0,
+    True = 1,
+    False = 2,
 }
 #[derive(Debug, Copy, Clone, PartialEq)]
-pub enum clingo_ast_statement_type {
-    type_rule = 0,
-    type_const = 1,
-    type_show_signature = 2,
-    type_show_term = 3,
-    type_minimize = 4,
-    type_script = 5,
-    type_program = 6,
-    type_external = 7,
-    type_edge = 8,
-    type_heuristic = 9,
-    type_project_atom = 10,
-    type_project_atom_signature = 11,
-    type_theory_definition = 12,
+pub enum ClingoAstStatementType {
+    Rule = 0,
+    Const = 1,
+    ShowSignature = 2,
+    ShowTerm = 3,
+    Minimize = 4,
+    Script = 5,
+    Program = 6,
+    External = 7,
+    Edge = 8,
+    Heuristic = 9,
+    ProjectAtom = 10,
+    ProjectAtomSignature = 11,
+    TheoryDefinition = 12,
 }
 #[derive(Debug, Copy, Clone)]
-pub enum clingo_ast_sign {
-    none = 0,
-    negation = 1,
-    double_negation = 2,
+pub enum ClingoAstSign {
+    None = 0,
+    Negation = 1,
+    DoubleNegation = 2,
 }
 #[derive(Debug, Copy, Clone)]
-pub enum clingo_ast_literal_type {
-    boolean = 0,
-    symbolic = 1,
-    comparison = 2,
-    csp = 3,
+pub enum ClingoAstLiteralType {
+    Boolean = 0,
+    Symbolic = 1,
+    Comparison = 2,
+    CSP = 3,
 }
 #[derive(Debug, Copy, Clone)]
-pub enum clingo_ast_body_literal_type {
-    literal = 0,
-    conditional = 1,
-    aggregate = 2,
-    body_aggregate_type = 3,
-    theory_atom = 4,
-    disjoint = 5,
+pub enum ClingoAstBodyLiteralType {
+    Literal = 0,
+    Conditional = 1,
+    Aggregate = 2,
+    BodyAggregateType = 3,
+    TheoryAtom = 4,
+    Disjoint = 5,
 }
 #[derive(Debug, Copy, Clone)]
-pub enum clingo_clause_type {
-    type_learnt = 0,
-    type_static = 1,
-    type_volatile = 2,
-    type_volatile_static = 3,
+pub enum ClingoClauseType {
+    Learnt = 0,
+    Static = 1,
+    Volatile = 2,
+    VolatileStatic = 3,
 }
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum ClingoSolveEventType {
-    model = 0,
-    finish = 1,
+    Model = 0,
+    Finish = 1,
 }
-pub enum clingo_statistics_type {
-    empty = 0,
-    value = 1,
-    array = 2,
-    map = 3,
+pub enum ClingoStatisticsType {
+    Empty = 0,
+    Value = 1,
+    Array = 2,
+    Map = 3,
 }
 pub use clingo_sys::{clingo_ast_statement_t, clingo_ast_term_type_t, clingo_logger_t};
 pub use clingo_sys::clingo_show_type_bitset_t;
 pub use clingo_sys::clingo_solve_mode_bitset_t;
-pub type ClingoAstCallback = clingo_ast_callback_t;
 
-pub type ClingoError = clingo_error;
-// pub type ClingoSolveEventType = clingo_solve_event_type;
-type clingo_solve_event_callback = unsafe extern "C" fn(type_: clingo_solve_event_type_t,
-                                                        event: *mut ::std::os::raw::c_void,
-                                                        data: *mut ::std::os::raw::c_void,
-                                                        goon: *mut bool)
-                                                        -> bool;
-type clingo_ground_callback =
-    unsafe extern "C" fn(location: *const clingo_location_t,
-                         name: *const ::std::os::raw::c_char,
-                         arguments: *const clingo_symbol_t,
-                         arguments_size: usize,
-                         data: *mut ::std::os::raw::c_void,
-                         symbol_callback: clingo_symbol_callback_t,
-                         symbol_callback_data: *mut ::std::os::raw::c_void)
-                         -> bool;
-
-
+type ClingoSolveEventCallback = unsafe extern "C" fn(type_: clingo_solve_event_type_t,
+                                                     event: *mut ::std::os::raw::c_void,
+                                                     data: *mut ::std::os::raw::c_void,
+                                                     goon: *mut bool)
+                                                     -> bool;
 pub trait ClingoSolveEventHandler<T> {
     fn on_solve_event(type_: ClingoSolveEventType, data: &mut T, goon: &mut bool) -> bool;
     #[doc(hidden)]
@@ -131,9 +117,12 @@ pub trait ClingoSolveEventHandler<T> {
         goon_: *mut bool,
     ) -> bool {
 
+        //                 assert!(!event.is_null());
+        assert!(!data_.is_null());
+        assert!(!goon_.is_null());
         let event_type = match type_ {
-            0 => ClingoSolveEventType::model,
-            1 => ClingoSolveEventType::finish,
+            0 => ClingoSolveEventType::Model,
+            1 => ClingoSolveEventType::Finish,
             _ => return false,
         };
         let data = (data_ as *mut T).as_mut().unwrap();
@@ -142,39 +131,66 @@ pub trait ClingoSolveEventHandler<T> {
     }
 }
 
+type ClingoAstCallback = unsafe extern "C" fn(arg1: *const clingo_ast_statement_t,
+                                              arg2: *mut ::std::os::raw::c_void)
+                                              -> bool;
+pub trait ClingoAstStatementHandler<T> {
+    fn on_statement(arg1: &ClingoAstStatement, arg2: &mut T) -> bool;
+    #[doc(hidden)]
+    unsafe extern "C" fn unsafe_ast_callback(
+        stm_: *const clingo_ast_statement_t,
+        data_: *mut ::std::os::raw::c_void,
+    ) -> bool {
+        let stm = (stm_ as *const ClingoAstStatement).as_ref().unwrap();
+        let data = (data_ as *mut T).as_mut().unwrap();
+        Self::on_statement(stm, data)
+    }
+}
+
+type ClingoGroundCallback = unsafe extern "C" fn(location: *const clingo_location_t,
+                                                 name: *const ::std::os::raw::c_char,
+                                                 arguments: *const clingo_symbol_t,
+                                                 arguments_size: usize,
+                                                 data: *mut ::std::os::raw::c_void,
+                                                 symbol_callback: clingo_symbol_callback_t,
+                                                 symbol_callback_data: *mut ::std::os::raw::c_void)
+                                                 -> bool;
 pub trait ClingoGroundEventHandler<T> {
     fn on_ground_event(
-        location: *const clingo_location_t,
-        name: *const ::std::os::raw::c_char,
-        arguments: *const clingo_symbol_t,
-        arguments_size: usize,
-        data: *mut ::std::os::raw::c_void,
+        location: &ClingoLocation,
+        name: &str,
+        arguments: &[ClingoSymbol],
+        data: &mut T,
         symbol_callback: clingo_symbol_callback_t,
         symbol_callback_data: *mut ::std::os::raw::c_void,
     ) -> bool;
     #[doc(hidden)]
     unsafe extern "C" fn unsafe_ground_callback(
-        location: *const clingo_location_t,
-        name: *const ::std::os::raw::c_char,
-        arguments: *const clingo_symbol_t,
+        location_: *const clingo_location_t,
+        name_: *const ::std::os::raw::c_char,
+        arguments_: *const clingo_symbol_t,
         arguments_size: usize,
-        data: *mut ::std::os::raw::c_void,
+        data_: *mut ::std::os::raw::c_void,
         symbol_callback: clingo_symbol_callback_t,
         symbol_callback_data: *mut ::std::os::raw::c_void,
+        //TODO wrap symbol call back
     ) -> bool {
+        assert!(!location_.is_null());
+        assert!(!name_.is_null());
+        assert!(!arguments_.is_null());
+        assert!(!data_.is_null());
+        assert!(!symbol_callback_data.is_null());
 
-        //         let event_type = match type_ {
-        //             0 => clingo_solve_event_type_model,
-        //             1 => clingo_solve_event_type_finish,
-        //             _ => return false,
-        //         };
-        //         let data = (data_ as *mut T).as_mut().unwrap();
-        //         let goon = goon_.as_mut().unwrap();
+        let location = (location_ as *const ClingoLocation).as_ref().unwrap();
+        let c_str = CStr::from_ptr(name_);
+        let name = c_str.to_str().unwrap();
+        let arguments =
+            std::slice::from_raw_parts(arguments_ as *const ClingoSymbol, arguments_size);
+        let data = (data_ as *mut T).as_mut().unwrap();
         Self::on_ground_event(
             location,
             name,
             arguments,
-            arguments_size,
             data,
             symbol_callback,
             symbol_callback_data,
@@ -182,15 +198,8 @@ pub trait ClingoGroundEventHandler<T> {
     }
 }
 
-
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub struct ClingoLiteral(clingo_literal_t);
-impl PartialEq for ClingoLiteral {
-    fn eq(&self, other: &ClingoLiteral) -> bool {
-        self.0.eq(&other.0)
-    }
-}
-impl Eq for ClingoLiteral {}
 impl ClingoLiteral {
     pub fn negate(&self) -> ClingoLiteral {
         ClingoLiteral(-(self.0))
@@ -268,20 +277,21 @@ impl CStringStore {
     /// **Returns** whether the call was successful; might set one of the following error codes:
     /// - ::clingo_error_runtime if parsing fails
     /// - ::clingo_error_bad_alloc
-    pub fn parse_program(
+    pub fn parse_program_with_event_handler<D, T: ClingoAstStatementHandler<D>>(
         &mut self,
         program_: &str,
-        callback: clingo_ast_callback_t,
-        callback_data: *mut ::std::os::raw::c_void,
+        handler: T,
+        data_: &mut D,
     ) -> Result<(), &'static str> {
         let logger = None;
         let logger_data = std::ptr::null_mut();
         let program = CString::new(program_).unwrap();
+        let data = data_ as *mut D;
         let suc = unsafe {
             clingo_parse_program(
                 program.as_ptr(),
-                callback,
-                callback_data,
+                Some(T::unsafe_ast_callback as ClingoAstCallback),
+                data as *mut ::std::os::raw::c_void,
                 logger,
                 logger_data,
                 0,
@@ -293,13 +303,12 @@ impl CStringStore {
     pub fn parse_program_with_logger(
         &mut self,
         program_: &str,
-        callback: clingo_ast_callback_t,
-        callback_data: *mut ::std::os::raw::c_void,
         logger: clingo_logger_t,
         logger_data: *mut ::std::os::raw::c_void,
         message_limit: ::std::os::raw::c_uint,
     ) -> Result<(), &'static str> {
-
+        let callback = None;
+        let callback_data = std::ptr::null_mut();
         let program = CString::new(program_).unwrap();
         let suc = unsafe {
             clingo_parse_program(
@@ -538,11 +547,11 @@ impl<'a> ClingoPart<'a> {
 pub fn error() -> ClingoError {
     let code = unsafe { clingo_error_code() };
     match code {
-        0 => clingo_error::success,
-        1 => clingo_error::runtime,
-        2 => clingo_error::logic,
-        3 => clingo_error::bad_alloc,
-        _ => clingo_error::unknown,
+        0 => ClingoError::Success,
+        1 => ClingoError::Runtime,
+        2 => ClingoError::Logic,
+        3 => ClingoError::BadAlloc,
+        _ => ClingoError::Unknown,
     }
 }
 
@@ -716,18 +725,16 @@ impl ClingoControl {
             )
         };
         if suc {
-            unsafe {
-                Ok(ClingoControl {
-                    ctl: Unique::new(ctl).unwrap(),
-                    args: args,
-                    c_args: c_args,
-                    name: None,
-                    parameters: vec![],
-                    c_parameters: vec![],
-                    program: None,
-                    parts: vec![],
-                })
-            }
+            Ok(ClingoControl {
+                ctl: Unique::new(ctl).unwrap(),
+                args: args,
+                c_args: c_args,
+                name: None,
+                parameters: vec![],
+                c_parameters: vec![],
+                program: None,
+                parts: vec![],
+            })
         } else {
             Err(error_message())
         }
@@ -853,7 +860,7 @@ impl ClingoControl {
                 self.ctl.as_ptr(),
                 self.parts.as_ptr(),
                 parts_size,
-                Some(T::unsafe_ground_callback as clingo_ground_callback),
+                Some(T::unsafe_ground_callback as ClingoGroundCallback),
                 data as *mut ::std::os::raw::c_void,
             )
         };
@@ -862,7 +869,7 @@ impl ClingoControl {
 
     pub fn solve(
         &mut self,
-        mode: clingo_solve_mode,
+        mode: ClingoSolveMode,
         assumptions: Vec<clingo_symbolic_literal_t>,
     ) -> Option<&mut ClingoSolveHandle> {
 
@@ -902,7 +909,7 @@ impl ClingoControl {
                 mode,
                 assumptions.as_ptr(),
                 assumptions.len(),
-                Some(T::unsafe_solve_callback as clingo_solve_event_callback),
+                Some(T::unsafe_solve_callback as ClingoSolveEventCallback),
                 data as *mut ::std::os::raw::c_void,
                 &mut handle,
             )
@@ -931,7 +938,7 @@ impl ClingoControl {
     pub fn assign_external(
         &mut self,
         symbol: &ClingoSymbol,
-        value: clingo_truth_value,
+        value: ClingoTruthValue,
     ) -> Result<(), &'static str> {
         let suc = unsafe {
             clingo_control_assign_external(
@@ -1183,8 +1190,8 @@ pub struct ClingoAstBodyLiteral(clingo_ast_body_literal_t);
 impl ClingoAstBodyLiteral {
     pub fn new(
         ClingoLocation(location): ClingoLocation,
-        sign: clingo_ast_sign,
-        type_: clingo_ast_body_literal_type,
+        sign: ClingoAstSign,
+        type_: ClingoAstBodyLiteralType,
         lit_ref: &ClingoAstLiteral,
     ) -> ClingoAstBodyLiteral {
         let _bg_union_2 = clingo_ast_body_literal__bindgen_ty_1 {
@@ -1267,7 +1274,7 @@ impl Drop for ClingoAstStatement {
 impl ClingoAstStatement {
     pub fn new_external(
         ClingoLocation(location): ClingoLocation,
-        type_: clingo_ast_statement_type,
+        type_: ClingoAstStatementType,
         ext: &ClingoAstExternal,
     ) -> ClingoAstStatement {
 
@@ -1293,7 +1300,7 @@ impl ClingoAstStatement {
             clingo_ast_statement__bindgen_ty_1 { rule: rule as *const clingo_ast_rule };
         let stm = clingo_ast_statement_t {
             location: location,
-            type_: clingo_ast_statement_type::type_rule as clingo_ast_statement_type_t,
+            type_: ClingoAstStatementType::Rule as clingo_ast_statement_type_t,
             __bindgen_anon_1: _bg_union_2,
         };
         ClingoAstStatement(stm)
@@ -1303,23 +1310,23 @@ impl ClingoAstStatement {
         ClingoLocation(self.0.location)
     }
 
-    pub fn get_type(&self) -> clingo_ast_statement_type {
+    pub fn get_type(&self) -> ClingoAstStatementType {
         let ClingoAstStatement(ref stm) = *self;
         let t = stm.type_;
         match t {
-            0 => clingo_ast_statement_type::type_rule,
-            1 => clingo_ast_statement_type::type_const,
-            2 => clingo_ast_statement_type::type_show_signature,
-            3 => clingo_ast_statement_type::type_show_term,
-            4 => clingo_ast_statement_type::type_minimize,
-            5 => clingo_ast_statement_type::type_script,
-            6 => clingo_ast_statement_type::type_program,
-            7 => clingo_ast_statement_type::type_external,
-            8 => clingo_ast_statement_type::type_edge,
-            9 => clingo_ast_statement_type::type_heuristic,
-            10 => clingo_ast_statement_type::type_project_atom,
-            11 => clingo_ast_statement_type::type_project_atom_signature,
-            _ => clingo_ast_statement_type::type_theory_definition,
+            0 => ClingoAstStatementType::Rule,
+            1 => ClingoAstStatementType::Const,
+            2 => ClingoAstStatementType::ShowSignature,
+            3 => ClingoAstStatementType::ShowTerm,
+            4 => ClingoAstStatementType::Minimize,
+            5 => ClingoAstStatementType::Script,
+            6 => ClingoAstStatementType::Program,
+            7 => ClingoAstStatementType::External,
+            8 => ClingoAstStatementType::Edge,
+            9 => ClingoAstStatementType::Heuristic,
+            10 => ClingoAstStatementType::ProjectAtom,
+            11 => ClingoAstStatementType::ProjectAtomSignature,
+            _ => ClingoAstStatementType::TheoryDefinition,
         }
     }
 
@@ -1369,8 +1376,8 @@ pub struct ClingoAstLiteral(clingo_ast_literal_t);
 impl ClingoAstLiteral {
     pub fn new(
         ClingoLocation(location): ClingoLocation,
-        sign: clingo_ast_sign,
-        type_: clingo_ast_literal_type,
+        sign: ClingoAstSign,
+        type_: ClingoAstLiteralType,
         sym: &ClingoAstTerm,
     ) -> ClingoAstLiteral {
 
@@ -1692,15 +1699,15 @@ impl ClingoStatistics {
     /// * `type` - the resulting type
     ///
     /// **Returns** whether the call was successful
-    pub fn statistics_type(&mut self, key: u64) -> Result<clingo_statistics_type, &'static str> {
+    pub fn statistics_type(&mut self, key: u64) -> Result<ClingoStatisticsType, &'static str> {
 
         let mut stype = 0 as clingo_statistics_type_t;
         if unsafe { clingo_statistics_type(&mut self.0, key, &mut stype) } {
             match stype {
-                0 => Ok(clingo_statistics_type::empty),
-                1 => Ok(clingo_statistics_type::value),
-                2 => Ok(clingo_statistics_type::array),
-                _ => Ok(clingo_statistics_type::map),
+                0 => Ok(ClingoStatisticsType::Empty),
+                1 => Ok(ClingoStatisticsType::Value),
+                2 => Ok(ClingoStatisticsType::Array),
+                _ => Ok(ClingoStatisticsType::Map),
             }
         } else {
             Err(error_message())
@@ -2533,7 +2540,7 @@ impl ClingoPropagateControl {
     pub fn add_clause(
         &mut self,
         clause: &[ClingoLiteral],
-        type_: clingo_clause_type,
+        type_: ClingoClauseType,
     ) -> Result<bool, &'static str> {
         let mut result = false;
         if unsafe {
