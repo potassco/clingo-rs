@@ -27,76 +27,76 @@ pub enum ClingoSolveMode {
 }
 #[derive(Debug, Copy, Clone)]
 pub enum ClingoShowType {
-    CSP = 1,
-    Shown = 2,
-    Atoms = 4,
-    Terms = 8,
-    Extra = 16,
-    All = 31,
-    Complement = 32,
+    CSP = clingo_show_type_clingo_show_type_csp as isize,
+    Shown = clingo_show_type_clingo_show_type_shown as isize,
+    Atoms = clingo_show_type_clingo_show_type_atoms as isize,
+    Terms = clingo_show_type_clingo_show_type_terms as isize,
+    Extra = clingo_show_type_clingo_show_type_extra as isize,
+    All = clingo_show_type_clingo_show_type_all as isize,
+    Complement = clingo_show_type_clingo_show_type_complement as isize,
 }
 #[derive(Debug, Copy, Clone)]
 pub enum ClingoTruthValue {
-    Free = 0,
-    True = 1,
-    False = 2,
+    Free = clingo_truth_value_clingo_truth_value_free as isize,
+    True = clingo_truth_value_clingo_truth_value_true as isize,
+    False = clingo_truth_value_clingo_truth_value_false as isize,
 }
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum ClingoAstStatementType {
-    Rule = 0,
-    Const = 1,
-    ShowSignature = 2,
-    ShowTerm = 3,
-    Minimize = 4,
-    Script = 5,
-    Program = 6,
-    External = 7,
-    Edge = 8,
-    Heuristic = 9,
-    ProjectAtom = 10,
-    ProjectAtomSignature = 11,
-    TheoryDefinition = 12,
+    Rule = clingo_ast_statement_type_clingo_ast_statement_type_rule as isize,
+    Const = clingo_ast_statement_type_clingo_ast_statement_type_const as isize,
+    ShowSignature = clingo_ast_statement_type_clingo_ast_statement_type_show_signature as isize,
+    ShowTerm = clingo_ast_statement_type_clingo_ast_statement_type_show_term as isize,
+    Minimize = clingo_ast_statement_type_clingo_ast_statement_type_minimize as isize,
+    Script = clingo_ast_statement_type_clingo_ast_statement_type_script as isize,
+    Program = clingo_ast_statement_type_clingo_ast_statement_type_program as isize,
+    External = clingo_ast_statement_type_clingo_ast_statement_type_external as isize,
+    Edge = clingo_ast_statement_type_clingo_ast_statement_type_edge as isize,
+    Heuristic = clingo_ast_statement_type_clingo_ast_statement_type_heuristic as isize,
+    ProjectAtom = clingo_ast_statement_type_clingo_ast_statement_type_project_atom as isize,
+    ProjectAtomSignature = clingo_ast_statement_type_clingo_ast_statement_type_project_atom_signature as isize,
+    TheoryDefinition = clingo_ast_statement_type_clingo_ast_statement_type_theory_definition as isize,
 }
 #[derive(Debug, Copy, Clone)]
 pub enum ClingoAstSign {
-    None = 0,
-    Negation = 1,
-    DoubleNegation = 2,
+    None = clingo_ast_sign_clingo_ast_sign_none as isize,
+    Negation = clingo_ast_sign_clingo_ast_sign_negation as isize,
+    DoubleNegation = clingo_ast_sign_clingo_ast_sign_double_negation as isize,
 }
 #[derive(Debug, Copy, Clone)]
 pub enum ClingoAstLiteralType {
-    Boolean = 0,
-    Symbolic = 1,
-    Comparison = 2,
-    CSP = 3,
+    Boolean = clingo_ast_literal_type_clingo_ast_literal_type_boolean as isize,
+    Symbolic = clingo_ast_literal_type_clingo_ast_literal_type_symbolic as isize,
+    Comparison = clingo_ast_literal_type_clingo_ast_literal_type_comparison as isize,
+    CSP = clingo_ast_literal_type_clingo_ast_literal_type_csp as isize,
 }
 #[derive(Debug, Copy, Clone)]
 pub enum ClingoAstBodyLiteralType {
-    Literal = 0,
-    Conditional = 1,
-    Aggregate = 2,
-    BodyAggregateType = 3,
-    TheoryAtom = 4,
-    Disjoint = 5,
+    Literal = clingo_ast_body_literal_type_clingo_ast_body_literal_type_literal as isize,
+    Conditional = clingo_ast_body_literal_type_clingo_ast_body_literal_type_conditional as isize,
+    Aggregate = clingo_ast_body_literal_type_clingo_ast_body_literal_type_aggregate as isize,
+    BodyAggregate = clingo_ast_body_literal_type_clingo_ast_body_literal_type_body_aggregate as isize,
+    TheoryAtom = clingo_ast_body_literal_type_clingo_ast_body_literal_type_theory_atom as isize,
+    Disjoint = clingo_ast_body_literal_type_clingo_ast_body_literal_type_disjoint as isize,
 }
 #[derive(Debug, Copy, Clone)]
 pub enum ClingoClauseType {
-    Learnt = 0,
-    Static = 1,
-    Volatile = 2,
-    VolatileStatic = 3,
+    Learnt = clingo_clause_type_clingo_clause_type_learnt as isize,
+    Static = clingo_clause_type_clingo_clause_type_static as isize,
+    Volatile = clingo_clause_type_clingo_clause_type_volatile as isize,
+    VolatileStatic = clingo_clause_type_clingo_clause_type_volatile_static as isize,
 }
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum ClingoSolveEventType {
-    Model = 0,
-    Finish = 1,
+    Model = clingo_solve_event_type_clingo_solve_event_type_model as isize,
+    Finish = clingo_solve_event_type_clingo_solve_event_type_finish as isize,
 }
 pub enum ClingoStatisticsType {
-    Empty = 0,
-    Value = 1,
-    Array = 2,
-    Map = 3,
+    Empty = clingo_statistics_type_clingo_statistics_type_empty as isize,
+    Value = clingo_statistics_type_clingo_statistics_type_value as isize,
+    Array = clingo_statistics_type_clingo_statistics_type_array as isize,
+    Map = clingo_statistics_type_clingo_statistics_type_map as isize,
 }
 pub use clingo_sys::{clingo_ast_statement_t, clingo_ast_term_type_t, clingo_logger_t};
 pub use clingo_sys::clingo_show_type_bitset_t;

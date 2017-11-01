@@ -4,7 +4,6 @@ use std::env;
 use clingo::*;
 
 
-
 fn print_prefix(depth: u8) {
     for _ in 0..depth {
         print!("  ");

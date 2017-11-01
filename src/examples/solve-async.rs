@@ -6,6 +6,7 @@ use rand::distributions::{IndependentSample, Range};
 use std::sync::atomic::{AtomicBool, Ordering};
 use clingo::*;
 
+
 struct MySEHandler;
 impl ClingoSolveEventHandler<AtomicBool> for MySEHandler {
     fn on_solve_event(

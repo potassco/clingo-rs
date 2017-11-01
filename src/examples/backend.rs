@@ -3,6 +3,7 @@ extern crate clingo;
 use std::env;
 use clingo::*;
 
+
 fn print_model(model: &mut ClingoModel) {
 
     // retrieve the symbols in the model
