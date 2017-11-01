@@ -13,7 +13,7 @@ impl ClingoSolveEventHandler<AtomicBool> for MySEHandler {
         data: &mut AtomicBool,
         _goon: &mut bool,
     ) -> bool {
-        if type_ == clingo_solve_event_type_finish {
+        if type_ == ClingoSolveEventType::Finish {
             data.store(false, Ordering::Relaxed);
         }
         true
@@ -45,16 +45,17 @@ fn main() {
     // ground the base part
     let part = ClingoPart::new_part("base", &[]);
     let parts = vec![part];
-    ctl.ground(parts)
-        .expect("Failed to ground a logic program.");
+    ctl.ground(parts).expect(
+        "Failed to ground a logic program.",
+    );
 
     let solve_event_handler = MySEHandler;
     let mut running = AtomicBool::new(true);
 
     // create a solve handle with an attached event handler
     let handle = ctl.solve_with_event_handler(
-        (clingo_solve_mode_async as clingo_solve_mode_bitset_t) +
-            (clingo_solve_mode_yield as clingo_solve_mode_bitset_t),
+        (ClingoSolveMode::Async as clingo_solve_mode_bitset_t) +
+            (ClingoSolveMode::Yield as clingo_solve_mode_bitset_t),
         vec![],
         solve_event_handler,
         &mut running,

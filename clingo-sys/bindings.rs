@@ -19,22 +19,25 @@ pub const _ATFILE_SOURCE: ::std::os::raw::c_uint = 1;
 pub const __USE_MISC: ::std::os::raw::c_uint = 1;
 pub const __USE_ATFILE: ::std::os::raw::c_uint = 1;
 pub const __USE_FORTIFY_LEVEL: ::std::os::raw::c_uint = 0;
+pub const __GLIBC_USE_DEPRECATED_GETS: ::std::os::raw::c_uint = 0;
 pub const _STDC_PREDEF_H: ::std::os::raw::c_uint = 1;
 pub const __STDC_IEC_559__: ::std::os::raw::c_uint = 1;
 pub const __STDC_IEC_559_COMPLEX__: ::std::os::raw::c_uint = 1;
-pub const __STDC_ISO_10646__: ::std::os::raw::c_uint = 201505;
+pub const __STDC_ISO_10646__: ::std::os::raw::c_uint = 201706;
 pub const __STDC_NO_THREADS__: ::std::os::raw::c_uint = 1;
 pub const __GNU_LIBRARY__: ::std::os::raw::c_uint = 6;
 pub const __GLIBC__: ::std::os::raw::c_uint = 2;
-pub const __GLIBC_MINOR__: ::std::os::raw::c_uint = 25;
+pub const __GLIBC_MINOR__: ::std::os::raw::c_uint = 26;
 pub const _SYS_CDEFS_H: ::std::os::raw::c_uint = 1;
 pub const __glibc_c99_flexarr_available: ::std::os::raw::c_uint = 1;
 pub const __WORDSIZE: ::std::os::raw::c_uint = 64;
 pub const __WORDSIZE_TIME64_COMPAT32: ::std::os::raw::c_uint = 1;
 pub const __SYSCALL_WORDSIZE: ::std::os::raw::c_uint = 64;
+pub const __HAVE_GENERIC_SELECTION: ::std::os::raw::c_uint = 1;
 pub const __GLIBC_USE_LIB_EXT2: ::std::os::raw::c_uint = 0;
 pub const __GLIBC_USE_IEC_60559_BFP_EXT: ::std::os::raw::c_uint = 0;
 pub const __GLIBC_USE_IEC_60559_FUNCS_EXT: ::std::os::raw::c_uint = 0;
+pub const __GLIBC_USE_IEC_60559_TYPES_EXT: ::std::os::raw::c_uint = 0;
 pub const _BITS_TYPES_H: ::std::os::raw::c_uint = 1;
 pub const _BITS_TYPESIZES_H: ::std::os::raw::c_uint = 1;
 pub const __OFF_T_MATCHES_OFF64_T: ::std::os::raw::c_uint = 1;
@@ -42,6 +45,8 @@ pub const __INO_T_MATCHES_INO64_T: ::std::os::raw::c_uint = 1;
 pub const __RLIM_T_MATCHES_RLIM64_T: ::std::os::raw::c_uint = 1;
 pub const __FD_SETSIZE: ::std::os::raw::c_uint = 1024;
 pub const _BITS_WCHAR_H: ::std::os::raw::c_uint = 1;
+pub const _BITS_STDINT_INTN_H: ::std::os::raw::c_uint = 1;
+pub const _BITS_STDINT_UINTN_H: ::std::os::raw::c_uint = 1;
 pub const INT8_MIN: ::std::os::raw::c_int = -128;
 pub const INT16_MIN: ::std::os::raw::c_int = -32768;
 pub const INT32_MIN: ::std::os::raw::c_int = -2147483648;
@@ -84,11 +89,11 @@ pub const false_: ::std::os::raw::c_uint = 0;
 pub const __bool_true_false_are_defined: ::std::os::raw::c_uint = 1;
 pub const CLINGO_VERSION_MAJOR: ::std::os::raw::c_uint = 5;
 pub const CLINGO_VERSION_MINOR: ::std::os::raw::c_uint = 2;
-pub const CLINGO_VERSION_REVISION: ::std::os::raw::c_uint = 0;
-pub const CLINGO_VERSION: &'static [u8; 6usize] = b"5.2.0\x00";
+pub const CLINGO_VERSION_REVISION: ::std::os::raw::c_uint = 1;
+pub const CLINGO_VERSION: &'static [u8; 6usize] = b"5.2.1\0";
 pub type wchar_t = ::std::os::raw::c_int;
 #[repr(C)]
-#[derive(Debug, Copy)]
+#[derive(Debug, Copy, Clone)]
 pub struct max_align_t {
     pub __clang_max_align_nonce1: ::std::os::raw::c_longlong,
     pub __bindgen_padding_0: u64,
@@ -122,11 +127,6 @@ fn bindgen_test_layout_max_align_t() {
         )
     );
 }
-impl Clone for max_align_t {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
 pub type __u_char = ::std::os::raw::c_uchar;
 pub type __u_short = ::std::os::raw::c_ushort;
 pub type __u_int = ::std::os::raw::c_uint;
@@ -154,7 +154,7 @@ pub type __off_t = ::std::os::raw::c_long;
 pub type __off64_t = ::std::os::raw::c_long;
 pub type __pid_t = ::std::os::raw::c_int;
 #[repr(C)]
-#[derive(Debug, Copy)]
+#[derive(Debug, Copy, Clone)]
 pub struct __fsid_t {
     pub __val: [::std::os::raw::c_int; 2usize],
 }
@@ -180,11 +180,6 @@ fn bindgen_test_layout___fsid_t() {
             stringify!(__val)
         )
     );
-}
-impl Clone for __fsid_t {
-    fn clone(&self) -> Self {
-        *self
-    }
 }
 pub type __clock_t = ::std::os::raw::c_long;
 pub type __rlim_t = ::std::os::raw::c_ulong;
@@ -213,6 +208,7 @@ pub type __qaddr_t = *mut __quad_t;
 pub type __caddr_t = *mut ::std::os::raw::c_char;
 pub type __intptr_t = ::std::os::raw::c_long;
 pub type __socklen_t = ::std::os::raw::c_uint;
+pub type __sig_atomic_t = ::std::os::raw::c_int;
 pub type int_least8_t = ::std::os::raw::c_schar;
 pub type int_least16_t = ::std::os::raw::c_short;
 pub type int_least32_t = ::std::os::raw::c_int;
@@ -239,22 +235,13 @@ pub type clingo_atom_t = u32;
 pub type clingo_id_t = u32;
 /// Signed integer type for weights in sum aggregates and minimize constraints.
 pub type clingo_weight_t = i32;
-#[repr(u32)]
-/// Enumeration of error codes.
-///
-/// **Note:** Errors can only be recovered from if explicitly mentioned; most
-/// functions do not provide strong exception guarantees.  This means that in
-/// case of errors associated objects cannot be used further.  If such an
-/// object has a free function, this function can and should still be called.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum clingo_error {
-    clingo_error_success = 0,
-    clingo_error_runtime = 1,
-    clingo_error_logic = 2,
-    clingo_error_bad_alloc = 3,
-    clingo_error_unknown = 4,
-}
-/// Corresponding type to ::clingo_error.
+pub const clingo_error_clingo_error_success: clingo_error = 0;
+pub const clingo_error_clingo_error_runtime: clingo_error = 1;
+pub const clingo_error_clingo_error_logic: clingo_error = 2;
+pub const clingo_error_clingo_error_bad_alloc: clingo_error = 3;
+pub const clingo_error_clingo_error_unknown: clingo_error = 4;
+pub type clingo_error = ::std::os::raw::c_uint;
+///  Corresponding type to ::clingo_error.
 pub type clingo_error_t = ::std::os::raw::c_int;
 extern "C" {
     /// Convert error code into string.
@@ -285,19 +272,15 @@ extern "C" {
     /// * `message` - the error message
     pub fn clingo_set_error(code: clingo_error_t, message: *const ::std::os::raw::c_char);
 }
-#[repr(u32)]
-/// Enumeration of warning codes.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum clingo_warning {
-    clingo_warning_operation_undefined = 0,
-    clingo_warning_runtime_error = 1,
-    clingo_warning_atom_undefined = 2,
-    clingo_warning_file_included = 3,
-    clingo_warning_variable_unbounded = 4,
-    clingo_warning_global_variable = 5,
-    clingo_warning_other = 6,
-}
-/// Corresponding type to ::clingo_warning.
+pub const clingo_warning_clingo_warning_operation_undefined: clingo_warning = 0;
+pub const clingo_warning_clingo_warning_runtime_error: clingo_warning = 1;
+pub const clingo_warning_clingo_warning_atom_undefined: clingo_warning = 2;
+pub const clingo_warning_clingo_warning_file_included: clingo_warning = 3;
+pub const clingo_warning_clingo_warning_variable_unbounded: clingo_warning = 4;
+pub const clingo_warning_clingo_warning_global_variable: clingo_warning = 5;
+pub const clingo_warning_clingo_warning_other: clingo_warning = 6;
+pub type clingo_warning = ::std::os::raw::c_uint;
+///  Corresponding type to ::clingo_warning.
 pub type clingo_warning_t = ::std::os::raw::c_int;
 extern "C" {
     /// Convert warning code into string.
@@ -334,22 +317,18 @@ extern "C" {
         revision: *mut ::std::os::raw::c_int,
     );
 }
-#[repr(u32)]
-/// Represents three-valued truth values.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum clingo_truth_value {
-    clingo_truth_value_free = 0,
-    clingo_truth_value_true = 1,
-    clingo_truth_value_false = 2,
-}
-/// Corresponding type to ::clingo_truth_value.
+pub const clingo_truth_value_clingo_truth_value_free: clingo_truth_value = 0;
+pub const clingo_truth_value_clingo_truth_value_true: clingo_truth_value = 1;
+pub const clingo_truth_value_clingo_truth_value_false: clingo_truth_value = 2;
+pub type clingo_truth_value = ::std::os::raw::c_uint;
+///  Corresponding type to ::clingo_truth_value.
 pub type clingo_truth_value_t = ::std::os::raw::c_int;
 /// Represents a source code location marking its beginnig and end.
 ///
 /// **Note:** Not all locations refer to physical files.
 /// By convention, such locations use a name put in angular brackets as filename.
 #[repr(C)]
-#[derive(Debug, Copy)]
+#[derive(Debug, Copy, Clone)]
 pub struct clingo_location {
     /// < the file where the location begins
     pub begin_file: *const ::std::os::raw::c_char,
@@ -436,11 +415,6 @@ fn bindgen_test_layout_clingo_location() {
             stringify!(end_column)
         )
     );
-}
-impl Clone for clingo_location {
-    fn clone(&self) -> Self {
-        *self
-    }
 }
 pub type clingo_location_t = clingo_location;
 /// Represents a predicate signature.
@@ -542,17 +516,13 @@ extern "C" {
     /// **Returns** the hash code of the signature
     pub fn clingo_signature_hash(signature: clingo_signature_t) -> usize;
 }
-#[repr(u32)]
-/// Enumeration of available symbol types.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum clingo_symbol_type {
-    clingo_symbol_type_infimum = 0,
-    clingo_symbol_type_number = 1,
-    clingo_symbol_type_string = 4,
-    clingo_symbol_type_function = 5,
-    clingo_symbol_type_supremum = 7,
-}
-/// Corresponding type to ::clingo_symbol_type.
+pub const clingo_symbol_type_clingo_symbol_type_infimum: clingo_symbol_type = 0;
+pub const clingo_symbol_type_clingo_symbol_type_number: clingo_symbol_type = 1;
+pub const clingo_symbol_type_clingo_symbol_type_string: clingo_symbol_type = 4;
+pub const clingo_symbol_type_clingo_symbol_type_function: clingo_symbol_type = 5;
+pub const clingo_symbol_type_clingo_symbol_type_supremum: clingo_symbol_type = 7;
+pub type clingo_symbol_type = ::std::os::raw::c_uint;
+///  Corresponding type to ::clingo_symbol_type.
 pub type clingo_symbol_type_t = ::std::os::raw::c_int;
 /// Represents a symbol.
 ///
@@ -561,7 +531,7 @@ pub type clingo_symbol_type_t = ::std::os::raw::c_int;
 pub type clingo_symbol_t = u64;
 /// Represents a symbolic literal.
 #[repr(C)]
-#[derive(Debug, Copy)]
+#[derive(Debug, Copy, Clone)]
 pub struct clingo_symbolic_literal {
     /// < the associated symbol (must be a function)
     pub symbol: clingo_symbol_t,
@@ -600,11 +570,6 @@ fn bindgen_test_layout_clingo_symbolic_literal() {
             stringify!(positive)
         )
     );
-}
-impl Clone for clingo_symbolic_literal {
-    fn clone(&self) -> Self {
-        *self
-    }
 }
 pub type clingo_symbolic_literal_t = clingo_symbolic_literal;
 extern "C" {
@@ -1136,18 +1101,14 @@ extern "C" {
         valid: *mut bool,
     ) -> bool;
 }
-#[repr(u32)]
-/// Enumeration of theory term types.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum clingo_theory_term_type {
-    clingo_theory_term_type_tuple = 0,
-    clingo_theory_term_type_list = 1,
-    clingo_theory_term_type_set = 2,
-    clingo_theory_term_type_function = 3,
-    clingo_theory_term_type_number = 4,
-    clingo_theory_term_type_symbol = 5,
-}
-/// Corresponding type to ::clingo_theory_term_type.
+pub const clingo_theory_term_type_clingo_theory_term_type_tuple: clingo_theory_term_type = 0;
+pub const clingo_theory_term_type_clingo_theory_term_type_list: clingo_theory_term_type = 1;
+pub const clingo_theory_term_type_clingo_theory_term_type_set: clingo_theory_term_type = 2;
+pub const clingo_theory_term_type_clingo_theory_term_type_function: clingo_theory_term_type = 3;
+pub const clingo_theory_term_type_clingo_theory_term_type_number: clingo_theory_term_type = 4;
+pub const clingo_theory_term_type_clingo_theory_term_type_symbol: clingo_theory_term_type = 5;
+pub type clingo_theory_term_type = ::std::os::raw::c_uint;
+///  Corresponding type to ::clingo_theory_term_type.
 pub type clingo_theory_term_type_t = ::std::os::raw::c_int;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -1507,29 +1468,21 @@ pub struct clingo_model {
 }
 /// Object representing a model.
 pub type clingo_model_t = clingo_model;
-#[repr(u32)]
-/// Enumeration for the different model types.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum clingo_model_type {
-    clingo_model_type_stable_model = 0,
-    clingo_model_type_brave_consequences = 1,
-    clingo_model_type_cautious_consequences = 2,
-}
-/// Corresponding type to ::clingo_model_type.
+pub const clingo_model_type_clingo_model_type_stable_model: clingo_model_type = 0;
+pub const clingo_model_type_clingo_model_type_brave_consequences: clingo_model_type = 1;
+pub const clingo_model_type_clingo_model_type_cautious_consequences: clingo_model_type = 2;
+pub type clingo_model_type = ::std::os::raw::c_uint;
+///  Corresponding type to ::clingo_model_type.
 pub type clingo_model_type_t = ::std::os::raw::c_int;
-#[repr(u32)]
-/// Enumeration of bit flags to select symbols in models.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum clingo_show_type {
-    clingo_show_type_csp = 1,
-    clingo_show_type_shown = 2,
-    clingo_show_type_atoms = 4,
-    clingo_show_type_terms = 8,
-    clingo_show_type_extra = 16,
-    clingo_show_type_all = 31,
-    clingo_show_type_complement = 32,
-}
-/// Corresponding type to ::clingo_show_type.
+pub const clingo_show_type_clingo_show_type_csp: clingo_show_type = 1;
+pub const clingo_show_type_clingo_show_type_shown: clingo_show_type = 2;
+pub const clingo_show_type_clingo_show_type_atoms: clingo_show_type = 4;
+pub const clingo_show_type_clingo_show_type_terms: clingo_show_type = 8;
+pub const clingo_show_type_clingo_show_type_extra: clingo_show_type = 16;
+pub const clingo_show_type_clingo_show_type_all: clingo_show_type = 31;
+pub const clingo_show_type_clingo_show_type_complement: clingo_show_type = 32;
+pub type clingo_show_type = ::std::os::raw::c_uint;
+///  Corresponding type to ::clingo_show_type.
 pub type clingo_show_type_bitset_t = ::std::os::raw::c_uint;
 extern "C" {
     /// Get the type of the model.
@@ -1732,32 +1685,21 @@ extern "C" {
         size: usize,
     ) -> bool;
 }
-#[repr(u32)]
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum clingo_solve_result {
-    clingo_solve_result_satisfiable = 1,
-    clingo_solve_result_unsatisfiable = 2,
-    clingo_solve_result_exhausted = 4,
-    clingo_solve_result_interrupted = 8,
-}
+pub const clingo_solve_result_clingo_solve_result_satisfiable: clingo_solve_result = 1;
+pub const clingo_solve_result_clingo_solve_result_unsatisfiable: clingo_solve_result = 2;
+pub const clingo_solve_result_clingo_solve_result_exhausted: clingo_solve_result = 4;
+pub const clingo_solve_result_clingo_solve_result_interrupted: clingo_solve_result = 8;
+pub type clingo_solve_result = ::std::os::raw::c_uint;
 pub type clingo_solve_result_bitset_t = ::std::os::raw::c_uint;
-#[repr(u32)]
-/// Enumeration of solve modes.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum clingo_solve_mode {
-    clingo_solve_mode_async = 1,
-    clingo_solve_mode_yield = 2,
-}
-/// Corresponding type to ::clingo_solve_mode.
+pub const clingo_solve_mode_clingo_solve_mode_async: clingo_solve_mode = 1;
+pub const clingo_solve_mode_clingo_solve_mode_yield: clingo_solve_mode = 2;
+pub type clingo_solve_mode = ::std::os::raw::c_uint;
+///  Corresponding type to ::clingo_solve_mode.
 pub type clingo_solve_mode_bitset_t = ::std::os::raw::c_uint;
-#[repr(u32)]
-/// Enumeration of solve events.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum clingo_solve_event_type {
-    clingo_solve_event_type_model = 0,
-    clingo_solve_event_type_finish = 1,
-}
-/// Corresponding type to ::clingo_solve_event_type.
+pub const clingo_solve_event_type_clingo_solve_event_type_model: clingo_solve_event_type = 0;
+pub const clingo_solve_event_type_clingo_solve_event_type_finish: clingo_solve_event_type = 1;
+pub type clingo_solve_event_type = ::std::os::raw::c_uint;
+///  Corresponding type to ::clingo_solve_event_type.
 pub type clingo_solve_event_type_t = ::std::os::raw::c_uint;
 /// Callback function called during search to notify when the search is finished or a model is ready.
 ///
@@ -1887,15 +1829,11 @@ extern "C" {
     /// - ::clingo_error_runtime if solving fails
     pub fn clingo_solve_handle_close(handle: *mut clingo_solve_handle_t) -> bool;
 }
-#[repr(u32)]
-/// Supported check modes for propagators.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum clingo_propagator_check_mode {
-    clingo_propagator_check_mode_none = 0,
-    clingo_propagator_check_mode_total = 1,
-    clingo_propagator_check_mode_fixpoint = 2,
-}
-/// Corresponding type to ::clingo_propagator_check_mode.
+pub const clingo_propagator_check_mode_clingo_propagator_check_mode_none : clingo_propagator_check_mode = 0 ;
+pub const clingo_propagator_check_mode_clingo_propagator_check_mode_total : clingo_propagator_check_mode = 1 ;
+pub const clingo_propagator_check_mode_clingo_propagator_check_mode_fixpoint : clingo_propagator_check_mode = 2 ;
+pub type clingo_propagator_check_mode = ::std::os::raw::c_uint;
+///  Corresponding type to ::clingo_propagator_check_mode.
 pub type clingo_propagator_check_mode_t = ::std::os::raw::c_int;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -2185,19 +2123,12 @@ extern "C" {
     /// **Returns** wheather the assignment is total
     pub fn clingo_assignment_is_total(assignment: *mut clingo_assignment_t) -> bool;
 }
-#[repr(u32)]
-/// Enumeration of clause types determining the lifetime of a clause.
-///
-/// Clauses in the solver are either cleaned up based on a configurable deletion policy or at the end of a solving step.
-/// The values of this enumeration determine if a clause is subject to one of the above deletion strategies.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum clingo_clause_type {
-    clingo_clause_type_learnt = 0,
-    clingo_clause_type_static = 1,
-    clingo_clause_type_volatile = 2,
-    clingo_clause_type_volatile_static = 3,
-}
-/// Corresponding type to ::clingo_clause_type.
+pub const clingo_clause_type_clingo_clause_type_learnt: clingo_clause_type = 0;
+pub const clingo_clause_type_clingo_clause_type_static: clingo_clause_type = 1;
+pub const clingo_clause_type_clingo_clause_type_volatile: clingo_clause_type = 2;
+pub const clingo_clause_type_clingo_clause_type_volatile_static: clingo_clause_type = 3;
+pub type clingo_clause_type = ::std::os::raw::c_uint;
+///  Corresponding type to ::clingo_clause_type.
 pub type clingo_clause_type_t = ::std::os::raw::c_int;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -2379,7 +2310,7 @@ pub type clingo_propagator_check_callback_t =
 /// Not all callbacks have to be implemented and can be set to NULL if not needed.
 /// @see Propagator
 #[repr(C)]
-#[derive(Debug, Copy)]
+#[derive(Debug, Copy, Clone)]
 pub struct clingo_propagator {
     /// This function is called once before each solving step.
     /// It is used to map relevant program literals to solver literals, add watches for solver literals, and initialize the data structures used during propagation.
@@ -2541,44 +2472,29 @@ fn bindgen_test_layout_clingo_propagator() {
         )
     );
 }
-impl Clone for clingo_propagator {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
 pub type clingo_propagator_t = clingo_propagator;
-#[repr(u32)]
-/// Enumeration of different heuristic modifiers.
-/// @ingroup ProgramInspection
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum clingo_heuristic_type {
-    clingo_heuristic_type_level = 0,
-    clingo_heuristic_type_sign = 1,
-    clingo_heuristic_type_factor = 2,
-    clingo_heuristic_type_init = 3,
-    clingo_heuristic_type_true = 4,
-    clingo_heuristic_type_false = 5,
-}
-/// Corresponding type to ::clingo_heuristic_type.
-/// @ingroup ProgramInspection
+pub const clingo_heuristic_type_clingo_heuristic_type_level: clingo_heuristic_type = 0;
+pub const clingo_heuristic_type_clingo_heuristic_type_sign: clingo_heuristic_type = 1;
+pub const clingo_heuristic_type_clingo_heuristic_type_factor: clingo_heuristic_type = 2;
+pub const clingo_heuristic_type_clingo_heuristic_type_init: clingo_heuristic_type = 3;
+pub const clingo_heuristic_type_clingo_heuristic_type_true: clingo_heuristic_type = 4;
+pub const clingo_heuristic_type_clingo_heuristic_type_false: clingo_heuristic_type = 5;
+pub type clingo_heuristic_type = ::std::os::raw::c_uint;
+///  Corresponding type to ::clingo_heuristic_type.
+///  @ingroup ProgramInspection
 pub type clingo_heuristic_type_t = ::std::os::raw::c_int;
-#[repr(u32)]
-/// Enumeration of different external statements.
-/// @ingroup ProgramInspection
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum clingo_external_type {
-    clingo_external_type_free = 0,
-    clingo_external_type_true = 1,
-    clingo_external_type_false = 2,
-    clingo_external_type_release = 3,
-}
-/// Corresponding type to ::clingo_external_type.
-/// @ingroup ProgramInspection
+pub const clingo_external_type_clingo_external_type_free: clingo_external_type = 0;
+pub const clingo_external_type_clingo_external_type_true: clingo_external_type = 1;
+pub const clingo_external_type_clingo_external_type_false: clingo_external_type = 2;
+pub const clingo_external_type_clingo_external_type_release: clingo_external_type = 3;
+pub type clingo_external_type = ::std::os::raw::c_uint;
+///  Corresponding type to ::clingo_external_type.
+///  @ingroup ProgramInspection
 pub type clingo_external_type_t = ::std::os::raw::c_int;
 /// A Literal with an associated weight.
 /// @ingroup ProgramInspection
 #[repr(C)]
-#[derive(Debug, Copy)]
+#[derive(Debug, Copy, Clone)]
 pub struct clingo_weighted_literal {
     pub literal: clingo_literal_t,
     pub weight: clingo_weight_t,
@@ -2615,11 +2531,6 @@ fn bindgen_test_layout_clingo_weighted_literal() {
             stringify!(weight)
         )
     );
-}
-impl Clone for clingo_weighted_literal {
-    fn clone(&self) -> Self {
-        *self
-    }
 }
 pub type clingo_weighted_literal_t = clingo_weighted_literal;
 #[repr(C)]
@@ -2809,15 +2720,11 @@ extern "C" {
         atom: *mut clingo_atom_t,
     ) -> bool;
 }
-#[repr(u32)]
-/// Enumeration for entries of the configuration.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum clingo_configuration_type {
-    clingo_configuration_type_value = 1,
-    clingo_configuration_type_array = 2,
-    clingo_configuration_type_map = 4,
-}
-/// Bitset for values of type ::clingo_configuration_type.
+pub const clingo_configuration_type_clingo_configuration_type_value: clingo_configuration_type = 1;
+pub const clingo_configuration_type_clingo_configuration_type_array: clingo_configuration_type = 2;
+pub const clingo_configuration_type_clingo_configuration_type_map: clingo_configuration_type = 4;
+pub type clingo_configuration_type = ::std::os::raw::c_uint;
+///  Bitset for values of type ::clingo_configuration_type.
 pub type clingo_configuration_type_bitset_t = ::std::os::raw::c_uint;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -3070,16 +2977,12 @@ extern "C" {
         value: *const ::std::os::raw::c_char,
     ) -> bool;
 }
-#[repr(u32)]
-/// Enumeration for entries of the statistics.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum clingo_statistics_type {
-    clingo_statistics_type_empty = 0,
-    clingo_statistics_type_value = 1,
-    clingo_statistics_type_array = 2,
-    clingo_statistics_type_map = 3,
-}
-/// Corresponding type to ::clingo_statistics_type.
+pub const clingo_statistics_type_clingo_statistics_type_empty: clingo_statistics_type = 0;
+pub const clingo_statistics_type_clingo_statistics_type_value: clingo_statistics_type = 1;
+pub const clingo_statistics_type_clingo_statistics_type_array: clingo_statistics_type = 2;
+pub const clingo_statistics_type_clingo_statistics_type_map: clingo_statistics_type = 3;
+pub type clingo_statistics_type = ::std::os::raw::c_uint;
+///  Corresponding type to ::clingo_statistics_type.
 pub type clingo_statistics_type_t = ::std::os::raw::c_int;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -3231,307 +3134,43 @@ extern "C" {
         value: *mut f64,
     ) -> bool;
 }
-#[repr(u32)]
-/// @addtogroup AST
-/// @{
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum clingo_ast_comparison_operator {
-    clingo_ast_comparison_operator_greater_than = 0,
-    clingo_ast_comparison_operator_less_than = 1,
-    clingo_ast_comparison_operator_less_equal = 2,
-    clingo_ast_comparison_operator_greater_equal = 3,
-    clingo_ast_comparison_operator_not_equal = 4,
-    clingo_ast_comparison_operator_equal = 5,
-}
+pub const clingo_ast_comparison_operator_clingo_ast_comparison_operator_greater_than : clingo_ast_comparison_operator = 0 ;
+pub const clingo_ast_comparison_operator_clingo_ast_comparison_operator_less_than : clingo_ast_comparison_operator = 1 ;
+pub const clingo_ast_comparison_operator_clingo_ast_comparison_operator_less_equal : clingo_ast_comparison_operator = 2 ;
+pub const clingo_ast_comparison_operator_clingo_ast_comparison_operator_greater_equal : clingo_ast_comparison_operator = 3 ;
+pub const clingo_ast_comparison_operator_clingo_ast_comparison_operator_not_equal : clingo_ast_comparison_operator = 4 ;
+pub const clingo_ast_comparison_operator_clingo_ast_comparison_operator_equal : clingo_ast_comparison_operator = 5 ;
+pub type clingo_ast_comparison_operator = ::std::os::raw::c_uint;
 pub type clingo_ast_comparison_operator_t = ::std::os::raw::c_int;
-#[repr(u32)]
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum clingo_ast_sign {
-    clingo_ast_sign_none = 0,
-    clingo_ast_sign_negation = 1,
-    clingo_ast_sign_double_negation = 2,
-}
+pub const clingo_ast_sign_clingo_ast_sign_none: clingo_ast_sign = 0;
+pub const clingo_ast_sign_clingo_ast_sign_negation: clingo_ast_sign = 1;
+pub const clingo_ast_sign_clingo_ast_sign_double_negation: clingo_ast_sign = 2;
+pub type clingo_ast_sign = ::std::os::raw::c_uint;
 pub type clingo_ast_sign_t = ::std::os::raw::c_int;
-#[repr(u32)]
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum clingo_ast_term_type {
-    clingo_ast_term_type_symbol = 0,
-    clingo_ast_term_type_variable = 1,
-    clingo_ast_term_type_unary_operation = 2,
-    clingo_ast_term_type_binary_operation = 3,
-    clingo_ast_term_type_interval = 4,
-    clingo_ast_term_type_function = 5,
-    clingo_ast_term_type_external_function = 6,
-    clingo_ast_term_type_pool = 7,
-}
+pub const clingo_ast_term_type_clingo_ast_term_type_symbol: clingo_ast_term_type = 0;
+pub const clingo_ast_term_type_clingo_ast_term_type_variable: clingo_ast_term_type = 1;
+pub const clingo_ast_term_type_clingo_ast_term_type_unary_operation: clingo_ast_term_type = 2;
+pub const clingo_ast_term_type_clingo_ast_term_type_binary_operation: clingo_ast_term_type = 3;
+pub const clingo_ast_term_type_clingo_ast_term_type_interval: clingo_ast_term_type = 4;
+pub const clingo_ast_term_type_clingo_ast_term_type_function: clingo_ast_term_type = 5;
+pub const clingo_ast_term_type_clingo_ast_term_type_external_function: clingo_ast_term_type = 6;
+pub const clingo_ast_term_type_clingo_ast_term_type_pool: clingo_ast_term_type = 7;
+pub type clingo_ast_term_type = ::std::os::raw::c_uint;
 pub type clingo_ast_term_type_t = ::std::os::raw::c_int;
-#[repr(C)]
-#[derive(Copy)]
-pub struct clingo_ast_unary_operation {
-    pub unary_operator: clingo_ast_unary_operator_t,
-    pub argument: clingo_ast_term_t,
-}
-#[test]
-fn bindgen_test_layout_clingo_ast_unary_operation() {
-    assert_eq!(
-        ::std::mem::size_of::<clingo_ast_unary_operation>(),
-        72usize,
-        concat!("Size of: ", stringify!(clingo_ast_unary_operation))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<clingo_ast_unary_operation>(),
-        8usize,
-        concat!("Alignment of ", stringify!(clingo_ast_unary_operation))
-    );
-    assert_eq!(
-        unsafe { &(*(0 as *const clingo_ast_unary_operation)).unary_operator as *const _ as usize },
-        0usize,
-        concat!(
-            "Alignment of field: ",
-            stringify!(clingo_ast_unary_operation),
-            "::",
-            stringify!(unary_operator)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(0 as *const clingo_ast_unary_operation)).argument as *const _ as usize },
-        8usize,
-        concat!(
-            "Alignment of field: ",
-            stringify!(clingo_ast_unary_operation),
-            "::",
-            stringify!(argument)
-        )
-    );
-}
-impl Clone for clingo_ast_unary_operation {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
 pub type clingo_ast_unary_operation_t = clingo_ast_unary_operation;
-#[repr(C)]
-#[derive(Copy)]
-pub struct clingo_ast_binary_operation {
-    pub binary_operator: clingo_ast_binary_operator_t,
-    pub left: clingo_ast_term_t,
-    pub right: clingo_ast_term_t,
-}
-#[test]
-fn bindgen_test_layout_clingo_ast_binary_operation() {
-    assert_eq!(
-        ::std::mem::size_of::<clingo_ast_binary_operation>(),
-        136usize,
-        concat!("Size of: ", stringify!(clingo_ast_binary_operation))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<clingo_ast_binary_operation>(),
-        8usize,
-        concat!("Alignment of ", stringify!(clingo_ast_binary_operation))
-    );
-    assert_eq!(
-        unsafe { &(*(0 as *const clingo_ast_binary_operation)).binary_operator as *const _ as usize },
-        0usize,
-        concat!(
-            "Alignment of field: ",
-            stringify!(clingo_ast_binary_operation),
-            "::",
-            stringify!(binary_operator)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(0 as *const clingo_ast_binary_operation)).left as *const _ as usize },
-        8usize,
-        concat!(
-            "Alignment of field: ",
-            stringify!(clingo_ast_binary_operation),
-            "::",
-            stringify!(left)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(0 as *const clingo_ast_binary_operation)).right as *const _ as usize },
-        72usize,
-        concat!(
-            "Alignment of field: ",
-            stringify!(clingo_ast_binary_operation),
-            "::",
-            stringify!(right)
-        )
-    );
-}
-impl Clone for clingo_ast_binary_operation {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
 pub type clingo_ast_binary_operation_t = clingo_ast_binary_operation;
-#[repr(C)]
-#[derive(Copy)]
-pub struct clingo_ast_interval {
-    pub left: clingo_ast_term_t,
-    pub right: clingo_ast_term_t,
-}
-#[test]
-fn bindgen_test_layout_clingo_ast_interval() {
-    assert_eq!(
-        ::std::mem::size_of::<clingo_ast_interval>(),
-        128usize,
-        concat!("Size of: ", stringify!(clingo_ast_interval))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<clingo_ast_interval>(),
-        8usize,
-        concat!("Alignment of ", stringify!(clingo_ast_interval))
-    );
-    assert_eq!(
-        unsafe { &(*(0 as *const clingo_ast_interval)).left as *const _ as usize },
-        0usize,
-        concat!(
-            "Alignment of field: ",
-            stringify!(clingo_ast_interval),
-            "::",
-            stringify!(left)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(0 as *const clingo_ast_interval)).right as *const _ as usize },
-        64usize,
-        concat!(
-            "Alignment of field: ",
-            stringify!(clingo_ast_interval),
-            "::",
-            stringify!(right)
-        )
-    );
-}
-impl Clone for clingo_ast_interval {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
 pub type clingo_ast_interval_t = clingo_ast_interval;
-#[repr(C)]
-#[derive(Debug, Copy)]
-pub struct clingo_ast_function {
-    pub name: *const ::std::os::raw::c_char,
-    pub arguments: *mut clingo_ast_term_t,
-    pub size: usize,
-}
-#[test]
-fn bindgen_test_layout_clingo_ast_function() {
-    assert_eq!(
-        ::std::mem::size_of::<clingo_ast_function>(),
-        24usize,
-        concat!("Size of: ", stringify!(clingo_ast_function))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<clingo_ast_function>(),
-        8usize,
-        concat!("Alignment of ", stringify!(clingo_ast_function))
-    );
-    assert_eq!(
-        unsafe { &(*(0 as *const clingo_ast_function)).name as *const _ as usize },
-        0usize,
-        concat!(
-            "Alignment of field: ",
-            stringify!(clingo_ast_function),
-            "::",
-            stringify!(name)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(0 as *const clingo_ast_function)).arguments as *const _ as usize },
-        8usize,
-        concat!(
-            "Alignment of field: ",
-            stringify!(clingo_ast_function),
-            "::",
-            stringify!(arguments)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(0 as *const clingo_ast_function)).size as *const _ as usize },
-        16usize,
-        concat!(
-            "Alignment of field: ",
-            stringify!(clingo_ast_function),
-            "::",
-            stringify!(size)
-        )
-    );
-}
-impl Clone for clingo_ast_function {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
 pub type clingo_ast_function_t = clingo_ast_function;
-#[repr(C)]
-#[derive(Debug, Copy)]
-pub struct clingo_ast_pool {
-    pub arguments: *mut clingo_ast_term_t,
-    pub size: usize,
-}
-#[test]
-fn bindgen_test_layout_clingo_ast_pool() {
-    assert_eq!(
-        ::std::mem::size_of::<clingo_ast_pool>(),
-        16usize,
-        concat!("Size of: ", stringify!(clingo_ast_pool))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<clingo_ast_pool>(),
-        8usize,
-        concat!("Alignment of ", stringify!(clingo_ast_pool))
-    );
-    assert_eq!(
-        unsafe { &(*(0 as *const clingo_ast_pool)).arguments as *const _ as usize },
-        0usize,
-        concat!(
-            "Alignment of field: ",
-            stringify!(clingo_ast_pool),
-            "::",
-            stringify!(arguments)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(0 as *const clingo_ast_pool)).size as *const _ as usize },
-        8usize,
-        concat!(
-            "Alignment of field: ",
-            stringify!(clingo_ast_pool),
-            "::",
-            stringify!(size)
-        )
-    );
-}
-impl Clone for clingo_ast_pool {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
 pub type clingo_ast_pool_t = clingo_ast_pool;
 #[repr(C)]
-#[derive(Copy)]
+#[derive(Copy, Clone)]
 pub struct clingo_ast_term {
     pub location: clingo_location_t,
     pub type_: clingo_ast_term_type_t,
     pub __bindgen_anon_1: clingo_ast_term__bindgen_ty_1,
 }
 #[repr(C)]
-#[derive(Copy)]
-pub union clingo_ast_term__bindgen_ty_1 {
-    pub symbol: clingo_symbol_t,
-    pub variable: *const ::std::os::raw::c_char,
-    pub unary_operation: *const clingo_ast_unary_operation_t,
-    pub binary_operation: *const clingo_ast_binary_operation_t,
-    pub interval: *const clingo_ast_interval_t,
-    pub function: *const clingo_ast_function_t,
-    pub external_function: *const clingo_ast_function_t,
-    pub pool: *const clingo_ast_pool_t,
-}
-#[test]
+#[derive(Copy, Clone)]pub union clingo_ast_term__bindgen_ty_1 { pub symbol : clingo_symbol_t , pub variable : * const :: std :: os :: raw :: c_char , pub unary_operation : * const clingo_ast_unary_operation_t , pub binary_operation : * const clingo_ast_binary_operation_t , pub interval : * const clingo_ast_interval_t , pub function : * const clingo_ast_function_t , pub external_function : * const clingo_ast_function_t , pub pool : * const clingo_ast_pool_t , _bindgen_union_align : u64 , }#[test]
 fn bindgen_test_layout_clingo_ast_term__bindgen_ty_1() {
     assert_eq!(
         ::std::mem::size_of::<clingo_ast_term__bindgen_ty_1>(),
@@ -3628,11 +3267,6 @@ fn bindgen_test_layout_clingo_ast_term__bindgen_ty_1() {
         )
     );
 }
-impl Clone for clingo_ast_term__bindgen_ty_1 {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
 #[test]
 fn bindgen_test_layout_clingo_ast_term() {
     assert_eq!(
@@ -3666,35 +3300,242 @@ fn bindgen_test_layout_clingo_ast_term() {
         )
     );
 }
-impl Clone for clingo_ast_term {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
 pub type clingo_ast_term_t = clingo_ast_term;
-#[repr(u32)]
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum clingo_ast_unary_operator {
-    clingo_ast_unary_operator_minus = 0,
-    clingo_ast_unary_operator_negation = 1,
-    clingo_ast_unary_operator_absolute = 2,
-}
+pub const clingo_ast_unary_operator_clingo_ast_unary_operator_minus: clingo_ast_unary_operator = 0;
+pub const clingo_ast_unary_operator_clingo_ast_unary_operator_negation : clingo_ast_unary_operator = 1 ;
+pub const clingo_ast_unary_operator_clingo_ast_unary_operator_absolute : clingo_ast_unary_operator = 2 ;
+pub type clingo_ast_unary_operator = ::std::os::raw::c_uint;
 pub type clingo_ast_unary_operator_t = ::std::os::raw::c_int;
-#[repr(u32)]
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum clingo_ast_binary_operator {
-    clingo_ast_binary_operator_xor = 0,
-    clingo_ast_binary_operator_or = 1,
-    clingo_ast_binary_operator_and = 2,
-    clingo_ast_binary_operator_plus = 3,
-    clingo_ast_binary_operator_minus = 4,
-    clingo_ast_binary_operator_multiplication = 5,
-    clingo_ast_binary_operator_division = 6,
-    clingo_ast_binary_operator_modulo = 7,
+#[repr(C)]
+#[derive(Copy, Clone)]
+pub struct clingo_ast_unary_operation {
+    pub unary_operator: clingo_ast_unary_operator_t,
+    pub argument: clingo_ast_term_t,
 }
+#[test]
+fn bindgen_test_layout_clingo_ast_unary_operation() {
+    assert_eq!(
+        ::std::mem::size_of::<clingo_ast_unary_operation>(),
+        72usize,
+        concat!("Size of: ", stringify!(clingo_ast_unary_operation))
+    );
+    assert_eq!(
+        ::std::mem::align_of::<clingo_ast_unary_operation>(),
+        8usize,
+        concat!("Alignment of ", stringify!(clingo_ast_unary_operation))
+    );
+    assert_eq!(
+        unsafe { &(*(0 as *const clingo_ast_unary_operation)).unary_operator as *const _ as usize },
+        0usize,
+        concat!(
+            "Alignment of field: ",
+            stringify!(clingo_ast_unary_operation),
+            "::",
+            stringify!(unary_operator)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(0 as *const clingo_ast_unary_operation)).argument as *const _ as usize },
+        8usize,
+        concat!(
+            "Alignment of field: ",
+            stringify!(clingo_ast_unary_operation),
+            "::",
+            stringify!(argument)
+        )
+    );
+}
+pub const clingo_ast_binary_operator_clingo_ast_binary_operator_xor: clingo_ast_binary_operator = 0;
+pub const clingo_ast_binary_operator_clingo_ast_binary_operator_or: clingo_ast_binary_operator = 1;
+pub const clingo_ast_binary_operator_clingo_ast_binary_operator_and: clingo_ast_binary_operator = 2;
+pub const clingo_ast_binary_operator_clingo_ast_binary_operator_plus: clingo_ast_binary_operator =
+    3;
+pub const clingo_ast_binary_operator_clingo_ast_binary_operator_minus : clingo_ast_binary_operator = 4 ;
+pub const clingo_ast_binary_operator_clingo_ast_binary_operator_multiplication : clingo_ast_binary_operator = 5 ;
+pub const clingo_ast_binary_operator_clingo_ast_binary_operator_division : clingo_ast_binary_operator = 6 ;
+pub const clingo_ast_binary_operator_clingo_ast_binary_operator_modulo : clingo_ast_binary_operator = 7 ;
+pub type clingo_ast_binary_operator = ::std::os::raw::c_uint;
 pub type clingo_ast_binary_operator_t = ::std::os::raw::c_int;
 #[repr(C)]
-#[derive(Copy)]
+#[derive(Copy, Clone)]
+pub struct clingo_ast_binary_operation {
+    pub binary_operator: clingo_ast_binary_operator_t,
+    pub left: clingo_ast_term_t,
+    pub right: clingo_ast_term_t,
+}
+#[test]
+fn bindgen_test_layout_clingo_ast_binary_operation() {
+    assert_eq!(
+        ::std::mem::size_of::<clingo_ast_binary_operation>(),
+        136usize,
+        concat!("Size of: ", stringify!(clingo_ast_binary_operation))
+    );
+    assert_eq!(
+        ::std::mem::align_of::<clingo_ast_binary_operation>(),
+        8usize,
+        concat!("Alignment of ", stringify!(clingo_ast_binary_operation))
+    );
+    assert_eq!(
+        unsafe { &(*(0 as *const clingo_ast_binary_operation)).binary_operator as *const _ as usize },
+        0usize,
+        concat!(
+            "Alignment of field: ",
+            stringify!(clingo_ast_binary_operation),
+            "::",
+            stringify!(binary_operator)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(0 as *const clingo_ast_binary_operation)).left as *const _ as usize },
+        8usize,
+        concat!(
+            "Alignment of field: ",
+            stringify!(clingo_ast_binary_operation),
+            "::",
+            stringify!(left)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(0 as *const clingo_ast_binary_operation)).right as *const _ as usize },
+        72usize,
+        concat!(
+            "Alignment of field: ",
+            stringify!(clingo_ast_binary_operation),
+            "::",
+            stringify!(right)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Copy, Clone)]
+pub struct clingo_ast_interval {
+    pub left: clingo_ast_term_t,
+    pub right: clingo_ast_term_t,
+}
+#[test]
+fn bindgen_test_layout_clingo_ast_interval() {
+    assert_eq!(
+        ::std::mem::size_of::<clingo_ast_interval>(),
+        128usize,
+        concat!("Size of: ", stringify!(clingo_ast_interval))
+    );
+    assert_eq!(
+        ::std::mem::align_of::<clingo_ast_interval>(),
+        8usize,
+        concat!("Alignment of ", stringify!(clingo_ast_interval))
+    );
+    assert_eq!(
+        unsafe { &(*(0 as *const clingo_ast_interval)).left as *const _ as usize },
+        0usize,
+        concat!(
+            "Alignment of field: ",
+            stringify!(clingo_ast_interval),
+            "::",
+            stringify!(left)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(0 as *const clingo_ast_interval)).right as *const _ as usize },
+        64usize,
+        concat!(
+            "Alignment of field: ",
+            stringify!(clingo_ast_interval),
+            "::",
+            stringify!(right)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct clingo_ast_function {
+    pub name: *const ::std::os::raw::c_char,
+    pub arguments: *mut clingo_ast_term_t,
+    pub size: usize,
+}
+#[test]
+fn bindgen_test_layout_clingo_ast_function() {
+    assert_eq!(
+        ::std::mem::size_of::<clingo_ast_function>(),
+        24usize,
+        concat!("Size of: ", stringify!(clingo_ast_function))
+    );
+    assert_eq!(
+        ::std::mem::align_of::<clingo_ast_function>(),
+        8usize,
+        concat!("Alignment of ", stringify!(clingo_ast_function))
+    );
+    assert_eq!(
+        unsafe { &(*(0 as *const clingo_ast_function)).name as *const _ as usize },
+        0usize,
+        concat!(
+            "Alignment of field: ",
+            stringify!(clingo_ast_function),
+            "::",
+            stringify!(name)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(0 as *const clingo_ast_function)).arguments as *const _ as usize },
+        8usize,
+        concat!(
+            "Alignment of field: ",
+            stringify!(clingo_ast_function),
+            "::",
+            stringify!(arguments)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(0 as *const clingo_ast_function)).size as *const _ as usize },
+        16usize,
+        concat!(
+            "Alignment of field: ",
+            stringify!(clingo_ast_function),
+            "::",
+            stringify!(size)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct clingo_ast_pool {
+    pub arguments: *mut clingo_ast_term_t,
+    pub size: usize,
+}
+#[test]
+fn bindgen_test_layout_clingo_ast_pool() {
+    assert_eq!(
+        ::std::mem::size_of::<clingo_ast_pool>(),
+        16usize,
+        concat!("Size of: ", stringify!(clingo_ast_pool))
+    );
+    assert_eq!(
+        ::std::mem::align_of::<clingo_ast_pool>(),
+        8usize,
+        concat!("Alignment of ", stringify!(clingo_ast_pool))
+    );
+    assert_eq!(
+        unsafe { &(*(0 as *const clingo_ast_pool)).arguments as *const _ as usize },
+        0usize,
+        concat!(
+            "Alignment of field: ",
+            stringify!(clingo_ast_pool),
+            "::",
+            stringify!(arguments)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(0 as *const clingo_ast_pool)).size as *const _ as usize },
+        8usize,
+        concat!(
+            "Alignment of field: ",
+            stringify!(clingo_ast_pool),
+            "::",
+            stringify!(size)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Copy, Clone)]
 pub struct clingo_ast_csp_product_term {
     pub location: clingo_location_t,
     pub coefficient: clingo_ast_term_t,
@@ -3743,14 +3584,9 @@ fn bindgen_test_layout_clingo_ast_csp_product_term() {
         )
     );
 }
-impl Clone for clingo_ast_csp_product_term {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
 pub type clingo_ast_csp_product_term_t = clingo_ast_csp_product_term;
 #[repr(C)]
-#[derive(Debug, Copy)]
+#[derive(Debug, Copy, Clone)]
 pub struct clingo_ast_csp_sum_term {
     pub location: clingo_location_t,
     pub terms: *mut clingo_ast_csp_product_term_t,
@@ -3799,14 +3635,9 @@ fn bindgen_test_layout_clingo_ast_csp_sum_term() {
         )
     );
 }
-impl Clone for clingo_ast_csp_sum_term {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
 pub type clingo_ast_csp_sum_term_t = clingo_ast_csp_sum_term;
 #[repr(C)]
-#[derive(Debug, Copy)]
+#[derive(Debug, Copy, Clone)]
 pub struct clingo_ast_csp_guard {
     pub comparison: clingo_ast_comparison_operator_t,
     pub term: clingo_ast_csp_sum_term_t,
@@ -3844,14 +3675,9 @@ fn bindgen_test_layout_clingo_ast_csp_guard() {
         )
     );
 }
-impl Clone for clingo_ast_csp_guard {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
 pub type clingo_ast_csp_guard_t = clingo_ast_csp_guard;
 #[repr(C)]
-#[derive(Debug, Copy)]
+#[derive(Debug, Copy, Clone)]
 pub struct clingo_ast_csp_literal {
     pub term: clingo_ast_csp_sum_term_t,
     pub guards: *const clingo_ast_csp_guard_t,
@@ -3900,14 +3726,9 @@ fn bindgen_test_layout_clingo_ast_csp_literal() {
         )
     );
 }
-impl Clone for clingo_ast_csp_literal {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
 pub type clingo_ast_csp_literal_t = clingo_ast_csp_literal;
 #[repr(C)]
-#[derive(Debug, Copy)]
+#[derive(Debug, Copy, Clone)]
 pub struct clingo_ast_id {
     pub location: clingo_location_t,
     pub id: *const ::std::os::raw::c_char,
@@ -3945,14 +3766,9 @@ fn bindgen_test_layout_clingo_ast_id() {
         )
     );
 }
-impl Clone for clingo_ast_id {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
 pub type clingo_ast_id_t = clingo_ast_id;
 #[repr(C)]
-#[derive(Copy)]
+#[derive(Copy, Clone)]
 pub struct clingo_ast_comparison {
     pub comparison: clingo_ast_comparison_operator_t,
     pub left: clingo_ast_term_t,
@@ -4001,23 +3817,15 @@ fn bindgen_test_layout_clingo_ast_comparison() {
         )
     );
 }
-impl Clone for clingo_ast_comparison {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
 pub type clingo_ast_comparison_t = clingo_ast_comparison;
-#[repr(u32)]
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum clingo_ast_literal_type {
-    clingo_ast_literal_type_boolean = 0,
-    clingo_ast_literal_type_symbolic = 1,
-    clingo_ast_literal_type_comparison = 2,
-    clingo_ast_literal_type_csp = 3,
-}
+pub const clingo_ast_literal_type_clingo_ast_literal_type_boolean: clingo_ast_literal_type = 0;
+pub const clingo_ast_literal_type_clingo_ast_literal_type_symbolic: clingo_ast_literal_type = 1;
+pub const clingo_ast_literal_type_clingo_ast_literal_type_comparison: clingo_ast_literal_type = 2;
+pub const clingo_ast_literal_type_clingo_ast_literal_type_csp: clingo_ast_literal_type = 3;
+pub type clingo_ast_literal_type = ::std::os::raw::c_uint;
 pub type clingo_ast_literal_type_t = ::std::os::raw::c_int;
 #[repr(C)]
-#[derive(Copy)]
+#[derive(Copy, Clone)]
 pub struct clingo_ast_literal {
     pub location: clingo_location_t,
     pub sign: clingo_ast_sign_t,
@@ -4025,14 +3833,7 @@ pub struct clingo_ast_literal {
     pub __bindgen_anon_1: clingo_ast_literal__bindgen_ty_1,
 }
 #[repr(C)]
-#[derive(Copy)]
-pub union clingo_ast_literal__bindgen_ty_1 {
-    pub boolean: bool,
-    pub symbol: *const clingo_ast_term_t,
-    pub comparison: *const clingo_ast_comparison_t,
-    pub csp_literal: *const clingo_ast_csp_literal_t,
-}
-#[test]
+#[derive(Copy, Clone)]pub union clingo_ast_literal__bindgen_ty_1 { pub boolean : bool , pub symbol : * const clingo_ast_term_t , pub comparison : * const clingo_ast_comparison_t , pub csp_literal : * const clingo_ast_csp_literal_t , _bindgen_union_align : u64 , }#[test]
 fn bindgen_test_layout_clingo_ast_literal__bindgen_ty_1() {
     assert_eq!(
         ::std::mem::size_of::<clingo_ast_literal__bindgen_ty_1>(),
@@ -4088,11 +3889,6 @@ fn bindgen_test_layout_clingo_ast_literal__bindgen_ty_1() {
         )
     );
 }
-impl Clone for clingo_ast_literal__bindgen_ty_1 {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
 #[test]
 fn bindgen_test_layout_clingo_ast_literal() {
     assert_eq!(
@@ -4136,24 +3932,16 @@ fn bindgen_test_layout_clingo_ast_literal() {
         )
     );
 }
-impl Clone for clingo_ast_literal {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
 pub type clingo_ast_literal_t = clingo_ast_literal;
-#[repr(u32)]
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum clingo_ast_aggregate_function {
-    clingo_ast_aggregate_function_count = 0,
-    clingo_ast_aggregate_function_sum = 1,
-    clingo_ast_aggregate_function_sump = 2,
-    clingo_ast_aggregate_function_min = 3,
-    clingo_ast_aggregate_function_max = 4,
-}
+pub const clingo_ast_aggregate_function_clingo_ast_aggregate_function_count : clingo_ast_aggregate_function = 0 ;
+pub const clingo_ast_aggregate_function_clingo_ast_aggregate_function_sum : clingo_ast_aggregate_function = 1 ;
+pub const clingo_ast_aggregate_function_clingo_ast_aggregate_function_sump : clingo_ast_aggregate_function = 2 ;
+pub const clingo_ast_aggregate_function_clingo_ast_aggregate_function_min : clingo_ast_aggregate_function = 3 ;
+pub const clingo_ast_aggregate_function_clingo_ast_aggregate_function_max : clingo_ast_aggregate_function = 4 ;
+pub type clingo_ast_aggregate_function = ::std::os::raw::c_uint;
 pub type clingo_ast_aggregate_function_t = ::std::os::raw::c_int;
 #[repr(C)]
-#[derive(Copy)]
+#[derive(Copy, Clone)]
 pub struct clingo_ast_aggregate_guard {
     pub comparison: clingo_ast_comparison_operator_t,
     pub term: clingo_ast_term_t,
@@ -4191,14 +3979,9 @@ fn bindgen_test_layout_clingo_ast_aggregate_guard() {
         )
     );
 }
-impl Clone for clingo_ast_aggregate_guard {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
 pub type clingo_ast_aggregate_guard_t = clingo_ast_aggregate_guard;
 #[repr(C)]
-#[derive(Copy)]
+#[derive(Copy, Clone)]
 pub struct clingo_ast_conditional_literal {
     pub literal: clingo_ast_literal_t,
     pub condition: *const clingo_ast_literal_t,
@@ -4247,14 +4030,9 @@ fn bindgen_test_layout_clingo_ast_conditional_literal() {
         )
     );
 }
-impl Clone for clingo_ast_conditional_literal {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
 pub type clingo_ast_conditional_literal_t = clingo_ast_conditional_literal;
 #[repr(C)]
-#[derive(Debug, Copy)]
+#[derive(Debug, Copy, Clone)]
 pub struct clingo_ast_aggregate {
     pub elements: *const clingo_ast_conditional_literal_t,
     pub size: usize,
@@ -4314,14 +4092,9 @@ fn bindgen_test_layout_clingo_ast_aggregate() {
         )
     );
 }
-impl Clone for clingo_ast_aggregate {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
 pub type clingo_ast_aggregate_t = clingo_ast_aggregate;
 #[repr(C)]
-#[derive(Debug, Copy)]
+#[derive(Debug, Copy, Clone)]
 pub struct clingo_ast_body_aggregate_element {
     pub tuple: *mut clingo_ast_term_t,
     pub tuple_size: usize,
@@ -4386,14 +4159,9 @@ fn bindgen_test_layout_clingo_ast_body_aggregate_element() {
         )
     );
 }
-impl Clone for clingo_ast_body_aggregate_element {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
 pub type clingo_ast_body_aggregate_element_t = clingo_ast_body_aggregate_element;
 #[repr(C)]
-#[derive(Debug, Copy)]
+#[derive(Debug, Copy, Clone)]
 pub struct clingo_ast_body_aggregate {
     pub function: clingo_ast_aggregate_function_t,
     pub elements: *const clingo_ast_body_aggregate_element_t,
@@ -4464,14 +4232,9 @@ fn bindgen_test_layout_clingo_ast_body_aggregate() {
         )
     );
 }
-impl Clone for clingo_ast_body_aggregate {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
 pub type clingo_ast_body_aggregate_t = clingo_ast_body_aggregate;
 #[repr(C)]
-#[derive(Copy)]
+#[derive(Copy, Clone)]
 pub struct clingo_ast_head_aggregate_element {
     pub tuple: *const clingo_ast_term_t,
     pub tuple_size: usize,
@@ -4526,14 +4289,9 @@ fn bindgen_test_layout_clingo_ast_head_aggregate_element() {
         )
     );
 }
-impl Clone for clingo_ast_head_aggregate_element {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
 pub type clingo_ast_head_aggregate_element_t = clingo_ast_head_aggregate_element;
 #[repr(C)]
-#[derive(Debug, Copy)]
+#[derive(Debug, Copy, Clone)]
 pub struct clingo_ast_head_aggregate {
     pub function: clingo_ast_aggregate_function_t,
     pub elements: *const clingo_ast_head_aggregate_element_t,
@@ -4604,14 +4362,9 @@ fn bindgen_test_layout_clingo_ast_head_aggregate() {
         )
     );
 }
-impl Clone for clingo_ast_head_aggregate {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
 pub type clingo_ast_head_aggregate_t = clingo_ast_head_aggregate;
 #[repr(C)]
-#[derive(Debug, Copy)]
+#[derive(Debug, Copy, Clone)]
 pub struct clingo_ast_disjunction {
     pub elements: *const clingo_ast_conditional_literal_t,
     pub size: usize,
@@ -4649,14 +4402,9 @@ fn bindgen_test_layout_clingo_ast_disjunction() {
         )
     );
 }
-impl Clone for clingo_ast_disjunction {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
 pub type clingo_ast_disjunction_t = clingo_ast_disjunction;
 #[repr(C)]
-#[derive(Debug, Copy)]
+#[derive(Debug, Copy, Clone)]
 pub struct clingo_ast_disjoint_element {
     pub location: clingo_location_t,
     pub tuple: *const clingo_ast_term_t,
@@ -4738,14 +4486,9 @@ fn bindgen_test_layout_clingo_ast_disjoint_element() {
         )
     );
 }
-impl Clone for clingo_ast_disjoint_element {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
 pub type clingo_ast_disjoint_element_t = clingo_ast_disjoint_element;
 #[repr(C)]
-#[derive(Debug, Copy)]
+#[derive(Debug, Copy, Clone)]
 pub struct clingo_ast_disjoint {
     pub elements: *const clingo_ast_disjoint_element_t,
     pub size: usize,
@@ -4783,189 +4526,28 @@ fn bindgen_test_layout_clingo_ast_disjoint() {
         )
     );
 }
-impl Clone for clingo_ast_disjoint {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
 pub type clingo_ast_disjoint_t = clingo_ast_disjoint;
-#[repr(u32)]
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum clingo_ast_theory_term_type {
-    clingo_ast_theory_term_type_symbol = 0,
-    clingo_ast_theory_term_type_variable = 1,
-    clingo_ast_theory_term_type_tuple = 2,
-    clingo_ast_theory_term_type_list = 3,
-    clingo_ast_theory_term_type_set = 4,
-    clingo_ast_theory_term_type_function = 5,
-    clingo_ast_theory_term_type_unparsed_term = 6,
-}
+pub const clingo_ast_theory_term_type_clingo_ast_theory_term_type_symbol : clingo_ast_theory_term_type = 0 ;
+pub const clingo_ast_theory_term_type_clingo_ast_theory_term_type_variable : clingo_ast_theory_term_type = 1 ;
+pub const clingo_ast_theory_term_type_clingo_ast_theory_term_type_tuple : clingo_ast_theory_term_type = 2 ;
+pub const clingo_ast_theory_term_type_clingo_ast_theory_term_type_list : clingo_ast_theory_term_type = 3 ;
+pub const clingo_ast_theory_term_type_clingo_ast_theory_term_type_set : clingo_ast_theory_term_type = 4 ;
+pub const clingo_ast_theory_term_type_clingo_ast_theory_term_type_function : clingo_ast_theory_term_type = 5 ;
+pub const clingo_ast_theory_term_type_clingo_ast_theory_term_type_unparsed_term : clingo_ast_theory_term_type = 6 ;
+pub type clingo_ast_theory_term_type = ::std::os::raw::c_uint;
 pub type clingo_ast_theory_term_type_t = ::std::os::raw::c_int;
-#[repr(C)]
-#[derive(Debug, Copy)]
-pub struct clingo_ast_theory_function {
-    pub name: *const ::std::os::raw::c_char,
-    pub arguments: *const clingo_ast_theory_term_t,
-    pub size: usize,
-}
-#[test]
-fn bindgen_test_layout_clingo_ast_theory_function() {
-    assert_eq!(
-        ::std::mem::size_of::<clingo_ast_theory_function>(),
-        24usize,
-        concat!("Size of: ", stringify!(clingo_ast_theory_function))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<clingo_ast_theory_function>(),
-        8usize,
-        concat!("Alignment of ", stringify!(clingo_ast_theory_function))
-    );
-    assert_eq!(
-        unsafe { &(*(0 as *const clingo_ast_theory_function)).name as *const _ as usize },
-        0usize,
-        concat!(
-            "Alignment of field: ",
-            stringify!(clingo_ast_theory_function),
-            "::",
-            stringify!(name)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(0 as *const clingo_ast_theory_function)).arguments as *const _ as usize },
-        8usize,
-        concat!(
-            "Alignment of field: ",
-            stringify!(clingo_ast_theory_function),
-            "::",
-            stringify!(arguments)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(0 as *const clingo_ast_theory_function)).size as *const _ as usize },
-        16usize,
-        concat!(
-            "Alignment of field: ",
-            stringify!(clingo_ast_theory_function),
-            "::",
-            stringify!(size)
-        )
-    );
-}
-impl Clone for clingo_ast_theory_function {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
 pub type clingo_ast_theory_function_t = clingo_ast_theory_function;
-#[repr(C)]
-#[derive(Debug, Copy)]
-pub struct clingo_ast_theory_term_array {
-    pub terms: *const clingo_ast_theory_term_t,
-    pub size: usize,
-}
-#[test]
-fn bindgen_test_layout_clingo_ast_theory_term_array() {
-    assert_eq!(
-        ::std::mem::size_of::<clingo_ast_theory_term_array>(),
-        16usize,
-        concat!("Size of: ", stringify!(clingo_ast_theory_term_array))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<clingo_ast_theory_term_array>(),
-        8usize,
-        concat!("Alignment of ", stringify!(clingo_ast_theory_term_array))
-    );
-    assert_eq!(
-        unsafe { &(*(0 as *const clingo_ast_theory_term_array)).terms as *const _ as usize },
-        0usize,
-        concat!(
-            "Alignment of field: ",
-            stringify!(clingo_ast_theory_term_array),
-            "::",
-            stringify!(terms)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(0 as *const clingo_ast_theory_term_array)).size as *const _ as usize },
-        8usize,
-        concat!(
-            "Alignment of field: ",
-            stringify!(clingo_ast_theory_term_array),
-            "::",
-            stringify!(size)
-        )
-    );
-}
-impl Clone for clingo_ast_theory_term_array {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
 pub type clingo_ast_theory_term_array_t = clingo_ast_theory_term_array;
-#[repr(C)]
-#[derive(Debug, Copy)]
-pub struct clingo_ast_theory_unparsed_term {
-    pub elements: *const clingo_ast_theory_unparsed_term_element_t,
-    pub size: usize,
-}
-#[test]
-fn bindgen_test_layout_clingo_ast_theory_unparsed_term() {
-    assert_eq!(
-        ::std::mem::size_of::<clingo_ast_theory_unparsed_term>(),
-        16usize,
-        concat!("Size of: ", stringify!(clingo_ast_theory_unparsed_term))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<clingo_ast_theory_unparsed_term>(),
-        8usize,
-        concat!("Alignment of ", stringify!(clingo_ast_theory_unparsed_term))
-    );
-    assert_eq!(
-        unsafe { &(*(0 as *const clingo_ast_theory_unparsed_term)).elements as *const _ as usize },
-        0usize,
-        concat!(
-            "Alignment of field: ",
-            stringify!(clingo_ast_theory_unparsed_term),
-            "::",
-            stringify!(elements)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(0 as *const clingo_ast_theory_unparsed_term)).size as *const _ as usize },
-        8usize,
-        concat!(
-            "Alignment of field: ",
-            stringify!(clingo_ast_theory_unparsed_term),
-            "::",
-            stringify!(size)
-        )
-    );
-}
-impl Clone for clingo_ast_theory_unparsed_term {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
 pub type clingo_ast_theory_unparsed_term_t = clingo_ast_theory_unparsed_term;
 #[repr(C)]
-#[derive(Copy)]
+#[derive(Copy, Clone)]
 pub struct clingo_ast_theory_term {
     pub location: clingo_location_t,
     pub type_: clingo_ast_theory_term_type_t,
     pub __bindgen_anon_1: clingo_ast_theory_term__bindgen_ty_1,
 }
 #[repr(C)]
-#[derive(Copy)]
-pub union clingo_ast_theory_term__bindgen_ty_1 {
-    pub symbol: clingo_symbol_t,
-    pub variable: *const ::std::os::raw::c_char,
-    pub tuple: *const clingo_ast_theory_term_array_t,
-    pub list: *const clingo_ast_theory_term_array_t,
-    pub set: *const clingo_ast_theory_term_array_t,
-    pub function: *const clingo_ast_theory_function_t,
-    pub unparsed_term: *const clingo_ast_theory_unparsed_term_t,
-}
-#[test]
+#[derive(Copy, Clone)]pub union clingo_ast_theory_term__bindgen_ty_1 { pub symbol : clingo_symbol_t , pub variable : * const :: std :: os :: raw :: c_char , pub tuple : * const clingo_ast_theory_term_array_t , pub list : * const clingo_ast_theory_term_array_t , pub set : * const clingo_ast_theory_term_array_t , pub function : * const clingo_ast_theory_function_t , pub unparsed_term : * const clingo_ast_theory_unparsed_term_t , _bindgen_union_align : u64 , }#[test]
 fn bindgen_test_layout_clingo_ast_theory_term__bindgen_ty_1() {
     assert_eq!(
         ::std::mem::size_of::<clingo_ast_theory_term__bindgen_ty_1>(),
@@ -5057,11 +4639,6 @@ fn bindgen_test_layout_clingo_ast_theory_term__bindgen_ty_1() {
         )
     );
 }
-impl Clone for clingo_ast_theory_term__bindgen_ty_1 {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
 #[test]
 fn bindgen_test_layout_clingo_ast_theory_term() {
     assert_eq!(
@@ -5095,14 +4672,98 @@ fn bindgen_test_layout_clingo_ast_theory_term() {
         )
     );
 }
-impl Clone for clingo_ast_theory_term {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
 pub type clingo_ast_theory_term_t = clingo_ast_theory_term;
 #[repr(C)]
-#[derive(Copy)]
+#[derive(Debug, Copy, Clone)]
+pub struct clingo_ast_theory_term_array {
+    pub terms: *const clingo_ast_theory_term_t,
+    pub size: usize,
+}
+#[test]
+fn bindgen_test_layout_clingo_ast_theory_term_array() {
+    assert_eq!(
+        ::std::mem::size_of::<clingo_ast_theory_term_array>(),
+        16usize,
+        concat!("Size of: ", stringify!(clingo_ast_theory_term_array))
+    );
+    assert_eq!(
+        ::std::mem::align_of::<clingo_ast_theory_term_array>(),
+        8usize,
+        concat!("Alignment of ", stringify!(clingo_ast_theory_term_array))
+    );
+    assert_eq!(
+        unsafe { &(*(0 as *const clingo_ast_theory_term_array)).terms as *const _ as usize },
+        0usize,
+        concat!(
+            "Alignment of field: ",
+            stringify!(clingo_ast_theory_term_array),
+            "::",
+            stringify!(terms)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(0 as *const clingo_ast_theory_term_array)).size as *const _ as usize },
+        8usize,
+        concat!(
+            "Alignment of field: ",
+            stringify!(clingo_ast_theory_term_array),
+            "::",
+            stringify!(size)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct clingo_ast_theory_function {
+    pub name: *const ::std::os::raw::c_char,
+    pub arguments: *const clingo_ast_theory_term_t,
+    pub size: usize,
+}
+#[test]
+fn bindgen_test_layout_clingo_ast_theory_function() {
+    assert_eq!(
+        ::std::mem::size_of::<clingo_ast_theory_function>(),
+        24usize,
+        concat!("Size of: ", stringify!(clingo_ast_theory_function))
+    );
+    assert_eq!(
+        ::std::mem::align_of::<clingo_ast_theory_function>(),
+        8usize,
+        concat!("Alignment of ", stringify!(clingo_ast_theory_function))
+    );
+    assert_eq!(
+        unsafe { &(*(0 as *const clingo_ast_theory_function)).name as *const _ as usize },
+        0usize,
+        concat!(
+            "Alignment of field: ",
+            stringify!(clingo_ast_theory_function),
+            "::",
+            stringify!(name)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(0 as *const clingo_ast_theory_function)).arguments as *const _ as usize },
+        8usize,
+        concat!(
+            "Alignment of field: ",
+            stringify!(clingo_ast_theory_function),
+            "::",
+            stringify!(arguments)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(0 as *const clingo_ast_theory_function)).size as *const _ as usize },
+        16usize,
+        concat!(
+            "Alignment of field: ",
+            stringify!(clingo_ast_theory_function),
+            "::",
+            stringify!(size)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Copy, Clone)]
 pub struct clingo_ast_theory_unparsed_term_element {
     pub operators: *const *const ::std::os::raw::c_char,
     pub size: usize,
@@ -5159,14 +4820,48 @@ fn bindgen_test_layout_clingo_ast_theory_unparsed_term_element() {
         )
     );
 }
-impl Clone for clingo_ast_theory_unparsed_term_element {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
 pub type clingo_ast_theory_unparsed_term_element_t = clingo_ast_theory_unparsed_term_element;
 #[repr(C)]
-#[derive(Debug, Copy)]
+#[derive(Debug, Copy, Clone)]
+pub struct clingo_ast_theory_unparsed_term {
+    pub elements: *const clingo_ast_theory_unparsed_term_element_t,
+    pub size: usize,
+}
+#[test]
+fn bindgen_test_layout_clingo_ast_theory_unparsed_term() {
+    assert_eq!(
+        ::std::mem::size_of::<clingo_ast_theory_unparsed_term>(),
+        16usize,
+        concat!("Size of: ", stringify!(clingo_ast_theory_unparsed_term))
+    );
+    assert_eq!(
+        ::std::mem::align_of::<clingo_ast_theory_unparsed_term>(),
+        8usize,
+        concat!("Alignment of ", stringify!(clingo_ast_theory_unparsed_term))
+    );
+    assert_eq!(
+        unsafe { &(*(0 as *const clingo_ast_theory_unparsed_term)).elements as *const _ as usize },
+        0usize,
+        concat!(
+            "Alignment of field: ",
+            stringify!(clingo_ast_theory_unparsed_term),
+            "::",
+            stringify!(elements)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(0 as *const clingo_ast_theory_unparsed_term)).size as *const _ as usize },
+        8usize,
+        concat!(
+            "Alignment of field: ",
+            stringify!(clingo_ast_theory_unparsed_term),
+            "::",
+            stringify!(size)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
 pub struct clingo_ast_theory_atom_element {
     pub tuple: *const clingo_ast_theory_term_t,
     pub tuple_size: usize,
@@ -5226,14 +4921,9 @@ fn bindgen_test_layout_clingo_ast_theory_atom_element() {
         )
     );
 }
-impl Clone for clingo_ast_theory_atom_element {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
 pub type clingo_ast_theory_atom_element_t = clingo_ast_theory_atom_element;
 #[repr(C)]
-#[derive(Copy)]
+#[derive(Copy, Clone)]
 pub struct clingo_ast_theory_guard {
     pub operator_name: *const ::std::os::raw::c_char,
     pub term: clingo_ast_theory_term_t,
@@ -5271,14 +4961,9 @@ fn bindgen_test_layout_clingo_ast_theory_guard() {
         )
     );
 }
-impl Clone for clingo_ast_theory_guard {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
 pub type clingo_ast_theory_guard_t = clingo_ast_theory_guard;
 #[repr(C)]
-#[derive(Copy)]
+#[derive(Copy, Clone)]
 pub struct clingo_ast_theory_atom {
     pub term: clingo_ast_term_t,
     pub elements: *const clingo_ast_theory_atom_element_t,
@@ -5338,39 +5023,23 @@ fn bindgen_test_layout_clingo_ast_theory_atom() {
         )
     );
 }
-impl Clone for clingo_ast_theory_atom {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
 pub type clingo_ast_theory_atom_t = clingo_ast_theory_atom;
-#[repr(u32)]
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum clingo_ast_head_literal_type {
-    clingo_ast_head_literal_type_literal = 0,
-    clingo_ast_head_literal_type_disjunction = 1,
-    clingo_ast_head_literal_type_aggregate = 2,
-    clingo_ast_head_literal_type_head_aggregate = 3,
-    clingo_ast_head_literal_type_theory_atom = 4,
-}
+pub const clingo_ast_head_literal_type_clingo_ast_head_literal_type_literal : clingo_ast_head_literal_type = 0 ;
+pub const clingo_ast_head_literal_type_clingo_ast_head_literal_type_disjunction : clingo_ast_head_literal_type = 1 ;
+pub const clingo_ast_head_literal_type_clingo_ast_head_literal_type_aggregate : clingo_ast_head_literal_type = 2 ;
+pub const clingo_ast_head_literal_type_clingo_ast_head_literal_type_head_aggregate : clingo_ast_head_literal_type = 3 ;
+pub const clingo_ast_head_literal_type_clingo_ast_head_literal_type_theory_atom : clingo_ast_head_literal_type = 4 ;
+pub type clingo_ast_head_literal_type = ::std::os::raw::c_uint;
 pub type clingo_ast_head_literal_type_t = ::std::os::raw::c_int;
 #[repr(C)]
-#[derive(Copy)]
+#[derive(Copy, Clone)]
 pub struct clingo_ast_head_literal {
     pub location: clingo_location_t,
     pub type_: clingo_ast_head_literal_type_t,
     pub __bindgen_anon_1: clingo_ast_head_literal__bindgen_ty_1,
 }
 #[repr(C)]
-#[derive(Copy)]
-pub union clingo_ast_head_literal__bindgen_ty_1 {
-    pub literal: *const clingo_ast_literal_t,
-    pub disjunction: *const clingo_ast_disjunction_t,
-    pub aggregate: *const clingo_ast_aggregate_t,
-    pub head_aggregate: *const clingo_ast_head_aggregate_t,
-    pub theory_atom: *const clingo_ast_theory_atom_t,
-}
-#[test]
+#[derive(Copy, Clone)]pub union clingo_ast_head_literal__bindgen_ty_1 { pub literal : * const clingo_ast_literal_t , pub disjunction : * const clingo_ast_disjunction_t , pub aggregate : * const clingo_ast_aggregate_t , pub head_aggregate : * const clingo_ast_head_aggregate_t , pub theory_atom : * const clingo_ast_theory_atom_t , _bindgen_union_align : u64 , }#[test]
 fn bindgen_test_layout_clingo_ast_head_literal__bindgen_ty_1() {
     assert_eq!(
         ::std::mem::size_of::<clingo_ast_head_literal__bindgen_ty_1>(),
@@ -5448,11 +5117,6 @@ fn bindgen_test_layout_clingo_ast_head_literal__bindgen_ty_1() {
         )
     );
 }
-impl Clone for clingo_ast_head_literal__bindgen_ty_1 {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
 #[test]
 fn bindgen_test_layout_clingo_ast_head_literal() {
     assert_eq!(
@@ -5486,25 +5150,17 @@ fn bindgen_test_layout_clingo_ast_head_literal() {
         )
     );
 }
-impl Clone for clingo_ast_head_literal {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
 pub type clingo_ast_head_literal_t = clingo_ast_head_literal;
-#[repr(u32)]
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum clingo_ast_body_literal_type {
-    clingo_ast_body_literal_type_literal = 0,
-    clingo_ast_body_literal_type_conditional = 1,
-    clingo_ast_body_literal_type_aggregate = 2,
-    clingo_ast_body_literal_type_body_aggregate = 3,
-    clingo_ast_body_literal_type_theory_atom = 4,
-    clingo_ast_body_literal_type_disjoint = 5,
-}
+pub const clingo_ast_body_literal_type_clingo_ast_body_literal_type_literal : clingo_ast_body_literal_type = 0 ;
+pub const clingo_ast_body_literal_type_clingo_ast_body_literal_type_conditional : clingo_ast_body_literal_type = 1 ;
+pub const clingo_ast_body_literal_type_clingo_ast_body_literal_type_aggregate : clingo_ast_body_literal_type = 2 ;
+pub const clingo_ast_body_literal_type_clingo_ast_body_literal_type_body_aggregate : clingo_ast_body_literal_type = 3 ;
+pub const clingo_ast_body_literal_type_clingo_ast_body_literal_type_theory_atom : clingo_ast_body_literal_type = 4 ;
+pub const clingo_ast_body_literal_type_clingo_ast_body_literal_type_disjoint : clingo_ast_body_literal_type = 5 ;
+pub type clingo_ast_body_literal_type = ::std::os::raw::c_uint;
 pub type clingo_ast_body_literal_type_t = ::std::os::raw::c_int;
 #[repr(C)]
-#[derive(Copy)]
+#[derive(Copy, Clone)]
 pub struct clingo_ast_body_literal {
     pub location: clingo_location_t,
     pub sign: clingo_ast_sign_t,
@@ -5512,16 +5168,7 @@ pub struct clingo_ast_body_literal {
     pub __bindgen_anon_1: clingo_ast_body_literal__bindgen_ty_1,
 }
 #[repr(C)]
-#[derive(Copy)]
-pub union clingo_ast_body_literal__bindgen_ty_1 {
-    pub literal: *const clingo_ast_literal_t,
-    pub conditional: *const clingo_ast_conditional_literal_t,
-    pub aggregate: *const clingo_ast_aggregate_t,
-    pub body_aggregate: *const clingo_ast_body_aggregate_t,
-    pub theory_atom: *const clingo_ast_theory_atom_t,
-    pub disjoint: *const clingo_ast_disjoint_t,
-}
-#[test]
+#[derive(Copy, Clone)]pub union clingo_ast_body_literal__bindgen_ty_1 { pub literal : * const clingo_ast_literal_t , pub conditional : * const clingo_ast_conditional_literal_t , pub aggregate : * const clingo_ast_aggregate_t , pub body_aggregate : * const clingo_ast_body_aggregate_t , pub theory_atom : * const clingo_ast_theory_atom_t , pub disjoint : * const clingo_ast_disjoint_t , _bindgen_union_align : u64 , }#[test]
 fn bindgen_test_layout_clingo_ast_body_literal__bindgen_ty_1() {
     assert_eq!(
         ::std::mem::size_of::<clingo_ast_body_literal__bindgen_ty_1>(),
@@ -5611,11 +5258,6 @@ fn bindgen_test_layout_clingo_ast_body_literal__bindgen_ty_1() {
         )
     );
 }
-impl Clone for clingo_ast_body_literal__bindgen_ty_1 {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
 #[test]
 fn bindgen_test_layout_clingo_ast_body_literal() {
     assert_eq!(
@@ -5659,22 +5301,14 @@ fn bindgen_test_layout_clingo_ast_body_literal() {
         )
     );
 }
-impl Clone for clingo_ast_body_literal {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
 pub type clingo_ast_body_literal_t = clingo_ast_body_literal;
-#[repr(u32)]
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum clingo_ast_theory_operator_type {
-    clingo_ast_theory_operator_type_unary = 0,
-    clingo_ast_theory_operator_type_binary_left = 1,
-    clingo_ast_theory_operator_type_binary_right = 2,
-}
+pub const clingo_ast_theory_operator_type_clingo_ast_theory_operator_type_unary : clingo_ast_theory_operator_type = 0 ;
+pub const clingo_ast_theory_operator_type_clingo_ast_theory_operator_type_binary_left : clingo_ast_theory_operator_type = 1 ;
+pub const clingo_ast_theory_operator_type_clingo_ast_theory_operator_type_binary_right : clingo_ast_theory_operator_type = 2 ;
+pub type clingo_ast_theory_operator_type = ::std::os::raw::c_uint;
 pub type clingo_ast_theory_operator_type_t = ::std::os::raw::c_int;
 #[repr(C)]
-#[derive(Debug, Copy)]
+#[derive(Debug, Copy, Clone)]
 pub struct clingo_ast_theory_operator_definition {
     pub location: clingo_location_t,
     pub name: *const ::std::os::raw::c_char,
@@ -5744,14 +5378,9 @@ fn bindgen_test_layout_clingo_ast_theory_operator_definition() {
         )
     );
 }
-impl Clone for clingo_ast_theory_operator_definition {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
 pub type clingo_ast_theory_operator_definition_t = clingo_ast_theory_operator_definition;
 #[repr(C)]
-#[derive(Debug, Copy)]
+#[derive(Debug, Copy, Clone)]
 pub struct clingo_ast_theory_term_definition {
     pub location: clingo_location_t,
     pub name: *const ::std::os::raw::c_char,
@@ -5814,14 +5443,9 @@ fn bindgen_test_layout_clingo_ast_theory_term_definition() {
         )
     );
 }
-impl Clone for clingo_ast_theory_term_definition {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
 pub type clingo_ast_theory_term_definition_t = clingo_ast_theory_term_definition;
 #[repr(C)]
-#[derive(Debug, Copy)]
+#[derive(Debug, Copy, Clone)]
 pub struct clingo_ast_theory_guard_definition {
     pub term: *const ::std::os::raw::c_char,
     pub operators: *const *const ::std::os::raw::c_char,
@@ -5873,23 +5497,15 @@ fn bindgen_test_layout_clingo_ast_theory_guard_definition() {
         )
     );
 }
-impl Clone for clingo_ast_theory_guard_definition {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
 pub type clingo_ast_theory_guard_definition_t = clingo_ast_theory_guard_definition;
-#[repr(u32)]
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum clingo_ast_theory_atom_definition_type {
-    clingo_ast_theory_atom_definition_type_head = 0,
-    clingo_ast_theory_atom_definition_type_body = 1,
-    clingo_ast_theory_atom_definition_type_any = 2,
-    clingo_ast_theory_atom_definition_type_directive = 3,
-}
+pub const clingo_ast_theory_atom_definition_type_clingo_ast_theory_atom_definition_type_head : clingo_ast_theory_atom_definition_type = 0 ;
+pub const clingo_ast_theory_atom_definition_type_clingo_ast_theory_atom_definition_type_body : clingo_ast_theory_atom_definition_type = 1 ;
+pub const clingo_ast_theory_atom_definition_type_clingo_ast_theory_atom_definition_type_any : clingo_ast_theory_atom_definition_type = 2 ;
+pub const clingo_ast_theory_atom_definition_type_clingo_ast_theory_atom_definition_type_directive : clingo_ast_theory_atom_definition_type = 3 ;
+pub type clingo_ast_theory_atom_definition_type = ::std::os::raw::c_uint;
 pub type clingo_ast_theory_atom_definition_type_t = ::std::os::raw::c_int;
 #[repr(C)]
-#[derive(Debug, Copy)]
+#[derive(Debug, Copy, Clone)]
 pub struct clingo_ast_theory_atom_definition {
     pub location: clingo_location_t,
     pub type_: clingo_ast_theory_atom_definition_type_t,
@@ -5974,14 +5590,9 @@ fn bindgen_test_layout_clingo_ast_theory_atom_definition() {
         )
     );
 }
-impl Clone for clingo_ast_theory_atom_definition {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
 pub type clingo_ast_theory_atom_definition_t = clingo_ast_theory_atom_definition;
 #[repr(C)]
-#[derive(Debug, Copy)]
+#[derive(Debug, Copy, Clone)]
 pub struct clingo_ast_theory_definition {
     pub name: *const ::std::os::raw::c_char,
     pub terms: *const clingo_ast_theory_term_definition_t,
@@ -6052,14 +5663,9 @@ fn bindgen_test_layout_clingo_ast_theory_definition() {
         )
     );
 }
-impl Clone for clingo_ast_theory_definition {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
 pub type clingo_ast_theory_definition_t = clingo_ast_theory_definition;
 #[repr(C)]
-#[derive(Copy)]
+#[derive(Copy, Clone)]
 pub struct clingo_ast_rule {
     pub head: clingo_ast_head_literal_t,
     pub body: *const clingo_ast_body_literal_t,
@@ -6108,14 +5714,9 @@ fn bindgen_test_layout_clingo_ast_rule() {
         )
     );
 }
-impl Clone for clingo_ast_rule {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
 pub type clingo_ast_rule_t = clingo_ast_rule;
 #[repr(C)]
-#[derive(Copy)]
+#[derive(Copy, Clone)]
 pub struct clingo_ast_definition {
     pub name: *const ::std::os::raw::c_char,
     pub value: clingo_ast_term_t,
@@ -6164,14 +5765,9 @@ fn bindgen_test_layout_clingo_ast_definition() {
         )
     );
 }
-impl Clone for clingo_ast_definition {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
 pub type clingo_ast_definition_t = clingo_ast_definition;
 #[repr(C)]
-#[derive(Debug, Copy)]
+#[derive(Debug, Copy, Clone)]
 pub struct clingo_ast_show_signature {
     pub signature: clingo_signature_t,
     pub csp: bool,
@@ -6209,14 +5805,9 @@ fn bindgen_test_layout_clingo_ast_show_signature() {
         )
     );
 }
-impl Clone for clingo_ast_show_signature {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
 pub type clingo_ast_show_signature_t = clingo_ast_show_signature;
 #[repr(C)]
-#[derive(Copy)]
+#[derive(Copy, Clone)]
 pub struct clingo_ast_show_term {
     pub term: clingo_ast_term_t,
     pub body: *const clingo_ast_body_literal_t,
@@ -6276,14 +5867,9 @@ fn bindgen_test_layout_clingo_ast_show_term() {
         )
     );
 }
-impl Clone for clingo_ast_show_term {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
 pub type clingo_ast_show_term_t = clingo_ast_show_term;
 #[repr(C)]
-#[derive(Copy)]
+#[derive(Copy, Clone)]
 pub struct clingo_ast_minimize {
     pub weight: clingo_ast_term_t,
     pub priority: clingo_ast_term_t,
@@ -6365,21 +5951,13 @@ fn bindgen_test_layout_clingo_ast_minimize() {
         )
     );
 }
-impl Clone for clingo_ast_minimize {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
 pub type clingo_ast_minimize_t = clingo_ast_minimize;
-#[repr(u32)]
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum clingo_ast_script_type {
-    clingo_ast_script_type_lua = 0,
-    clingo_ast_script_type_python = 1,
-}
+pub const clingo_ast_script_type_clingo_ast_script_type_lua: clingo_ast_script_type = 0;
+pub const clingo_ast_script_type_clingo_ast_script_type_python: clingo_ast_script_type = 1;
+pub type clingo_ast_script_type = ::std::os::raw::c_uint;
 pub type clingo_ast_script_type_t = ::std::os::raw::c_int;
 #[repr(C)]
-#[derive(Debug, Copy)]
+#[derive(Debug, Copy, Clone)]
 pub struct clingo_ast_script {
     pub type_: clingo_ast_script_type_t,
     pub code: *const ::std::os::raw::c_char,
@@ -6417,14 +5995,9 @@ fn bindgen_test_layout_clingo_ast_script() {
         )
     );
 }
-impl Clone for clingo_ast_script {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
 pub type clingo_ast_script_t = clingo_ast_script;
 #[repr(C)]
-#[derive(Debug, Copy)]
+#[derive(Debug, Copy, Clone)]
 pub struct clingo_ast_program {
     pub name: *const ::std::os::raw::c_char,
     pub parameters: *const clingo_ast_id_t,
@@ -6473,14 +6046,9 @@ fn bindgen_test_layout_clingo_ast_program() {
         )
     );
 }
-impl Clone for clingo_ast_program {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
 pub type clingo_ast_program_t = clingo_ast_program;
 #[repr(C)]
-#[derive(Copy)]
+#[derive(Copy, Clone)]
 pub struct clingo_ast_external {
     pub atom: clingo_ast_term_t,
     pub body: *const clingo_ast_body_literal_t,
@@ -6529,14 +6097,9 @@ fn bindgen_test_layout_clingo_ast_external() {
         )
     );
 }
-impl Clone for clingo_ast_external {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
 pub type clingo_ast_external_t = clingo_ast_external;
 #[repr(C)]
-#[derive(Copy)]
+#[derive(Copy, Clone)]
 pub struct clingo_ast_edge {
     pub u: clingo_ast_term_t,
     pub v: clingo_ast_term_t,
@@ -6596,14 +6159,9 @@ fn bindgen_test_layout_clingo_ast_edge() {
         )
     );
 }
-impl Clone for clingo_ast_edge {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
 pub type clingo_ast_edge_t = clingo_ast_edge;
 #[repr(C)]
-#[derive(Copy)]
+#[derive(Copy, Clone)]
 pub struct clingo_ast_heuristic {
     pub atom: clingo_ast_term_t,
     pub body: *const clingo_ast_body_literal_t,
@@ -6685,14 +6243,9 @@ fn bindgen_test_layout_clingo_ast_heuristic() {
         )
     );
 }
-impl Clone for clingo_ast_heuristic {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
 pub type clingo_ast_heuristic_t = clingo_ast_heuristic;
 #[repr(C)]
-#[derive(Copy)]
+#[derive(Copy, Clone)]
 pub struct clingo_ast_project {
     pub atom: clingo_ast_term_t,
     pub body: *const clingo_ast_body_literal_t,
@@ -6741,55 +6294,32 @@ fn bindgen_test_layout_clingo_ast_project() {
         )
     );
 }
-impl Clone for clingo_ast_project {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
 pub type clingo_ast_project_t = clingo_ast_project;
-#[repr(u32)]
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum clingo_ast_statement_type {
-    clingo_ast_statement_type_rule = 0,
-    clingo_ast_statement_type_const = 1,
-    clingo_ast_statement_type_show_signature = 2,
-    clingo_ast_statement_type_show_term = 3,
-    clingo_ast_statement_type_minimize = 4,
-    clingo_ast_statement_type_script = 5,
-    clingo_ast_statement_type_program = 6,
-    clingo_ast_statement_type_external = 7,
-    clingo_ast_statement_type_edge = 8,
-    clingo_ast_statement_type_heuristic = 9,
-    clingo_ast_statement_type_project_atom = 10,
-    clingo_ast_statement_type_project_atom_signature = 11,
-    clingo_ast_statement_type_theory_definition = 12,
-}
+pub const clingo_ast_statement_type_clingo_ast_statement_type_rule: clingo_ast_statement_type = 0;
+pub const clingo_ast_statement_type_clingo_ast_statement_type_const: clingo_ast_statement_type = 1;
+pub const clingo_ast_statement_type_clingo_ast_statement_type_show_signature : clingo_ast_statement_type = 2 ;
+pub const clingo_ast_statement_type_clingo_ast_statement_type_show_term : clingo_ast_statement_type = 3 ;
+pub const clingo_ast_statement_type_clingo_ast_statement_type_minimize : clingo_ast_statement_type = 4 ;
+pub const clingo_ast_statement_type_clingo_ast_statement_type_script: clingo_ast_statement_type = 5;
+pub const clingo_ast_statement_type_clingo_ast_statement_type_program: clingo_ast_statement_type =
+    6;
+pub const clingo_ast_statement_type_clingo_ast_statement_type_external : clingo_ast_statement_type = 7 ;
+pub const clingo_ast_statement_type_clingo_ast_statement_type_edge: clingo_ast_statement_type = 8;
+pub const clingo_ast_statement_type_clingo_ast_statement_type_heuristic : clingo_ast_statement_type = 9 ;
+pub const clingo_ast_statement_type_clingo_ast_statement_type_project_atom : clingo_ast_statement_type = 10 ;
+pub const clingo_ast_statement_type_clingo_ast_statement_type_project_atom_signature : clingo_ast_statement_type = 11 ;
+pub const clingo_ast_statement_type_clingo_ast_statement_type_theory_definition : clingo_ast_statement_type = 12 ;
+pub type clingo_ast_statement_type = ::std::os::raw::c_uint;
 pub type clingo_ast_statement_type_t = ::std::os::raw::c_int;
 #[repr(C)]
-#[derive(Copy)]
+#[derive(Copy, Clone)]
 pub struct clingo_ast_statement {
     pub location: clingo_location_t,
     pub type_: clingo_ast_statement_type_t,
     pub __bindgen_anon_1: clingo_ast_statement__bindgen_ty_1,
 }
 #[repr(C)]
-#[derive(Copy)]
-pub union clingo_ast_statement__bindgen_ty_1 {
-    pub rule: *const clingo_ast_rule_t,
-    pub definition: *const clingo_ast_definition_t,
-    pub show_signature: *const clingo_ast_show_signature_t,
-    pub show_term: *const clingo_ast_show_term_t,
-    pub minimize: *const clingo_ast_minimize_t,
-    pub script: *const clingo_ast_script_t,
-    pub program: *const clingo_ast_program_t,
-    pub external: *const clingo_ast_external_t,
-    pub edge: *const clingo_ast_edge_t,
-    pub heuristic: *const clingo_ast_heuristic_t,
-    pub project_atom: *const clingo_ast_project_t,
-    pub project_signature: clingo_signature_t,
-    pub theory_definition: *const clingo_ast_theory_definition_t,
-}
-#[test]
+#[derive(Copy, Clone)]pub union clingo_ast_statement__bindgen_ty_1 { pub rule : * const clingo_ast_rule_t , pub definition : * const clingo_ast_definition_t , pub show_signature : * const clingo_ast_show_signature_t , pub show_term : * const clingo_ast_show_term_t , pub minimize : * const clingo_ast_minimize_t , pub script : * const clingo_ast_script_t , pub program : * const clingo_ast_program_t , pub external : * const clingo_ast_external_t , pub edge : * const clingo_ast_edge_t , pub heuristic : * const clingo_ast_heuristic_t , pub project_atom : * const clingo_ast_project_t , pub project_signature : clingo_signature_t , pub theory_definition : * const clingo_ast_theory_definition_t , _bindgen_union_align : u64 , }#[test]
 fn bindgen_test_layout_clingo_ast_statement__bindgen_ty_1() {
     assert_eq!(
         ::std::mem::size_of::<clingo_ast_statement__bindgen_ty_1>(),
@@ -6945,11 +6475,6 @@ fn bindgen_test_layout_clingo_ast_statement__bindgen_ty_1() {
         )
     );
 }
-impl Clone for clingo_ast_statement__bindgen_ty_1 {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
 #[test]
 fn bindgen_test_layout_clingo_ast_statement() {
     assert_eq!(
@@ -6982,11 +6507,6 @@ fn bindgen_test_layout_clingo_ast_statement() {
             stringify!(type_)
         )
     );
-}
-impl Clone for clingo_ast_statement {
-    fn clone(&self) -> Self {
-        *self
-    }
 }
 pub type clingo_ast_statement_t = clingo_ast_statement;
 pub type clingo_ast_callback_t =
@@ -7072,7 +6592,7 @@ extern "C" {
 ///
 /// @see clingo_control_register_observer()
 #[repr(C)]
-#[derive(Debug, Copy)]
+#[derive(Debug, Copy, Clone)]
 pub struct clingo_ground_program_observer {
     /// Called once in the beginning.
     ///
@@ -7671,11 +7191,6 @@ fn bindgen_test_layout_clingo_ground_program_observer() {
         )
     );
 }
-impl Clone for clingo_ground_program_observer {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
 pub type clingo_ground_program_observer_t = clingo_ground_program_observer;
 /// Struct used to specify the program parts that have to be grounded.
 ///
@@ -7689,7 +7204,7 @@ pub type clingo_ground_program_observer_t = clingo_ground_program_observer;
 ///
 /// @see clingo_control_ground()
 #[repr(C)]
-#[derive(Debug, Copy)]
+#[derive(Debug, Copy, Clone)]
 pub struct clingo_part {
     /// < name of the program part
     pub name: *const ::std::os::raw::c_char,
@@ -7740,11 +7255,6 @@ fn bindgen_test_layout_clingo_part() {
             stringify!(size)
         )
     );
-}
-impl Clone for clingo_part {
-    fn clone(&self) -> Self {
-        *self
-    }
 }
 pub type clingo_part_t = clingo_part;
 /// Callback function to inject symbols.

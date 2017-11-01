@@ -4,17 +4,18 @@ use clingo::*;
 
 
 fn main() {
+    let mut store = CStringStore::new();
 
     // create a number, identifier (function without arguments), and a function symbol
-    let number_symbol = ClingoSymbol::create_number(42);
-    let identifier_symbol = ClingoSymbol::create_id("x", true).unwrap();
+    let number_symbol = create_number(42);
+    let identifier_symbol = store.create_id("x", true).unwrap();
 
-    let function_args = &[number_symbol, identifier_symbol];
-    let function_symbol = ClingoSymbol::create_function("x", function_args, true).unwrap();
-    let symbols = [number_symbol, identifier_symbol, function_symbol];
+    let mut symbols = vec![number_symbol, identifier_symbol];
+    let function_symbol = store.create_function("x", &symbols, true).unwrap();
+    symbols.push(function_symbol.clone());
 
     // print the symbols along with their hash values
-    for &symbol in &symbols {
+    for ref symbol in &symbols {
         println!(
             "the hash of {} is {}",
             symbol.to_string().unwrap(),
@@ -26,10 +27,10 @@ fn main() {
     let symbols2 = function_symbol.arguments().unwrap();
 
     // equal to comparison
-    for symbol in symbols2 {
+    for ref symbol in symbols2 {
 
         print!("{} is ", symbols[0].to_string().unwrap());
-        if symbols[0] == symbol {
+        if symbols[0] == *symbol {
             print!("equal");
         } else {
             print!("not equal");

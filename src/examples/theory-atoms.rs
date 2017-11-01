@@ -8,7 +8,7 @@ fn print_model(model: &mut ClingoModel) {
 
     // retrieve the symbols in the model
     let atoms = model
-        .symbols(clingo_show_type_shown as clingo_show_type_bitset_t)
+        .symbols(ClingoShowType::Shown as clingo_show_type_bitset_t)
         .expect("Failed to retrieve symbols in the model.");
 
     print!("Model:");
@@ -22,12 +22,13 @@ fn print_model(model: &mut ClingoModel) {
 
 fn solve(ctl: &mut ClingoControl) {
 
-    let solve_mode = clingo_solve_mode_yield as clingo_solve_mode_bitset_t;
+    let solve_mode = ClingoSolveMode::Yield;
     let assumptions = vec![];
 
     // get a solve handle
-    let handle = ctl.solve(solve_mode, assumptions)
-        .expect("Failed retrieving solve handle.");
+    let handle = ctl.solve(solve_mode, assumptions).expect(
+        "Failed retrieving solve handle.",
+    );
 
     // loop over all models
     loop {
@@ -47,7 +48,7 @@ fn solve(ctl: &mut ClingoControl) {
     handle.close().expect("Failed to close solve handle.");
 }
 
-fn get_theory_atom_literal(ctl: &mut ClingoControl) -> std::option::Option<ClingoLiteral> {
+fn get_theory_atom_literal(ctl: &mut ClingoControl) -> Option<ClingoLiteral> {
 
     // get the theory atoms container
     let atoms = ctl.theory_atoms().unwrap();
@@ -108,8 +109,9 @@ fn main() {
     // ground the base part
     let part = ClingoPart::new_part("base", &[]);
     let parts = vec![part];
-    ctl.ground(parts)
-        .expect("Failed to ground a logic program.");
+    ctl.ground(parts).expect(
+        "Failed to ground a logic program.",
+    );
 
     // use the backend to assume that the theory atom is true
     // (note that only symbolic literals can be passed as assumptions to a solve call;

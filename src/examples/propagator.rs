@@ -11,7 +11,7 @@ fn print_model(model: &mut ClingoModel) {
 
     // retrieve the symbols in the model
     let atoms = model
-        .symbols(clingo_show_type_shown as clingo_show_type_bitset_t)
+        .symbols(ClingoShowType::Shown as clingo_show_type_bitset_t)
         .expect("Failed to retrieve symbols in the model.");
 
     print!("Model:");
@@ -25,12 +25,13 @@ fn print_model(model: &mut ClingoModel) {
 
 fn solve(ctl: &mut ClingoControl) {
 
-    let solve_mode = clingo_solve_mode_yield as clingo_solve_mode_bitset_t;
+    let solve_mode = ClingoSolveMode::Yield;
     let assumptions = vec![];
 
     // get a solve handle
-    let handle = ctl.solve(solve_mode, assumptions)
-        .expect("Failed to retrieve solve handle.");
+    let handle = ctl.solve(solve_mode, assumptions).expect(
+        "Failed to retrieve solve handle.",
+    );
 
     // loop over all models
     loop {
@@ -97,7 +98,7 @@ impl ClingoPropagatorBuilder<PropagatorT> for MyPropagator {
             // this case is not handled (elegantly) here
             println!("hi propagator.states.is_not_empty");
             if threads > propagator.states.len() {
-                clingo::set_error(clingo_error_runtime, "more threads than states");
+                clingo::set_error(ClingoError::Runtime, "more threads than states");
             }
             return true;
         }
@@ -209,7 +210,7 @@ impl ClingoPropagatorBuilder<PropagatorT> for MyPropagator {
 
                     // add the clause
                     if !control
-                        .add_clause(clause, clingo_clause_type_learnt)
+                        .add_clause(clause, ClingoClauseType::Learnt)
                         .unwrap()
                     {
                         return true;
@@ -293,9 +294,9 @@ fn main() {
             // ground the pigeon part
 
             // set the number of holes
-            let arg0 = ClingoSymbol::create_number(8);
+            let arg0 = create_number(8);
             // set the number of pigeons
-            let arg1 = ClingoSymbol::create_number(8);
+            let arg1 = create_number(8);
 
             let mut args = Vec::new();
             args.push(arg0);
@@ -304,8 +305,9 @@ fn main() {
             // the pigeon program part having the number of holes and pigeons as parameters
             let part = ClingoPart::new_part("pigeon", args.as_slice());
             let parts = vec![part];
-            ctl.ground(parts)
-                .expect("Failed to ground a logic program.");
+            ctl.ground(parts).expect(
+                "Failed to ground a logic program.",
+            );
 
             // solve using a model callback
             solve(&mut ctl);
