@@ -14,11 +14,11 @@ use clingo_sys::*;
 
 #[derive(Debug, Copy, Clone)]
 pub enum ClingoError {
-    Success = 0,
-    Runtime = 1,
-    Logic = 2,
-    BadAlloc = 3,
-    Unknown = 4,
+    Success = clingo_error_clingo_error_success as isize,
+    Runtime = clingo_error_clingo_error_runtime as isize,
+    Logic = clingo_error_clingo_error_logic as isize,
+    BadAlloc = clingo_error_clingo_error_bad_alloc as isize,
+    Unknown = clingo_error_clingo_error_unknown as isize,
 }
 #[derive(Debug, Copy, Clone)]
 pub enum ClingoSolveMode {
@@ -648,7 +648,8 @@ pub fn error() -> ClingoError {
         clingo_error_clingo_error_runtime => ClingoError::Runtime,
         clingo_error_clingo_error_logic => ClingoError::Logic,
         clingo_error_clingo_error_bad_alloc => ClingoError::BadAlloc,
-        _ => ClingoError::Unknown,
+        clingo_error_clingo_error_unknown  => ClingoError::Unknown,
+        _ => panic!("Rust binding failed to match clingo error"),
     }
 }
 
