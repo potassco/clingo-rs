@@ -648,7 +648,7 @@ pub fn error() -> ClingoError {
         clingo_error_clingo_error_runtime => ClingoError::Runtime,
         clingo_error_clingo_error_logic => ClingoError::Logic,
         clingo_error_clingo_error_bad_alloc => ClingoError::BadAlloc,
-        clingo_error_clingo_error_unknown  => ClingoError::Unknown,
+        clingo_error_clingo_error_unknown => ClingoError::Unknown,
         _ => panic!("Rust binding failed to match clingo error"),
     }
 }
