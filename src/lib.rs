@@ -140,7 +140,7 @@ pub trait ClingoSolveEventHandler<T> {
         let event_type = match type_ {
             clingo_solve_event_type_clingo_solve_event_type_model => ClingoSolveEventType::Model,
             clingo_solve_event_type_clingo_solve_event_type_finish => ClingoSolveEventType::Finish,
-            _ => return false,
+            _ => panic!("Rust binding failed to match clingo solve event type"),
         };
         let data = (data_ as *mut T).as_mut().unwrap();
         let goon = goon_.as_mut().unwrap();
@@ -167,14 +167,16 @@ pub trait ClingoAstStatementHandler<T> {
 }
 
 type ClingoLogingCallback = unsafe extern "C" fn(code: clingo_warning_t,
-                             message: *const ::std::os::raw::c_char,
-                             data: *mut ::std::os::raw::c_void);
+                                                 message: *const ::std::os::raw::c_char,
+                                                 data: *mut ::std::os::raw::c_void);
 pub trait ClingoLogger<T> {
     fn log(code: ClingoWarning, message: &str, data: &mut T);
     #[doc(hidden)]
-    unsafe extern "C" fn unsafe_loging_callback(code_: clingo_warning_t,
-                             message_: *const ::std::os::raw::c_char,
-                             data_: *mut ::std::os::raw::c_void) {
+    unsafe extern "C" fn unsafe_loging_callback(
+        code_: clingo_warning_t,
+        message_: *const ::std::os::raw::c_char,
+        data_: *mut ::std::os::raw::c_void,
+    ) {
         assert!(!message_.is_null());
         assert!(!data_.is_null());
         let warning = match code_ as u32 {
@@ -185,14 +187,14 @@ pub trait ClingoLogger<T> {
             clingo_warning_clingo_warning_other => ClingoWarning::Other,
             clingo_warning_clingo_warning_runtime_error => ClingoWarning::RuntimeError,
             clingo_warning_clingo_warning_variable_unbounded => ClingoWarning::VariableUnbound,
-            _ => return,
+            _ => panic!("Rust binding failed to match clingo warning"),
         };
         let c_str = CStr::from_ptr(message_);
         let message = c_str.to_str().unwrap();
         let data = (data_ as *mut T).as_mut().unwrap();
         Self::log(warning, message, data)
     }
-}              
+}
 
 type ClingoGroundCallback = unsafe extern "C" fn(location: *const clingo_location_t,
                                                  name: *const ::std::os::raw::c_char,
