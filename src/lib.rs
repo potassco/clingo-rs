@@ -98,6 +98,24 @@ pub enum ClingoStatisticsType {
     Array = clingo_statistics_type_clingo_statistics_type_array as isize,
     Map = clingo_statistics_type_clingo_statistics_type_map as isize,
 }
+
+pub enum ClingoSymbolType {
+    Infimum = clingo_symbol_type_clingo_symbol_type_infimum as isize,
+    Number = clingo_symbol_type_clingo_symbol_type_number as isize,
+    String = clingo_symbol_type_clingo_symbol_type_string as isize,
+    Function = clingo_symbol_type_clingo_symbol_type_function as isize,
+    Supremum = clingo_symbol_type_clingo_symbol_type_supremum as isize,
+}
+
+pub enum ClingoWarning {
+    OperationUndefined = clingo_warning_clingo_warning_operation_undefined as isize,
+    RuntimeError = clingo_warning_clingo_warning_runtime_error as isize,
+    AtomUndefined = clingo_warning_clingo_warning_atom_undefined as isize,
+    FileIncluded = clingo_warning_clingo_warning_file_included as isize,
+    VariableUnbound = clingo_warning_clingo_warning_variable_unbounded as isize,
+    GlobalVariable = clingo_warning_clingo_warning_global_variable as isize,
+    Other = clingo_warning_clingo_warning_other as isize,
+}
 pub use clingo_sys::{clingo_ast_statement_t, clingo_ast_term_type_t, clingo_logger_t};
 pub use clingo_sys::clingo_show_type_bitset_t;
 pub use clingo_sys::clingo_solve_mode_bitset_t;
@@ -116,13 +134,12 @@ pub trait ClingoSolveEventHandler<T> {
         data_: *mut ::std::os::raw::c_void,
         goon_: *mut bool,
     ) -> bool {
-
         //                 assert!(!event.is_null());
         assert!(!data_.is_null());
         assert!(!goon_.is_null());
         let event_type = match type_ {
-            0 => ClingoSolveEventType::Model,
-            1 => ClingoSolveEventType::Finish,
+            clingo_solve_event_type_clingo_solve_event_type_model => ClingoSolveEventType::Model,
+            clingo_solve_event_type_clingo_solve_event_type_finish => ClingoSolveEventType::Finish,
             _ => return false,
         };
         let data = (data_ as *mut T).as_mut().unwrap();
@@ -141,11 +158,41 @@ pub trait ClingoAstStatementHandler<T> {
         stm_: *const clingo_ast_statement_t,
         data_: *mut ::std::os::raw::c_void,
     ) -> bool {
+        assert!(!stm_.is_null());
+        assert!(!data_.is_null());
         let stm = (stm_ as *const ClingoAstStatement).as_ref().unwrap();
         let data = (data_ as *mut T).as_mut().unwrap();
         Self::on_statement(stm, data)
     }
 }
+
+type ClingoLogingCallback = unsafe extern "C" fn(code: clingo_warning_t,
+                             message: *const ::std::os::raw::c_char,
+                             data: *mut ::std::os::raw::c_void);
+pub trait ClingoLogger<T> {
+    fn log(code: ClingoWarning, message: &str, data: &mut T);
+    #[doc(hidden)]
+    unsafe extern "C" fn unsafe_loging_callback(code_: clingo_warning_t,
+                             message_: *const ::std::os::raw::c_char,
+                             data_: *mut ::std::os::raw::c_void) {
+        assert!(!message_.is_null());
+        assert!(!data_.is_null());
+        let warning = match code_ as u32 {
+            clingo_warning_clingo_warning_atom_undefined => ClingoWarning::AtomUndefined,
+            clingo_warning_clingo_warning_file_included => ClingoWarning::FileIncluded,
+            clingo_warning_clingo_warning_global_variable => ClingoWarning::GlobalVariable,
+            clingo_warning_clingo_warning_operation_undefined => ClingoWarning::OperationUndefined,
+            clingo_warning_clingo_warning_other => ClingoWarning::Other,
+            clingo_warning_clingo_warning_runtime_error => ClingoWarning::RuntimeError,
+            clingo_warning_clingo_warning_variable_unbounded => ClingoWarning::VariableUnbound,
+            _ => return,
+        };
+        let c_str = CStr::from_ptr(message_);
+        let message = c_str.to_str().unwrap();
+        let data = (data_ as *mut T).as_mut().unwrap();
+        Self::log(warning, message, data)
+    }
+}              
 
 type ClingoGroundCallback = unsafe extern "C" fn(location: *const clingo_location_t,
                                                  name: *const ::std::os::raw::c_char,
@@ -252,13 +299,20 @@ impl Eq for ClingoSymbol {}
 pub fn create_number(number: c_int) -> ClingoSymbol {
     let mut symbol = 0 as clingo_symbol_t;
     unsafe { clingo_symbol_create_number(number, &mut symbol) };
-
     ClingoSymbol(symbol)
 }
 
-//     pub fn clingo_symbol_create_supremum(symbol: *mut clingo_symbol_t);
-//     pub fn clingo_symbol_create_infimum(symbol: *mut clingo_symbol_t);
-//     pub fn clingo_symbol_create_string(string: *const c_char, symbol: *mut clingo_symbol_t) -> u8;
+pub fn create_supremum() -> ClingoSymbol {
+    let mut symbol = 0 as clingo_symbol_t;
+    unsafe { clingo_symbol_create_supremum(&mut symbol) };
+    ClingoSymbol(symbol)
+}
+pub fn create_infimum() -> ClingoSymbol {
+    let mut symbol = 0 as clingo_symbol_t;
+    unsafe { clingo_symbol_create_infimum(&mut symbol) };
+    ClingoSymbol(symbol)
+}
+//TODO     pub fn clingo_symbol_create_string(string: *const c_char, symbol: *mut clingo_symbol_t) -> u8;
 impl CStringStore {
     pub fn new() -> CStringStore {
         CStringStore { store: vec![] }
@@ -280,7 +334,7 @@ impl CStringStore {
     pub fn parse_program_with_event_handler<D, T: ClingoAstStatementHandler<D>>(
         &mut self,
         program_: &str,
-        handler: T,
+        handler: &T,
         data_: &mut D,
     ) -> Result<(), &'static str> {
         let logger = None;
@@ -300,23 +354,24 @@ impl CStringStore {
         self.store.push(program);
         if suc { Ok(()) } else { Err(error_message()) }
     }
-    pub fn parse_program_with_logger(
+    pub fn parse_program_with_logger<D, T: ClingoLogger<D>>(
         &mut self,
         program_: &str,
-        logger: clingo_logger_t,
-        logger_data: *mut ::std::os::raw::c_void,
-        message_limit: ::std::os::raw::c_uint,
+        logger: &T,
+        logger_data: &mut D,
+        message_limit: u32,
     ) -> Result<(), &'static str> {
         let callback = None;
         let callback_data = std::ptr::null_mut();
+        let data = logger_data as *mut D;
         let program = CString::new(program_).unwrap();
         let suc = unsafe {
             clingo_parse_program(
                 program.as_ptr(),
                 callback,
                 callback_data,
-                logger,
-                logger_data,
+                Some(T::unsafe_loging_callback as ClingoLogingCallback),
+                data as *mut ::std::os::raw::c_void,
                 message_limit,
             )
         };
@@ -434,11 +489,41 @@ impl ClingoSymbol {
             Err(error_message())
         }
     }
+    pub fn name(&self) -> Result<&str, &'static str> {
+        let mut char_ptr = std::ptr::null() as *const c_char;
+        if unsafe { clingo_symbol_name(self.0, &mut char_ptr) } {
+            let c_str = unsafe { CStr::from_ptr(char_ptr) };
+            Ok(c_str.to_str().unwrap())
+        } else {
+            Err(error_message())
+        }
+    }
+    /// Get the string of a symbol.
+    ///
+    /// **Parameters:**
+    ///
+    /// * `symbol` - the target symbol
+    /// * `string` - the resulting string
+    ///
+    /// **Returns** whether the call was successful; might set one of the following error codes:
+    /// - ::clingo_error_runtime if symbol is not of type ::clingo_symbol_type_string
+    pub fn string(&self) -> Result<&str, &'static str> {
 
-    //     pub fn clingo_symbol_name(symbol: clingo_symbol_t, name: *mut *const c_char) -> u8;
-    //     pub fn clingo_symbol_string(symbol: clingo_symbol_t, string: *mut *const c_char) -> u8;
+        let mut char_ptr = std::ptr::null() as *const c_char;
+        if unsafe { clingo_symbol_string(self.0, &mut char_ptr) } {
+            let c_str = unsafe { CStr::from_ptr(char_ptr) };
+            Ok(c_str.to_str().unwrap())
+        } else {
+            Err(error_message())
+        }
+    }
+
+    //TODO     pub fn is_positive(&self)-> Result<bool, &'static str> {
     //     pub fn clingo_symbol_is_positive(symbol: clingo_symbol_t, positive: *mut u8) -> u8;
+    //     }
+    //TODO     pub fn is_negative(&self)-> Result<bool, &'static str> {
     //     pub fn clingo_symbol_is_negative(symbol: clingo_symbol_t, negative: *mut u8) -> u8;
+    //     }
 
     /// Get the arguments of a symbol.
     ///
@@ -467,8 +552,18 @@ impl ClingoSymbol {
         }
     }
 
-    //     pub fn clingo_symbol_type(symbol: clingo_symbol_t) -> clingo_symbol_type_t;
-    //     pub fn clingo_symbol_to_string_size(symbol: clingo_symbol_t, size: *mut size_t) -> u8;
+    //TODO maybe unnecesary function in Rust API?
+    pub fn get_type(&self) -> Result<ClingoSymbolType, &'static str> {
+        let stype = unsafe { clingo_symbol_type(self.0) } as u32;
+        match stype {
+            clingo_symbol_type_clingo_symbol_type_infimum => Ok(ClingoSymbolType::Infimum),
+            clingo_symbol_type_clingo_symbol_type_number => Ok(ClingoSymbolType::Number),
+            clingo_symbol_type_clingo_symbol_type_string => Ok(ClingoSymbolType::String),
+            clingo_symbol_type_clingo_symbol_type_function => Ok(ClingoSymbolType::Function),
+            clingo_symbol_type_clingo_symbol_type_supremum => Ok(ClingoSymbolType::Supremum),
+            _ => Err("Unknown symbol type"),
+        }
+    }
 
     /// Get the string representation of a symbol.
     ///
@@ -546,11 +641,11 @@ impl<'a> ClingoPart<'a> {
 }
 pub fn error() -> ClingoError {
     let code = unsafe { clingo_error_code() };
-    match code {
-        0 => ClingoError::Success,
-        1 => ClingoError::Runtime,
-        2 => ClingoError::Logic,
-        3 => ClingoError::BadAlloc,
+    match code as u32 {
+        clingo_error_clingo_error_success => ClingoError::Success,
+        clingo_error_clingo_error_runtime => ClingoError::Runtime,
+        clingo_error_clingo_error_logic => ClingoError::Logic,
+        clingo_error_clingo_error_bad_alloc => ClingoError::BadAlloc,
         _ => ClingoError::Unknown,
     }
 }
@@ -613,6 +708,8 @@ pub trait ClingoPropagatorBuilder<T> {
         init_: *mut clingo_propagate_init_t,
         data: *mut ::std::os::raw::c_void,
     ) -> bool {
+        assert!(!init_.is_null());
+        assert!(!data.is_null());
         let init = (init_ as *mut ClingoPropagateInit).as_mut().unwrap();
         let propagator = (data as *mut T).as_mut().unwrap();
         Self::init(init, propagator)
@@ -624,6 +721,9 @@ pub trait ClingoPropagatorBuilder<T> {
         size: usize,
         data: *mut ::std::os::raw::c_void,
     ) -> bool {
+        assert!(!control_.is_null());
+        assert!(!changes_.is_null());
+        assert!(!data.is_null());
         let control = (control_ as *mut ClingoPropagateControl).as_mut().unwrap();
         let changes = std::slice::from_raw_parts(changes_ as *const ClingoLiteral, size);
         let propagator = (data as *mut T).as_mut().unwrap();
@@ -636,6 +736,9 @@ pub trait ClingoPropagatorBuilder<T> {
         size: usize,
         data: *mut ::std::os::raw::c_void,
     ) -> bool {
+        assert!(!control_.is_null());
+        assert!(!changes_.is_null());
+        assert!(!data.is_null());
         let control = (control_ as *mut ClingoPropagateControl).as_mut().unwrap();
         let changes = std::slice::from_raw_parts(changes_ as *const ClingoLiteral, size);
         let propagator = (data as *mut T).as_mut().unwrap();
@@ -646,6 +749,8 @@ pub trait ClingoPropagatorBuilder<T> {
         control_: *mut clingo_propagate_control_t,
         data: *mut ::std::os::raw::c_void,
     ) -> bool {
+        assert!(!control_.is_null());
+        assert!(!data.is_null());
         let control = (control_ as *mut ClingoPropagateControl).as_mut().unwrap();
         let propagator = (data as *mut T).as_mut().unwrap();
         Self::check(control, propagator)
@@ -740,7 +845,7 @@ impl ClingoControl {
         }
     }
 
-    //     pub fn clingo_control_load(control: *mut ClingoControl, file: *const c_char) -> u8;
+    //TODO     pub fn clingo_control_load(control: *mut ClingoControl, file: *const c_char) -> u8;
 
     /// Extend the logic program with the given non-ground logic program in string form.
     ///
@@ -844,7 +949,7 @@ impl ClingoControl {
     pub fn ground_with_event_handler<D, T: ClingoGroundEventHandler<D>>(
         &mut self,
         sparts: Vec<ClingoPart>,
-        handler: T,
+        handler: &T,
         data_: &mut D,
     ) -> Result<(), &'static str> {
 
@@ -871,11 +976,11 @@ impl ClingoControl {
         &mut self,
         mode: ClingoSolveMode,
         assumptions: Vec<clingo_symbolic_literal_t>,
-    ) -> Option<&mut ClingoSolveHandle> {
+    ) -> Result<&mut ClingoSolveHandle, &'static str> {
 
         let mut handle = std::ptr::null_mut() as *mut clingo_solve_handle_t;
 
-        let err = unsafe {
+        if unsafe {
             clingo_control_solve(
                 self.ctl.as_ptr(),
                 mode as clingo_solve_mode_bitset_t,
@@ -885,25 +990,27 @@ impl ClingoControl {
                 std::ptr::null_mut() as *mut ::std::os::raw::c_void,
                 &mut handle,
             )
-        };
-        if !err {
-            None
+        }
+        {
+            unsafe { (handle as *mut ClingoSolveHandle).as_mut() }.ok_or(
+                "Rust binding failed to dereference pointer to clingo solve handle",
+            )
         } else {
-            unsafe { (handle as *mut ClingoSolveHandle).as_mut() }
+            Err(error_message())
         }
     }
     pub fn solve_with_event_handler<D, T: ClingoSolveEventHandler<D>>(
         &mut self,
         mode: clingo_solve_mode_bitset_t,
         assumptions: Vec<clingo_symbolic_literal_t>,
-        handler: T,
+        handler: &T,
         data_: &mut D,
-    ) -> Option<&mut ClingoSolveHandle> {
+    ) -> Result<&mut ClingoSolveHandle, &'static str> {
 
         let mut handle = std::ptr::null_mut() as *mut clingo_solve_handle_t;
 
         let data = data_ as *mut D;
-        let err = unsafe {
+        if unsafe {
             clingo_control_solve(
                 self.ctl.as_ptr(),
                 mode,
@@ -913,15 +1020,17 @@ impl ClingoControl {
                 data as *mut ::std::os::raw::c_void,
                 &mut handle,
             )
-        };
-        if !err {
-            None
+        }
+        {
+            unsafe { (handle as *mut ClingoSolveHandle).as_mut() }.ok_or(
+                "Rust binding failed to dereference pointer to clingo solve handle",
+            )
         } else {
-            unsafe { (handle as *mut ClingoSolveHandle).as_mut() }
+            Err(error_message())
         }
     }
 
-    //     pub fn clingo_control_cleanup(control: *mut ClingoControl) -> u8;
+    //TODO     pub fn clingo_control_cleanup(control: *mut ClingoControl) -> u8;
 
     /// Assign a truth value to an external atom.
     ///
@@ -1002,41 +1111,43 @@ impl ClingoControl {
         if suc { Ok(()) } else { Err(error_message()) }
     }
 
-    pub fn statistics(&mut self) -> Option<&mut ClingoStatistics> {
+    pub fn statistics(&mut self) -> Result<&mut ClingoStatistics, &'static str> {
 
         let mut stat = std::ptr::null_mut() as *mut clingo_statistics_t;
 
-        let err = unsafe { clingo_control_statistics(self.ctl.as_ptr(), &mut stat) };
-        if !err {
-            None
+        if unsafe { clingo_control_statistics(self.ctl.as_ptr(), &mut stat) } {
+            unsafe { (stat as *mut ClingoStatistics).as_mut() }.ok_or(
+                "Rust bindings failed to dereference pointer to clingo statistics",
+            )
         } else {
-            unsafe { (stat as *mut ClingoStatistics).as_mut() }
+            Err(error_message())
         }
     }
 
     //     pub fn clingo_control_interrupt(control: *mut ClingoControl);
 
-    pub fn configuration(&mut self) -> Option<&mut ClingoConfiguration> {
+    pub fn configuration(&mut self) -> Result<&mut ClingoConfiguration, &'static str> {
 
         let mut conf = std::ptr::null_mut() as *mut clingo_configuration_t;
-        let err = unsafe { clingo_control_configuration(self.ctl.as_ptr(), &mut conf) };
-        if !err {
-            None
+        if unsafe { clingo_control_configuration(self.ctl.as_ptr(), &mut conf) } {
+            unsafe { (conf as *mut ClingoConfiguration).as_mut() }.ok_or(
+                "Rust binding failed to dereference pointer to clingo configuration",
+            )
         } else {
-            unsafe { (conf as *mut ClingoConfiguration).as_mut() }
+            Err(error_message())
         }
     }
 
-    //     pub fn clingo_control_use_enumeration_assumption(control: *mut ClingoControl,
+    //TODO     pub fn clingo_control_use_enumeration_assumption(control: *mut ClingoControl,
     //                                                      enable: u8)
     //                                                     -> u8;
 
-    //     pub fn clingo_control_get_const(control: *mut ClingoControl,
+    //TODO     pub fn clingo_control_get_const(control: *mut ClingoControl,
     //                                     name: *const c_char,
     //                                     symbol: *mut clingo_symbol_t)
     //                                    -> u8;
 
-    //     pub fn clingo_control_has_const(control: *mut ClingoControl,
+    //TODO     pub fn clingo_control_has_const(control: *mut ClingoControl,
     //                                     name: *const c_char,
     //                                     exists: *mut u8)
     //                                    -> u8;
@@ -1056,8 +1167,9 @@ impl ClingoControl {
 
         let mut atoms = std::ptr::null_mut() as *mut clingo_symbolic_atoms_t;
         if unsafe { clingo_control_symbolic_atoms(self.ctl.as_ptr(), &mut atoms) } {
-            unsafe { (atoms as *mut ClingoSymbolicAtoms).as_mut() }
-                .ok_or("Failed to obtain symbolic atoms.")
+            unsafe { (atoms as *mut ClingoSymbolicAtoms).as_mut() }.ok_or(
+                "Rust binding failed to dereference pointer to clingo symbolic atoms",
+            )
         } else {
             Err(error_message())
         }
@@ -1077,8 +1189,9 @@ impl ClingoControl {
 
         let mut atoms = std::ptr::null_mut() as *mut clingo_theory_atoms_t;
         if unsafe { clingo_control_theory_atoms(self.ctl.as_ptr(), &mut atoms) } {
-            unsafe { (atoms as *mut ClingoTheoryAtoms).as_mut() }
-                .ok_or("Failed to obtain theory atoms.")
+            unsafe { (atoms as *mut ClingoTheoryAtoms).as_mut() }.ok_or(
+                "Rust binding failed to dereference pointer to clingo theory atoms",
+            )
         } else {
             Err(error_message())
         }
@@ -1099,7 +1212,9 @@ impl ClingoControl {
 
         let mut backend = std::ptr::null_mut();
         if unsafe { clingo_control_backend(self.ctl.as_ptr(), &mut backend) } {
-            unsafe { (backend as *mut ClingoBackend).as_mut() }.ok_or("Failed to obtain backend.")
+            unsafe { (backend as *mut ClingoBackend).as_mut() }.ok_or(
+                "Rust binding failed to dereference pointer to clingo backend",
+            )
         } else {
             Err(error_message())
         }
@@ -1119,8 +1234,9 @@ impl ClingoControl {
 
         let mut builder = std::ptr::null_mut() as *mut clingo_program_builder_t;
         if unsafe { clingo_control_program_builder(self.ctl.as_ptr(), &mut builder) } {
-            unsafe { (builder as *mut ClingoProgramBuilder).as_mut() }
-                .ok_or("Failed to obtain program builder.")
+            unsafe { (builder as *mut ClingoProgramBuilder).as_mut() }.ok_or(
+                "Rust binding failed to dereference pointer to clingo program builder",
+            )
         } else {
             Err(error_message())
         }
@@ -1310,23 +1426,49 @@ impl ClingoAstStatement {
         ClingoLocation(self.0.location)
     }
 
-    pub fn get_type(&self) -> ClingoAstStatementType {
+    pub fn get_type(&self) -> Result<ClingoAstStatementType, &'static str> {
         let ClingoAstStatement(ref stm) = *self;
-        let t = stm.type_;
-        match t {
-            0 => ClingoAstStatementType::Rule,
-            1 => ClingoAstStatementType::Const,
-            2 => ClingoAstStatementType::ShowSignature,
-            3 => ClingoAstStatementType::ShowTerm,
-            4 => ClingoAstStatementType::Minimize,
-            5 => ClingoAstStatementType::Script,
-            6 => ClingoAstStatementType::Program,
-            7 => ClingoAstStatementType::External,
-            8 => ClingoAstStatementType::Edge,
-            9 => ClingoAstStatementType::Heuristic,
-            10 => ClingoAstStatementType::ProjectAtom,
-            11 => ClingoAstStatementType::ProjectAtomSignature,
-            _ => ClingoAstStatementType::TheoryDefinition,
+        match stm.type_ as u32 {
+            clingo_ast_statement_type_clingo_ast_statement_type_rule => Ok(
+                ClingoAstStatementType::Rule,
+            ),
+            clingo_ast_statement_type_clingo_ast_statement_type_const => Ok(
+                ClingoAstStatementType::Const,
+            ),
+            clingo_ast_statement_type_clingo_ast_statement_type_show_signature => Ok(
+                ClingoAstStatementType::ShowSignature,
+            ),
+            clingo_ast_statement_type_clingo_ast_statement_type_show_term => Ok(
+                ClingoAstStatementType::ShowTerm,
+            ),
+            clingo_ast_statement_type_clingo_ast_statement_type_minimize => Ok(
+                ClingoAstStatementType::Minimize,
+            ),
+            clingo_ast_statement_type_clingo_ast_statement_type_script => Ok(
+                ClingoAstStatementType::Script,
+            ),
+            clingo_ast_statement_type_clingo_ast_statement_type_program => Ok(
+                ClingoAstStatementType::Program,
+            ),
+            clingo_ast_statement_type_clingo_ast_statement_type_external => Ok(
+                ClingoAstStatementType::External,
+            ),
+            clingo_ast_statement_type_clingo_ast_statement_type_edge => Ok(
+                ClingoAstStatementType::Edge,
+            ),
+            clingo_ast_statement_type_clingo_ast_statement_type_heuristic => Ok(
+                ClingoAstStatementType::Heuristic,
+            ),
+            clingo_ast_statement_type_clingo_ast_statement_type_project_atom => Ok(
+                ClingoAstStatementType::ProjectAtom,
+            ),
+            clingo_ast_statement_type_clingo_ast_statement_type_project_atom_signature => Ok(
+                ClingoAstStatementType::ProjectAtomSignature,
+            ),
+            clingo_ast_statement_type_clingo_ast_statement_type_theory_definition => Ok(
+                ClingoAstStatementType::TheoryDefinition,
+            ),
+            _ => Err("Unknown clingo ast statement type"),
         }
     }
 
@@ -1415,17 +1557,17 @@ impl ClingoConfiguration {
         }
     }
 
-    //     pub fn clingo_configuration_type(configuration: *mut ClingoConfiguration,
+    //TODO     pub fn clingo_configuration_type(configuration: *mut ClingoConfiguration,
     //                                      key: clingo_id_t,
     //                                      type_: *mut clingo_configuration_type_bitset_t)
     //                                      -> u8;
 
-    //     pub fn clingo_configuration_description(configuration: *mut ClingoConfiguration,
+    //TODO     pub fn clingo_configuration_description(configuration: *mut ClingoConfiguration,
     //                                             key: clingo_id_t,
     //                                             description: *mut *const c_char)
     //                                             -> u8;
 
-    //     pub fn clingo_configuration_array_size(configuration: *mut ClingoConfiguration,
+    //TODO     pub fn clingo_configuration_array_size(configuration: *mut ClingoConfiguration,
     //                                            key: clingo_id_t,
     //                                            size: *mut size_t)
     //                                            -> u8;
@@ -1460,12 +1602,12 @@ impl ClingoConfiguration {
         }
     }
 
-    //     pub fn clingo_configuration_map_size(configuration: *mut ClingoConfiguration,
+    //TODO     pub fn clingo_configuration_map_size(configuration: *mut ClingoConfiguration,
     //                                          key: clingo_id_t,
     //                                          size: *mut size_t)
     //                                          -> u8;
 
-    //     pub fn clingo_configuration_map_subkey_name(configuration: *mut ClingoConfiguration,
+    //TODO     pub fn clingo_configuration_map_subkey_name(configuration: *mut ClingoConfiguration,
     //                                                 key: clingo_id_t,
     //                                                 offset: size_t,
     //                                                 name: *mut *const c_char)
@@ -1505,17 +1647,17 @@ impl ClingoConfiguration {
         }
     }
 
-    //     pub fn clingo_configuration_value_is_assigned(configuration: *mut ClingoConfiguration,
+    //TODO     pub fn clingo_configuration_value_is_assigned(configuration: *mut ClingoConfiguration,
     //                                                   key: clingo_id_t,
     //                                                   assigned: *mut u8)
     //                                                   -> u8;
 
-    //     pub fn clingo_configuration_value_get_size(configuration: *mut ClingoConfiguration,
+    //TODO     pub fn clingo_configuration_value_get_size(configuration: *mut ClingoConfiguration,
     //                                                key: clingo_id_t,
     //                                                size: *mut size_t)
     //                                                -> u8;
 
-    //     pub fn clingo_configuration_value_get(configuration: *mut ClingoConfiguration,
+    //TODO     pub fn clingo_configuration_value_get(configuration: *mut ClingoConfiguration,
     //                                           key: clingo_id_t,
     //                                           value: *mut c_char,
     //                                           size: size_t)
@@ -1584,7 +1726,7 @@ impl ClingoBackend {
 
     }
 
-    //     pub fn clingo_backend_weight_rule(backend: *mut ClingoBackend,
+    //TODO     pub fn clingo_backend_weight_rule(backend: *mut ClingoBackend,
     //                                       choice: u8,
     //                                       head: *const clingo_atom_t,
     //                                       head_size: size_t,
@@ -1593,18 +1735,18 @@ impl ClingoBackend {
     //                                       body_size: size_t)
     //                                       -> u8;
 
-    //     pub fn clingo_backend_minimize(backend: *mut ClingoBackend,
+    //TODO     pub fn clingo_backend_minimize(backend: *mut ClingoBackend,
     //                                    priority: clingo_weight_t,
     //                                    literals: *const clingo_weighted_literal_t,
     //                                    size: size_t)
     //                                    -> u8;
 
-    //     pub fn clingo_backend_project(backend: *mut ClingoBackend,
+    //TODO     pub fn clingo_backend_project(backend: *mut ClingoBackend,
     //                                   atoms: *const clingo_atom_t,
     //                                   size: size_t)
     //                                   -> u8;
 
-    //     pub fn clingo_backend_external(backend: *mut ClingoBackend,
+    //TODO     pub fn clingo_backend_external(backend: *mut ClingoBackend,
     //                                    atom: clingo_atom_t,
     //                                    type_: clingo_external_type_t)
     //                                    -> u8;
@@ -1635,7 +1777,7 @@ impl ClingoBackend {
         }
     }
 
-    //     pub fn clingo_backend_heuristic(backend: *mut ClingoBackend,
+    //TODO     pub fn clingo_backend_heuristic(backend: *mut ClingoBackend,
     //                                     atom: clingo_atom_t,
     //                                     type_: clingo_heuristic_type_t,
     //                                     bias: c_int,
@@ -1644,7 +1786,7 @@ impl ClingoBackend {
     //                                     size: size_t)
     //                                     -> u8;
 
-    //     pub fn clingo_backend_acyc_edge(backend: *mut ClingoBackend,
+    //TODO     pub fn clingo_backend_acyc_edge(backend: *mut ClingoBackend,
     //                                     node_u: c_int,
     //                                     node_v: c_int,
     //                                     condition: *const clingo_literal_t,
@@ -1703,11 +1845,18 @@ impl ClingoStatistics {
 
         let mut stype = 0 as clingo_statistics_type_t;
         if unsafe { clingo_statistics_type(&mut self.0, key, &mut stype) } {
-            match stype {
-                0 => Ok(ClingoStatisticsType::Empty),
-                1 => Ok(ClingoStatisticsType::Value),
-                2 => Ok(ClingoStatisticsType::Array),
-                _ => Ok(ClingoStatisticsType::Map),
+            match stype as u32 {
+                clingo_statistics_type_clingo_statistics_type_empty => Ok(
+                    ClingoStatisticsType::Empty,
+                ),
+                clingo_statistics_type_clingo_statistics_type_value => Ok(
+                    ClingoStatisticsType::Value,
+                ),
+                clingo_statistics_type_clingo_statistics_type_array => Ok(
+                    ClingoStatisticsType::Array,
+                ),
+                clingo_statistics_type_clingo_statistics_type_map => Ok(ClingoStatisticsType::Map),
+                _ => Err("Unknown statistics type"),
             }
         } else {
             Err(error_message())
@@ -2098,11 +2247,11 @@ impl ClingoSymbolicAtoms {
         }
     }
 
-    //     pub fn clingo_symbolic_atoms_signatures_size(atoms: *mut ClingoSymbolicAtoms,
+    //TODO     pub fn clingo_symbolic_atoms_signatures_size(atoms: *mut ClingoSymbolicAtoms,
     //                                                  size: *mut size_t)
     //                                                  -> u8;
 
-    //     pub fn clingo_symbolic_atoms_signatures(atoms: *mut ClingoSymbolicAtoms,
+    //TODO     pub fn clingo_symbolic_atoms_signatures(atoms: *mut ClingoSymbolicAtoms,
     //                                             signatures: *mut clingo_signature_t,
     //                                             size: size_t)
     //                                             -> u8;
@@ -2129,7 +2278,7 @@ impl ClingoSymbolicAtoms {
         }
     }
 
-    //     pub fn clingo_symbolic_atoms_is_valid(atoms: *mut ClingoSymbolicAtoms,
+    //TODO     pub fn clingo_symbolic_atoms_is_valid(atoms: *mut ClingoSymbolicAtoms,
     //                                           iterator: clingo_symbolic_atom_iterator_t,
     //                                           valid: *mut u8)
     //                                           -> u8;
@@ -2137,12 +2286,12 @@ impl ClingoSymbolicAtoms {
 
 pub struct ClingoTheoryAtoms(clingo_theory_atoms_t);
 impl ClingoTheoryAtoms {
-    //     pub fn clingo_theory_atoms_term_type(atoms: *mut ClingoTheoryAtoms,
+    //TODO     pub fn clingo_theory_atoms_term_type(atoms: *mut ClingoTheoryAtoms,
     //                                          term: clingo_id_t,
     //                                          type_: *mut clingo_theory_term_type_t)
     //                                          -> u8;
 
-    //     pub fn clingo_theory_atoms_term_number(atoms: *mut ClingoTheoryAtoms,
+    //TODO     pub fn clingo_theory_atoms_term_number(atoms: *mut ClingoTheoryAtoms,
     //                                            term: clingo_id_t,
     //                                            number: *mut c_int)
     //                                            -> u8;
@@ -2171,46 +2320,46 @@ impl ClingoTheoryAtoms {
         }
     }
 
-    //     pub fn clingo_theory_atoms_term_arguments(atoms: *mut ClingoTheoryAtoms,
+    //TODO     pub fn clingo_theory_atoms_term_arguments(atoms: *mut ClingoTheoryAtoms,
     //                                               term: clingo_id_t,
     //                                               arguments: *mut *const clingo_id_t,
     //                                               size: *mut size_t)
     //                                               -> u8;
 
-    //     pub fn clingo_theory_atoms_term_to_string_size(atoms: *mut ClingoTheoryAtoms,
+    //TODO     pub fn clingo_theory_atoms_term_to_string_size(atoms: *mut ClingoTheoryAtoms,
     //                                                    term: clingo_id_t,
     //                                                    size: *mut size_t)
     //                                                    -> u8;
 
-    //     pub fn clingo_theory_atoms_term_to_string(atoms: *mut ClingoTheoryAtoms,
+    //TODO     pub fn clingo_theory_atoms_term_to_string(atoms: *mut ClingoTheoryAtoms,
     //                                               term: clingo_id_t,
     //                                               string: *mut c_char,
     //                                               size: size_t)
     //                                               -> u8;
 
-    //     pub fn clingo_theory_atoms_element_tuple(atoms: *mut ClingoTheoryAtoms,
+    //TODO     pub fn clingo_theory_atoms_element_tuple(atoms: *mut ClingoTheoryAtoms,
     //                                              element: clingo_id_t,
     //                                              tuple: *mut *const clingo_id_t,
     //                                              size: *mut size_t)
     //                                              -> u8;
 
-    //     pub fn clingo_theory_atoms_element_condition(atoms: *mut ClingoTheoryAtoms,
+    //TODO     pub fn clingo_theory_atoms_element_condition(atoms: *mut ClingoTheoryAtoms,
     //                                                  element: clingo_id_t,
     //                                                  condition: *mut *const clingo_literal_t,
     //                                                  size: *mut size_t)
     //                                                  -> u8;
 
-    //     pub fn clingo_theory_atoms_element_condition_id(atoms: *mut ClingoTheoryAtoms,
+    //TODO     pub fn clingo_theory_atoms_element_condition_id(atoms: *mut ClingoTheoryAtoms,
     //                                                     element: clingo_id_t,
     //                                                     condition: *mut clingo_literal_t)
     //                                                     -> u8;
 
-    //     pub fn clingo_theory_atoms_element_to_string_size(atoms: *mut ClingoTheoryAtoms,
+    //TODO     pub fn clingo_theory_atoms_element_to_string_size(atoms: *mut ClingoTheoryAtoms,
     //                                                       element: clingo_id_t,
     //                                                       size: *mut size_t)
     //                                                       -> u8;
 
-    //     pub fn clingo_theory_atoms_element_to_string(atoms: *mut ClingoTheoryAtoms,
+    //TODO     pub fn clingo_theory_atoms_element_to_string(atoms: *mut ClingoTheoryAtoms,
     //                                                  element: clingo_id_t,
     //                                                  string: *mut c_char,
     //                                                  size: size_t)
@@ -2253,7 +2402,7 @@ impl ClingoTheoryAtoms {
         }
     }
 
-    //     pub fn clingo_theory_atoms_atom_elements(atoms: *mut ClingoTheoryAtoms,
+    //TODO     pub fn clingo_theory_atoms_atom_elements(atoms: *mut ClingoTheoryAtoms,
     //                                              atom: clingo_id_t,
     //                                              elements: *mut *const clingo_id_t,
     //                                              size: *mut size_t)
@@ -2278,7 +2427,7 @@ impl ClingoTheoryAtoms {
         }
     }
 
-    //     pub fn clingo_theory_atoms_atom_guard(atoms: *mut ClingoTheoryAtoms,
+    //TODO     pub fn clingo_theory_atoms_atom_guard(atoms: *mut ClingoTheoryAtoms,
     //                                           atom: clingo_id_t,
     //                                           connective: *mut *const c_char,
     //                                           term: *mut clingo_id_t)
@@ -2306,12 +2455,12 @@ impl ClingoTheoryAtoms {
         }
     }
 
-    //     pub fn clingo_theory_atoms_atom_to_string_size(atoms: *mut ClingoTheoryAtoms,
+    //TODO     pub fn clingo_theory_atoms_atom_to_string_size(atoms: *mut ClingoTheoryAtoms,
     //                                                    atom: clingo_id_t,
     //                                                    size: *mut size_t)
     //                                                    -> u8;
 
-    //     pub fn clingo_theory_atoms_atom_to_string(atoms: *mut ClingoTheoryAtoms,
+    //TODO     pub fn clingo_theory_atoms_atom_to_string(atoms: *mut ClingoTheoryAtoms,
     //                                               atom: clingo_id_t,
     //                                               string: *mut c_char,
     //                                               size: size_t)
@@ -2398,7 +2547,7 @@ impl ClingoModel {
     ///
     /// **Returns** whether the call was successful; might set one of the following error codes:
     /// - ::clingo_error_bad_alloc
-    // pub fn clingo_model_symbols_size(model: *mut ClingoModel,
+    //TODO pub fn clingo_model_symbols_size(model: *mut ClingoModel,
     //  show: clingo_show_type_bitset_t,
     //  size: *mut size_t)
     //  -> u8;
@@ -2452,18 +2601,18 @@ impl ClingoModel {
         }
     }
 
-    //     pub fn clingo_model_contains(model: *mut ClingoModel,
+    //TODO     pub fn clingo_model_contains(model: *mut ClingoModel,
     //                                  atom: clingo_symbol_t,
     //                                  contained: *mut u8)
     //                                  -> u8;
 
-    //     pub fn clingo_model_cost_size(model: *mut ClingoModel, size: *mut size_t) -> u8;
+    //TODO     pub fn clingo_model_cost_size(model: *mut ClingoModel, size: *mut size_t) -> u8;
 
-    //     pub fn clingo_model_cost(model: *mut ClingoModel, costs: *mut int64_t, size: size_t) -> u8;
+    //TODO     pub fn clingo_model_cost(model: *mut ClingoModel, costs: *mut int64_t, size: size_t) -> u8;
 
-    //     pub fn clingo_model_optimality_proven(model: *mut ClingoModel, proven: *mut u8) -> u8;
+    //TODO     pub fn clingo_model_optimality_proven(model: *mut ClingoModel, proven: *mut u8) -> u8;
 
-    //     pub fn clingo_model_context(model: *mut ClingoModel,
+    //TODO     pub fn clingo_model_context(model: *mut ClingoModel,
     //                                 control: *mut *mut ClingoSolveControl)
     //                                 -> u8;
 }
@@ -2518,7 +2667,7 @@ impl ClingoPropagateControl {
         unsafe { clingo_propagate_control_thread_id(&mut self.0) }
     }
 
-    //     pub fn clingo_propagate_control_assignment(control: *mut ClingoPropagateControl)
+    //TODO     pub fn clingo_propagate_control_assignment(control: *mut ClingoPropagateControl)
     //                                           -> *mut clingo_assignment_t;
 
     /// Add the given clause to the solver.
@@ -2641,14 +2790,15 @@ impl ClingoPropagateInit {
 
         let mut atoms_ptr = std::ptr::null_mut();
         if unsafe { clingo_propagate_init_symbolic_atoms(&mut self.0, &mut atoms_ptr) } {
-            unsafe { (atoms_ptr as *mut ClingoSymbolicAtoms).as_mut() }
-                .ok_or("Failed to dereference pointer.")
+            unsafe { (atoms_ptr as *mut ClingoSymbolicAtoms).as_mut() }.ok_or(
+                "Rust binding failed to dereference pointer to clingo symbolic atoms",
+            )
         } else {
             Err(error_message())
         }
     }
 
-    //     pub fn clingo_propagate_init_theory_atoms(init: &mut ClingoPropagateInit,
+    //TODO     pub fn clingo_propagate_init_theory_atoms(init: &mut ClingoPropagateInit,
     //                                               atoms: *mut *mut ClingoTheoryAtoms)
     //                                               -> bool;
 
@@ -2707,7 +2857,9 @@ impl ClingoSolveHandle {
         let ClingoSolveHandle(ref mut handle) = *self;
         let mut model = std::ptr::null_mut() as *mut clingo_model_t;
         if unsafe { clingo_solve_handle_model(handle, &mut model) } {
-            unsafe { (model as *mut ClingoModel).as_mut() }.ok_or("Failed to dereference pointer.")
+            unsafe { (model as *mut ClingoModel).as_mut() }.ok_or(
+                "Rust binding failed to dereference pointer to clingo model",
+            )
         } else {
             Err(error_message())
         }
@@ -2751,6 +2903,6 @@ mod tests {
         let (ma, mi, re) = version();
         assert!(ma == 5);
         assert!(mi == 2);
-        assert!(re == 1);
+        assert!(re == 2);
     }
 }

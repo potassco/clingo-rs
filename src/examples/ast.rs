@@ -19,7 +19,7 @@ impl<'a> ClingoAstStatementHandler<OnStatementData<'a>> for MyAstHandler {
         println!("hi on_statement");
 
         // pass through all statements that are not rules
-        if stm.get_type() != ClingoAstStatementType::Rule {
+        if stm.get_type() != Ok(ClingoAstStatementType::Rule) {
             data.builder.add(stm).expect(
                 "Failed to add statement to ProgramBuilder.",
             );
@@ -157,7 +157,7 @@ fn main() {
 
         // get the AST of the program
         store
-            .parse_program_with_event_handler("a :- not b. b :- not a.", MyAstHandler, &mut data)
+            .parse_program_with_event_handler("a :- not b. b :- not a.", &MyAstHandler, &mut data)
             .expect("Failed to parse logic program.");
 
         // add the external statement: #external enable.

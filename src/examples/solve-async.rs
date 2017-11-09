@@ -50,7 +50,6 @@ fn main() {
         "Failed to ground a logic program.",
     );
 
-    let solve_event_handler = MySEHandler;
     let mut running = AtomicBool::new(true);
 
     // create a solve handle with an attached event handler
@@ -58,7 +57,7 @@ fn main() {
         (ClingoSolveMode::Async as clingo_solve_mode_bitset_t) +
             (ClingoSolveMode::Yield as clingo_solve_mode_bitset_t),
         vec![],
-        solve_event_handler,
+        &MySEHandler,
         &mut running,
     ).expect("Failed to retrieve solve handle.");
 
