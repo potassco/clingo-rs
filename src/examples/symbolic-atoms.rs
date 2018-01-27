@@ -10,10 +10,7 @@ fn main() {
     let options = env::args().skip(1).collect();
 
     // create a control object and pass command line arguments
-    let logger: clingo_logger_t = None;
-    let logger_data = std::ptr::null_mut();
-    let mut ctl = ClingoControl::new(options, logger, logger_data, 20)
-        .expect("Failed creating ClingoControl.");
+    let mut ctl = ClingoControl::new(options, 20).expect("Failed creating ClingoControl.");
 
     // add a logic program to the base part
     let parameters: Vec<&str> = Vec::new();
@@ -51,7 +48,7 @@ fn main() {
         if atoms.is_external(it_a).unwrap() {
             print!(", external");
         }
-        println!("");
+        println!();
 
         it_a = atoms.next(it_a).unwrap();
     }

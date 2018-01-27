@@ -17,7 +17,7 @@ fn print_model(model: &mut ClingoModel) {
         // retrieve and print the symbol's string
         print!(" {}", atom.to_string().unwrap());
     }
-    println!("");
+    println!();
 }
 
 fn solve(ctl: &mut ClingoControl) {
@@ -26,7 +26,7 @@ fn solve(ctl: &mut ClingoControl) {
     let assumptions = vec![];
 
     // get a solve handle
-    let handle = ctl.solve(solve_mode, assumptions).expect(
+    let handle = ctl.solve(solve_mode, &assumptions).expect(
         "Failed retrieving solve handle.",
     );
 
@@ -54,10 +54,7 @@ fn main() {
     let options = env::args().skip(1).collect();
 
     // create a control object and pass command line arguments
-    let logger = None;
-    let logger_data = std::ptr::null_mut();
-    let mut ctl = ClingoControl::new(options, logger, logger_data, 20)
-        .expect("Failed creating clingo_control.");
+    let mut ctl = ClingoControl::new(options, 20).expect("Failed creating clingo_control.");
 
     // add a logic program to the base part
     let parameters: Vec<&str> = Vec::new();
@@ -74,7 +71,6 @@ fn main() {
 
     let atom_strings = ["a", "b", "c"];
 
-    let mut store = CStringStore::new();
     // get the ids of atoms a, b, and c
     let mut atom_ids = Vec::new();
     {
@@ -82,7 +78,7 @@ fn main() {
         let atoms = ctl.symbolic_atoms().unwrap();
 
         for atom in &atom_strings {
-            let symbol = store.create_id(atom, true).unwrap();
+            let symbol = create_id(atom, true).unwrap();
             let atom_it = atoms.find(symbol).unwrap();
 
             // get the atom's id

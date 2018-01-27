@@ -20,7 +20,7 @@ fn print_model(model: &mut ClingoModel) {
         // retrieve and print the symbol's string
         print!(" {}", atom.to_string().unwrap());
     }
-    println!("");
+    println!();
 }
 
 fn solve(ctl: &mut ClingoControl) {
@@ -29,7 +29,7 @@ fn solve(ctl: &mut ClingoControl) {
     let assumptions = vec![];
 
     // get a solve handle
-    let handle = ctl.solve(solve_mode, assumptions).expect(
+    let handle = ctl.solve(solve_mode, &assumptions).expect(
         "Failed to retrieve solve handle.",
     );
 
@@ -222,8 +222,8 @@ impl ClingoPropagatorBuilder<PropagatorT> for MyPropagator {
                     }
 
                     // must not happen because the clause above is conflicting by construction
-                    // assert!(false);
-                    println!("assert!(false) line 194 propagator.rs");
+                    println!("assert!(false) line 226 propagator.rs");
+                    assert!(false);
                 }
             };
         }
@@ -254,6 +254,14 @@ impl ClingoPropagatorBuilder<PropagatorT> for MyPropagator {
     }
 }
 
+struct MyLogger;
+impl ClingoLogger<u32> for MyLogger {
+    fn log(code: ClingoWarning, message: &str, data: &mut u32) {
+        println!("log: {}", message);
+        println!("warn: {:?}", code);
+        println!("data: {:?}", data);
+    }
+}
 
 fn main() {
 
@@ -271,9 +279,10 @@ fn main() {
     };
 
     // create a control object and pass command line arguments
-    let logger = None;
-    let logger_data = std::ptr::null_mut();
-    let option = ClingoControl::new(options, logger, logger_data, 20);
+    //     let option = ClingoControl::new(options, 20);
+    let mut logdata: u32 = 0;
+    let option = ClingoControl::new_with_logger(options, &MyLogger, &mut logdata, 20);
+
     match option {
         Ok(mut ctl) => {
             // register the propagator

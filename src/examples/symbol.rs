@@ -4,14 +4,12 @@ use clingo::*;
 
 
 fn main() {
-    let mut store = CStringStore::new();
-
     // create a number, identifier (function without arguments), and a function symbol
     let number_symbol = create_number(42);
-    let identifier_symbol = store.create_id("x", true).unwrap();
+    let identifier_symbol = create_id("x", true).unwrap();
 
     let mut symbols = vec![number_symbol, identifier_symbol];
-    let function_symbol = store.create_function("x", &symbols, true).unwrap();
+    let function_symbol = create_function("x", &symbols, true).unwrap();
     symbols.push(function_symbol.clone());
 
     // print the symbols along with their hash values

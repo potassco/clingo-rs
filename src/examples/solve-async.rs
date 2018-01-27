@@ -27,10 +27,7 @@ fn main() {
     let options = env::args().skip(1).collect();
 
     // create a control object and pass command line arguments
-    let logger = None;
-    let logger_data = std::ptr::null_mut();
-    let mut ctl = ClingoControl::new(options, logger, logger_data, 20)
-        .expect("Failed creating ClingoControl.");
+    let mut ctl = ClingoControl::new(options, 20).expect("Failed creating ClingoControl.");
 
     // add a logic program to the base part
     let parameters: Vec<&str> = Vec::new();
@@ -56,7 +53,7 @@ fn main() {
     let handle = ctl.solve_with_event_handler(
         (ClingoSolveMode::Async as clingo_solve_mode_bitset_t) +
             (ClingoSolveMode::Yield as clingo_solve_mode_bitset_t),
-        vec![],
+        &[],
         &MySEHandler,
         &mut running,
     ).expect("Failed to retrieve solve handle.");

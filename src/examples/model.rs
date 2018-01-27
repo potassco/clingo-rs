@@ -17,7 +17,7 @@ fn print_model(model: &mut ClingoModel, label: &str, show: clingo_show_type_bits
         // retrieve and print the symbol's string
         print!(" {}", atom.to_string().unwrap());
     }
-    println!("");
+    println!();
 }
 
 fn solve(ctl: &mut ClingoControl) {
@@ -26,7 +26,7 @@ fn solve(ctl: &mut ClingoControl) {
     let assumptions = vec![];
 
     // get a solve handle
-    let handle = ctl.solve(solve_mode, assumptions).expect(
+    let handle = ctl.solve(solve_mode, &assumptions).expect(
         "Failed retrieving solve handle.",
     );
 
@@ -69,8 +69,8 @@ fn solve(ctl: &mut ClingoControl) {
             print_model(
                 model,
                 " ~atoms",
-                (ClingoShowType::Complement as clingo_show_type_bitset_t +
-                     ClingoShowType::Atoms as clingo_show_type_bitset_t),
+                ClingoShowType::Complement as clingo_show_type_bitset_t +
+                     ClingoShowType::Atoms as clingo_show_type_bitset_t,
             );
         } else {
             // stop if there are no more models
@@ -91,10 +91,7 @@ fn main() {
     let options = env::args().skip(1).collect();
 
     // create a control object and pass command line arguments
-    let logger = None;
-    let logger_data = std::ptr::null_mut();
-    let mut ctl = ClingoControl::new(options, logger, logger_data, 20)
-        .expect("Failed creating clingo_control.");
+    let mut ctl = ClingoControl::new(options, 20).expect("Failed creating clingo_control.");
 
     // add a logic program to the base part
     let parameters: Vec<&str> = Vec::new();
