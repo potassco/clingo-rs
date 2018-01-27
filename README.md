@@ -9,20 +9,20 @@ Rust bindings to the [clingo](https://github.com/potassco/clingo) library
     provided by gcc 4.9 or libc++)
 
 ## Compile & Test
-    cargo build
-    cargo test
-    cargo run --example=ast 0
-    cargo run --example=backend 0
-    cargo run --example=configuration
-    cargo run --example=control 0
-    cargo run --example=model 0
-    cargo run --example=propagator 0
-    cargo run --example=solve-async 0
-    cargo run --example=statistics 0
-    cargo run --example=symbol 0
-    cargo run --example=symbolic-atoms 0
-    cargo run --example=theory-atoms 0
-    cargo run --example=version
+    cargo +nightly build
+    cargo +nightly test
+    cargo +nightly run --example=ast 0
+    cargo +nightly run --example=backend 0
+    cargo +nightly run --example=configuration
+    cargo +nightly run --example=control 0
+    cargo +nightly run --example=model 0
+    cargo +nightly run --example=propagator 0
+    cargo +nightly run --example=solve-async 0
+    cargo +nightly run --example=statistics 0
+    cargo +nightly run --example=symbol 0
+    cargo +nightly run --example=symbolic-atoms 0
+    cargo +nightly run --example=theory-atoms 0
+    cargo +nightly run --example=version
 
 ## Contribution
 
