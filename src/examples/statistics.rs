@@ -140,8 +140,6 @@ fn main() {
         return;
     }
 
-    print!("");
-
     // ground the base part
     let part = ClingoPart::new_part("base", &[]);
     let parts = vec![part];

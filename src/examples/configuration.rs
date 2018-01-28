@@ -84,8 +84,6 @@ fn main() {
     ctl.add("base", parameters, "a :- not b. b :- not a.")
         .expect("Failed to add a logic program.");
 
-    print!("");
-
     // ground the base part
     let part = ClingoPart::new_part("base", &[]);
     let parts = vec![part];

@@ -2700,7 +2700,7 @@ impl ClingoModel {
 
         if unsafe { clingo_model_symbols_size(model, show, size_p) } {
             let symbols = Vec::<ClingoSymbol>::with_capacity(size);
-            let mut symbols_ptr = symbols.as_ptr();
+            let symbols_ptr = symbols.as_ptr();
             if unsafe {
                 clingo_model_symbols(
                     model,
@@ -2712,7 +2712,7 @@ impl ClingoModel {
             {
                 let symbols_ref =
                     unsafe {std::slice::from_raw_parts(symbols_ptr as *const ClingoSymbol, size)};
-                Ok(symbols_ref.to_vec())
+                Ok(symbols_ref.to_owned())
             } else {
                 Err(error_message())
             }
