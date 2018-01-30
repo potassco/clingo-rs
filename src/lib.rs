@@ -774,12 +774,6 @@ pub trait ClingoPropagatorBuilder<T> {
 // #[derive(Debug)]
 pub struct ClingoControl {
     ctl: Unique<clingo_control_t>,
-    //TODO do I need to store these parameters
-    name: Option<CString>,
-    parameters: std::vec::Vec<CString>,
-    c_parameters: std::vec::Vec<*const c_char>,
-    program: Option<CString>,
-    parts: Vec<clingo_part>,
 }
 impl Drop for ClingoControl {
     fn drop(&mut self) {
@@ -844,11 +838,6 @@ impl ClingoControl {
         if suc {
             Ok(ClingoControl {
                 ctl: Unique::new(ctl).unwrap(),
-                name: None,
-                parameters: vec![],
-                c_parameters: vec![],
-                program: None,
-                parts: vec![],
             })
         } else {
             Err(error_message())
@@ -888,11 +877,6 @@ impl ClingoControl {
         if suc {
             Ok(ClingoControl {
                 ctl: Unique::new(ctl).unwrap(),
-                name: None,
-                parameters: vec![],
-                c_parameters: vec![],
-                program: None,
-                parts: vec![],
             })
         } else {
             Err(error_message())
@@ -926,22 +910,20 @@ impl ClingoControl {
     ) -> Result<(), &'static str> {
         let name = CString::new(name_).unwrap();
         let name_ptr = name.as_ptr();
-        self.name = Some(name);
-
+        
         let program = CString::new(program_).unwrap();
         let program_ptr = program.as_ptr();
-        self.program = Some(program);
-
+        
         let parameters_size = parameters.len();
 
         // create a vector of zero terminated strings
-        self.parameters = parameters
+        let l_parameters = parameters
             .into_iter()
             .map(|arg| CString::new(arg).unwrap())
             .collect::<Vec<CString>>();
 
         // convert the strings to raw pointers
-        self.c_parameters = self.parameters
+        let c_parameters = l_parameters
             .iter()
             .map(|arg| arg.as_ptr())
             .collect::<Vec<*const c_char>>();
@@ -950,7 +932,7 @@ impl ClingoControl {
             clingo_control_add(
                 self.ctl.as_ptr(),
                 name_ptr,
-                self.c_parameters.as_ptr(),
+                c_parameters.as_ptr(),
                 parameters_size,
                 program_ptr,
             )
@@ -983,8 +965,9 @@ impl ClingoControl {
     /// - error code of ground callback
     ///
     /// @see clingo_part
+    // TODO: use slice &[]?
     pub fn ground(&mut self, sparts: Vec<ClingoPart>) -> Result<(), &'static str> {
-        self.parts = sparts
+        let parts = sparts
             .iter()
             .map(|arg| arg.from())
             .collect::<Vec<clingo_part>>();
@@ -993,7 +976,7 @@ impl ClingoControl {
         let suc = unsafe {
             clingo_control_ground(
                 self.ctl.as_ptr(),
-                self.parts.as_ptr(),
+                parts.as_ptr(),
                 parts_size,
                 None,
                 std::ptr::null_mut() as *mut ::std::os::raw::c_void,
@@ -1006,13 +989,14 @@ impl ClingoControl {
         }
     }
 
+    // TODO: use slice &[]?
     pub fn ground_with_event_handler<D, T: ClingoGroundEventHandler<D>>(
         &mut self,
         sparts: Vec<ClingoPart>,
         handler: &T,
         data_: &mut D,
     ) -> Result<(), &'static str> {
-        self.parts = sparts
+        let parts = sparts
             .iter()
             .map(|arg| arg.from())
             .collect::<Vec<clingo_part>>();
@@ -1022,7 +1006,7 @@ impl ClingoControl {
         let suc = unsafe {
             clingo_control_ground(
                 self.ctl.as_ptr(),
-                self.parts.as_ptr(),
+                parts.as_ptr(),
                 parts_size,
                 Some(T::unsafe_ground_callback as ClingoGroundCallback),
                 data as *mut ::std::os::raw::c_void,
