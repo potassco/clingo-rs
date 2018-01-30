@@ -3,9 +3,7 @@ extern crate clingo;
 use std::env;
 use clingo::*;
 
-
 fn print_model(model: &mut ClingoModel) {
-
     // retrieve the symbols in the model
     let atoms = model
         .symbols(ClingoShowType::Shown as clingo_show_type_bitset_t)
@@ -21,14 +19,12 @@ fn print_model(model: &mut ClingoModel) {
 }
 
 fn solve(ctl: &mut ClingoControl) {
-
     let solve_mode = ClingoSolveMode::Yield;
     let assumptions = vec![];
 
     // get a solve handle
-    let handle = ctl.solve(solve_mode, &assumptions).expect(
-        "Failed retrieving solve handle.",
-    );
+    let handle = ctl.solve(solve_mode, &assumptions)
+        .expect("Failed retrieving solve handle.");
 
     // loop over all models
     loop {
@@ -42,14 +38,13 @@ fn solve(ctl: &mut ClingoControl) {
     }
 
     // close the solve handle
-    handle.get().expect(
-        "Failed to get result from solve handle.",
-    );
+    handle
+        .get()
+        .expect("Failed to get result from solve handle.");
     handle.close().expect("Failed to close solve handle.");
 }
 
 fn main() {
-
     // collect clingo options from the command line
     let options = env::args().skip(1).collect();
 
@@ -64,9 +59,8 @@ fn main() {
     // ground the base part
     let part = ClingoPart::new_part("base", &[]);
     let parts = vec![part];
-    ctl.ground(parts).expect(
-        "Failed to ground a logic program.",
-    );
+    ctl.ground(parts)
+        .expect("Failed to ground a logic program.");
 
     // solve
     solve(&mut ctl);

@@ -3,9 +3,7 @@ extern crate clingo;
 use std::env;
 use clingo::*;
 
-
 fn main() {
-
     // collect clingo options from the command line
     let options = env::args().skip(1).collect();
 
@@ -14,16 +12,14 @@ fn main() {
 
     // add a logic program to the base part
     let parameters: Vec<&str> = Vec::new();
-    ctl.add("base", parameters, "a. {b}. #external c.").expect(
-        "Failed to add a logic program.",
-    );
+    ctl.add("base", parameters, "a. {b}. #external c.")
+        .expect("Failed to add a logic program.");
 
     // ground the base part
     let part = ClingoPart::new_part("base", &[]);
     let parts = vec![part];
-    ctl.ground(parts).expect(
-        "Failed to ground a logic program.",
-    );
+    ctl.ground(parts)
+        .expect("Failed to ground a logic program.");
 
     // get symbolic atoms
     let atoms = ctl.symbolic_atoms().unwrap();

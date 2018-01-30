@@ -6,7 +6,6 @@ use rand::distributions::{IndependentSample, Range};
 use std::sync::atomic::{AtomicBool, Ordering};
 use clingo::*;
 
-
 struct MySEHandler;
 impl ClingoSolveEventHandler<AtomicBool> for MySEHandler {
     fn on_solve_event(
@@ -22,7 +21,6 @@ impl ClingoSolveEventHandler<AtomicBool> for MySEHandler {
 }
 
 fn main() {
-
     // collect clingo options from the command line
     let options = env::args().skip(1).collect();
 
@@ -43,16 +41,15 @@ fn main() {
     // ground the base part
     let part = ClingoPart::new_part("base", &[]);
     let parts = vec![part];
-    ctl.ground(parts).expect(
-        "Failed to ground a logic program.",
-    );
+    ctl.ground(parts)
+        .expect("Failed to ground a logic program.");
 
     let mut running = AtomicBool::new(true);
 
     // create a solve handle with an attached event handler
     let handle = ctl.solve_with_event_handler(
-        (ClingoSolveMode::Async as clingo_solve_mode_bitset_t) +
-            (ClingoSolveMode::Yield as clingo_solve_mode_bitset_t),
+        (ClingoSolveMode::Async as clingo_solve_mode_bitset_t)
+            + (ClingoSolveMode::Yield as clingo_solve_mode_bitset_t),
         &[],
         &MySEHandler,
         &mut running,
@@ -75,9 +72,9 @@ fn main() {
     println!("pi = {}", 4. * in_circle / samples);
 
     // get the solve result
-    handle.get().expect(
-        "Failed to get result from solve handle.",
-    );
+    handle
+        .get()
+        .expect("Failed to get result from solve handle.");
 
     // close the handle
     handle.close().expect("Failed to close solve handle.");

@@ -6,9 +6,7 @@ use std::cell::RefCell;
 use std::rc::Rc;
 use clingo::*;
 
-
 fn print_model(model: &mut ClingoModel) {
-
     // retrieve the symbols in the model
     let atoms = model
         .symbols(ClingoShowType::Shown as clingo_show_type_bitset_t)
@@ -24,14 +22,12 @@ fn print_model(model: &mut ClingoModel) {
 }
 
 fn solve(ctl: &mut ClingoControl) {
-
     let solve_mode = ClingoSolveMode::Yield;
     let assumptions = vec![];
 
     // get a solve handle
-    let handle = ctl.solve(solve_mode, &assumptions).expect(
-        "Failed to retrieve solve handle.",
-    );
+    let handle = ctl.solve(solve_mode, &assumptions)
+        .expect("Failed to retrieve solve handle.");
 
     // loop over all models
     loop {
@@ -45,12 +41,11 @@ fn solve(ctl: &mut ClingoControl) {
     }
 
     // close the solve handle
-    handle.get().expect(
-        "Failed to get result from solve handle.",
-    );
+    handle
+        .get()
+        .expect("Failed to get result from solve handle.");
     handle.close().expect("Failed to close solve handle.");
 }
-
 
 // state information for individual solving threads
 #[derive(Debug)]
@@ -80,7 +75,6 @@ fn get_arg(sym: ClingoSymbol, offset: usize) -> Result<i32, &'static str> {
 struct MyPropagator;
 impl ClingoPropagatorBuilder<PropagatorT> for MyPropagator {
     fn init(init: &mut ClingoPropagateInit, propagator: &mut PropagatorT) -> bool {
-
         // stores the (numeric) maximum of the solver literals capturing pigeon placements
         // note that the code below assumes that this literal is not negative
         // which holds for the pigeon problem but not in general
@@ -122,7 +116,6 @@ impl ClingoPropagatorBuilder<PropagatorT> for MyPropagator {
         // the first pass determines the maximum placement literal
         // the second pass allocates memory for data structures based on the first pass
         for pass in 0..2 {
-
             // get an iterator to the first place/2 atom
             let mut atoms_it = atoms.begin(Some(&sig)).unwrap();
 
@@ -149,7 +142,6 @@ impl ClingoPropagatorBuilder<PropagatorT> for MyPropagator {
                         max = lit_id;
                     }
                 } else {
-
                     // extract the hole number from the atom
                     let sym = atoms.symbol(atoms_it).unwrap();
                     let h = get_arg(sym, 1).unwrap();
@@ -185,7 +177,6 @@ impl ClingoPropagatorBuilder<PropagatorT> for MyPropagator {
         changes: &[ClingoLiteral],
         propagator: &mut PropagatorT,
     ) -> bool {
-
         // get the thread specific state
         let mut state = propagator.states[control.thread_id() as usize].borrow_mut();
 
@@ -235,7 +226,6 @@ impl ClingoPropagatorBuilder<PropagatorT> for MyPropagator {
         changes: &[ClingoLiteral],
         propagator: &mut PropagatorT,
     ) -> bool {
-
         // get the thread specific state
         let mut state = propagator.states[control.thread_id() as usize].borrow_mut();
 
@@ -264,7 +254,6 @@ impl ClingoLogger<u32> for MyLogger {
 }
 
 fn main() {
-
     // collect clingo options from the command line
     let options = env::args().skip(1).collect();
 
@@ -314,9 +303,8 @@ fn main() {
             // the pigeon program part having the number of holes and pigeons as parameters
             let part = ClingoPart::new_part("pigeon", args.as_slice());
             let parts = vec![part];
-            ctl.ground(parts).expect(
-                "Failed to ground a logic program.",
-            );
+            ctl.ground(parts)
+                .expect("Failed to ground a logic program.");
 
             // solve using a model callback
             solve(&mut ctl);

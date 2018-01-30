@@ -3,15 +3,13 @@ extern crate clingo;
 use std::env;
 use clingo::*;
 
-
 fn print_model(model: &mut ClingoModel, label: &str, show: clingo_show_type_bitset_t) {
-
     print!("{}:", label);
 
     // retrieve the symbols in the model
-    let atoms = model.symbols(show).expect(
-        "Failed to retrieve symbols in the model.",
-    );
+    let atoms = model
+        .symbols(show)
+        .expect("Failed to retrieve symbols in the model.");
 
     for atom in atoms {
         // retrieve and print the symbol's string
@@ -21,20 +19,17 @@ fn print_model(model: &mut ClingoModel, label: &str, show: clingo_show_type_bits
 }
 
 fn solve(ctl: &mut ClingoControl) {
-
     let solve_mode = ClingoSolveMode::Yield;
     let assumptions = vec![];
 
     // get a solve handle
-    let handle = ctl.solve(solve_mode, &assumptions).expect(
-        "Failed retrieving solve handle.",
-    );
+    let handle = ctl.solve(solve_mode, &assumptions)
+        .expect("Failed retrieving solve handle.");
 
     // loop over all models
     loop {
         handle.resume().expect("Failed resume on solve handle.");
         if let Ok(model) = handle.model() {
-
             // get model type
             let model_type = model.model_type().unwrap();
 
@@ -69,8 +64,8 @@ fn solve(ctl: &mut ClingoControl) {
             print_model(
                 model,
                 " ~atoms",
-                ClingoShowType::Complement as clingo_show_type_bitset_t +
-                     ClingoShowType::Atoms as clingo_show_type_bitset_t,
+                ClingoShowType::Complement as clingo_show_type_bitset_t
+                    + ClingoShowType::Atoms as clingo_show_type_bitset_t,
             );
         } else {
             // stop if there are no more models
@@ -79,14 +74,13 @@ fn solve(ctl: &mut ClingoControl) {
     }
 
     // close the solve handle
-    handle.get().expect(
-        "Failed to get result from solve handle.",
-    );
+    handle
+        .get()
+        .expect("Failed to get result from solve handle.");
     handle.close().expect("Failed to close solve handle.");
 }
 
 fn main() {
-
     // collect clingo options from the command line
     let options = env::args().skip(1).collect();
 
@@ -101,9 +95,8 @@ fn main() {
     // ground the base part
     let part = ClingoPart::new_part("base", &[]);
     let parts = vec![part];
-    ctl.ground(parts).expect(
-        "Failed to ground a logic program.",
-    );
+    ctl.ground(parts)
+        .expect("Failed to ground a logic program.");
 
     // solve
     solve(&mut ctl);

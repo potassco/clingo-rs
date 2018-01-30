@@ -3,7 +3,6 @@ extern crate clingo;
 use std::env;
 use clingo::*;
 
-
 fn print_prefix(depth: u8) {
     for _ in 0..depth {
         print!("  ");
@@ -12,15 +11,14 @@ fn print_prefix(depth: u8) {
 
 // recursively print the statistics object
 fn print_statistics(stats: &mut ClingoStatistics, key: u64, depth: u8) {
-
     // get the type of an entry and switch over its various values
     let statistics_type = stats.statistics_type(key).unwrap();
     match statistics_type {
         // print values
         ClingoStatisticsType::Value => {
-            let value = stats.value_get(key).expect(
-                "Failed to retrieve statistics value.",
-            );
+            let value = stats
+                .value_get(key)
+                .expect("Failed to retrieve statistics value.");
 
             // print value (with prefix for readability)
             print_prefix(depth);
@@ -30,15 +28,14 @@ fn print_statistics(stats: &mut ClingoStatistics, key: u64, depth: u8) {
         // print arrays
         ClingoStatisticsType::Array => {
             // loop over array elements
-            let size = stats.array_size(key).expect(
-                "Failed to retrieve statistics array size.",
-            );
+            let size = stats
+                .array_size(key)
+                .expect("Failed to retrieve statistics array size.");
             for i in 0..size {
-
                 // print array offset (with prefix for readability)
-                let subkey = stats.statistics_array_at(key, i).expect(
-                    "Failed to retrieve statistics array.",
-                );
+                let subkey = stats
+                    .statistics_array_at(key, i)
+                    .expect("Failed to retrieve statistics array.");
                 print_prefix(depth);
                 println!("{} zu:", i);
 
@@ -71,7 +68,6 @@ fn print_statistics(stats: &mut ClingoStatistics, key: u64, depth: u8) {
 }
 
 fn print_model(model: &mut ClingoModel) {
-
     // retrieve the symbols in the model
     let atoms = model
         .symbols(ClingoShowType::Shown as clingo_show_type_bitset_t)
@@ -87,14 +83,12 @@ fn print_model(model: &mut ClingoModel) {
 }
 
 fn solve(ctl: &mut ClingoControl) {
-
     let solve_mode = ClingoSolveMode::Yield;
     let assumptions = vec![];
 
     // get a solve handle
-    let handle = ctl.solve(solve_mode, &assumptions).expect(
-        "Failed retrieving solve handle.",
-    );
+    let handle = ctl.solve(solve_mode, &assumptions)
+        .expect("Failed retrieving solve handle.");
 
     // loop over all models
     loop {
@@ -108,14 +102,13 @@ fn solve(ctl: &mut ClingoControl) {
     }
 
     // close the solve handle
-    handle.get().expect(
-        "Failed to get result from solve handle.",
-    );
+    handle
+        .get()
+        .expect("Failed to get result from solve handle.");
     handle.close().expect("Failed to close solve handle.");
 }
 
 fn main() {
-
     // collect clingo options from the command line
     let options = env::args().skip(1).collect();
 
@@ -128,9 +121,8 @@ fn main() {
         let root_key = conf.root().unwrap();
         // and set the statistics level to one to get more statistics
         let subkey = conf.map_at(root_key, "stats").unwrap();
-        conf.value_set(subkey, "1").expect(
-            "Failed to set value in configuration.",
-        );
+        conf.value_set(subkey, "1")
+            .expect("Failed to set value in configuration.");
     }
 
     // add a logic program to the base part

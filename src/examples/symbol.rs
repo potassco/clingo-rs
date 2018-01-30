@@ -2,7 +2,6 @@ extern crate clingo;
 
 use clingo::*;
 
-
 fn main() {
     // create a number, identifier (function without arguments), and a function symbol
     let number_symbol = create_number(42);
@@ -26,7 +25,6 @@ fn main() {
 
     // equal to comparison
     for ref symbol in symbols2 {
-
         print!("{} is ", symbols[0].to_string().unwrap());
         if symbols[0] == *symbol {
             print!("equal");
