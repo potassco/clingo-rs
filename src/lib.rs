@@ -286,12 +286,6 @@ pub struct ClingoLocation(clingo_location);
 
 #[derive(Debug, Clone)]
 pub struct ClingoSymbol(clingo_symbol_t);
-// impl Drop for ClingoSymbol {
-//     fn drop(&mut self) {
-//         println!("droped ClingoSymbol!");
-//         println!("sym {}", self.0);
-//     }
-// }
 impl PartialEq for ClingoSymbol {
     fn eq(&self, other: &ClingoSymbol) -> bool {
         unsafe { clingo_symbol_is_equal_to(self.0, other.0) }
@@ -965,7 +959,6 @@ impl ClingoControl {
     /// - error code of ground callback
     ///
     /// @see clingo_part
-    // TODO: use slice &[]?
     pub fn ground(&mut self, sparts: &[ClingoPart]) -> Result<(), &'static str> {
         let parts = sparts
             .iter()
