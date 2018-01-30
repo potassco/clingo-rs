@@ -3,7 +3,6 @@ extern crate libc;
 extern crate clingo_sys;
 use std::mem;
 use std::ptr::Unique;
-use std::fmt;
 
 use std::ffi::CStr;
 use std::ffi::CString;
@@ -630,11 +629,6 @@ pub struct ClingoPart<'a> {
     name: CString,
     params: &'a [ClingoSymbol],
 }
-// impl<'a> Drop for ClingoPart<'a> {
-//     fn drop(&mut self) {
-//         println!("droped ClingoPart!");
-//     }
-// }
 impl<'a> ClingoPart<'a> {
     pub fn new_part(name: &str, params: &'a [ClingoSymbol]) -> ClingoPart<'a> {
         ClingoPart {
@@ -783,12 +777,12 @@ pub struct ClingoControl {
     program: Option<CString>,
     parts: Vec<clingo_part>,
 }
-// impl Drop for ClingoControl {
-//     fn drop(&mut self) {
+impl Drop for ClingoControl {
+    fn drop(&mut self) {
 //         println!("drop ClingoControl");
-//         unsafe { clingo_control_free(self.ctl.as_ptr()) }
-//     }
-// }
+        unsafe { clingo_control_free(self.ctl.as_ptr()) }
+    }
+}
 impl ClingoControl {
     /// Create a new control object.
     ///
@@ -1414,11 +1408,6 @@ impl ClingoProgramBuilder {
 
 #[derive(Clone, Copy)]
 pub struct ClingoAstHeadLiteral(clingo_ast_head_literal_t);
-impl fmt::Debug for ClingoAstHeadLiteral {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "ClingoAstHeadLiteral ")
-    }
-}
 #[derive(Clone, Copy)]
 pub struct ClingoAstBodyLiteral(clingo_ast_body_literal_t);
 impl ClingoAstBodyLiteral {
@@ -1474,13 +1463,6 @@ impl ClingoAstRule {
 
 #[derive(Clone, Copy)]
 pub struct ClingoAstExternal(clingo_ast_external_t);
-impl fmt::Debug for ClingoAstExternal {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "ClingoAstExternal sym: {}", unsafe {
-            self.0.atom.__bindgen_anon_1.symbol
-        })
-    }
-}
 impl ClingoAstExternal {
     pub fn new(
         ClingoAstTerm(term): ClingoAstTerm,
@@ -1496,16 +1478,6 @@ impl ClingoAstExternal {
 }
 #[derive(Clone)]
 pub struct ClingoAstStatement(clingo_ast_statement_t);
-impl fmt::Debug for ClingoAstStatement {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "ClingoAstStatement ")
-    }
-}
-impl Drop for ClingoAstStatement {
-    fn drop(&mut self) {
-//         println!("droped ClingoAstStatement!");
-    }
-}
 impl ClingoAstStatement {
     pub fn new_external(
         ClingoLocation(location): ClingoLocation,
@@ -1600,19 +1572,6 @@ impl ClingoAstStatement {
 
 #[derive(Clone, Copy)]
 pub struct ClingoAstTerm(clingo_ast_term_t);
-impl fmt::Debug for ClingoAstTerm {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "ClingoAstTerm sym: {}", unsafe {
-            self.0.__bindgen_anon_1.symbol
-        })
-    }
-}
-// impl Drop for ClingoAstTerm {
-//     fn drop(&mut self) {
-//         println!("droped ClingoAstTerm!");
-//         println!("sym {}", unsafe { self.0.__bindgen_anon_1.symbol });
-//     }
-// }
 impl ClingoAstTerm {
     pub fn new_symbol(
         ClingoLocation(location): ClingoLocation,
@@ -2615,11 +2574,11 @@ impl UNSAFE_ClingoTheoryAtomsIterator {
 }
 
 pub struct ClingoModel(clingo_model_t);
-impl Drop for ClingoModel {
-    fn drop(&mut self) {
-        println!("droped ClingoModel!");
-    }
-}
+// impl Drop for ClingoModel {
+//     fn drop(&mut self) {
+//         println!("droped ClingoModel!");
+//     }
+// }
 impl ClingoModel {
     /// Get the type of the model.
     ///
@@ -2936,11 +2895,11 @@ impl ClingoPropagateInit {
 }
 
 pub struct ClingoSolveHandle(clingo_solve_handle);
-impl Drop for ClingoSolveHandle {
-    fn drop(&mut self) {
-        println!("droped ClingoSolveHandle!");
-    }
-}
+// impl Drop for ClingoSolveHandle {
+//     fn drop(&mut self) {
+//         println!("droped ClingoSolveHandle!");
+//     }
+// }
 impl ClingoSolveHandle {
     /// Get the next solve result.
     ///
