@@ -106,7 +106,6 @@ fn main() {
     let mut ctl = ClingoControl::new(options, 20).expect("Failed creating ClingoControl.");
 
     let sym = create_id("enable", true).unwrap();
-
     let sym2 = sym.clone();
 
     {

@@ -774,9 +774,7 @@ pub trait ClingoPropagatorBuilder<T> {
 // #[derive(Debug)]
 pub struct ClingoControl {
     ctl: Unique<clingo_control_t>,
-    args: std::vec::Vec<CString>,
-    c_args: std::vec::Vec<*const c_char>,
-
+    //TODO do I need to store these parameters
     name: Option<CString>,
     parameters: std::vec::Vec<CString>,
     c_parameters: std::vec::Vec<*const c_char>,
@@ -846,8 +844,6 @@ impl ClingoControl {
         if suc {
             Ok(ClingoControl {
                 ctl: Unique::new(ctl).unwrap(),
-                args: args,
-                c_args: c_args,
                 name: None,
                 parameters: vec![],
                 c_parameters: vec![],
@@ -892,8 +888,6 @@ impl ClingoControl {
         if suc {
             Ok(ClingoControl {
                 ctl: Unique::new(ctl).unwrap(),
-                args: args,
-                c_args: c_args,
                 name: None,
                 parameters: vec![],
                 c_parameters: vec![],
