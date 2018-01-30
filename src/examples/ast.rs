@@ -12,12 +12,11 @@ struct MyAstHandler;
 impl<'a> ClingoAstStatementHandler<OnStatementData<'a>> for MyAstHandler {
     // adds atom enable to all rule bodies
     fn on_statement(stm: &ClingoAstStatement, data: &mut OnStatementData) -> bool {
-
         // pass through all statements that are not rules
         if stm.get_type() != Ok(ClingoAstStatementType::Rule) {
-            data.builder.add(stm).expect(
-                "Failed to add statement to ProgramBuilder.",
-            );
+            data.builder
+                .add(stm)
+                .expect("Failed to add statement to ProgramBuilder.");
             return true;
         }
 
@@ -52,15 +51,14 @@ impl<'a> ClingoAstStatementHandler<OnStatementData<'a>> for MyAstHandler {
         let stm2 = ClingoAstStatement::new_rule(stm.location(), &rule);
 
         // add the rewritten statement to the program
-        data.builder.add(&stm2).expect(
-            "Failed to add statement to ProgramBuilder.",
-        );
+        data.builder
+            .add(&stm2)
+            .expect("Failed to add statement to ProgramBuilder.");
         true
     }
 }
 
 fn print_model(model: &mut ClingoModel) {
-
     // retrieve the symbols in the model
     let atoms = model
         .symbols(ClingoShowType::Shown as clingo_show_type_bitset_t)
@@ -76,14 +74,12 @@ fn print_model(model: &mut ClingoModel) {
 }
 
 fn solve(ctl: &mut ClingoControl) {
-
     let solve_mode = ClingoSolveMode::Yield;
     let assumptions = vec![];
 
     // get a solve handle
-    let handle = ctl.solve(solve_mode, &assumptions).expect(
-        "Failed retrieving solve handle.",
-    );
+    let handle = ctl.solve(solve_mode, &assumptions)
+        .expect("Failed retrieving solve handle.");
 
     // loop over all models
     loop {
@@ -97,13 +93,25 @@ fn solve(ctl: &mut ClingoControl) {
     }
 
     // close the solve handle
-    handle.get().expect(
-        "Failed to get result from solve handle.",
-    );
+    handle
+        .get()
+        .expect("Failed to get result from solve handle.");
     handle.close().expect("Failed to close solve handle.");
 }
 
-fn get_modified_rules(builder: &mut ClingoProgramBuilder, sym: ClingoSymbol) {
+fn main() {
+    // collect clingo options from the command line
+    let options = env::args().skip(1).collect();
+
+    let mut ctl = ClingoControl::new(options, 20).expect("Failed creating ClingoControl.");
+
+    let sym = create_id("enable", true).unwrap();
+
+    let sym2 = sym.clone();
+
+    {
+        // get the program builder
+        let builder = ctl.program_builder().unwrap();
 
         // begin building a program
         builder.begin().expect("Failed building logic program.");
@@ -126,39 +134,22 @@ fn get_modified_rules(builder: &mut ClingoProgramBuilder, sym: ClingoSymbol) {
         // add the external statement: #external enable.
         let ext = ClingoAstExternal::new(atom, &[]);
 
-        let stm = ClingoAstStatement::new_external(location, ClingoAstStatementType::External, &ext);
-        data.builder.add(&stm).expect(
-            "Failed to add statement to ProgramBuilder.",
-        );
+        let stm =
+            ClingoAstStatement::new_external(location, ClingoAstStatementType::External, &ext);
+        data.builder
+            .add(&stm)
+            .expect("Failed to add statement to ProgramBuilder.");
 
         // finish building a program
-        data.builder.end().expect(
-            "Failed to finish building a program.",
-        );
-}
-
-
-fn main() {
-
-    // collect clingo options from the command line
-    let options = env::args().skip(1).collect();
-
-    let mut ctl = ClingoControl::new(options, 20).expect("Failed creating ClingoControl.");
-
-    let sym = create_id("enable", true).unwrap();
-    
-    let sym2 = sym.clone();
-
-    // get the program builder
-    { let mut builder = ctl.program_builder().unwrap();
-      get_modified_rules(&mut builder, sym);
+        data.builder
+            .end()
+            .expect("Failed to finish building a program.");
     }
     // ground the base part
     let part = ClingoPart::new_part("base", &[]);
     let parts = vec![part];
-    ctl.ground(parts).expect(
-        "Failed to ground a logic program.",
-    );
+    ctl.ground(parts)
+        .expect("Failed to ground a logic program.");
 
     // solve with external enable = false
     println!("Solving with enable = false...");
@@ -166,15 +157,13 @@ fn main() {
 
     // solve with external enable = true
     println!("Solving with enable = true...");
-    ctl.assign_external(&sym2, ClingoTruthValue::True).expect(
-        "Failed to assign #external enable true.",
-    );
+    ctl.assign_external(&sym2, ClingoTruthValue::True)
+        .expect("Failed to assign #external enable true.");
     solve(&mut ctl);
 
     // solve with external enable = false
     println!("Solving with enable = false...");
-    ctl.assign_external(&sym2, ClingoTruthValue::False).expect(
-        "Failed to assign #external enable false.",
-    );
-    solve(&mut ctl);   
+    ctl.assign_external(&sym2, ClingoTruthValue::False)
+        .expect("Failed to assign #external enable false.");
+    solve(&mut ctl);
 }
