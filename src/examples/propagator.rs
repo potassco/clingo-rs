@@ -287,8 +287,7 @@ fn main() {
                 "1 { place(P,H) : H = 1..h } 1 :- P = 1..p.",
             ).expect("Failed to add a logic program.");
 
-            print!("");
-
+            
             // ground the pigeon part
 
             // set the number of holes
@@ -303,7 +302,7 @@ fn main() {
             // the pigeon program part having the number of holes and pigeons as parameters
             let part = ClingoPart::new_part("pigeon", args.as_slice());
             let parts = vec![part];
-            ctl.ground(parts)
+            ctl.ground(&parts)
                 .expect("Failed to ground a logic program.");
 
             // solve using a model callback

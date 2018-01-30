@@ -966,7 +966,7 @@ impl ClingoControl {
     ///
     /// @see clingo_part
     // TODO: use slice &[]?
-    pub fn ground(&mut self, sparts: Vec<ClingoPart>) -> Result<(), &'static str> {
+    pub fn ground(&mut self, sparts: &[ClingoPart]) -> Result<(), &'static str> {
         let parts = sparts
             .iter()
             .map(|arg| arg.from())
@@ -989,10 +989,9 @@ impl ClingoControl {
         }
     }
 
-    // TODO: use slice &[]?
     pub fn ground_with_event_handler<D, T: ClingoGroundEventHandler<D>>(
         &mut self,
-        sparts: Vec<ClingoPart>,
+        sparts: &[ClingoPart],
         handler: &T,
         data_: &mut D,
     ) -> Result<(), &'static str> {

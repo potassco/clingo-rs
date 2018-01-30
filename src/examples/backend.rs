@@ -59,7 +59,7 @@ fn main() {
     // ground the base part
     let part = ClingoPart::new_part("base", &[]);
     let parts = vec![part];
-    ctl.ground(parts)
+    ctl.ground(&parts)
         .expect("Failed to ground a logic program.");
 
     let atom_strings = ["a", "b", "c"];
