@@ -2510,11 +2510,6 @@ impl UNSAFE_ClingoTheoryAtomsIterator {
 }
 
 pub struct ClingoModel(clingo_model_t);
-// impl Drop for ClingoModel {
-//     fn drop(&mut self) {
-//         println!("droped ClingoModel!");
-//     }
-// }
 impl ClingoModel {
     /// Get the type of the model.
     ///
@@ -2820,11 +2815,6 @@ impl ClingoPropagateInit {
 }
 
 pub struct ClingoSolveHandle(clingo_solve_handle);
-// impl Drop for ClingoSolveHandle {
-//     fn drop(&mut self) {
-//         println!("droped ClingoSolveHandle!");
-//     }
-// }
 impl ClingoSolveHandle {
     /// Get the next solve result.
     ///
