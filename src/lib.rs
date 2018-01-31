@@ -293,6 +293,7 @@ impl PartialEq for ClingoSymbol {
 }
 impl Eq for ClingoSymbol {}
 
+// TODO replace c_int with u32 ?
 pub fn create_number(number: c_int) -> ClingoSymbol {
     let mut symbol = 0 as clingo_symbol_t;
     unsafe { clingo_symbol_create_number(number, &mut symbol) };
