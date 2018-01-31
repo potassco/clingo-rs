@@ -145,7 +145,7 @@ fn main() {
             .expect("Failed to finish building a program.");
     }
     // ground the base part
-    let part = ClingoPart::new_part("base", &[]);
+    let part = ClingoPart::new("base", &[]);
     let parts = vec![part];
     ctl.ground(&parts)
         .expect("Failed to ground a logic program.");

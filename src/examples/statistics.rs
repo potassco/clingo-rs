@@ -133,7 +133,7 @@ fn main() {
     }
 
     // ground the base part
-    let part = ClingoPart::new_part("base", &[]);
+    let part = ClingoPart::new("base", &[]);
     let parts = vec![part];
     if let Err(e) = ctl.ground(&parts) {
         println!("{}", e);

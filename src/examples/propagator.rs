@@ -300,7 +300,7 @@ fn main() {
             args.push(arg1);
 
             // the pigeon program part having the number of holes and pigeons as parameters
-            let part = ClingoPart::new_part("pigeon", args.as_slice());
+            let part = ClingoPart::new("pigeon", args.as_slice());
             let parts = vec![part];
             ctl.ground(&parts)
                 .expect("Failed to ground a logic program.");

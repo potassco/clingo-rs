@@ -636,7 +636,7 @@ pub struct ClingoPart<'a> {
     params: &'a [ClingoSymbol],
 }
 impl<'a> ClingoPart<'a> {
-    pub fn new_part(name: &str, params: &'a [ClingoSymbol]) -> ClingoPart<'a> {
+    pub fn new(name: &str, params: &'a [ClingoSymbol]) -> ClingoPart<'a> {
         ClingoPart {
             name: CString::new(name).unwrap(),
             params: params,
