@@ -293,18 +293,29 @@ impl PartialEq for ClingoSymbol {
 }
 impl Eq for ClingoSymbol {}
 
+/// Construct a symbol representing a number.
+///
+/// **Parameters:**
+///
+/// * `number` - the number
+/// * `symbol` - the resulting symbol
 // TODO replace c_int with u32 ?
 pub fn create_number(number: c_int) -> ClingoSymbol {
     let mut symbol = 0 as clingo_symbol_t;
     unsafe { clingo_symbol_create_number(number, &mut symbol) };
     ClingoSymbol(symbol)
 }
-
+/// Construct a symbol representing \#sup.
+///
+/// * `symbol` - the resulting symbol
 pub fn create_supremum() -> ClingoSymbol {
     let mut symbol = 0 as clingo_symbol_t;
     unsafe { clingo_symbol_create_supremum(&mut symbol) };
     ClingoSymbol(symbol)
 }
+/// Construct a symbol representing <tt>\#inf</tt>.
+///
+/// * `symbol` - the resulting symbol
 pub fn create_infimum() -> ClingoSymbol {
     let mut symbol = 0 as clingo_symbol_t;
     unsafe { clingo_symbol_create_infimum(&mut symbol) };
@@ -410,6 +421,15 @@ impl ClingoSymbol {
             Err(error_message())
         }
     }
+    /// Get the name of a symbol.
+    ///
+    /// **Parameters:**
+    ///
+    /// * `symbol` - the target symbol
+    /// * `name` - the resulting name
+    ///
+    /// **Returns** whether the call was successful; might set one of the following error codes:
+    /// - ::clingo_error_runtime if symbol is not of type ::clingo_symbol_type_function
     pub fn name(&self) -> Result<&str, &'static str> {
         let mut char_ptr = std::ptr::null() as *const c_char;
         if unsafe { clingo_symbol_name(self.0, &mut char_ptr) } {
@@ -446,7 +466,7 @@ impl ClingoSymbol {
     ///
     /// **Returns** whether the call was successful; might set one of the following error codes:
     /// - ::clingo_error_runtime if symbol is not of type ::clingo_symbol_type_function
-    pub fn is_positive(&self)-> Result<bool, &'static str> {
+    pub fn is_positive(&self) -> Result<bool, &'static str> {
         let mut positive = false;
         if unsafe { clingo_symbol_is_positive(self.0, &mut positive) } {
             Ok(positive)
@@ -463,7 +483,7 @@ impl ClingoSymbol {
     ///
     /// **Returns** whether the call was successful; might set one of the following error codes:
     /// - ::clingo_error_runtime if symbol is not of type ::clingo_symbol_type_function
-    pub fn is_negative(&self)-> Result<bool, &'static str> {
+    pub fn is_negative(&self) -> Result<bool, &'static str> {
         let mut negative = false;
         if unsafe { clingo_symbol_is_negative(self.0, &mut negative) } {
             Ok(negative)
@@ -496,7 +516,13 @@ impl ClingoSymbol {
             Err(error_message())
         }
     }
-
+    /// Get the type of a symbol.
+    ///
+    /// **Parameters:**
+    ///
+    /// * `symbol` - the target symbol
+    ///
+    /// **Returns** the type of the symbol
     //TODO maybe unnecesary function in Rust API?
     pub fn get_type(&self) -> Result<ClingoSymbolType, &'static str> {
         let stype = unsafe { clingo_symbol_type(self.0) } as u32;
@@ -538,11 +564,28 @@ impl ClingoSymbol {
             }
         }
     }
-
+    /// Check if a symbol is less than another symbol.
+    ///
+    /// Symbols are first compared by type.  If the types are equal, the values are
+    /// compared (where strings are compared using strcmp).  Functions are first
+    /// compared by signature and then lexicographically by arguments.
+    ///
+    /// **Parameters:**
+    ///
+    /// * `a` - first symbol
+    /// * `b` - second symbol
+    ///
+    /// **Returns** whether a < b
     pub fn is_less_than(&self, other: &ClingoSymbol) -> bool {
         unsafe { clingo_symbol_is_less_than(self.0, other.0) }
     }
-
+    /// Calculate a hash code of a symbol.
+    ///
+    /// **Parameters:**
+    ///
+    /// * `symbol` - the target symbol
+    ///
+    /// **Returns** the hash code of the symbol
     pub fn hash(&self) -> usize {
         unsafe { clingo_symbol_hash(self.0) }
     }
@@ -608,7 +651,7 @@ pub fn parse_program<D, T: ClingoAstStatementHandler<D>>(
 /// **Returns** whether the call was successful; might set one of the following error codes:
 /// - ::clingo_error_runtime if parsing fails
 /// - ::clingo_error_bad_alloc
-pub fn parse_program_with_logger<CD, C: ClingoAstStatementHandler<CD>,LD, L: ClingoLogger<LD>>(
+pub fn parse_program_with_logger<CD, C: ClingoAstStatementHandler<CD>, LD, L: ClingoLogger<LD>>(
     program_: &str,
     callback: &C,
     cdata_: &mut CD,
@@ -812,22 +855,17 @@ impl Drop for ClingoControl {
 impl ClingoControl {
     /// Create a new control object.
     ///
-    /// A control object has to be freed using clingo_control_free().
-    ///
     /// **Note:** Only gringo options (without <code>\-\-output</code>) and clasp`s options are supported as arguments,
     /// except basic options such as <code>\-\-help</code>.
     /// Furthermore, a control object is blocked while a search call is active;
     /// you must not call any member function during search.
     ///
-    /// If the logger is NULL, messages are printed to stderr.
+    /// Messages are printed to stderr.
     ///
     /// **Parameters:**
     ///
     /// * `arguments` - C string array of command line arguments
     /// * `arguments_size` - size of the arguments array
-    /// * `logger` - callback functions for warnings and info messages
-    /// * `logger_data` - user data for the logger callback
-    /// * `message_limit` - maximum number of times the logger callback is called
     /// * `control` - resulting control object
     ///
     /// **Returns** whether the call was successful; might set one of the following error codes:
@@ -871,7 +909,25 @@ impl ClingoControl {
             Err(error_message())
         }
     }
-
+    /// Create a new control object.
+    ///
+    /// **Note:** Only gringo options (without <code>\-\-output</code>) and clasp`s options are supported as arguments,
+    /// except basic options such as <code>\-\-help</code>.
+    /// Furthermore, a control object is blocked while a search call is active;
+    /// you must not call any member function during search.
+    ///
+    /// **Parameters:**
+    ///
+    /// * `arguments` - C string array of command line arguments
+    /// * `arguments_size` - size of the arguments array
+    /// * `logger` - callback functions for warnings and info messages
+    /// * `logger_data` - user data for the logger callback
+    /// * `message_limit` - maximum number of times the logger callback is called
+    /// * `control` - resulting control object
+    ///
+    /// **Returns** whether the call was successful; might set one of the following error codes:
+    /// - ::clingo_error_bad_alloc
+    /// - ::clingo_error_runtime if argument parsing fails
     pub fn new_with_logger<D, T: ClingoLogger<D>>(
         arguments: std::vec::Vec<String>,
         logger: &T,
@@ -985,12 +1041,9 @@ impl ClingoControl {
     /// * `control` - the target
     /// * `parts` array of parts to ground
     /// * `parts_size` size of the parts array
-    /// * `ground_callback` callback to implement external functions
-    /// * `ground_callback_data` user data for ground_callback
     ///
     /// **Returns** whether the call was successful; might set one of the following error codes:
     /// - ::clingo_error_bad_alloc
-    /// - error code of ground callback
     ///
     /// @see clingo_part
     pub fn ground(&mut self, sparts: &[ClingoPart]) -> Result<(), &'static str> {
@@ -1015,7 +1068,27 @@ impl ClingoControl {
             Err(error_message())
         }
     }
-
+    /// Ground the selected @link ::clingo_part parts @endlink of the current (non-ground) logic program.
+    ///
+    /// After grounding, logic programs can be solved with ::clingo_control_solve().
+    ///
+    /// **Note:** Parts of a logic program without an explicit <tt>\#program</tt>
+    /// specification are by default put into a program called `base` - without
+    /// arguments.
+    ///
+    /// # Arguments
+    ///
+    /// * `control` - the target
+    /// * `parts` array of parts to ground
+    /// * `parts_size` size of the parts array
+    /// * `ground_callback` callback to implement external functions
+    /// * `ground_callback_data` user data for ground_callback
+    ///
+    /// **Returns** whether the call was successful; might set one of the following error codes:
+    /// - ::clingo_error_bad_alloc
+    /// - error code of ground callback
+    ///
+    /// @see clingo_part
     pub fn ground_with_event_handler<D, T: ClingoGroundEventHandler<D>>(
         &mut self,
         sparts: &[ClingoPart],
@@ -1055,8 +1128,6 @@ impl ClingoControl {
     /// * `mode` - configures the search mode
     /// * `assumptions` - array of assumptions to solve under
     /// * `assumptions_size` - number of assumptions
-    /// * `notify` - the event handler to register
-    /// * `data` - the user data for the event handler
     /// * `handle` - handle to the current search to enumerate models
     ///
     /// **Returns** whether the call was successful; might set one of the following error codes:
@@ -1086,6 +1157,23 @@ impl ClingoControl {
             Err(error_message())
         }
     }
+    /// Solve the currently @link ::clingo_control_ground grounded @endlink logic program enumerating its models.
+    ///
+    /// See the @ref SolveHandle module for more information.
+    ///
+    /// **Parameters:**
+    ///
+    /// * `control` - the target
+    /// * `mode` - configures the search mode
+    /// * `assumptions` - array of assumptions to solve under
+    /// * `assumptions_size` - number of assumptions
+    /// * `notify` - the event handler to register
+    /// * `data` - the user data for the event handler
+    /// * `handle` - handle to the current search to enumerate models
+    ///
+    /// **Returns** whether the call was successful; might set one of the following error codes:
+    /// - ::clingo_error_bad_alloc
+    /// - ::clingo_error_runtime if solving could not be started
     pub fn solve_with_event_handler<D, T: ClingoSolveEventHandler<D>>(
         &mut self,
         mode: clingo_solve_mode_bitset_t,
@@ -1214,7 +1302,26 @@ impl ClingoControl {
             Err(error_message())
         }
     }
-
+    /// Get a statistics object to inspect solver statistics.
+    ///
+    /// Statistics are updated after a solve call.
+    ///
+    /// See the @ref Statistics module for more information.
+    ///
+    /// @attention
+    /// The level of detail of the statistics depends on the stats option
+    /// (which can be set using @ref Configuration module or passed as an option when @link clingo_control_new creating the control object@endlink).
+    /// The default level zero only provides basic statistics,
+    /// level one provides extended and accumulated statistics,
+    /// and level two provides per-thread statistics.
+    ///
+    /// **Parameters:**
+    ///
+    /// * `control` - the target
+    /// * `statistics` - the statistics object
+    ///
+    /// **Returns** whether the call was successful; might set one of the following error codes:
+    /// - ::clingo_error_bad_alloc
     pub fn statistics(&mut self) -> Result<&mut ClingoStatistics, &'static str> {
         let mut stat = std::ptr::null_mut() as *mut clingo_statistics_t;
 
