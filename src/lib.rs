@@ -330,125 +330,6 @@ pub fn create_string(string: &str) -> Result<ClingoSymbol, &'static str> {
     }
 }
 
-// struct MaLogger;
-// impl ClingoLogger<u32> for MaLogger {
-//
-//     fn log(code: ClingoWarning, message: &str, data: &mut u32){
-//         println!("log: {}",message);
-//         println!("warn: {:?}",code);
-//     }
-// }
-
-/// Parse the given program and return an abstract syntax tree for each statement via a callback.
-///
-/// **Parameters:**
-///
-/// * `program` - the program in gringo syntax
-/// * `callback` - the callback reporting statements
-/// * `callback_data` - user data for the callback
-/// * `logger` - callback to report messages during parsing
-/// * `logger_data` - user data for the logger
-/// * `message_limit` - the maximum number of times the logger is called
-///
-/// **Returns** whether the call was successful; might set one of the following error codes:
-/// - ::clingo_error_runtime if parsing fails
-/// - ::clingo_error_bad_alloc
-pub fn parse_program(program_: &str) -> Result<(), &'static str> {
-    let callback = None;
-    let callback_data = std::ptr::null_mut();
-    let logger = None;
-    //         let logger = Some(MaLogger::unsafe_logging_callback as ClingoLoggingCallback);
-    let logger_data = std::ptr::null_mut();
-    let program = CString::new(program_).unwrap();
-    let suc = unsafe {
-        clingo_parse_program(
-            program.as_ptr(),
-            callback,
-            callback_data,
-            logger,
-            logger_data,
-            0,
-        )
-    };
-    if suc {
-        Ok(())
-    } else {
-        Err(error_message())
-    }
-}
-pub fn parse_program_with_event_handler<D, T: ClingoAstStatementHandler<D>>(
-    program_: &str,
-    handler: &T,
-    data_: &mut D,
-) -> Result<(), &'static str> {
-    let logger = None;
-    //         let logger = Some(MaLogger::unsafe_logging_callback as ClingoLoggingCallback);
-    let logger_data = std::ptr::null_mut();
-    let program = CString::new(program_).unwrap();
-    let data = data_ as *mut D;
-    let suc = unsafe {
-        clingo_parse_program(
-            program.as_ptr(),
-            Some(T::unsafe_ast_callback as ClingoAstCallback),
-            data as *mut ::std::os::raw::c_void,
-            logger,
-            logger_data,
-            0,
-        )
-    };
-    if suc {
-        Ok(())
-    } else {
-        Err(error_message())
-    }
-}
-pub fn parse_program_with_logger<D, T: ClingoLogger<D>>(
-    program_: &str,
-    logger: &T,
-    logger_data: &mut D,
-    message_limit: u32,
-) -> Result<(), &'static str> {
-    let callback = None;
-    let callback_data = std::ptr::null_mut();
-    let data = logger_data as *mut D;
-    let program = CString::new(program_).unwrap();
-    let suc = unsafe {
-        clingo_parse_program(
-            program.as_ptr(),
-            callback,
-            callback_data,
-            Some(T::unsafe_logging_callback as ClingoLoggingCallback),
-            data as *mut ::std::os::raw::c_void,
-            message_limit,
-        )
-    };
-    if suc {
-        Ok(())
-    } else {
-        Err(error_message())
-    }
-}
-pub fn create_clingo_location(
-    begin_line: usize,
-    end_line: usize,
-    begin_column: usize,
-    end_column: usize,
-    begin_file_: &str,
-    end_file_: &str,
-) -> ClingoLocation {
-    let begin_file = CString::new(begin_file_).unwrap();
-    let end_file = CString::new(end_file_).unwrap();
-    let loc = clingo_location {
-        begin_line: begin_line,
-        end_line: end_line,
-        begin_column: begin_column,
-        end_column: end_column,
-        begin_file: begin_file.as_ptr(),
-        end_file: end_file.as_ptr(),
-    };
-    ClingoLocation(loc)
-}
-
 /// Construct a symbol representing an id.
 ///
 ///
@@ -639,6 +520,125 @@ impl ClingoSymbol {
     pub fn hash(&self) -> usize {
         unsafe { clingo_symbol_hash(self.0) }
     }
+}
+
+// struct MaLogger;
+// impl ClingoLogger<u32> for MaLogger {
+//
+//     fn log(code: ClingoWarning, message: &str, data: &mut u32){
+//         println!("log: {}",message);
+//         println!("warn: {:?}",code);
+//     }
+// }
+
+/// Parse the given program and return an abstract syntax tree for each statement via a callback.
+///
+/// **Parameters:**
+///
+/// * `program` - the program in gringo syntax
+/// * `callback` - the callback reporting statements
+/// * `callback_data` - user data for the callback
+/// * `logger` - callback to report messages during parsing
+/// * `logger_data` - user data for the logger
+/// * `message_limit` - the maximum number of times the logger is called
+///
+/// **Returns** whether the call was successful; might set one of the following error codes:
+/// - ::clingo_error_runtime if parsing fails
+/// - ::clingo_error_bad_alloc
+pub fn parse_program(program_: &str) -> Result<(), &'static str> {
+    let callback = None;
+    let callback_data = std::ptr::null_mut();
+    let logger = None;
+    //         let logger = Some(MaLogger::unsafe_logging_callback as ClingoLoggingCallback);
+    let logger_data = std::ptr::null_mut();
+    let program = CString::new(program_).unwrap();
+    let suc = unsafe {
+        clingo_parse_program(
+            program.as_ptr(),
+            callback,
+            callback_data,
+            logger,
+            logger_data,
+            0,
+        )
+    };
+    if suc {
+        Ok(())
+    } else {
+        Err(error_message())
+    }
+}
+pub fn parse_program_with_event_handler<D, T: ClingoAstStatementHandler<D>>(
+    program_: &str,
+    handler: &T,
+    data_: &mut D,
+) -> Result<(), &'static str> {
+    let logger = None;
+    //         let logger = Some(MaLogger::unsafe_logging_callback as ClingoLoggingCallback);
+    let logger_data = std::ptr::null_mut();
+    let program = CString::new(program_).unwrap();
+    let data = data_ as *mut D;
+    let suc = unsafe {
+        clingo_parse_program(
+            program.as_ptr(),
+            Some(T::unsafe_ast_callback as ClingoAstCallback),
+            data as *mut ::std::os::raw::c_void,
+            logger,
+            logger_data,
+            0,
+        )
+    };
+    if suc {
+        Ok(())
+    } else {
+        Err(error_message())
+    }
+}
+pub fn parse_program_with_logger<D, T: ClingoLogger<D>>(
+    program_: &str,
+    logger: &T,
+    logger_data: &mut D,
+    message_limit: u32,
+) -> Result<(), &'static str> {
+    let callback = None;
+    let callback_data = std::ptr::null_mut();
+    let data = logger_data as *mut D;
+    let program = CString::new(program_).unwrap();
+    let suc = unsafe {
+        clingo_parse_program(
+            program.as_ptr(),
+            callback,
+            callback_data,
+            Some(T::unsafe_logging_callback as ClingoLoggingCallback),
+            data as *mut ::std::os::raw::c_void,
+            message_limit,
+        )
+    };
+    if suc {
+        Ok(())
+    } else {
+        Err(error_message())
+    }
+}
+pub fn create_clingo_location(
+    begin_line: usize,
+    end_line: usize,
+    begin_column: usize,
+    end_column: usize,
+    begin_file_: &str,
+    end_file_: &str,
+) -> ClingoLocation {
+    let begin_file = CString::new(begin_file_).unwrap();
+    let end_file = CString::new(end_file_).unwrap();
+    let loc = clingo_location {
+        begin_line: begin_line,
+        end_line: end_line,
+        begin_column: begin_column,
+        end_column: end_column,
+        begin_file: begin_file.as_ptr(),
+        end_file: end_file.as_ptr(),
+    };
+    ClingoLocation(loc)
 }
 
 pub fn version() -> (i32, i32, i32) {
