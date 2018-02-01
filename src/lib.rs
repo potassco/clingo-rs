@@ -437,10 +437,23 @@ impl ClingoSymbol {
             Err(error_message())
         }
     }
-
-    //TODO     pub fn is_positive(&self)-> Result<bool, &'static str> {
-    //     pub fn clingo_symbol_is_positive(symbol: clingo_symbol_t, positive: *mut u8) -> u8;
-    //     }
+    /// Check if a function is positive (does not have a sign).
+    ///
+    /// **Parameters:**
+    ///
+    /// * `symbol` - the target symbol
+    /// * `positive` - the result
+    ///
+    /// **Returns** whether the call was successful; might set one of the following error codes:
+    /// - ::clingo_error_runtime if symbol is not of type ::clingo_symbol_type_function
+    pub fn is_positive(&self)-> Result<bool, &'static str> {
+        let mut positive = false;
+        if unsafe { clingo_symbol_is_positive(self.0, &mut positive) } {
+            Ok(positive)
+        } else {
+            Err(error_message())
+        }
+    }
     //TODO     pub fn is_negative(&self)-> Result<bool, &'static str> {
     //     pub fn clingo_symbol_is_negative(symbol: clingo_symbol_t, negative: *mut u8) -> u8;
     //     }
