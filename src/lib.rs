@@ -310,7 +310,25 @@ pub fn create_infimum() -> ClingoSymbol {
     unsafe { clingo_symbol_create_infimum(&mut symbol) };
     ClingoSymbol(symbol)
 }
-//TODO     pub fn clingo_symbol_create_string(string: *const c_char, symbol: *mut clingo_symbol_t) -> u8;
+
+/// Construct a symbol representing a string.
+///
+/// **Parameters:**
+///
+/// * `string` - the string
+/// * `symbol` - the resulting symbol
+///
+/// **Returns** whether the call was successful; might set one of the following error codes:
+/// - ::clingo_error_bad_alloc
+pub fn create_string(string: &str) -> Result<ClingoSymbol, &'static str> {
+    let mut symbol = 0 as clingo_symbol_t;
+    let c_str = CString::new(string).unwrap();
+    if unsafe { clingo_symbol_create_string(c_str.as_ptr(), &mut symbol) } {
+        Ok(ClingoSymbol(symbol))
+    } else {
+        Err(error_message())
+    }
+}
 
 // struct MaLogger;
 // impl ClingoLogger<u32> for MaLogger {
@@ -905,10 +923,10 @@ impl ClingoControl {
     ) -> Result<(), &'static str> {
         let name = CString::new(name_).unwrap();
         let name_ptr = name.as_ptr();
-        
+
         let program = CString::new(program_).unwrap();
         let program_ptr = program.as_ptr();
-        
+
         let parameters_size = parameters.len();
 
         // create a vector of zero terminated strings
