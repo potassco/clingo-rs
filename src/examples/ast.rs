@@ -127,7 +127,7 @@ fn main() {
         };
 
         // get the AST of the program
-        parse_program_with_event_handler("a :- not b. b :- not a.", &MyAstHandler, &mut data)
+        parse_program("a :- not b. b :- not a.", &MyAstHandler, &mut data)
             .expect("Failed to parse logic program.");
 
         // add the external statement: #external enable.
