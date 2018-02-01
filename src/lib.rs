@@ -564,37 +564,11 @@ impl ClingoSymbol {
 /// * `program` - the program in gringo syntax
 /// * `callback` - the callback reporting statements
 /// * `callback_data` - user data for the callback
-/// * `logger` - callback to report messages during parsing
-/// * `logger_data` - user data for the logger
-/// * `message_limit` - the maximum number of times the logger is called
 ///
 /// **Returns** whether the call was successful; might set one of the following error codes:
 /// - ::clingo_error_runtime if parsing fails
 /// - ::clingo_error_bad_alloc
-pub fn parse_program(program_: &str) -> Result<(), &'static str> {
-    let callback = None;
-    let callback_data = std::ptr::null_mut();
-    let logger = None;
-    //         let logger = Some(MaLogger::unsafe_logging_callback as ClingoLoggingCallback);
-    let logger_data = std::ptr::null_mut();
-    let program = CString::new(program_).unwrap();
-    let suc = unsafe {
-        clingo_parse_program(
-            program.as_ptr(),
-            callback,
-            callback_data,
-            logger,
-            logger_data,
-            0,
-        )
-    };
-    if suc {
-        Ok(())
-    } else {
-        Err(error_message())
-    }
-}
-pub fn parse_program_with_event_handler<D, T: ClingoAstStatementHandler<D>>(
+pub fn parse_program<D, T: ClingoAstStatementHandler<D>>(
     program_: &str,
     handler: &T,
     data_: &mut D,
@@ -620,23 +594,38 @@ pub fn parse_program_with_event_handler<D, T: ClingoAstStatementHandler<D>>(
         Err(error_message())
     }
 }
-pub fn parse_program_with_logger<D, T: ClingoLogger<D>>(
+/// Parse the given program and return an abstract syntax tree for each statement via a callback.
+///
+/// **Parameters:**
+///
+/// * `program` - the program in gringo syntax
+/// * `callback` - the callback reporting statements
+/// * `callback_data` - user data for the callback
+/// * `logger` - callback to report messages during parsing
+/// * `logger_data` - user data for the logger
+/// * `message_limit` - the maximum number of times the logger is called
+///
+/// **Returns** whether the call was successful; might set one of the following error codes:
+/// - ::clingo_error_runtime if parsing fails
+/// - ::clingo_error_bad_alloc
+pub fn parse_program_with_logger<CD, C: ClingoAstStatementHandler<CD>,LD, L: ClingoLogger<LD>>(
     program_: &str,
-    logger: &T,
-    logger_data: &mut D,
+    callback: &C,
+    cdata_: &mut CD,
+    logger: &L,
+    ldata_: &mut LD,
     message_limit: u32,
 ) -> Result<(), &'static str> {
-    let callback = None;
-    let callback_data = std::ptr::null_mut();
-    let data = logger_data as *mut D;
+    let callback_data = cdata_ as *mut CD;
+    let logger_data = ldata_ as *mut LD;
     let program = CString::new(program_).unwrap();
     let suc = unsafe {
         clingo_parse_program(
             program.as_ptr(),
-            callback,
-            callback_data,
-            Some(T::unsafe_logging_callback as ClingoLoggingCallback),
-            data as *mut ::std::os::raw::c_void,
+            Some(C::unsafe_ast_callback as ClingoAstCallback),
+            callback_data as *mut ::std::os::raw::c_void,
+            Some(L::unsafe_logging_callback as ClingoLoggingCallback),
+            logger_data as *mut ::std::os::raw::c_void,
             message_limit,
         )
     };
