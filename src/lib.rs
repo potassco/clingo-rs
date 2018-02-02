@@ -305,6 +305,7 @@ pub fn create_number(number: c_int) -> ClingoSymbol {
     unsafe { clingo_symbol_create_number(number, &mut symbol) };
     ClingoSymbol(symbol)
 }
+
 /// Construct a symbol representing \#sup.
 ///
 /// * `symbol` - the resulting symbol
@@ -313,6 +314,7 @@ pub fn create_supremum() -> ClingoSymbol {
     unsafe { clingo_symbol_create_supremum(&mut symbol) };
     ClingoSymbol(symbol)
 }
+
 /// Construct a symbol representing <tt>\#inf</tt>.
 ///
 /// * `symbol` - the resulting symbol
@@ -421,6 +423,7 @@ impl ClingoSymbol {
             Err(error_message())
         }
     }
+
     /// Get the name of a symbol.
     ///
     /// **Parameters:**
@@ -439,6 +442,7 @@ impl ClingoSymbol {
             Err(error_message())
         }
     }
+
     /// Get the string of a symbol.
     ///
     /// **Parameters:**
@@ -457,6 +461,7 @@ impl ClingoSymbol {
             Err(error_message())
         }
     }
+
     /// Check if a function is positive (does not have a sign).
     ///
     /// **Parameters:**
@@ -474,6 +479,7 @@ impl ClingoSymbol {
             Err(error_message())
         }
     }
+
     /// Check if a function is negative (has a sign).
     ///
     /// **Parameters:**
@@ -491,6 +497,7 @@ impl ClingoSymbol {
             Err(error_message())
         }
     }
+
     /// Get the arguments of a symbol.
     ///
     /// # Arguments
@@ -516,6 +523,7 @@ impl ClingoSymbol {
             Err(error_message())
         }
     }
+
     /// Get the type of a symbol.
     ///
     /// **Parameters:**
@@ -564,6 +572,7 @@ impl ClingoSymbol {
             }
         }
     }
+
     /// Check if a symbol is less than another symbol.
     ///
     /// Symbols are first compared by type.  If the types are equal, the values are
@@ -579,6 +588,7 @@ impl ClingoSymbol {
     pub fn is_less_than(&self, other: &ClingoSymbol) -> bool {
         unsafe { clingo_symbol_is_less_than(self.0, other.0) }
     }
+
     /// Calculate a hash code of a symbol.
     ///
     /// **Parameters:**
@@ -636,6 +646,7 @@ pub fn parse_program<D, T: ClingoAstStatementHandler<D>>(
         Err(error_message())
     }
 }
+
 /// Parse the given program and return an abstract syntax tree for each statement via a callback.
 ///
 /// **Parameters:**
@@ -697,6 +708,11 @@ pub fn create_clingo_location(
     ClingoLocation(loc)
 }
 
+/// Obtain the clingo version.
+///
+/// **Returns:**
+///
+/// * `(major,minor,revision)` - major, minor version, revision number
 pub fn version() -> (i32, i32, i32) {
     let mut major = 0;
     let mut minor = 0;
@@ -726,6 +742,11 @@ impl<'a> ClingoPart<'a> {
         }
     }
 }
+/// Get the last error code set by a clingo API call.
+///
+/// **Note:** Each thread has its own local error code.
+///
+/// **Returns** error code
 pub fn error() -> ClingoError {
     let code = unsafe { clingo_error_code() };
     match code as u32 {
@@ -738,6 +759,11 @@ pub fn error() -> ClingoError {
     }
 }
 
+/// Get the last error message set if an API call fails.
+///
+/// **Note:** Each thread has its own local error message.
+///
+/// **Returns** error message or empty string
 pub fn error_message() -> &'static str {
     let char_ptr: *const c_char = unsafe { clingo_error_message() };
     if char_ptr.is_null() {
@@ -748,6 +774,12 @@ pub fn error_message() -> &'static str {
     }
 }
 
+/// Set a custom error code and message in the active thread.
+///
+/// **Parameters:**
+///
+/// * `code` - the error code
+/// * `message` - the error message
 pub fn set_error(code: ClingoError, message: &str) {
     let message_c_str = CString::new(message).unwrap();
     unsafe { clingo_set_error(code as clingo_error_t, message_c_str.as_ptr()) }
@@ -840,7 +872,7 @@ pub trait ClingoPropagatorBuilder<T> {
     }
 }
 
-// #[derive(Debug)]
+#[derive(Debug)]
 pub struct ClingoControl {
     ctl: Unique<clingo_control_t>,
 }
@@ -906,6 +938,7 @@ impl ClingoControl {
             Err(error_message())
         }
     }
+
     /// Create a new control object.
     ///
     /// **Note:** Only gringo options (without <code>\-\-output</code>) and clasp`s options are supported as arguments,
@@ -1062,6 +1095,7 @@ impl ClingoControl {
             Err(error_message())
         }
     }
+
     /// Ground the selected @link ::clingo_part parts @endlink of the current (non-ground) logic program.
     ///
     /// After grounding, logic programs can be solved with ::clingo_control_solve().
@@ -1149,6 +1183,7 @@ impl ClingoControl {
             Err(error_message())
         }
     }
+
     /// Solve the currently @link ::clingo_control_ground grounded @endlink logic program enumerating its models.
     ///
     /// See the @ref SolveHandle module for more information.
@@ -1193,6 +1228,7 @@ impl ClingoControl {
             Err(error_message())
         }
     }
+
     /// Clean up the domains of clingo`s grounding component using the solving
     /// component`s top level assignment.
     ///
@@ -1214,6 +1250,7 @@ impl ClingoControl {
             Err(error_message())
         }
     }
+
     /// Assign a truth value to an external atom.
     ///
     /// If the atom does not exist or is not external, this is a noop.
@@ -1243,6 +1280,7 @@ impl ClingoControl {
             Err(error_message())
         }
     }
+
     /// Release an external atom.
     ///
     /// After this call, an external atom is no longer external and subject to
@@ -1297,6 +1335,7 @@ impl ClingoControl {
             Err(error_message())
         }
     }
+
     /// Get a statistics object to inspect solver statistics.
     ///
     /// Statistics are updated after a solve call.
@@ -1326,6 +1365,7 @@ impl ClingoControl {
             Err(error_message())
         }
     }
+
     /// Interrupt the active solve call (or the following solve call right at the beginning).
     ///
     /// **Parameters:**
@@ -1336,6 +1376,7 @@ impl ClingoControl {
             clingo_control_interrupt(self.ctl.as_ptr());
         }
     }
+
     /// Get a configuration object to change the solver configuration.
     ///
     /// See the @ref Configuration module for more information.
@@ -1381,6 +1422,7 @@ impl ClingoControl {
             Err(error_message())
         }
     }
+
     /// Return the symbol for a constant definition of form: <tt>\#const name = symbol</tt>.
     ///
     /// **Parameters:**
@@ -1400,6 +1442,7 @@ impl ClingoControl {
             None
         }
     }
+
     /// Check if there is a constant definition for the given constant.
     ///
     /// **Parameters:**
@@ -1557,6 +1600,7 @@ impl ClingoProgramBuilder {
 
 #[derive(Clone, Copy)]
 pub struct ClingoAstHeadLiteral(clingo_ast_head_literal_t);
+
 #[derive(Clone, Copy)]
 pub struct ClingoAstBodyLiteral(clingo_ast_body_literal_t);
 impl ClingoAstBodyLiteral {
@@ -1624,6 +1668,7 @@ impl ClingoAstExternal {
         ClingoAstExternal(ext)
     }
 }
+
 #[derive(Clone)]
 pub struct ClingoAstStatement(clingo_ast_statement_t);
 impl ClingoAstStatement {
@@ -3048,6 +3093,7 @@ impl ClingoSolveHandle {
             Err(error_message())
         }
     }
+
     /// Stops the running search and releases the handle.
     ///
     /// Blocks until the search is stopped (as if an implicit cancel was called before the handle is released).
@@ -3083,5 +3129,4 @@ mod tests {
         sym = create_infimum();
         assert!(ClingoSymbolType::Infimum == sym.get_type().unwrap());
     }
-
 }
