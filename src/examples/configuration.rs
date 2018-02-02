@@ -51,18 +51,19 @@ fn main() {
     // create a control object and pass command line arguments
     let mut ctl = ClingoControl::new(options, 20).expect("Failed creating ClingoControl.");
 
-    // get the configuration object and its root key
     {
+        // get the configuration object and its root key
         let conf = ctl.configuration().unwrap();
         let root_key = conf.root().unwrap();
+        let mut sub_key;
 
         // configure to enumerate all models
-        let mut sub_key = conf.map_at(root_key, "solve.models").unwrap();
+        sub_key = conf.map_at(root_key, "solve.models").unwrap();
         conf.value_set(sub_key, "0")
             .expect("Failed to set solve.models to 0.");
-        sub_key = conf.map_at(root_key, "solver").unwrap();
 
         // configure the first solver to use the berkmin heuristic
+        sub_key = conf.map_at(root_key, "solver").unwrap();
         sub_key = conf.array_at(sub_key, 0).unwrap();
         sub_key = conf.map_at(sub_key, "heuristic").unwrap();
         conf.value_set(sub_key, "berkmin")
