@@ -1381,11 +1381,25 @@ impl ClingoControl {
             Err(error_message())
         }
     }
-
-    //TODO     pub fn clingo_control_get_const(control: *mut ClingoControl,
-    //                                     name: *const c_char,
-    //                                     symbol: *mut clingo_symbol_t)
-    //                                    -> bool;
+    /// Return the symbol for a constant definition of form: <tt>\#const name = symbol</tt>.
+    ///
+    /// **Parameters:**
+    ///
+    /// * `control` - the target
+    /// * `name` - the name of the constant
+    /// * `symbol` - the resulting symbol
+    ///
+    /// **Returns** whether the call was successful
+    pub fn get_const(&mut self, name: &str) -> Option<ClingoSymbol> {
+        let c_str_name = CString::new(name).unwrap();
+        let mut symbol = 0 as clingo_symbol_t;
+        if unsafe { clingo_control_get_const(self.ctl.as_ptr(), c_str_name.as_ptr(), &mut symbol) }
+        {
+            Some(ClingoSymbol(symbol))
+        } else {
+            None
+        }
+    }
 
     //TODO     pub fn clingo_control_has_const(control: *mut ClingoControl,
     //                                     name: *const c_char,
