@@ -1892,10 +1892,26 @@ impl ClingoConfiguration {
         }
     }
 
-    //TODO     pub fn clingo_configuration_array_size(configuration: *mut ClingoConfiguration,
-    //                                            key: clingo_id_t,
-    //                                            size: *mut size_t)
-    //                                            -> u8;
+    /// Get the size of an array entry.
+    ///
+    /// @pre The @link clingo_configuration_type() type@endlink of the entry must be @ref ::clingo_configuration_type_array.
+    ///
+    /// **Parameters:**
+    ///
+    /// * `configuration` - the target configuration
+    /// * `key` - the key
+    /// * `size` - the resulting size
+    ///
+    /// **Returns** whether the call was successful
+    pub fn array_size(&mut self, ClingoId(key): ClingoId) -> Option<usize> {
+        let ClingoConfiguration(ref mut conf) = *self;
+        let mut size = 0;
+        if unsafe { clingo_configuration_array_size(conf, key, &mut size) } {
+            Some(size)
+        } else {
+            None
+        }
+    }
 
     /// Get the subkey at the given offset of an array entry.
     ///
