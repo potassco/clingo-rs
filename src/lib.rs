@@ -621,7 +621,7 @@ pub fn parse_program<D, T: ClingoAstStatementHandler<D>>(
     let logger_data = std::ptr::null_mut();
     let program = CString::new(program_).unwrap();
     let data = data_ as *mut D;
-    let suc = unsafe {
+    if unsafe {
         clingo_parse_program(
             program.as_ptr(),
             Some(T::unsafe_ast_callback as ClingoAstCallback),
@@ -630,8 +630,7 @@ pub fn parse_program<D, T: ClingoAstStatementHandler<D>>(
             logger_data,
             0,
         )
-    };
-    if suc {
+    } {
         Ok(())
     } else {
         Err(error_message())
@@ -662,7 +661,7 @@ pub fn parse_program_with_logger<CD, C: ClingoAstStatementHandler<CD>, LD, L: Cl
     let callback_data = cdata_ as *mut CD;
     let logger_data = ldata_ as *mut LD;
     let program = CString::new(program_).unwrap();
-    let suc = unsafe {
+    if unsafe {
         clingo_parse_program(
             program.as_ptr(),
             Some(C::unsafe_ast_callback as ClingoAstCallback),
@@ -671,8 +670,7 @@ pub fn parse_program_with_logger<CD, C: ClingoAstStatementHandler<CD>, LD, L: Cl
             logger_data as *mut ::std::os::raw::c_void,
             message_limit,
         )
-    };
-    if suc {
+    } {
         Ok(())
     } else {
         Err(error_message())
@@ -891,7 +889,7 @@ impl ClingoControl {
 
         let mut ctl = unsafe { mem::uninitialized() };
 
-        let suc = unsafe {
+        if unsafe {
             clingo_control_new(
                 c_args.as_ptr(),
                 c_args.len(),
@@ -900,8 +898,7 @@ impl ClingoControl {
                 message_limit,
                 &mut ctl,
             )
-        };
-        if suc {
+        } {
             Ok(ClingoControl {
                 ctl: Unique::new(ctl).unwrap(),
             })
@@ -948,7 +945,7 @@ impl ClingoControl {
         let mut ctl = unsafe { mem::uninitialized() };
 
         let data = logger_data as *mut D;
-        let suc = unsafe {
+        if unsafe {
             clingo_control_new(
                 c_args.as_ptr(),
                 c_args.len(),
@@ -957,8 +954,7 @@ impl ClingoControl {
                 message_limit,
                 &mut ctl,
             )
-        };
-        if suc {
+        } {
             Ok(ClingoControl {
                 ctl: Unique::new(ctl).unwrap(),
             })
@@ -1012,7 +1008,7 @@ impl ClingoControl {
             .map(|arg| arg.as_ptr())
             .collect::<Vec<*const c_char>>();
 
-        let suc = unsafe {
+        if unsafe {
             clingo_control_add(
                 self.ctl.as_ptr(),
                 name_ptr,
@@ -1020,8 +1016,7 @@ impl ClingoControl {
                 parameters_size,
                 program_ptr,
             )
-        };
-        if suc {
+        } {
             Ok(())
         } else {
             Err(error_message())
@@ -1053,7 +1048,7 @@ impl ClingoControl {
             .collect::<Vec<clingo_part>>();
         let parts_size = sparts.len();
 
-        let suc = unsafe {
+        if unsafe {
             clingo_control_ground(
                 self.ctl.as_ptr(),
                 parts.as_ptr(),
@@ -1061,8 +1056,7 @@ impl ClingoControl {
                 None,
                 std::ptr::null_mut() as *mut ::std::os::raw::c_void,
             )
-        };
-        if suc {
+        } {
             Ok(())
         } else {
             Err(error_message())
@@ -1102,7 +1096,7 @@ impl ClingoControl {
         let parts_size = sparts.len();
 
         let data = data_ as *mut D;
-        let suc = unsafe {
+        if unsafe {
             clingo_control_ground(
                 self.ctl.as_ptr(),
                 parts.as_ptr(),
@@ -1110,8 +1104,7 @@ impl ClingoControl {
                 Some(T::unsafe_ground_callback as ClingoGroundCallback),
                 data as *mut ::std::os::raw::c_void,
             )
-        };
-        if suc {
+        } {
             Ok(())
         } else {
             Err(error_message())
@@ -1139,7 +1132,6 @@ impl ClingoControl {
         assumptions: &[ClingoSymbolicLiteral],
     ) -> Result<&mut ClingoSolveHandle, &'static str> {
         let mut handle = std::ptr::null_mut() as *mut clingo_solve_handle_t;
-
         if unsafe {
             clingo_control_solve(
                 self.ctl.as_ptr(),
@@ -1216,8 +1208,7 @@ impl ClingoControl {
     /// **Returns** whether the call was successful; might set one of the following error codes:
     /// - ::clingo_error_bad_alloc
     pub fn cleanup(&mut self) -> Result<(), &'static str> {
-        let suc = unsafe { clingo_control_cleanup(self.ctl.as_ptr()) };
-        if suc {
+        if unsafe { clingo_control_cleanup(self.ctl.as_ptr()) } {
             Ok(())
         } else {
             Err(error_message())
@@ -1240,14 +1231,13 @@ impl ClingoControl {
         symbol: &ClingoSymbol,
         value: ClingoTruthValue,
     ) -> Result<(), &'static str> {
-        let suc = unsafe {
+        if unsafe {
             clingo_control_assign_external(
                 self.ctl.as_ptr(),
                 symbol.0,
                 value as clingo_truth_value_t,
             )
-        };
-        if suc {
+        } {
             Ok(())
         } else {
             Err(error_message())
@@ -1294,15 +1284,14 @@ impl ClingoControl {
         let propagator = T::new();
         let propagator_ptr: *const ClingoPropagator = &propagator;
         let data_ptr = data as *mut D;
-        let suc = unsafe {
+        if unsafe {
             clingo_control_register_propagator(
                 self.ctl.as_ptr(),
                 propagator_ptr as *const clingo_propagator,
                 data_ptr as *mut ::std::os::raw::c_void,
                 sequential,
             )
-        };
-        if suc {
+        } {
             Ok(())
         } else {
             Err(error_message())
@@ -1330,7 +1319,6 @@ impl ClingoControl {
     /// - ::clingo_error_bad_alloc
     pub fn statistics(&mut self) -> Result<&mut ClingoStatistics, &'static str> {
         let mut stat = std::ptr::null_mut() as *mut clingo_statistics_t;
-
         if unsafe { clingo_control_statistics(self.ctl.as_ptr(), &mut stat) } {
             unsafe { (stat as *mut ClingoStatistics).as_mut() }
                 .ok_or("Rust bindings failed to dereference pointer to clingo statistics")
@@ -2987,8 +2975,7 @@ impl ClingoSolveHandle {
     /// - ::clingo_error_runtime if solving fails
     pub fn get(&mut self) -> Result<clingo_solve_result_bitset_t, &'static str> {
         let mut result = 0;
-        let suc = unsafe { clingo_solve_handle_get(&mut self.0, &mut result) };
-        if suc {
+        if unsafe { clingo_solve_handle_get(&mut self.0, &mut result) } {
             Ok(result)
         } else {
             Err(error_message())
@@ -3002,7 +2989,6 @@ impl ClingoSolveHandle {
     /// @return whether the call was successful; might set one of the following error codes:
     /// - ::clingo_error_bad_alloc
     /// - ::clingo_error_runtime if solving fails
-
     pub fn model(&mut self) -> Result<&mut ClingoModel, &'static str> {
         let ClingoSolveHandle(ref mut handle) = *self;
         let mut model = std::ptr::null_mut() as *mut clingo_model_t;
@@ -3023,11 +3009,9 @@ impl ClingoSolveHandle {
     /// @return whether the call was successful; might set one of the following error codes:
     /// - ::clingo_error_bad_alloc
     /// - ::clingo_error_runtime if solving fails
-
     pub fn resume(&mut self) -> Result<(), &'static str> {
         let ClingoSolveHandle(ref mut handle) = *self;
-        let suc = unsafe { clingo_solve_handle_resume(handle) };
-        if suc {
+        if unsafe { clingo_solve_handle_resume(handle) } {
             Ok(())
         } else {
             Err(error_message())
@@ -3043,8 +3027,7 @@ impl ClingoSolveHandle {
     /// - ::clingo_error_runtime if solving fails
     pub fn close(&mut self) -> Result<(), &'static str> {
         let ClingoSolveHandle(ref mut handle) = *self;
-        let suc = unsafe { clingo_solve_handle_close(handle) };
-        if suc {
+        if unsafe { clingo_solve_handle_close(handle) } {
             Ok(())
         } else {
             Err(error_message())
