@@ -298,11 +298,6 @@ impl PartialEq for ClingoSymbol {
 impl Eq for ClingoSymbol {}
 
 /// Construct a symbol representing a number.
-///
-/// **Parameters:**
-///
-/// * `number` - the number
-/// * `symbol` - the resulting symbol
 // TODO replace c_int with u32 ?
 pub fn create_number(number: c_int) -> ClingoSymbol {
     let mut symbol = 0 as clingo_symbol_t;
@@ -311,17 +306,13 @@ pub fn create_number(number: c_int) -> ClingoSymbol {
 }
 
 /// Construct a symbol representing \#sup.
-///
-/// * `symbol` - the resulting symbol
 pub fn create_supremum() -> ClingoSymbol {
     let mut symbol = 0 as clingo_symbol_t;
     unsafe { clingo_symbol_create_supremum(&mut symbol) };
     ClingoSymbol(symbol)
 }
 
-/// Construct a symbol representing <tt>\#inf</tt>.
-///
-/// * `symbol` - the resulting symbol
+/// Construct a symbol representing \#inf<
 pub fn create_infimum() -> ClingoSymbol {
     let mut symbol = 0 as clingo_symbol_t;
     unsafe { clingo_symbol_create_infimum(&mut symbol) };
@@ -330,12 +321,8 @@ pub fn create_infimum() -> ClingoSymbol {
 
 /// Construct a symbol representing a string.
 ///
-/// **Parameters:**
+/// #  Errors:
 ///
-/// * `string` - the string
-/// * `symbol` - the resulting symbol
-///
-/// **Returns** whether the call was successful; might set one of the following error codes:
 /// - ::clingo_error_bad_alloc
 pub fn create_string(string: &str) -> Result<ClingoSymbol, &'static str> {
     let mut symbol = 0 as clingo_symbol_t;
@@ -349,7 +336,6 @@ pub fn create_string(string: &str) -> Result<ClingoSymbol, &'static str> {
 
 /// Construct a symbol representing an id.
 ///
-///
 /// **Note:** This is just a shortcut for clingo_symbol_create_function() with
 /// empty arguments.
 ///
@@ -357,9 +343,9 @@ pub fn create_string(string: &str) -> Result<ClingoSymbol, &'static str> {
 ///
 /// * `name` - the name
 /// * `positive` - whether the symbol has a classical negation sign
-/// * `symbol` - the resulting symbol
 ///
-/// **Returns** whether the call was successful; might set one of the following error codes:
+/// # Errors
+///
 /// - ::clingo_error_bad_alloc
 pub fn create_id(name: &str, positive: bool) -> Result<ClingoSymbol, &'static str> {
     let mut symbol = 0 as clingo_symbol_t;
@@ -383,9 +369,9 @@ pub fn create_id(name: &str, positive: bool) -> Result<ClingoSymbol, &'static st
 /// * `arguments` - the arguments of the function
 /// * `arguments_size` - the number of arguments
 /// * `positive` - whether the symbol has a classical negation sign
-/// * `symbol` - the resulting symbol
 ///
-/// **Returns** whether the call was successful; might set one of the following error codes:
+/// # Errors
+///
 /// - ::clingo_error_bad_alloc
 pub fn create_function(
     name: &str,
@@ -412,12 +398,8 @@ pub fn create_function(
 impl ClingoSymbol {
     /// Get the number of a symbol.
     ///
-    /// # Arguments
+    /// # Errors
     ///
-    /// * `symbol` - the target symbol
-    /// * `number` - the resulting number
-    ///
-    /// **Returns** whether the call was successful; might set one of the following error codes:
     /// - ::clingo_error_runtime if symbol is not of type ::clingo_symbol_type_number
     pub fn number(&self) -> Result<i32, &'static str> {
         let mut number = 0;
@@ -430,12 +412,8 @@ impl ClingoSymbol {
 
     /// Get the name of a symbol.
     ///
-    /// **Parameters:**
+    /// # Errors
     ///
-    /// * `symbol` - the target symbol
-    /// * `name` - the resulting name
-    ///
-    /// **Returns** whether the call was successful; might set one of the following error codes:
     /// - ::clingo_error_runtime if symbol is not of type ::clingo_symbol_type_function
     pub fn name(&self) -> Result<&str, &'static str> {
         let mut char_ptr = std::ptr::null() as *const c_char;
@@ -449,12 +427,8 @@ impl ClingoSymbol {
 
     /// Get the string of a symbol.
     ///
-    /// **Parameters:**
+    /// # Errors
     ///
-    /// * `symbol` - the target symbol
-    /// * `string` - the resulting string
-    ///
-    /// **Returns** whether the call was successful; might set one of the following error codes:
     /// - ::clingo_error_runtime if symbol is not of type ::clingo_symbol_type_string
     pub fn string(&self) -> Result<&str, &'static str> {
         let mut char_ptr = std::ptr::null() as *const c_char;
@@ -468,12 +442,8 @@ impl ClingoSymbol {
 
     /// Check if a function is positive (does not have a sign).
     ///
-    /// **Parameters:**
+    /// # Errors
     ///
-    /// * `symbol` - the target symbol
-    /// * `positive` - the result
-    ///
-    /// **Returns** whether the call was successful; might set one of the following error codes:
     /// - ::clingo_error_runtime if symbol is not of type ::clingo_symbol_type_function
     pub fn is_positive(&self) -> Result<bool, &'static str> {
         let mut positive = false;
@@ -486,12 +456,8 @@ impl ClingoSymbol {
 
     /// Check if a function is negative (has a sign).
     ///
-    /// **Parameters:**
+    /// # Errors
     ///
-    /// * `symbol` - the target symbol
-    /// * `negative` - the result
-    ///
-    /// **Returns** whether the call was successful; might set one of the following error codes:
     /// - ::clingo_error_runtime if symbol is not of type ::clingo_symbol_type_function
     pub fn is_negative(&self) -> Result<bool, &'static str> {
         let mut negative = false;
@@ -504,13 +470,8 @@ impl ClingoSymbol {
 
     /// Get the arguments of a symbol.
     ///
-    /// # Arguments
+    /// # Errors
     ///
-    /// * `symbol` - the target symbol
-    /// * `arguments` - the resulting arguments
-    /// * `arguments_size` - the number of arguments
-    ///
-    /// **Returns** whether the call was successful; might set one of the following error codes:
     /// - ::clingo_error_runtime if symbol is not of type ::clingo_symbol_type_function
     pub fn arguments(&self) -> Result<Vec<ClingoSymbol>, &'static str> {
         let mut symbol_ptr = std::ptr::null() as *const clingo_symbol_t;
@@ -530,11 +491,9 @@ impl ClingoSymbol {
 
     /// Get the type of a symbol.
     ///
-    /// **Parameters:**
+    /// # Errors
     ///
-    /// * `symbol` - the target symbol
-    ///
-    /// **Returns** the type of the symbol
+    /// - may failed to match clingo symbol type
     //TODO maybe unnecesary function in Rust API?
     pub fn get_type(&self) -> Result<ClingoSymbolType, &'static str> {
         let stype = unsafe { clingo_symbol_type(self.0) } as u32;
@@ -550,13 +509,8 @@ impl ClingoSymbol {
 
     /// Get the string representation of a symbol.
     ///
-    /// **Parameters:**
+    /// # Errors
     ///
-    /// * `symbol` - the target symbol
-    /// * `string` - the resulting string
-    /// * `size` - the size of the string
-    ///
-    /// **Returns** whether the call was successful; might set one of the following error codes:
     /// - ::clingo_error_bad_alloc
     ///
     pub fn to_string(&self) -> Option<String> {
@@ -583,7 +537,7 @@ impl ClingoSymbol {
     /// compared (where strings are compared using strcmp).  Functions are first
     /// compared by signature and then lexicographically by arguments.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
     /// * `a` - first symbol
     /// * `b` - second symbol
@@ -594,12 +548,6 @@ impl ClingoSymbol {
     }
 
     /// Calculate a hash code of a symbol.
-    ///
-    /// **Parameters:**
-    ///
-    /// * `symbol` - the target symbol
-    ///
-    /// **Returns** the hash code of the symbol
     pub fn hash(&self) -> usize {
         unsafe { clingo_symbol_hash(self.0) }
     }
@@ -616,13 +564,14 @@ impl ClingoSymbol {
 
 /// Parse the given program and return an abstract syntax tree for each statement via a callback.
 ///
-/// **Parameters:**
+/// # Arguments
 ///
 /// * `program` - the program in gringo syntax
 /// * `callback` - the callback reporting statements
 /// * `callback_data` - user data for the callback
 ///
-/// **Returns** whether the call was successful; might set one of the following error codes:
+/// # Errors
+///
 /// - ::clingo_error_runtime if parsing fails
 /// - ::clingo_error_bad_alloc
 pub fn parse_program<D, T: ClingoAstStatementHandler<D>>(
@@ -653,7 +602,7 @@ pub fn parse_program<D, T: ClingoAstStatementHandler<D>>(
 
 /// Parse the given program and return an abstract syntax tree for each statement via a callback.
 ///
-/// **Parameters:**
+/// # Arguments
 ///
 /// * `program` - the program in gringo syntax
 /// * `callback` - the callback reporting statements
@@ -662,7 +611,8 @@ pub fn parse_program<D, T: ClingoAstStatementHandler<D>>(
 /// * `logger_data` - user data for the logger
 /// * `message_limit` - the maximum number of times the logger is called
 ///
-/// **Returns** whether the call was successful; might set one of the following error codes:
+/// # Errors
+///
 /// - ::clingo_error_runtime if parsing fails
 /// - ::clingo_error_bad_alloc
 pub fn parse_program_with_logger<CD, C: ClingoAstStatementHandler<CD>, LD, L: ClingoLogger<LD>>(
@@ -714,9 +664,7 @@ pub fn create_clingo_location(
 
 /// Obtain the clingo version.
 ///
-/// **Returns:**
-///
-/// * `(major,minor,revision)` - major, minor version, revision number
+/// `(major version, minor version, revision number)`
 pub fn version() -> (i32, i32, i32) {
     let mut major = 0;
     let mut minor = 0;
@@ -749,8 +697,6 @@ impl<'a> ClingoPart<'a> {
 /// Get the last error code set by a clingo API call.
 ///
 /// **Note:** Each thread has its own local error code.
-///
-/// **Returns** error code
 pub fn error() -> ClingoError {
     let code = unsafe { clingo_error_code() };
     match code as u32 {
@@ -766,8 +712,6 @@ pub fn error() -> ClingoError {
 /// Get the last error message set if an API call fails.
 ///
 /// **Note:** Each thread has its own local error message.
-///
-/// **Returns** error message or empty string
 pub fn error_message() -> &'static str {
     let char_ptr: *const c_char = unsafe { clingo_error_message() };
     if char_ptr.is_null() {
@@ -779,11 +723,6 @@ pub fn error_message() -> &'static str {
 }
 
 /// Set a custom error code and message in the active thread.
-///
-/// **Parameters:**
-///
-/// * `code` - the error code
-/// * `message` - the error message
 pub fn set_error(code: ClingoError, message: &str) {
     let message_c_str = CString::new(message).unwrap();
     unsafe { clingo_set_error(code as clingo_error_t, message_c_str.as_ptr()) }
@@ -896,13 +835,12 @@ impl ClingoControl {
     ///
     /// Messages are printed to stderr.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
     /// * `arguments` - C string array of command line arguments
-    /// * `arguments_size` - size of the arguments array
-    /// * `control` - resulting control object
     ///
-    /// **Returns** whether the call was successful; might set one of the following error codes:
+    /// # Errors
+    ///
     /// - ::clingo_error_bad_alloc
     /// - ::clingo_error_runtime if argument parsing fails
     pub fn new(
@@ -950,16 +888,15 @@ impl ClingoControl {
     /// Furthermore, a control object is blocked while a search call is active;
     /// you must not call any member function during search.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
     /// * `arguments` - C string array of command line arguments
-    /// * `arguments_size` - size of the arguments array
     /// * `logger` - callback functions for warnings and info messages
     /// * `logger_data` - user data for the logger callback
     /// * `message_limit` - maximum number of times the logger callback is called
-    /// * `control` - resulting control object
     ///
-    /// **Returns** whether the call was successful; might set one of the following error codes:
+    /// # Errors
+    ///
     /// - ::clingo_error_bad_alloc
     /// - ::clingo_error_runtime if argument parsing fails
     pub fn new_with_logger<D, T: ClingoLogger<D>>(
@@ -1010,13 +947,12 @@ impl ClingoControl {
     ///
     /// # Arguments
     ///
-    /// * `control` - the target
     /// * `name` name of the program block
     /// * `parameters` string array of parameters of the program block
-    /// * `parameters_size` number of parameters
     /// * `program` string representation of the program
     ///
-    /// **Returns** whether the call was successful; might set one of the following error codes:
+    /// # Errors
+    ///
     /// - ::clingo_error_bad_alloc
     /// - ::clingo_error_runtime if parsing fails
     pub fn add(
@@ -1070,11 +1006,10 @@ impl ClingoControl {
     ///
     /// # Arguments
     ///
-    /// * `control` - the target
     /// * `parts` array of parts to ground
-    /// * `parts_size` size of the parts array
     ///
-    /// **Returns** whether the call was successful; might set one of the following error codes:
+    /// # Errors
+    ///
     /// - ::clingo_error_bad_alloc
     ///
     /// @see clingo_part
@@ -1110,13 +1045,12 @@ impl ClingoControl {
     ///
     /// # Arguments
     ///
-    /// * `control` - the target
     /// * `parts` array of parts to ground
-    /// * `parts_size` size of the parts array
     /// * `ground_callback` callback to implement external functions
     /// * `ground_callback_data` user data for ground_callback
     ///
-    /// **Returns** whether the call was successful; might set one of the following error codes:
+    /// # Errors
+    ///
     /// - ::clingo_error_bad_alloc
     /// - error code of ground callback
     ///
@@ -1153,7 +1087,7 @@ impl ClingoControl {
     ///
     /// See the @ref SolveHandle module for more information.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
     /// * `control` - the target
     /// * `mode` - configures the search mode
@@ -1192,7 +1126,7 @@ impl ClingoControl {
     ///
     /// See the @ref SolveHandle module for more information.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
     /// * `control` - the target
     /// * `mode` - configures the search mode
@@ -1241,7 +1175,7 @@ impl ClingoControl {
     /// groundings because less rules have to be instantiated and more
     /// simplifications can be applied.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
     /// * `control` - the target
     ///
@@ -1291,7 +1225,7 @@ impl ClingoControl {
     /// program simplifications.  If the atom does not exist or is not external,
     /// this is a noop.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
     /// * `control` - the target
     /// * `atom` - atom to release
@@ -1353,7 +1287,7 @@ impl ClingoControl {
     /// level one provides extended and accumulated statistics,
     /// and level two provides per-thread statistics.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
     /// * `control` - the target
     /// * `statistics` - the statistics object
@@ -1372,7 +1306,7 @@ impl ClingoControl {
 
     /// Interrupt the active solve call (or the following solve call right at the beginning).
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
     /// * `control` - the target
     pub fn interrupt(&mut self) {
@@ -1385,7 +1319,7 @@ impl ClingoControl {
     ///
     /// See the @ref Configuration module for more information.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
     /// * `control` - the target
     /// * `configuration` - the configuration object
@@ -1413,7 +1347,7 @@ impl ClingoControl {
     /// or before the last solve call to squeeze out a tiny bit of performance.
     /// Initially, the enumeration assumption is enabled.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
     /// * `control` - the target
     /// * `enable` - whether to enable the assumption
@@ -1429,7 +1363,7 @@ impl ClingoControl {
 
     /// Return the symbol for a constant definition of form: <tt>\#const name = symbol</tt>.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
     /// * `control` - the target
     /// * `name` - the name of the constant
@@ -1449,7 +1383,7 @@ impl ClingoControl {
 
     /// Check if there is a constant definition for the given constant.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
     /// * `control` - the target
     /// * `name` - the name of the constant
@@ -1474,7 +1408,7 @@ impl ClingoControl {
     ///
     /// See the @ref SymbolicAtoms module for more information.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
     /// * `control` - the target
     /// * `atoms` - the symbolic atoms object
@@ -1494,7 +1428,7 @@ impl ClingoControl {
     ///
     /// See the @ref TheoryAtoms module for more information.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
     /// * `control` - the target
     /// * `atoms` - the theory atoms object
@@ -1514,7 +1448,7 @@ impl ClingoControl {
     ///
     /// See the @ref ProgramBuilder module for more information.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
     /// * `control` - the target
     /// * `backend` - the backend object
@@ -1814,13 +1748,6 @@ impl ClingoAstLiteral {
 pub struct ClingoConfiguration(clingo_configuration_t);
 impl ClingoConfiguration {
     /// Get the root key of the configuration.
-    ///
-    /// # Arguments
-    ///
-    /// * `configuration` - the target configuration
-    /// * `key` - the root key
-    ///
-    /// **Returns** whether the call was successful
     pub fn root(&mut self) -> Result<ClingoId, &'static str> {
         let ClingoConfiguration(ref mut conf) = *self;
         let mut root_key = 0 as clingo_id_t;
@@ -1832,16 +1759,7 @@ impl ClingoConfiguration {
     }
 
     /// Get the type of a key.
-    ///
-    /// **Note:** The type is bitset, an entry can have multiple (but at least one) type.
-    ///
-    /// **Parameters:**
-    ///
-    /// * `configuration` - the target configuration
-    /// * `key` - the key
-    /// * `type` - the resulting type
-    ///
-    /// **Returns** whether the call was successful
+    // TODO: The type is bitset, an entry can have multiple (but at least one) type.
     pub fn configuration_type(
         &mut self,
         ClingoId(key): ClingoId,
@@ -1867,14 +1785,6 @@ impl ClingoConfiguration {
     }
 
     /// Get the description of an entry.
-    ///
-    /// **Parameters:**
-    ///
-    /// * `configuration` - the target configuration
-    /// * `key` - the key
-    /// * `description` - the description
-    ///
-    /// **Returns** whether the call was successful
     pub fn description(&mut self, ClingoId(key): ClingoId) -> Option<&str> {
         let ClingoConfiguration(ref mut conf) = *self;
         let mut description_ptr = unsafe { mem::uninitialized() };
@@ -1895,14 +1805,6 @@ impl ClingoConfiguration {
     /// Get the size of an array entry.
     ///
     /// @pre The @link clingo_configuration_type() type@endlink of the entry must be @ref ::clingo_configuration_type_array.
-    ///
-    /// **Parameters:**
-    ///
-    /// * `configuration` - the target configuration
-    /// * `key` - the key
-    /// * `size` - the resulting size
-    ///
-    /// **Returns** whether the call was successful
     pub fn array_size(&mut self, ClingoId(key): ClingoId) -> Option<usize> {
         let ClingoConfiguration(ref mut conf) = *self;
         let mut size = 0;
@@ -1923,12 +1825,8 @@ impl ClingoConfiguration {
     ///
     /// # Arguments
     ///
-    /// * `configuration` - the target configuration
     /// * `key` - the key
     /// * `offset` - the offset in the array
-    /// * `subkey` - the resulting subkey
-    ///
-    /// **Returns** whether the call was successful
     pub fn array_at(
         &mut self,
         ClingoId(key): ClingoId,
@@ -1945,14 +1843,6 @@ impl ClingoConfiguration {
     /// Get the number of subkeys of a map entry.
     ///
     /// @pre The @link clingo_configuration_type() type@endlink of the entry must be @ref ::clingo_configuration_type_map.
-    ///
-    /// **Parameters:**
-    ///
-    /// * `configuration` - the target configuration
-    /// * `key` - the key
-    /// * `size` - the resulting number
-    ///
-    /// **Returns** whether the call was successful
     pub fn map_size(&mut self, ClingoId(key): ClingoId) -> Option<usize> {
         let ClingoConfiguration(ref mut conf) = *self;
         let mut size = 0;
@@ -1976,15 +1866,6 @@ impl ClingoConfiguration {
     /// The @link clingo_configuration_type() type@endlink of the entry must be @ref ::clingo_configuration_type_map.
     ///
     /// **Note:** Multiple levels can be looked up by concatenating keys with a period.
-    ///
-    /// # Arguments
-    ///
-    /// * `configuration` - the target configuration
-    /// * `key` - the key
-    /// * `name` - the name to lookup the subkey
-    /// * `subkey` - the resulting subkey
-    ///
-    /// **Returns** whether the call was successful
     pub fn map_at(
         &mut self,
         ClingoId(key): ClingoId,
@@ -2024,7 +1905,6 @@ impl ClingoConfiguration {
     ///
     /// # Arguments
     ///
-    /// * `configuration` - the target configuration
     /// * `key` - the key
     /// * `value` - the value to set
     ///
