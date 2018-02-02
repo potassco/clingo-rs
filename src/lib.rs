@@ -1386,9 +1386,13 @@ impl ClingoControl {
     /// * `enable` - whether to enable the assumption
     ///
     /// **Returns** whether the call was successful
-    //TODO     pub fn clingo_control_use_enumeration_assumption(control: *mut ClingoControl,
-    //                                                      enable: bool)
-    //                                                     -> bool;
+    pub fn use_enumeration_assumption(&mut self, enable: bool) -> Result<(), &'static str> {
+        if unsafe { clingo_control_use_enumeration_assumption(self.ctl.as_ptr(), enable) } {
+            Ok(())
+        } else {
+            Err(error_message())
+        }
+    }
 
     //TODO     pub fn clingo_control_get_const(control: *mut ClingoControl,
     //                                     name: *const c_char,
