@@ -19,11 +19,8 @@ fn print_model(model: &mut ClingoModel) {
 }
 
 fn solve(ctl: &mut ClingoControl) {
-    let solve_mode = ClingoSolveMode::Yield;
-    let assumptions = vec![];
-
     // get a solve handle
-    let handle = ctl.solve(solve_mode, &assumptions)
+    let handle = ctl.solve(ClingoSolveMode::Yield, &[])
         .expect("Failed retrieving solve handle.");
 
     // loop over all models
