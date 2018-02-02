@@ -65,7 +65,7 @@ struct PropagatorT {
 }
 
 // returns the offset'th numeric argument of the function symbol sym
-fn get_arg(sym: ClingoSymbol, offset: usize) -> Result<i32, &'static str> {
+fn get_arg(sym: &ClingoSymbol, offset: usize) -> Result<i32, &'static str> {
     // get the arguments of the function symbol
     let args = sym.arguments().unwrap();
     // get the requested numeric argument
@@ -144,7 +144,7 @@ impl ClingoPropagatorBuilder<PropagatorT> for MyPropagator {
                 } else {
                     // extract the hole number from the atom
                     let sym = atoms.symbol(atoms_it).unwrap();
-                    let h = get_arg(sym, 1).unwrap();
+                    let h = get_arg(&sym, 1).unwrap();
 
                     // initialize the assignemnt literal -> hole mapping
                     propagator.pigeons[lit_id] = h;
@@ -287,7 +287,6 @@ fn main() {
                 "1 { place(P,H) : H = 1..h } 1 :- P = 1..p.",
             ).expect("Failed to add a logic program.");
 
-            
             // ground the pigeon part
 
             // set the number of holes
