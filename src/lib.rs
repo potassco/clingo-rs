@@ -1866,10 +1866,31 @@ impl ClingoConfiguration {
         }
     }
 
-    //TODO     pub fn clingo_configuration_description(configuration: *mut ClingoConfiguration,
-    //                                             key: clingo_id_t,
-    //                                             description: *mut *const c_char)
-    //                                             -> u8;
+    /// Get the description of an entry.
+    ///
+    /// **Parameters:**
+    ///
+    /// * `configuration` - the target configuration
+    /// * `key` - the key
+    /// * `description` - the description
+    ///
+    /// **Returns** whether the call was successful
+    pub fn description(&mut self, ClingoId(key): ClingoId) -> Option<&str> {
+        let ClingoConfiguration(ref mut conf) = *self;
+        let mut description_ptr = unsafe { mem::uninitialized() };
+        if unsafe {
+            clingo_configuration_description(
+                conf,
+                key,
+                &mut description_ptr as *mut *const ::std::os::raw::c_char,
+            )
+        } {
+            let cstr = unsafe { CStr::from_ptr(description_ptr) };
+            Some(cstr.to_str().unwrap())
+        } else {
+            None
+        }
+    }
 
     //TODO     pub fn clingo_configuration_array_size(configuration: *mut ClingoConfiguration,
     //                                            key: clingo_id_t,
