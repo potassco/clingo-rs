@@ -1911,11 +1911,13 @@ impl ClingoConfiguration {
     ///
     /// * `key` - the key
     /// * `value` - the value to set
-    ///
-    /// **Returns** whether the call was successful
-    pub fn value_set(&mut self, ClingoId(key): ClingoId, value: &str) -> bool {
+    pub fn value_set(&mut self, ClingoId(key): ClingoId, value: &str) -> Option<()> {
         let value_c_str = CString::new(value).unwrap();
-        unsafe { clingo_configuration_value_set(&mut self.0, key, value_c_str.as_ptr()) }
+        if unsafe { clingo_configuration_value_set(&mut self.0, key, value_c_str.as_ptr()) } {
+            Some(())
+        } else {
+            None
+        }
     }
 }
 
