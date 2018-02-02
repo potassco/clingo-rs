@@ -1400,11 +1400,28 @@ impl ClingoControl {
             None
         }
     }
+    /// Check if there is a constant definition for the given constant.
+    ///
+    /// **Parameters:**
+    ///
+    /// * `control` - the target
+    /// * `name` - the name of the constant
+    /// * `exists` - whether a matching constant definition exists
+    ///
+    /// **Returns** whether the call was successful; might set one of the following error codes:
+    /// - ::clingo_error_runtime if constant definition does not exist
+    ///
+    /// @see clingo_control_get_const()
+    pub fn has_const(&mut self, name: &str) -> Result<bool, &'static str> {
+        let c_str_name = CString::new(name).unwrap();
+        let mut exist = false;
+        if unsafe { clingo_control_has_const(self.ctl.as_ptr(), c_str_name.as_ptr(), &mut exist) } {
+            Ok(exist)
+        } else {
+            Err(error_message())
+        }
+    }
 
-    //TODO     pub fn clingo_control_has_const(control: *mut ClingoControl,
-    //                                     name: *const c_char,
-    //                                     exists: *mut bool)
-    //                                    -> bool;
     /// Get an object to inspect symbolic atoms (the relevant Herbrand base) used
     /// for grounding.
     ///
