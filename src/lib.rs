@@ -91,7 +91,6 @@ pub enum ClingoClauseType {
     Volatile = clingo_clause_type_clingo_clause_type_volatile as isize,
     VolatileStatic = clingo_clause_type_clingo_clause_type_volatile_static as isize,
 }
-
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum ClingoSolveEventType {
     Model = clingo_solve_event_type_clingo_solve_event_type_model as isize,
@@ -122,7 +121,12 @@ pub enum ClingoWarning {
     GlobalVariable = clingo_warning_clingo_warning_global_variable as isize,
     Other = clingo_warning_clingo_warning_other as isize,
 }
-
+#[derive(Debug, Copy, Clone)]
+pub enum ClingoConfigurationType {
+    Value = clingo_configuration_type_clingo_configuration_type_value as isize,
+    Array = clingo_configuration_type_clingo_configuration_type_array as isize,
+    Map = clingo_configuration_type_clingo_configuration_type_map as isize,
+}
 type ClingoSolveEventCallback = unsafe extern "C" fn(
     type_: clingo_solve_event_type_t,
     event: *mut ::std::os::raw::c_void,
@@ -1827,10 +1831,40 @@ impl ClingoConfiguration {
         }
     }
 
-    //TODO     pub fn clingo_configuration_type(configuration: *mut ClingoConfiguration,
-    //                                      key: clingo_id_t,
-    //                                      type_: *mut clingo_configuration_type_bitset_t)
-    //                                      -> u8;
+    /// Get the type of a key.
+    ///
+    /// **Note:** The type is bitset, an entry can have multiple (but at least one) type.
+    ///
+    /// **Parameters:**
+    ///
+    /// * `configuration` - the target configuration
+    /// * `key` - the key
+    /// * `type` - the resulting type
+    ///
+    /// **Returns** whether the call was successful
+    pub fn configuration_type(
+        &mut self,
+        ClingoId(key): ClingoId,
+    ) -> Result<ClingoConfigurationType, &'static str> {
+        let ClingoConfiguration(ref mut conf) = *self;
+        let mut ctype = 0 as clingo_configuration_type_bitset_t;
+        if unsafe { clingo_configuration_type(conf, key, &mut ctype) } {
+            match ctype as u32 {
+                clingo_configuration_type_clingo_configuration_type_value => {
+                    Ok(ClingoConfigurationType::Value)
+                }
+                clingo_configuration_type_clingo_configuration_type_array => {
+                    Ok(ClingoConfigurationType::Array)
+                }
+                clingo_configuration_type_clingo_configurations_type_map => {
+                    Ok(ClingoConfigurationType::Map)
+                }
+                _ => Err("Rust binding failed to match clingo configuration type"),
+            }
+        } else {
+            Err("Rust binding failed to detect clingo configuration type")
+        }
+    }
 
     //TODO     pub fn clingo_configuration_description(configuration: *mut ClingoConfiguration,
     //                                             key: clingo_id_t,
