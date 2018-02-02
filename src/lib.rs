@@ -1942,10 +1942,26 @@ impl ClingoConfiguration {
         }
     }
 
-    //TODO     pub fn clingo_configuration_map_size(configuration: *mut ClingoConfiguration,
-    //                                          key: clingo_id_t,
-    //                                          size: *mut size_t)
-    //                                          -> u8;
+    /// Get the number of subkeys of a map entry.
+    ///
+    /// @pre The @link clingo_configuration_type() type@endlink of the entry must be @ref ::clingo_configuration_type_map.
+    ///
+    /// **Parameters:**
+    ///
+    /// * `configuration` - the target configuration
+    /// * `key` - the key
+    /// * `size` - the resulting number
+    ///
+    /// **Returns** whether the call was successful
+    pub fn map_size(&mut self, ClingoId(key): ClingoId) -> Option<usize> {
+        let ClingoConfiguration(ref mut conf) = *self;
+        let mut size = 0;
+        if unsafe { clingo_configuration_map_size(conf, key, &mut size) } {
+            Some(size)
+        } else {
+            None
+        }
+    }
 
     //TODO     pub fn clingo_configuration_map_subkey_name(configuration: *mut ClingoConfiguration,
     //                                                 key: clingo_id_t,
