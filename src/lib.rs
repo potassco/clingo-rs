@@ -1338,9 +1338,16 @@ impl ClingoControl {
             Err(error_message())
         }
     }
-
-    //TODO     pub fn clingo_control_interrupt(control: *mut ClingoControl);
-
+    /// Interrupt the active solve call (or the following solve call right at the beginning).
+    ///
+    /// **Parameters:**
+    ///
+    /// * `control` - the target
+    pub fn interrupt(&mut self) {
+        unsafe {
+            clingo_control_interrupt(self.ctl.as_ptr());
+        }
+    }
     /// Get a configuration object to change the solver configuration.
     ///
     /// See the @ref Configuration module for more information.
