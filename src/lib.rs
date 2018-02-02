@@ -2826,9 +2826,8 @@ impl ClingoSolveHandle {
     /// When yielding partial solve results can be obtained, i.e.,
     /// when a model is ready, the result will be satisfiable but neither the search exhausted nor the optimality proven.
     ///
-    /// @param[in] handle the target
-    /// @param[out] result the solve result
-    /// @return whether the call was successful; might set one of the following error codes:
+    /// # Errors
+    ///
     /// - ::clingo_error_bad_alloc
     /// - ::clingo_error_runtime if solving fails
     pub fn get(&mut self) -> Result<clingo_solve_result_bitset_t, &'static str> {
@@ -2841,10 +2840,10 @@ impl ClingoSolveHandle {
     }
 
     /// Get the next model (or zero if there are no more models).
+    /// (it is NULL if there are no more models)
     ///
-    /// @param[in] handle the target
-    /// @param[out] model the model (it is NULL if there are no more models)
-    /// @return whether the call was successful; might set one of the following error codes:
+    /// # Errors
+    ///
     /// - ::clingo_error_bad_alloc
     /// - ::clingo_error_runtime if solving fails
     pub fn model(&mut self) -> Result<&mut ClingoModel, &'static str> {
@@ -2862,9 +2861,10 @@ impl ClingoSolveHandle {
     ///
     /// If the search has been started asynchronously, this function continues the search in the background.
     ///
-    /// @note This function does not block.
+    /// **Note:** This function does not block.
     ///
-    /// @return whether the call was successful; might set one of the following error codes:
+    /// # Errors
+    ///
     /// - ::clingo_error_bad_alloc
     /// - ::clingo_error_runtime if solving fails
     pub fn resume(&mut self) -> Result<(), &'static str> {
@@ -2880,8 +2880,8 @@ impl ClingoSolveHandle {
     ///
     /// Blocks until the search is stopped (as if an implicit cancel was called before the handle is released).
     ///
-    /// @param[in] handle the target
-    /// @return whether the call was successful; might set one of the following error codes:
+    /// # Errors
+    ///
     /// - ::clingo_error_bad_alloc
     /// - ::clingo_error_runtime if solving fails
     pub fn close(&mut self) -> Result<(), &'static str> {
