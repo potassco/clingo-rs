@@ -83,11 +83,8 @@ fn print_model(model: &mut ClingoModel) {
 }
 
 fn solve(ctl: &mut ClingoControl) {
-    let solve_mode = ClingoSolveMode::Yield;
-    let assumptions = vec![];
-
     // get a solve handle
-    let handle = ctl.solve(solve_mode, &assumptions)
+    let handle = ctl.solve(ClingoSolveMode::Yield, &[])
         .expect("Failed retrieving solve handle.");
 
     // loop over all models
@@ -115,10 +112,11 @@ fn main() {
     // create a control object and pass command line arguments
     let mut ctl = ClingoControl::new(options, 20).expect("Failed creating ClingoControl.");
 
-    // get the configuration object and its root key
     {
+        // get the configuration object and its root key
         let conf = ctl.configuration().unwrap();
         let root_key = conf.root().unwrap();
+
         // and set the statistics level to one to get more statistics
         let subkey = conf.map_at(root_key, "stats").unwrap();
         conf.value_set(subkey, "1")
