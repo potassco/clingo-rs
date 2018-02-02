@@ -967,7 +967,7 @@ impl ClingoControl {
         }
     }
 
-    //TODO     pub fn clingo_control_load(control: *mut ClingoControl, file: *const c_char) -> u8;
+    //TODO     pub fn clingo_control_load(control: *mut ClingoControl, file: *const c_char) -> bool;
 
     /// Extend the logic program with the given non-ground logic program in string form.
     ///
@@ -1201,7 +1201,6 @@ impl ClingoControl {
             Err(error_message())
         }
     }
-
     /// Clean up the domains of clingo`s grounding component using the solving
     /// component`s top level assignment.
     ///
@@ -1216,7 +1215,14 @@ impl ClingoControl {
     ///
     /// **Returns** whether the call was successful; might set one of the following error codes:
     /// - ::clingo_error_bad_alloc
-    //TODO     pub fn clingo_control_cleanup(control: *mut ClingoControl) -> bool;
+    pub fn cleanup(&mut self) -> Result<(), &'static str> {
+        let suc = unsafe { clingo_control_cleanup(self.ctl.as_ptr()) };
+        if suc {
+            Ok(())
+        } else {
+            Err(error_message())
+        }
+    }
     /// Assign a truth value to an external atom.
     ///
     /// If the atom does not exist or is not external, this is a noop.
