@@ -142,7 +142,7 @@ pub trait ClingoSolveEventHandler<T> {
         data_: *mut ::std::os::raw::c_void,
         goon_: *mut bool,
     ) -> bool {
-        //                 assert!(!event.is_null());
+        // TODO               assert!(!event.is_null());
         assert!(!data_.is_null());
         assert!(!goon_.is_null());
         let event_type = match type_ {
@@ -323,7 +323,7 @@ pub fn create_infimum() -> ClingoSymbol {
 ///
 /// #  Errors:
 ///
-/// - ::clingo_error_bad_alloc
+/// - [`ClingoError::BadAlloc`](enum.ClingoError.html#variant.BadAlloc)
 pub fn create_string(string: &str) -> Result<ClingoSymbol, &'static str> {
     let mut symbol = 0 as clingo_symbol_t;
     let c_str = CString::new(string).unwrap();
@@ -336,7 +336,7 @@ pub fn create_string(string: &str) -> Result<ClingoSymbol, &'static str> {
 
 /// Construct a symbol representing an id.
 ///
-/// **Note:** This is just a shortcut for clingo_symbol_create_function() with
+/// **Note:** This is just a shortcut for `create_function()` with
 /// empty arguments.
 ///
 /// # Arguments
@@ -346,7 +346,7 @@ pub fn create_string(string: &str) -> Result<ClingoSymbol, &'static str> {
 ///
 /// # Errors
 ///
-/// - ::clingo_error_bad_alloc
+/// - [`ClingoError::BadAlloc`](enum.ClingoError.html#variant.BadAlloc)
 pub fn create_id(name: &str, positive: bool) -> Result<ClingoSymbol, &'static str> {
     let mut symbol = 0 as clingo_symbol_t;
     let name_c_str = CString::new(name).unwrap();
@@ -372,7 +372,7 @@ pub fn create_id(name: &str, positive: bool) -> Result<ClingoSymbol, &'static st
 ///
 /// # Errors
 ///
-/// - ::clingo_error_bad_alloc
+/// - [`ClingoError::BadAlloc`](enum.ClingoError.html#variant.BadAlloc)
 pub fn create_function(
     name: &str,
     arguments: &[ClingoSymbol],
@@ -400,7 +400,7 @@ impl ClingoSymbol {
     ///
     /// # Errors
     ///
-    /// - ::clingo_error_runtime if symbol is not of type ::clingo_symbol_type_number
+    /// - [`ClingoError::Runtime`](enum.ClingoError.html#variant.Runtime) if symbol is not of type `ClingoSymbolType::Number`
     pub fn number(&self) -> Result<i32, &'static str> {
         let mut number = 0;
         if unsafe { clingo_symbol_number(self.0, &mut number) } {
@@ -414,7 +414,7 @@ impl ClingoSymbol {
     ///
     /// # Errors
     ///
-    /// - ::clingo_error_runtime if symbol is not of type ::clingo_symbol_type_function
+    /// - [`ClingoError::Runtime`](enum.ClingoError.html#variant.Runtime) if symbol is not of type `ClingoSymbolType::Function`
     pub fn name(&self) -> Result<&str, &'static str> {
         let mut char_ptr = std::ptr::null() as *const c_char;
         if unsafe { clingo_symbol_name(self.0, &mut char_ptr) } {
@@ -429,7 +429,7 @@ impl ClingoSymbol {
     ///
     /// # Errors
     ///
-    /// - ::clingo_error_runtime if symbol is not of type ::clingo_symbol_type_string
+    /// - [`ClingoError::Runtime`](enum.ClingoError.html#variant.Runtime) if symbol is not of type `ClingoSymbolType::String`
     pub fn string(&self) -> Result<&str, &'static str> {
         let mut char_ptr = std::ptr::null() as *const c_char;
         if unsafe { clingo_symbol_string(self.0, &mut char_ptr) } {
@@ -444,7 +444,7 @@ impl ClingoSymbol {
     ///
     /// # Errors
     ///
-    /// - ::clingo_error_runtime if symbol is not of type ::clingo_symbol_type_function
+    /// - [`ClingoError::Runtime`](enum.ClingoError.html#variant.Runtime) if symbol is not of type `ClingoSymbolType::Function`
     pub fn is_positive(&self) -> Result<bool, &'static str> {
         let mut positive = false;
         if unsafe { clingo_symbol_is_positive(self.0, &mut positive) } {
@@ -458,7 +458,7 @@ impl ClingoSymbol {
     ///
     /// # Errors
     ///
-    /// - ::clingo_error_runtime if symbol is not of type ::clingo_symbol_type_function
+    /// - [`ClingoError::Runtime`](enum.ClingoError.html#variant.Runtime) if symbol is not of type `ClingoSymbolType::Function`
     pub fn is_negative(&self) -> Result<bool, &'static str> {
         let mut negative = false;
         if unsafe { clingo_symbol_is_negative(self.0, &mut negative) } {
@@ -472,7 +472,7 @@ impl ClingoSymbol {
     ///
     /// # Errors
     ///
-    /// - ::clingo_error_runtime if symbol is not of type ::clingo_symbol_type_function
+    /// - [`ClingoError::Runtime`](enum.ClingoError.html#variant.Runtime) if symbol is not of type `ClingoSymbolType::Function`
     pub fn arguments(&self) -> Result<Vec<ClingoSymbol>, &'static str> {
         let mut symbol_ptr = std::ptr::null() as *const clingo_symbol_t;
         let mut size: usize = 0;
@@ -511,7 +511,7 @@ impl ClingoSymbol {
     ///
     /// # Errors
     ///
-    /// - ::clingo_error_bad_alloc
+    /// - [`ClingoError::BadAlloc`](enum.ClingoError.html#variant.BadAlloc)
     ///
     pub fn to_string(&self) -> Option<String> {
         let mut size: usize = 0;
@@ -572,8 +572,8 @@ impl ClingoSymbol {
 ///
 /// # Errors
 ///
-/// - ::clingo_error_runtime if parsing fails
-/// - ::clingo_error_bad_alloc
+/// - [`ClingoError::Runtime`](enum.ClingoError.html#variant.Runtime) if parsing fails
+/// - [`ClingoError::BadAlloc`](enum.ClingoError.html#variant.BadAlloc)
 pub fn parse_program<D, T: ClingoAstStatementHandler<D>>(
     program_: &str,
     _callback: &T,
@@ -613,8 +613,8 @@ pub fn parse_program<D, T: ClingoAstStatementHandler<D>>(
 ///
 /// # Errors
 ///
-/// - ::clingo_error_runtime if parsing fails
-/// - ::clingo_error_bad_alloc
+/// - [`ClingoError::Runtime`](enum.ClingoError.html#variant.Runtime) if parsing fails
+/// - [`ClingoError::BadAlloc`](enum.ClingoError.html#variant.BadAlloc)
 pub fn parse_program_with_logger<CD, C: ClingoAstStatementHandler<CD>, LD, L: ClingoLogger<LD>>(
     program_: &str,
     _callback: &C,
@@ -837,12 +837,12 @@ impl ClingoControl {
     ///
     /// # Arguments
     ///
-    /// * `arguments` - C string array of command line arguments
+    /// * `arguments` - string array of command line arguments
     ///
     /// # Errors
     ///
-    /// - ::clingo_error_bad_alloc
-    /// - ::clingo_error_runtime if argument parsing fails
+    /// - [`ClingoError::BadAlloc`](enum.ClingoError.html#variant.BadAlloc)
+    /// - [`ClingoError::Runtime`](enum.ClingoError.html#variant.Runtime) if argument parsing fails
     pub fn new(
         arguments: std::vec::Vec<String>,
         message_limit: u32,
@@ -897,8 +897,8 @@ impl ClingoControl {
     ///
     /// # Errors
     ///
-    /// - ::clingo_error_bad_alloc
-    /// - ::clingo_error_runtime if argument parsing fails
+    /// - [`ClingoError::BadAlloc`](enum.ClingoError.html#variant.BadAlloc)
+    /// - [`ClingoError::Runtime`](enum.ClingoError.html#variant.Runtime) if argument parsing fails
     pub fn new_with_logger<D, T: ClingoLogger<D>>(
         arguments: std::vec::Vec<String>,
         _logger: &T,
@@ -943,7 +943,7 @@ impl ClingoControl {
     ///
     /// This function puts the given program into a block of form: <tt>\#program name(parameters).</tt>
     ///
-    /// After extending the logic program, the corresponding program parts are typically grounded with ::clingo_control_ground.
+    /// After extending the logic program, the corresponding program parts are typically grounded with `ground()`.
     ///
     /// # Arguments
     ///
@@ -953,8 +953,8 @@ impl ClingoControl {
     ///
     /// # Errors
     ///
-    /// - ::clingo_error_bad_alloc
-    /// - ::clingo_error_runtime if parsing fails
+    /// - [`ClingoError::BadAlloc`](enum.ClingoError.html#variant.BadAlloc)
+    /// - [`ClingoError::Runtime`](enum.ClingoError.html#variant.Runtime) if parsing fails
     pub fn add(
         &mut self,
         name_: &str,
@@ -996,9 +996,9 @@ impl ClingoControl {
         }
     }
 
-    /// Ground the selected @link ::clingo_part parts @endlink of the current (non-ground) logic program.
+    /// Ground the selected [`ClingoPart`](struct.ClingoPart.html) parts of the current (non-ground) logic program.
     ///
-    /// After grounding, logic programs can be solved with ::clingo_control_solve().
+    /// After grounding, logic programs can be solved with `solve()`.
     ///
     /// **Note:** Parts of a logic program without an explicit <tt>\#program</tt>
     /// specification are by default put into a program called `base` - without
@@ -1010,9 +1010,9 @@ impl ClingoControl {
     ///
     /// # Errors
     ///
-    /// - ::clingo_error_bad_alloc
+    /// - [`ClingoError::BadAlloc`](enum.ClingoError.html#variant.BadAlloc)
     ///
-    /// @see clingo_part
+    /// @see `ClingoPart`
     pub fn ground(&mut self, sparts: &[ClingoPart]) -> Result<(), &'static str> {
         let parts = sparts
             .iter()
@@ -1035,9 +1035,9 @@ impl ClingoControl {
         }
     }
 
-    /// Ground the selected @link ::clingo_part parts @endlink of the current (non-ground) logic program.
+    /// Ground the selected [`ClingoPart`](struct.ClingoPart.html) parts of the current (non-ground) logic program.
     ///
-    /// After grounding, logic programs can be solved with ::clingo_control_solve().
+    /// After grounding, logic programs can be solved with `solve()`.
     ///
     /// **Note:** Parts of a logic program without an explicit <tt>\#program</tt>
     /// specification are by default put into a program called `base` - without
@@ -1051,10 +1051,10 @@ impl ClingoControl {
     ///
     /// # Errors
     ///
-    /// - ::clingo_error_bad_alloc
+    /// - [`ClingoError::BadAlloc`](enum.ClingoError.html#variant.BadAlloc)
     /// - error code of ground callback
     ///
-    /// @see clingo_part
+    /// @see `ClingoPart`
     pub fn ground_with_event_handler<D, T: ClingoGroundEventHandler<D>>(
         &mut self,
         sparts: &[ClingoPart],
@@ -1083,21 +1083,19 @@ impl ClingoControl {
         }
     }
 
-    /// Solve the currently @link ::clingo_control_ground grounded @endlink logic program enumerating its models.
+    /// Solve the currently [`ground()`](struct.ClingoControl.html#method.ground) grounded logic program enumerating its models.
     ///
-    /// See the @ref SolveHandle module for more information.
+    /// See the [`SolveHandle`](struct.ClingoSolveHandle.html) module for more information.
     ///
     /// # Arguments
     ///
-    /// * `control` - the target
     /// * `mode` - configures the search mode
     /// * `assumptions` - array of assumptions to solve under
-    /// * `assumptions_size` - number of assumptions
-    /// * `handle` - handle to the current search to enumerate models
     ///
-    /// **Returns** whether the call was successful; might set one of the following error codes:
-    /// - ::clingo_error_bad_alloc
-    /// - ::clingo_error_runtime if solving could not be started
+    /// # Errors
+    ///
+    /// - [`ClingoError::BadAlloc`](enum.ClingoError.html#variant.BadAlloc)
+    /// - [`ClingoError::Runtime`](enum.ClingoError.html#variant.Runtime) if solving could not be started
     pub fn solve(
         &mut self,
         mode: ClingoSolveMode,
@@ -1122,9 +1120,9 @@ impl ClingoControl {
         }
     }
 
-    /// Solve the currently @link ::clingo_control_ground grounded @endlink logic program enumerating its models.
+    /// Solve the currently [`ground()`](struct.ClingoControl.html#method.ground) grounded logic program enumerating its models.
     ///
-    /// See the @ref SolveHandle module for more information.
+    /// See the [`SolveHandle`](struct.ClingoSolveHandle.html) module for more information.
     ///
     /// # Arguments
     ///
@@ -1133,9 +1131,10 @@ impl ClingoControl {
     /// * `notify` - the event handler to register
     /// * `data` - the user data for the event handler
     ///
-    /// **Returns** whether the call was successful; might set one of the following error codes:
-    /// - ::clingo_error_bad_alloc
-    /// - ::clingo_error_runtime if solving could not be started
+    /// # Errors
+    ///
+    /// - [`ClingoError::BadAlloc`](enum.ClingoError.html#variant.BadAlloc)
+    /// - [`ClingoError::Runtime`](enum.ClingoError.html#variant.Runtime) if solving could not be started
     pub fn solve_with_event_handler<D, T: ClingoSolveEventHandler<D>>(
         &mut self,
         mode: clingo_solve_mode_bitset_t,
@@ -1143,7 +1142,7 @@ impl ClingoControl {
         _notify: &T,
         data_: &mut D,
     ) -> Result<&mut ClingoSolveHandle, &'static str> {
-        let mut handle = std::ptr::null_mut() as *mut clingo_solve_handle_t; 
+        let mut handle = std::ptr::null_mut() as *mut clingo_solve_handle_t;
 
         let data = data_ as *mut D;
         if unsafe {
@@ -1172,12 +1171,9 @@ impl ClingoControl {
     /// groundings because less rules have to be instantiated and more
     /// simplifications can be applied.
     ///
-    /// # Arguments
+    /// # Errors
     ///
-    /// * `control` - the target
-    ///
-    /// **Returns** whether the call was successful; might set one of the following error codes:
-    /// - ::clingo_error_bad_alloc
+    /// - [`ClingoError::BadAlloc`](enum.ClingoError.html#variant.BadAlloc)
     pub fn cleanup(&mut self) -> Result<(), &'static str> {
         if unsafe { clingo_control_cleanup(self.ctl.as_ptr()) } {
             Ok(())
@@ -1192,12 +1188,12 @@ impl ClingoControl {
     ///
     /// # Arguments
     ///
-    /// * `control` - the target
     /// * `atom` atom to assign
     /// * `value` - the truth value
     ///
-    /// **Returns** whether the call was successful; might set one of the following error codes:
-    /// - ::clingo_error_bad_alloc
+    /// # Errors
+    ///
+    /// - [`ClingoError::BadAlloc`](enum.ClingoError.html#variant.BadAlloc)
     pub fn assign_external(
         &mut self,
         symbol: &ClingoSymbol,
@@ -1224,11 +1220,11 @@ impl ClingoControl {
     ///
     /// # Arguments
     ///
-    /// * `control` - the target
     /// * `atom` - atom to release
     ///
-    /// **Returns** whether the call was successful; might set one of the following error codes:
-    /// - ::clingo_error_bad_alloc
+    /// # Errors
+    ///
+    /// - [`ClingoError::BadAlloc`](enum.ClingoError.html#variant.BadAlloc)
     //     pub fn clingo_control_release_external(control: *mut ClingoControl,
     //                                            atom: clingo_symbol_t)
     //                                            -> u8;
@@ -1237,17 +1233,17 @@ impl ClingoControl {
     /// If the sequential flag is set to true, the propagator is called
     /// sequentially when solving with multiple threads.
     ///
-    /// See the @ref Propagator module for more information.
+    /// See the [`ClingoPropagator`](struct.ClingoPropagator) module for more information.
     ///
     /// # Arguments
     ///
-    /// * `control` - the target
     /// * `propagator` - the propagator
     /// * `data` user data passed to the propagator functions
     /// * `sequential` - whether the propagator should be called sequentially
     ///
-    /// **Returns** whether the call was successful; might set one of the following error codes:
-    /// - ::clingo_error_bad_alloc
+    /// # Errors
+    ///
+    /// - [`ClingoError::BadAlloc`](enum.ClingoError.html#variant.BadAlloc)
     pub fn register_propagator<D, T: ClingoPropagatorBuilder<D>>(
         &mut self,
         _propagator_builder: &T,
@@ -1275,22 +1271,18 @@ impl ClingoControl {
     ///
     /// Statistics are updated after a solve call.
     ///
-    /// See the @ref Statistics module for more information.
+    /// See the [`ClingoStatistics`](struct.ClingoStatistics.html) module for more information.
     ///
-    /// @attention
+    /// **Attention**
     /// The level of detail of the statistics depends on the stats option
-    /// (which can be set using @ref Configuration module or passed as an option when @link clingo_control_new creating the control object@endlink).
+    /// (which can be set using [`ClingoConfiguration`](struct.ClingoConfiguration.html) module or passed as an option when [`new()`](struct.ClingoControl.html#method.new)  creating the control object).
     /// The default level zero only provides basic statistics,
     /// level one provides extended and accumulated statistics,
     /// and level two provides per-thread statistics.
     ///
-    /// # Arguments
+    /// # Errors
     ///
-    /// * `control` - the target
-    /// * `statistics` - the statistics object
-    ///
-    /// **Returns** whether the call was successful; might set one of the following error codes:
-    /// - ::clingo_error_bad_alloc
+    /// - [`ClingoError::BadAlloc`](enum.ClingoError.html#variant.BadAlloc)
     pub fn statistics(&mut self) -> Result<&mut ClingoStatistics, &'static str> {
         let mut stat = std::ptr::null_mut() as *mut clingo_statistics_t;
         if unsafe { clingo_control_statistics(self.ctl.as_ptr(), &mut stat) } {
@@ -1302,10 +1294,6 @@ impl ClingoControl {
     }
 
     /// Interrupt the active solve call (or the following solve call right at the beginning).
-    ///
-    /// # Arguments
-    ///
-    /// * `control` - the target
     pub fn interrupt(&mut self) {
         unsafe {
             clingo_control_interrupt(self.ctl.as_ptr());
@@ -1314,14 +1302,7 @@ impl ClingoControl {
 
     /// Get a configuration object to change the solver configuration.
     ///
-    /// See the @ref Configuration module for more information.
-    ///
-    /// # Arguments
-    ///
-    /// * `control` - the target
-    /// * `configuration` - the configuration object
-    ///
-    /// **Returns** whether the call was successful
+    /// See the [`ClingoConfiguration`](struct.ClingoConfiguration.html) module for more information.
     pub fn configuration(&mut self) -> Result<&mut ClingoConfiguration, &'static str> {
         let mut conf = std::ptr::null_mut() as *mut clingo_configuration_t;
         if unsafe { clingo_control_configuration(self.ctl.as_ptr(), &mut conf) } {
@@ -1346,15 +1327,12 @@ impl ClingoControl {
     ///
     /// # Arguments
     ///
-    /// * `control` - the target
     /// * `enable` - whether to enable the assumption
-    ///
-    /// **Returns** whether the call was successful
-    pub fn use_enumeration_assumption(&mut self, enable: bool) -> Result<(), &'static str> {
+    pub fn use_enumeration_assumption(&mut self, enable: bool) -> Option<()> {
         if unsafe { clingo_control_use_enumeration_assumption(self.ctl.as_ptr(), enable) } {
-            Ok(())
+            Some(())
         } else {
-            Err(error_message())
+            None
         }
     }
 
@@ -1362,11 +1340,7 @@ impl ClingoControl {
     ///
     /// # Arguments
     ///
-    /// * `control` - the target
     /// * `name` - the name of the constant
-    /// * `symbol` - the resulting symbol
-    ///
-    /// **Returns** whether the call was successful
     pub fn get_const(&mut self, name: &str) -> Option<ClingoSymbol> {
         let c_str_name = CString::new(name).unwrap();
         let mut symbol = 0 as clingo_symbol_t;
@@ -1382,12 +1356,11 @@ impl ClingoControl {
     ///
     /// # Arguments
     ///
-    /// * `control` - the target
     /// * `name` - the name of the constant
-    /// * `exists` - whether a matching constant definition exists
     ///
-    /// **Returns** whether the call was successful; might set one of the following error codes:
-    /// - ::clingo_error_runtime if constant definition does not exist
+    /// # Errors
+    ///
+    /// - [`ClingoError::Runtime`](enum.ClingoError.html#variant.Runtime) if constant definition does not exist
     ///
     /// @see clingo_control_get_const()
     pub fn has_const(&mut self, name: &str) -> Result<bool, &'static str> {
@@ -1403,82 +1376,53 @@ impl ClingoControl {
     /// Get an object to inspect symbolic atoms (the relevant Herbrand base) used
     /// for grounding.
     ///
-    /// See the @ref SymbolicAtoms module for more information.
-    ///
-    /// # Arguments
-    ///
-    /// * `control` - the target
-    /// * `atoms` - the symbolic atoms object
-    ///
-    /// **Returns** whether the call was successful
-    pub fn symbolic_atoms(&mut self) -> Result<&mut ClingoSymbolicAtoms, &'static str> {
+    /// See the [`ClingoSymbolicAtoms`](struct.ClingoSymbolicAtoms.html) module for more information.
+    pub fn symbolic_atoms(&mut self) -> Option<&mut ClingoSymbolicAtoms> {
         let mut atoms = std::ptr::null_mut() as *mut clingo_symbolic_atoms_t;
         if unsafe { clingo_control_symbolic_atoms(self.ctl.as_ptr(), &mut atoms) } {
             unsafe { (atoms as *mut ClingoSymbolicAtoms).as_mut() }
-                .ok_or("Rust binding failed to dereference pointer to clingo symbolic atoms")
         } else {
-            Err(error_message())
+            None
         }
     }
 
     /// Get an object to inspect theory atoms that occur in the grounding.
     ///
-    /// See the @ref TheoryAtoms module for more information.
-    ///
-    /// # Arguments
-    ///
-    /// * `control` - the target
-    /// * `atoms` - the theory atoms object
-    ///
-    /// **Returns** whether the call was successful
-    pub fn theory_atoms(&mut self) -> Result<&mut ClingoTheoryAtoms, &'static str> {
+    /// See the [`ClingoTheoryAtoms`](struct.ClingoTheoryAtoms.html) module for more information.
+    pub fn theory_atoms(&mut self) -> Option<&mut ClingoTheoryAtoms> {
         let mut atoms = std::ptr::null_mut() as *mut clingo_theory_atoms_t;
         if unsafe { clingo_control_theory_atoms(self.ctl.as_ptr(), &mut atoms) } {
             unsafe { (atoms as *mut ClingoTheoryAtoms).as_mut() }
-                .ok_or("Rust binding failed to dereference pointer to clingo theory atoms")
         } else {
-            Err(error_message())
+            None
         }
     }
 
     /// Get an object to add ground directives to the program.
     ///
-    /// See the @ref ProgramBuilder module for more information.
+    /// See the [`ClingoProgramBuilder`](struct.ClingoProgramBuilder.html) module for more information.
     ///
-    /// # Arguments
+    /// # Errors
     ///
-    /// * `control` - the target
-    /// * `backend` - the backend object
-    ///
-    /// **Returns** whether the call was successful; might set one of the following error codes:
-    /// - ::clingo_error_bad_alloc
-    pub fn backend(&mut self) -> Result<&mut ClingoBackend, &'static str> {
+    /// - [`ClingoError::BadAlloc`](enum.ClingoError.html#variant.BadAlloc)
+    pub fn backend(&mut self) -> Option<&mut ClingoBackend> {
         let mut backend = std::ptr::null_mut();
         if unsafe { clingo_control_backend(self.ctl.as_ptr(), &mut backend) } {
             unsafe { (backend as *mut ClingoBackend).as_mut() }
-                .ok_or("Rust binding failed to dereference pointer to clingo backend")
         } else {
-            Err(error_message())
+            None
         }
     }
 
     /// Get an object to add non-ground directives to the program.
     ///
-    /// See the @ref ProgramBuilder module for more information.
-    ///
-    /// # Arguments
-    ///
-    /// * `control` - the target
-    /// * `builder` - the program builder object
-    ///
-    /// **Returns** whether the call was successful
-    pub fn program_builder(&mut self) -> Result<&mut ClingoProgramBuilder, &'static str> {
+    /// See the [`ClingoProgramBuilder`](struct.ClingoProgramBuilder.html) module for more information.
+    pub fn program_builder(&mut self) -> Option<&mut ClingoProgramBuilder> {
         let mut builder = std::ptr::null_mut() as *mut clingo_program_builder_t;
         if unsafe { clingo_control_program_builder(self.ctl.as_ptr(), &mut builder) } {
             unsafe { (builder as *mut ClingoProgramBuilder).as_mut() }
-                .ok_or("Rust binding failed to dereference pointer to clingo program builder")
         } else {
-            Err(error_message())
+            None
         }
     }
 }
@@ -1486,15 +1430,11 @@ impl ClingoControl {
 pub struct ClingoProgramBuilder(clingo_program_builder_t);
 impl ClingoProgramBuilder {
     /// Begin building a program.
-    ///
-    /// * `builder` - the target program builder
-    ///
-    /// **Returns** whether the call was successful
-    pub fn begin(&mut self) -> Result<(), &'static str> {
+    pub fn begin(&mut self) -> Option<()> {
         if unsafe { clingo_program_builder_begin(&mut self.0) } {
-            Ok(())
+            Some(())
         } else {
-            Err(error_message())
+            None
         }
     }
 
@@ -1504,12 +1444,12 @@ impl ClingoProgramBuilder {
     ///
     /// # Arguments
     ///
-    /// * `builder` - the target program builder
     /// * `statement` - the statement to add
     ///
-    /// **Returns** whether the call was successful; might set one of the following error codes:
-    /// - ::clingo_error_runtime for statements of invalid form
-    /// - ::clingo_error_bad_alloc
+    /// # Errors
+    ///
+    /// - [`ClingoError::Runtime`](enum.ClingoError.html#variant.Runtime) for statements of invalid form
+    /// - [`ClingoError::BadAlloc`](enum.ClingoError.html#variant.BadAlloc)
     pub fn add(&mut self, statement: &ClingoAstStatement) -> Result<(), &'static str> {
         let ClingoAstStatement(ref stm) = *statement;
         if unsafe { clingo_program_builder_add(&mut self.0, stm) } {
@@ -1520,15 +1460,11 @@ impl ClingoProgramBuilder {
     }
 
     /// End building a program.
-    ///
-    /// * `builder` - the target program builder
-    ///
-    /// **Returns** whether the call was successful
-    pub fn end(&mut self) -> Result<(), &'static str> {
+    pub fn end(&mut self) -> Option<()> {
         if unsafe { clingo_program_builder_end(&mut self.0) } {
-            Ok(())
+            Some(())
         } else {
-            Err(error_message())
+            None
         }
     }
 }
@@ -1803,7 +1739,7 @@ impl ClingoConfiguration {
     ///
     /// # Pre-condition
     ///
-    /// The @link clingo_configuration_type() type@endlink of the entry must be @ref ::clingo_configuration_type_array.
+    /// The [`configuration_type()`](struct.ClingoConfiguration.html#method.configuration_type) type of the entry must be  [`ClingoConfigurationType::Array`](enum.ClingoConfigurationType.html#variant.Array).
     pub fn array_size(&mut self, ClingoId(key): ClingoId) -> Option<usize> {
         let ClingoConfiguration(ref mut conf) = *self;
         let mut size = 0;
@@ -1816,11 +1752,10 @@ impl ClingoConfiguration {
 
     /// Get the subkey at the given offset of an array entry.
     ///
-    ///
     /// **Note:** Some array entries, like fore example the solver configuration, can be accessed past there actual size to add subentries.
     /// # Pre-condition
     ///
-    /// The @link clingo_configuration_type() type@endlink of the entry must be @ref ::clingo_configuration_type_array.
+    /// The [`configuration_type()`](struct.ClingoConfiguration.html#method.configuration_type) type of the entry must be [`ClingoConfigurationType::Array`](enum.ClingoConfigurationType.html#variant.Array).
     ///
     /// # Arguments
     ///
@@ -1843,7 +1778,7 @@ impl ClingoConfiguration {
     ///
     /// # Pre-condition
     ///
-    /// The @link clingo_configuration_type() type@endlink of the entry must be @ref ::clingo_configuration_type_map.
+    /// The [`configuration_type()`](struct.ClingoConfiguration.html#method.configuration_type) type of the entry must be [`ClingoConfigurationType::Map`](enum.ClingoConfigurationType.html#variant.Map).
     pub fn map_size(&mut self, ClingoId(key): ClingoId) -> Option<usize> {
         let ClingoConfiguration(ref mut conf) = *self;
         let mut size = 0;
@@ -1864,7 +1799,7 @@ impl ClingoConfiguration {
     ///
     /// # Pre-condition
     ///
-    /// The @link clingo_configuration_type() type@endlink of the entry must be @ref ::clingo_configuration_type_map.
+    /// The [`configuration_type()`](struct.ClingoConfiguration.html#method.configuration_type) type of the entry must be [`ClingoConfigurationType::Map`](enum.ClingoConfigurationType.html#variant.Map).
     ///
     /// **Note:** Multiple levels can be looked up by concatenating keys with a period.
     pub fn map_at(
@@ -1902,7 +1837,7 @@ impl ClingoConfiguration {
     ///
     /// # Pre-condition
     ///
-    /// The @link clingo_configuration_type() type@endlink of the entry must be @ref ::clingo_configuration_type_value.
+    /// The [`configuration_type()`](struct.ClingoConfiguration.html#method.configuration_type) type of the entry must be [`ClingoConfigurationType::Value`](enum.ClingoConfigurationType.html#variant.Value).
     ///
     /// # Arguments
     ///
@@ -1930,7 +1865,7 @@ impl ClingoBackend {
     ///
     /// # Errors
     ///
-    /// - ::clingo_error_bad_alloc
+    /// - [`ClingoError::BadAlloc`](enum.ClingoError.html#variant.BadAlloc)
     pub fn rule(
         &mut self,
         choice: bool,
@@ -1986,7 +1921,7 @@ impl ClingoBackend {
     ///
     /// # Errors
     ///
-    /// - ::clingo_error_bad_alloc
+    /// - [`ClingoError::BadAlloc`](enum.ClingoError.html#variant.BadAlloc)
     pub fn assume(&mut self, literals: &[ClingoLiteral]) -> Result<(), &'static str> {
         let size = literals.len();
         if unsafe {
@@ -2071,7 +2006,7 @@ impl ClingoStatistics {
     ///
     /// # Pre-condition
     ///
-    /// The [statistics type](struct.ClingoStatistics.html#method.statistics_type) of the entry must be @ref ::clingo_statistics_type_array.
+    /// The [statistics type](struct.ClingoStatistics.html#method.statistics_type) of the entry must be [`ClingoConfigurationType::Array`](enum.ClingoConfigurationType.html#variant.Array).
     ///
     /// **Returns** whether the call was successful
     pub fn array_size(&mut self, key: u64) -> Option<usize> {
@@ -2087,7 +2022,7 @@ impl ClingoStatistics {
     ///
     /// # Pre-condition
     ///
-    /// The [statistics type](struct.ClingoStatistics.html#method.statistics_type) of the entry must be @ref ::clingo_statistics_type_array.
+    /// The [statistics type](struct.ClingoStatistics.html#method.statistics_type) of the entry must be [`ClingoStatisticsType::Array`](enum.ClingoStatisticsType.html#variant.Array).
     ///
     /// # Arguments
     ///
@@ -2108,7 +2043,7 @@ impl ClingoStatistics {
     ///
     /// # Pre-condition
     ///
-    /// The [statistics type](struct.ClingoStatistics.html#method.statistics_type) of the entry must be [clingo_statistics_type_map](clingo_sys/enum.clingo_statistics_type.html).
+    /// The [statistics type](struct.ClingoStatistics.html#method.statistics_type) of the entry must be [`ClingoStatisticsType::Map`](enum.ClingoStatisticsType.html#variant.Map).
     pub fn map_size(&mut self, key: u64) -> Option<usize> {
         let mut size = 0 as usize;
         if unsafe { clingo_statistics_map_size(&mut self.0, key, &mut size) } {
@@ -2122,7 +2057,7 @@ impl ClingoStatistics {
     ///
     /// # Pre-condition
     ///
-    /// The [statistics type](struct.ClingoStatistics.html#method.statistics_type) of the entry must be @ref ::clingo_statistics_type_map.
+    /// The [statistics type](struct.ClingoStatistics.html#method.statistics_type) of the entry must be [`ClingoStatisticsType::Map`](enum.ClingoStatisticsType.html#variant.Map).
     ///
     /// # Arguments
     ///
@@ -2141,7 +2076,7 @@ impl ClingoStatistics {
     ///
     /// # Pre-condition
     ///
-    /// The [statistics type](struct.ClingoStatistics.html#method.statistics_type) of the entry must be @ref ::clingo_statistics_type_map.
+    /// The [statistics type](struct.ClingoStatistics.html#method.statistics_type) of the entry must be [`ClingoStatisticsType::Map`](enum.ClingoStatisticsType.html#variant.Map).
     ///
     /// **Note:** Multiple levels can be looked up by concatenating keys with a period.
     ///
@@ -2163,7 +2098,7 @@ impl ClingoStatistics {
     ///
     /// # Pre-condition
     ///
-    /// The [statistics type](struct.ClingoStatistics.html#method.statistics_type) of the entry must be @ref ::clingo_statistics_type_value.
+    /// The [statistics type](struct.ClingoStatistics.html#method.statistics_type) of the entry must be [`ClingoStatisticsType::Value`](enum.ClingoStatisticsType.html#variant.Value).
     pub fn value_get(&mut self, key: u64) -> Option<f64> {
         let mut value = 0.0 as f64;
         if unsafe { clingo_statistics_value_get(&mut self.0, key, &mut value) } {
@@ -2186,7 +2121,7 @@ impl ClingoSignature {
     ///
     /// # Errors
     ///
-    /// - ::clingo_error_bad_alloc
+    /// - [`ClingoError::BadAlloc`](enum.ClingoError.html#variant.BadAlloc)
     pub fn create(
         name_: &str,
         arity: u32,
@@ -2601,8 +2536,8 @@ impl ClingoModel {
     /// * `show` - which symbols to select
     ///
     /// **Returns** whether the call was successful; might set one of the following error codes:
-    /// - ::clingo_error_bad_alloc
-    /// - ::clingo_error_runtime if the size is too small
+    /// - [`ClingoError::BadAlloc`](enum.ClingoError.html#variant.BadAlloc)
+    /// - [`ClingoError::Runtime`](enum.ClingoError.html#variant.Runtime) if the size is too small
     ///
     /// @see clingo_model_symbols_size()
     pub fn symbols(
@@ -2667,8 +2602,8 @@ impl ClingoSolveControl {
     ///
     /// # Errors
     ///
-    /// - ::clingo_error_bad_alloc
-    /// - ::clingo_error_runtime if adding the clause fails
+    /// - [`ClingoError::BadAlloc`](enum.ClingoError.html#variant.BadAlloc)
+    /// - [`ClingoError::Runtime`](enum.ClingoError.html#variant.Runtime) if adding the clause fails
     pub fn add_clause(&mut self, clause: &[ClingoLiteral]) -> Result<(), &'static str> {
         if unsafe {
             clingo_solve_control_add_clause(
@@ -2711,7 +2646,7 @@ impl ClingoPropagateControl {
     ///
     /// # Errors
     ///
-    /// - ::clingo_error_bad_alloc
+    /// - [`ClingoError::BadAlloc`](enum.ClingoError.html#variant.BadAlloc)
     pub fn add_clause(
         &mut self,
         clause: &[ClingoLiteral],
@@ -2743,7 +2678,7 @@ impl ClingoPropagateControl {
     ///
     /// # Errors
     ///
-    /// - ::clingo_error_bad_alloc
+    /// - [`ClingoError::BadAlloc`](enum.ClingoError.html#variant.BadAlloc)
     pub fn propagate(&mut self) -> Result<bool, &'static str> {
         let mut result = false;
         if unsafe { clingo_propagate_control_propagate(&mut self.0, &mut result) } {
@@ -2827,8 +2762,8 @@ impl ClingoSolveHandle {
     ///
     /// # Errors
     ///
-    /// - ::clingo_error_bad_alloc
-    /// - ::clingo_error_runtime if solving fails
+    /// - [`ClingoError::BadAlloc`](enum.ClingoError.html#variant.BadAlloc)
+    /// - [`ClingoError::Runtime`](enum.ClingoError.html#variant.Runtime) if solving fails
     pub fn get(&mut self) -> Result<clingo_solve_result_bitset_t, &'static str> {
         let mut result = 0;
         if unsafe { clingo_solve_handle_get(&mut self.0, &mut result) } {
@@ -2843,8 +2778,8 @@ impl ClingoSolveHandle {
     ///
     /// # Errors
     ///
-    /// - ::clingo_error_bad_alloc
-    /// - ::clingo_error_runtime if solving fails
+    /// - [`ClingoError::BadAlloc`](enum.ClingoError.html#variant.BadAlloc)
+    /// - [`ClingoError::Runtime`](enum.ClingoError.html#variant.Runtime) if solving fails
     pub fn model(&mut self) -> Result<&mut ClingoModel, &'static str> {
         let ClingoSolveHandle(ref mut handle) = *self;
         let mut model = std::ptr::null_mut() as *mut clingo_model_t;
@@ -2864,8 +2799,8 @@ impl ClingoSolveHandle {
     ///
     /// # Errors
     ///
-    /// - ::clingo_error_bad_alloc
-    /// - ::clingo_error_runtime if solving fails
+    /// - [`ClingoError::BadAlloc`](enum.ClingoError.html#variant.BadAlloc)
+    /// - [`ClingoError::Runtime`](enum.ClingoError.html#variant.Runtime) if solving fails
     pub fn resume(&mut self) -> Result<(), &'static str> {
         let ClingoSolveHandle(ref mut handle) = *self;
         if unsafe { clingo_solve_handle_resume(handle) } {
@@ -2881,8 +2816,8 @@ impl ClingoSolveHandle {
     ///
     /// # Errors
     ///
-    /// - ::clingo_error_bad_alloc
-    /// - ::clingo_error_runtime if solving fails
+    /// - [`ClingoError::BadAlloc`](enum.ClingoError.html#variant.BadAlloc)
+    /// - [`ClingoError::Runtime`](enum.ClingoError.html#variant.Runtime) if solving fails
     pub fn close(&mut self) -> Result<(), &'static str> {
         let ClingoSolveHandle(ref mut handle) = *self;
         if unsafe { clingo_solve_handle_close(handle) } {
