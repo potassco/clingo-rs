@@ -12,7 +12,7 @@ fn main() {
     symbols.push(function_symbol.clone());
 
     // print the symbols along with their hash values
-    for ref symbol in &symbols {
+    for symbol in &symbols {
         println!(
             "the hash of {} is {}",
             symbol.to_string().unwrap(),
@@ -24,7 +24,7 @@ fn main() {
     let symbols2 = function_symbol.arguments().unwrap();
 
     // equal to comparison
-    for ref symbol in symbols2 {
+    for symbol in &symbols2 {
         print!("{} is ", symbols[0].to_string().unwrap());
         if symbols[0] == *symbol {
             print!("equal");
