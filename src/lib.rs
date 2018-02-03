@@ -341,7 +341,7 @@ pub fn create_string(string: &str) -> Result<ClingoSymbol, &'static str> {
 ///
 /// # Arguments
 ///
-/// * `name` - the name
+/// * `name` - the name of the symbol
 /// * `positive` - whether the symbol has a classical negation sign
 ///
 /// # Errors
@@ -576,14 +576,14 @@ impl ClingoSymbol {
 /// - ::clingo_error_bad_alloc
 pub fn parse_program<D, T: ClingoAstStatementHandler<D>>(
     program_: &str,
-    handler: &T,
-    data_: &mut D,
+    _callback: &T,
+    callback_data: &mut D,
 ) -> Result<(), &'static str> {
     let logger = None;
     //         let logger = Some(MaLogger::unsafe_logging_callback as ClingoLoggingCallback);
     let logger_data = std::ptr::null_mut();
     let program = CString::new(program_).unwrap();
-    let data = data_ as *mut D;
+    let data = callback_data as *mut D;
     if unsafe {
         clingo_parse_program(
             program.as_ptr(),
@@ -617,9 +617,9 @@ pub fn parse_program<D, T: ClingoAstStatementHandler<D>>(
 /// - ::clingo_error_bad_alloc
 pub fn parse_program_with_logger<CD, C: ClingoAstStatementHandler<CD>, LD, L: ClingoLogger<LD>>(
     program_: &str,
-    callback: &C,
+    _callback: &C,
     cdata_: &mut CD,
-    logger: &L,
+    _logger: &L,
     ldata_: &mut LD,
     message_limit: u32,
 ) -> Result<(), &'static str> {
@@ -901,7 +901,7 @@ impl ClingoControl {
     /// - ::clingo_error_runtime if argument parsing fails
     pub fn new_with_logger<D, T: ClingoLogger<D>>(
         arguments: std::vec::Vec<String>,
-        logger: &T,
+        _logger: &T,
         logger_data: &mut D,
         message_limit: u32,
     ) -> Result<ClingoControl, &'static str> {
@@ -1058,8 +1058,8 @@ impl ClingoControl {
     pub fn ground_with_event_handler<D, T: ClingoGroundEventHandler<D>>(
         &mut self,
         sparts: &[ClingoPart],
-        handler: &T,
-        data_: &mut D,
+        _ground_callback: &T,
+        ground_callback_data: &mut D,
     ) -> Result<(), &'static str> {
         let parts = sparts
             .iter()
@@ -1067,7 +1067,7 @@ impl ClingoControl {
             .collect::<Vec<clingo_part>>();
         let parts_size = sparts.len();
 
-        let data = data_ as *mut D;
+        let data = ground_callback_data as *mut D;
         if unsafe {
             clingo_control_ground(
                 self.ctl.as_ptr(),
@@ -1128,13 +1128,10 @@ impl ClingoControl {
     ///
     /// # Arguments
     ///
-    /// * `control` - the target
     /// * `mode` - configures the search mode
     /// * `assumptions` - array of assumptions to solve under
-    /// * `assumptions_size` - number of assumptions
     /// * `notify` - the event handler to register
     /// * `data` - the user data for the event handler
-    /// * `handle` - handle to the current search to enumerate models
     ///
     /// **Returns** whether the call was successful; might set one of the following error codes:
     /// - ::clingo_error_bad_alloc
@@ -1143,10 +1140,10 @@ impl ClingoControl {
         &mut self,
         mode: clingo_solve_mode_bitset_t,
         assumptions: &[ClingoSymbolicLiteral],
-        handler: &T,
+        _notify: &T,
         data_: &mut D,
     ) -> Result<&mut ClingoSolveHandle, &'static str> {
-        let mut handle = std::ptr::null_mut() as *mut clingo_solve_handle_t;
+        let mut handle = std::ptr::null_mut() as *mut clingo_solve_handle_t; 
 
         let data = data_ as *mut D;
         if unsafe {
@@ -1253,7 +1250,7 @@ impl ClingoControl {
     /// - ::clingo_error_bad_alloc
     pub fn register_propagator<D, T: ClingoPropagatorBuilder<D>>(
         &mut self,
-        propagator_builder: &T,
+        _propagator_builder: &T,
         data: &mut D,
         sequential: bool,
     ) -> Result<(), &'static str> {
