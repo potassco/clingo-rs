@@ -4,16 +4,16 @@ use std::env;
 use clingo::*;
 
 pub struct OnStatementData<'a> {
-    atom: ClingoAstTerm,
-    builder: &'a mut ClingoProgramBuilder,
+    atom: AstTerm,
+    builder: &'a mut ProgramBuilder,
 }
 
 struct MyAstHandler;
-impl<'a> ClingoAstStatementHandler<OnStatementData<'a>> for MyAstHandler {
+impl<'a> AstStatementHandler<OnStatementData<'a>> for MyAstHandler {
     // adds atom enable to all rule bodies
-    fn on_statement(stm: &ClingoAstStatement, data: &mut OnStatementData) -> bool {
+    fn on_statement(stm: &AstStatement, data: &mut OnStatementData) -> bool {
         // pass through all statements that are not rules
-        if stm.get_type() != Ok(ClingoAstStatementType::Rule) {
+        if stm.get_type() != Ok(AstStatementType::Rule) {
             data.builder
                 .add(stm)
                 .expect("Failed to add statement to ProgramBuilder.");
@@ -28,27 +28,27 @@ impl<'a> ClingoAstStatementHandler<OnStatementData<'a>> for MyAstHandler {
         }
 
         // create atom enable
-        let lit = ClingoAstLiteral::new(
+        let lit = AstLiteral::new(
             data.atom.location(),
-            ClingoAstSign::None,
-            ClingoAstLiteralType::Symbolic,
+            AstSign::None,
+            AstLiteralType::Symbolic,
             &data.atom,
         );
         // add atom enable to the rule body
-        let y: ClingoAstBodyLiteral = ClingoAstBodyLiteral::new(
+        let y: AstBodyLiteral = AstBodyLiteral::new(
             data.atom.location(),
-            ClingoAstSign::None,
-            ClingoAstBodyLiteralType::Literal,
+            AstSign::None,
+            AstBodyLiteralType::Literal,
             &lit,
         );
         extended_body.push(y);
 
         // initialize the rule
         let head = unsafe { stm.rule() }.head();
-        let rule = ClingoAstRule::new(head, &extended_body);
+        let rule = AstRule::new(head, &extended_body);
 
         // initialize the statement
-        let stm2 = ClingoAstStatement::new_rule(stm.location(), &rule);
+        let stm2 = AstStatement::new_rule(stm.location(), &rule);
 
         // add the rewritten statement to the program
         data.builder
@@ -58,10 +58,10 @@ impl<'a> ClingoAstStatementHandler<OnStatementData<'a>> for MyAstHandler {
     }
 }
 
-fn print_model(model: &mut ClingoModel) {
+fn print_model(model: &mut Model) {
     // retrieve the symbols in the model
     let atoms = model
-        .symbols(ClingoShowType::Shown as clingo_show_type_bitset_t)
+        .symbols(ShowType::Shown as clingo_show_type_bitset_t)
         .expect("Failed to retrieve symbols in the model.");
 
     print!("Model:");
@@ -73,9 +73,9 @@ fn print_model(model: &mut ClingoModel) {
     println!();
 }
 
-fn solve(ctl: &mut ClingoControl) {
+fn solve(ctl: &mut Control) {
     // get a solve handle
-    let handle = ctl.solve(ClingoSolveMode::Yield, &[])
+    let handle = ctl.solve(SolveMode::Yield, &[])
         .expect("Failed retrieving solve handle.");
 
     // loop over all models
@@ -100,7 +100,7 @@ fn main() {
     // collect clingo options from the command line
     let options = env::args().skip(1).collect();
 
-    let mut ctl = ClingoControl::new(options, 20).expect("Failed creating ClingoControl.");
+    let mut ctl = Control::new(options, 20).expect("Failed creating Control.");
 
     let sym = create_id("enable", true).unwrap();
     let sym2 = sym.clone();
@@ -116,7 +116,7 @@ fn main() {
         let location = create_clingo_location(0, 0, 0, 0, "<rewrite>", "<rewrite>");
 
         // initilize atom to add
-        let atom = ClingoAstTerm::new_symbol(location, sym);
+        let atom = AstTerm::new_symbol(location, sym);
 
         let mut data = OnStatementData {
             atom: atom,
@@ -128,10 +128,9 @@ fn main() {
             .expect("Failed to parse logic program.");
 
         // add the external statement: #external enable.
-        let ext = ClingoAstExternal::new(atom, &[]);
+        let ext = AstExternal::new(atom, &[]);
 
-        let stm =
-            ClingoAstStatement::new_external(location, ClingoAstStatementType::External, &ext);
+        let stm = AstStatement::new_external(location, AstStatementType::External, &ext);
         data.builder
             .add(&stm)
             .expect("Failed to add statement to ProgramBuilder.");
@@ -143,7 +142,7 @@ fn main() {
     }
 
     // ground the base part
-    let part = ClingoPart::new("base", &[]);
+    let part = Part::new("base", &[]);
     let parts = vec![part];
     ctl.ground(&parts)
         .expect("Failed to ground a logic program.");
@@ -154,13 +153,13 @@ fn main() {
 
     // solve with external enable = true
     println!("Solving with enable = true...");
-    ctl.assign_external(&sym2, ClingoTruthValue::True)
+    ctl.assign_external(&sym2, TruthValue::True)
         .expect("Failed to assign #external enable true.");
     solve(&mut ctl);
 
     // solve with external enable = false
     println!("Solving with enable = false...");
-    ctl.assign_external(&sym2, ClingoTruthValue::False)
+    ctl.assign_external(&sym2, TruthValue::False)
         .expect("Failed to assign #external enable false.");
     solve(&mut ctl);
 }

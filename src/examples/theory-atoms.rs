@@ -3,10 +3,10 @@ extern crate clingo;
 use std::env;
 use clingo::*;
 
-fn print_model(model: &mut ClingoModel) {
+fn print_model(model: &mut Model) {
     // retrieve the symbols in the model
     let atoms = model
-        .symbols(ClingoShowType::Shown as clingo_show_type_bitset_t)
+        .symbols(ShowType::Shown as clingo_show_type_bitset_t)
         .expect("Failed to retrieve symbols in the model.");
 
     print!("Model:");
@@ -18,9 +18,9 @@ fn print_model(model: &mut ClingoModel) {
     println!();
 }
 
-fn solve(ctl: &mut ClingoControl) {
+fn solve(ctl: &mut Control) {
     // get a solve handle
-    let handle = ctl.solve(ClingoSolveMode::Yield, &[])
+    let handle = ctl.solve(SolveMode::Yield, &[])
         .expect("Failed retrieving solve handle.");
 
     // loop over all models
@@ -41,7 +41,7 @@ fn solve(ctl: &mut ClingoControl) {
     handle.close().expect("Failed to close solve handle.");
 }
 
-fn get_theory_atom_literal(ctl: &mut ClingoControl) -> Option<ClingoLiteral> {
+fn get_theory_atom_literal(ctl: &mut Control) -> Option<Literal> {
     // get the theory atoms container
     let atoms = ctl.theory_atoms().unwrap();
 
@@ -50,23 +50,23 @@ fn get_theory_atom_literal(ctl: &mut ClingoControl) -> Option<ClingoLiteral> {
     println!("number of grounded theory atoms: {}", size);
 
     // verify that theory atom b has a guard
-    for atom in UNSAFE_ClingoTheoryAtomsIterator::from(atoms) {
+    for atom in UNSAFE_TheoryAtomsIterator::from(atoms) {
         // get the term associated with the theory atom
-        let term = atoms.atom_term(atom as ClingoId).unwrap();
+        let term = atoms.atom_term(atom as Id).unwrap();
 
         // get the name associated with the theory atom
         let name = atoms.term_name(term).unwrap();
 
         if name == "b" {
             // we got theory atom b/1 here
-            let guard = atoms.atom_has_guard(atom as ClingoId).unwrap();
+            let guard = atoms.atom_has_guard(atom as Id).unwrap();
             if guard {
                 println!("theory atom b/1 has a guard: true");
             } else {
                 println!("theory atom b/1 has a guard: false");
             }
             // get the literal associated with the theory atom
-            return Some(atoms.atom_literal(atom as ClingoId).unwrap());
+            return Some(atoms.atom_literal(atom as Id).unwrap());
         }
     }
     None
@@ -77,7 +77,7 @@ fn main() {
     let options = env::args().skip(1).collect();
 
     // create a control object and pass command line arguments
-    let mut ctl = ClingoControl::new(options, 20).expect("Failed creating clingo_control.");
+    let mut ctl = Control::new(options, 20).expect("Failed creating clingo_control.");
 
     // add a logic program to the base part
     let parameters: Vec<&str> = Vec::new();
@@ -94,7 +94,7 @@ fn main() {
     ).expect("Failed to add a logic program.");
 
     // ground the base part
-    let part = ClingoPart::new("base", &[]);
+    let part = Part::new("base", &[]);
     let parts = vec![part];
     ctl.ground(&parts)
         .expect("Failed to ground a logic program.");

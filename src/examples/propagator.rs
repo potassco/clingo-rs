@@ -6,10 +6,10 @@ use std::cell::RefCell;
 use std::rc::Rc;
 use clingo::*;
 
-fn print_model(model: &mut ClingoModel) {
+fn print_model(model: &mut Model) {
     // retrieve the symbols in the model
     let atoms = model
-        .symbols(ClingoShowType::Shown as clingo_show_type_bitset_t)
+        .symbols(ShowType::Shown as clingo_show_type_bitset_t)
         .expect("Failed to retrieve symbols in the model.");
 
     print!("Model:");
@@ -21,8 +21,8 @@ fn print_model(model: &mut ClingoModel) {
     println!();
 }
 
-fn solve(ctl: &mut ClingoControl) {
-    let solve_mode = ClingoSolveMode::Yield;
+fn solve(ctl: &mut Control) {
+    let solve_mode = SolveMode::Yield;
     let assumptions = vec![];
 
     // get a solve handle
@@ -52,7 +52,7 @@ fn solve(ctl: &mut ClingoControl) {
 struct StateT {
     // assignment of pigeons to holes
     // (hole number -> pigeon placement literal or zero)
-    holes: Vec<Option<ClingoLiteral>>,
+    holes: Vec<Option<Literal>>,
 }
 
 // state information for the propagator
@@ -65,7 +65,7 @@ struct PropagatorT {
 }
 
 // returns the offset'th numeric argument of the function symbol sym
-fn get_arg(sym: &ClingoSymbol, offset: usize) -> Result<i32, &'static str> {
+fn get_arg(sym: &Symbol, offset: usize) -> Result<i32, &'static str> {
     // get the arguments of the function symbol
     let args = sym.arguments().unwrap();
     // get the requested numeric argument
@@ -73,8 +73,8 @@ fn get_arg(sym: &ClingoSymbol, offset: usize) -> Result<i32, &'static str> {
 }
 
 struct MyPropagator;
-impl ClingoPropagatorBuilder<PropagatorT> for MyPropagator {
-    fn init(init: &mut ClingoPropagateInit, propagator: &mut PropagatorT) -> bool {
+impl PropagatorBuilder<PropagatorT> for MyPropagator {
+    fn init(init: &mut PropagateInit, propagator: &mut PropagatorT) -> bool {
         // stores the (numeric) maximum of the solver literals capturing pigeon placements
         // note that the code below assumes that this literal is not negative
         // which holds for the pigeon problem but not in general
@@ -85,19 +85,20 @@ impl ClingoPropagatorBuilder<PropagatorT> for MyPropagator {
         let threads = init.number_of_threads();
 
         // ensure that solve can be called multiple times
-        // for simplicity, the case that additional holes or pigeons to assign are grounded is not handled here
+        // for simplicity, the case that additional holes or pigeons to assign are grounded is not
+        // handled here
 
         if !propagator.states.is_empty() {
-            // in principle the number of threads can increase between solve calls by changing the configuration
-            // this case is not handled (elegantly) here
+            // in principle the number of threads can increase between solve calls by changing the
+            // configuration this case is not handled (elegantly) here
             println!("hi propagator.states.is_not_empty");
             if threads > propagator.states.len() {
-                clingo::set_error(ClingoError::Runtime, "more threads than states");
+                clingo::set_error(Error::Runtime, "more threads than states");
             }
             return true;
         }
 
-        let s1_holes: Vec<Option<ClingoLiteral>> = vec![];
+        let s1_holes: Vec<Option<Literal>> = vec![];
         let state1 = Rc::new(RefCell::new(StateT { holes: s1_holes }));
         propagator.states = vec![state1];
 
@@ -106,7 +107,7 @@ impl ClingoPropagatorBuilder<PropagatorT> for MyPropagator {
         let atoms = init.symbolic_atoms().unwrap();
 
         // create place/2 signature to filter symbolic atoms with
-        let sig = ClingoSignature::create("place", 2, true).unwrap();
+        let sig = Signature::create("place", 2, true).unwrap();
 
         // get an iterator after the last place/2 atom
         // (atom order corresponds to grounding order (and is unpredictable))
@@ -173,8 +174,8 @@ impl ClingoPropagatorBuilder<PropagatorT> for MyPropagator {
     }
 
     fn propagate(
-        control: &mut ClingoPropagateControl,
-        changes: &[ClingoLiteral],
+        control: &mut PropagateControl,
+        changes: &[Literal],
         propagator: &mut PropagatorT,
     ) -> bool {
         // get the thread specific state
@@ -195,15 +196,12 @@ impl ClingoPropagatorBuilder<PropagatorT> for MyPropagator {
                 // create a conflicting clause and propagate it
                 Some(x) => {
                     // current and previous literal must not hold together
-                    let clause: &[ClingoLiteral] = &[lit.negate(), x.negate()];
+                    let clause: &[Literal] = &[lit.negate(), x.negate()];
                     // stores the result when adding a clause or propagationg
                     // if result is false propagation must stop for the solver to backtrack
 
                     // add the clause
-                    if !control
-                        .add_clause(clause, ClingoClauseType::Learnt)
-                        .unwrap()
-                    {
+                    if !control.add_clause(clause, ClauseType::Learnt).unwrap() {
                         return true;
                     }
 
@@ -222,8 +220,8 @@ impl ClingoPropagatorBuilder<PropagatorT> for MyPropagator {
     }
 
     fn undo(
-        control: &mut ClingoPropagateControl,
-        changes: &[ClingoLiteral],
+        control: &mut PropagateControl,
+        changes: &[Literal],
         propagator: &mut PropagatorT,
     ) -> bool {
         // get the thread specific state
@@ -245,8 +243,8 @@ impl ClingoPropagatorBuilder<PropagatorT> for MyPropagator {
 }
 
 struct MyLogger;
-impl ClingoLogger<u32> for MyLogger {
-    fn log(code: ClingoWarning, message: &str, data: &mut u32) {
+impl Logger<u32> for MyLogger {
+    fn log(code: Warning, message: &str, data: &mut u32) {
         println!("log: {}", message);
         println!("warn: {:?}", code);
         println!("data: {:?}", data);
@@ -268,9 +266,9 @@ fn main() {
     };
 
     // create a control object and pass command line arguments
-    //     let option = ClingoControl::new(options, 20);
+    //     let option = Control::new(options, 20);
     let mut logdata: u32 = 0;
-    let option = ClingoControl::new_with_logger(options, &MyLogger, &mut logdata, 20);
+    let option = Control::new_with_logger(options, &MyLogger, &mut logdata, 20);
 
     match option {
         Ok(mut ctl) => {
@@ -299,7 +297,7 @@ fn main() {
             args.push(arg1);
 
             // the pigeon program part having the number of holes and pigeons as parameters
-            let part = ClingoPart::new("pigeon", args.as_slice());
+            let part = Part::new("pigeon", args.as_slice());
             let parts = vec![part];
             ctl.ground(&parts)
                 .expect("Failed to ground a logic program.");

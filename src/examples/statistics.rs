@@ -10,12 +10,12 @@ fn print_prefix(depth: u8) {
 }
 
 // recursively print the statistics object
-fn print_statistics(stats: &mut ClingoStatistics, key: u64, depth: u8) {
+fn print_statistics(stats: &mut Statistics, key: u64, depth: u8) {
     // get the type of an entry and switch over its various values
     let statistics_type = stats.statistics_type(key).unwrap();
     match statistics_type {
         // print values
-        ClingoStatisticsType::Value => {
+        StatisticsType::Value => {
             let value = stats
                 .value_get(key)
                 .expect("Failed to retrieve statistics value.");
@@ -26,7 +26,7 @@ fn print_statistics(stats: &mut ClingoStatistics, key: u64, depth: u8) {
         }
 
         // print arrays
-        ClingoStatisticsType::Array => {
+        StatisticsType::Array => {
             // loop over array elements
             let size = stats
                 .array_size(key)
@@ -45,7 +45,7 @@ fn print_statistics(stats: &mut ClingoStatistics, key: u64, depth: u8) {
         }
 
         // print maps
-        ClingoStatisticsType::Map => {
+        StatisticsType::Map => {
             // loop over map elements
             let size = stats.map_size(key).unwrap();
             for i in 0..size {
@@ -61,16 +61,16 @@ fn print_statistics(stats: &mut ClingoStatistics, key: u64, depth: u8) {
         }
 
         // this case won't occur if the statistics are traversed like this
-        ClingoStatisticsType::Empty => {
-            println!("ClingoStatisticsType::Empty");
+        StatisticsType::Empty => {
+            println!("StatisticsType::Empty");
         }
     }
 }
 
-fn print_model(model: &mut ClingoModel) {
+fn print_model(model: &mut Model) {
     // retrieve the symbols in the model
     let atoms = model
-        .symbols(ClingoShowType::Shown as clingo_show_type_bitset_t)
+        .symbols(ShowType::Shown as clingo_show_type_bitset_t)
         .expect("Failed to retrieve symbols in the model.");
 
     print!("Model:");
@@ -82,9 +82,9 @@ fn print_model(model: &mut ClingoModel) {
     println!();
 }
 
-fn solve(ctl: &mut ClingoControl) {
+fn solve(ctl: &mut Control) {
     // get a solve handle
-    let handle = ctl.solve(ClingoSolveMode::Yield, &[])
+    let handle = ctl.solve(SolveMode::Yield, &[])
         .expect("Failed retrieving solve handle.");
 
     // loop over all models
@@ -110,7 +110,7 @@ fn main() {
     let options = env::args().skip(1).collect();
 
     // create a control object and pass command line arguments
-    let mut ctl = ClingoControl::new(options, 20).expect("Failed creating ClingoControl.");
+    let mut ctl = Control::new(options, 20).expect("Failed creating Control.");
 
     {
         // get the configuration object and its root key
@@ -131,7 +131,7 @@ fn main() {
     }
 
     // ground the base part
-    let part = ClingoPart::new("base", &[]);
+    let part = Part::new("base", &[]);
     let parts = vec![part];
     if let Err(e) = ctl.ground(&parts) {
         println!("{}", e);

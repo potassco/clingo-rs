@@ -3,10 +3,10 @@ extern crate clingo;
 use std::env;
 use clingo::*;
 
-fn print_model(model: &mut ClingoModel) {
+fn print_model(model: &mut Model) {
     // retrieve the symbols in the model
     let atoms = model
-        .symbols(ClingoShowType::Shown as clingo_show_type_bitset_t)
+        .symbols(ShowType::Shown as clingo_show_type_bitset_t)
         .expect("Failed to retrieve symbols in the model.");
 
     print!("Model:");
@@ -18,9 +18,9 @@ fn print_model(model: &mut ClingoModel) {
     println!();
 }
 
-fn solve(ctl: &mut ClingoControl) {
+fn solve(ctl: &mut Control) {
     // get a solve handle
-    let handle = ctl.solve(ClingoSolveMode::Yield, &[])
+    let handle = ctl.solve(SolveMode::Yield, &[])
         .expect("Failed retrieving solve handle.");
 
     // loop over all models
@@ -46,7 +46,7 @@ fn main() {
     let options = env::args().skip(1).collect();
 
     // create a control object and pass command line arguments
-    let mut ctl = ClingoControl::new(options, 20).expect("Failed creating clingo_control.");
+    let mut ctl = Control::new(options, 20).expect("Failed creating clingo_control.");
 
     // add a logic program to the base part
     let parameters: Vec<&str> = Vec::new();
@@ -54,7 +54,7 @@ fn main() {
         .expect("Failed to add a logic program");
 
     // ground the base part
-    let part = ClingoPart::new("base", &[]);
+    let part = Part::new("base", &[]);
     let parts = vec![part];
     ctl.ground(&parts)
         .expect("Failed to ground a logic program.");
@@ -93,7 +93,7 @@ fn main() {
 
         // add rule: :- not d, c.
         let head = vec![];
-        let body = vec![ClingoLiteral::UNSAFE_from(atom_d).negate(), atom_ids[2]];
+        let body = vec![Literal::UNSAFE_from(atom_d).negate(), atom_ids[2]];
 
         backend
             .rule(false, &head, &body)

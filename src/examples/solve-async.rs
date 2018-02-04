@@ -7,13 +7,9 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use clingo::*;
 
 struct MySEHandler;
-impl ClingoSolveEventHandler<AtomicBool> for MySEHandler {
-    fn on_solve_event(
-        type_: ClingoSolveEventType,
-        data: &mut AtomicBool,
-        _goon: &mut bool,
-    ) -> bool {
-        if type_ == ClingoSolveEventType::Finish {
+impl SolveEventHandler<AtomicBool> for MySEHandler {
+    fn on_solve_event(type_: SolveEventType, data: &mut AtomicBool, _goon: &mut bool) -> bool {
+        if type_ == SolveEventType::Finish {
             data.store(false, Ordering::Relaxed);
         }
         true
@@ -25,7 +21,7 @@ fn main() {
     let options = env::args().skip(1).collect();
 
     // create a control object and pass command line arguments
-    let mut ctl = ClingoControl::new(options, 20).expect("Failed creating ClingoControl.");
+    let mut ctl = Control::new(options, 20).expect("Failed creating Control.");
 
     // add a logic program to the base part
     let parameters: Vec<&str> = Vec::new();
@@ -39,7 +35,7 @@ fn main() {
     ).expect("Failed to add a logic program.");
 
     // ground the base part
-    let part = ClingoPart::new("base", &[]);
+    let part = Part::new("base", &[]);
     let parts = vec![part];
     ctl.ground(&parts)
         .expect("Failed to ground a logic program.");
@@ -48,8 +44,8 @@ fn main() {
 
     // create a solve handle with an attached event handler
     let handle = ctl.solve_with_event_handler(
-        (ClingoSolveMode::Async as clingo_solve_mode_bitset_t)
-            + (ClingoSolveMode::Yield as clingo_solve_mode_bitset_t),
+        (SolveMode::Async as clingo_solve_mode_bitset_t)
+            + (SolveMode::Yield as clingo_solve_mode_bitset_t),
         &[],
         &MySEHandler,
         &mut running,

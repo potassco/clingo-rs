@@ -3,7 +3,7 @@ extern crate clingo;
 use std::env;
 use clingo::*;
 
-fn print_model(model: &mut ClingoModel, label: &str, show: clingo_show_type_bitset_t) {
+fn print_model(model: &mut Model, label: &str, show: clingo_show_type_bitset_t) {
     print!("{}:", label);
 
     // retrieve the symbols in the model
@@ -18,9 +18,9 @@ fn print_model(model: &mut ClingoModel, label: &str, show: clingo_show_type_bits
     println!();
 }
 
-fn solve(ctl: &mut ClingoControl) {
+fn solve(ctl: &mut Control) {
     // get a solve handle
-    let handle = ctl.solve(ClingoSolveMode::Yield, &[])
+    let handle = ctl.solve(SolveMode::Yield, &[])
         .expect("Failed retrieving solve handle.");
 
     // loop over all models
@@ -46,23 +46,23 @@ fn solve(ctl: &mut ClingoControl) {
             print_model(
                 model,
                 "  shown",
-                ClingoShowType::Shown as clingo_show_type_bitset_t,
+                ShowType::Shown as clingo_show_type_bitset_t,
             );
             print_model(
                 model,
                 "  atoms",
-                ClingoShowType::Atoms as clingo_show_type_bitset_t,
+                ShowType::Atoms as clingo_show_type_bitset_t,
             );
             print_model(
                 model,
                 "  terms",
-                ClingoShowType::Terms as clingo_show_type_bitset_t,
+                ShowType::Terms as clingo_show_type_bitset_t,
             );
             print_model(
                 model,
                 " ~atoms",
-                ClingoShowType::Complement as clingo_show_type_bitset_t
-                    + ClingoShowType::Atoms as clingo_show_type_bitset_t,
+                ShowType::Complement as clingo_show_type_bitset_t
+                    + ShowType::Atoms as clingo_show_type_bitset_t,
             );
         } else {
             // stop if there are no more models
@@ -82,7 +82,7 @@ fn main() {
     let options = env::args().skip(1).collect();
 
     // create a control object and pass command line arguments
-    let mut ctl = ClingoControl::new(options, 20).expect("Failed creating clingo_control.");
+    let mut ctl = Control::new(options, 20).expect("Failed creating clingo_control.");
 
     // add a logic program to the base part
     let parameters: Vec<&str> = Vec::new();
@@ -90,7 +90,7 @@ fn main() {
         .expect("Failed to add a logic program.");
 
     // ground the base part
-    let part = ClingoPart::new("base", &[]);
+    let part = Part::new("base", &[]);
     let parts = vec![part];
     ctl.ground(&parts)
         .expect("Failed to ground a logic program.");
