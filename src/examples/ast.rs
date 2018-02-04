@@ -113,7 +113,7 @@ fn main() {
         builder.begin().expect("Failed building logic program.");
 
         // initialize the location
-        let location = create_clingo_location(0, 0, 0, 0, "<rewrite>", "<rewrite>");
+        let location = create_location(0, 0, 0, 0, "<rewrite>", "<rewrite>");
 
         // initilize atom to add
         let atom = AstTerm::new_symbol(location, sym);

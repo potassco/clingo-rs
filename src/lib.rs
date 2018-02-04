@@ -311,7 +311,7 @@ pub fn create_supremum() -> Symbol {
     Symbol(symbol)
 }
 
-/// Construct a symbol representing \#inf<
+/// Construct a symbol representing \#inf
 pub fn create_infimum() -> Symbol {
     let mut symbol = 0 as clingo_symbol_t;
     unsafe { clingo_symbol_create_infimum(&mut symbol) };
@@ -640,7 +640,7 @@ pub fn parse_program_with_logger<CD, C: AstStatementHandler<CD>, LD, L: Logger<L
         Err(error_message())
     }
 }
-pub fn create_clingo_location(
+pub fn create_location(
     begin_line: usize,
     end_line: usize,
     begin_column: usize,
@@ -1762,11 +1762,33 @@ impl Configuration {
         }
     }
 
-    //TODO     pub fn clingo_configuration_map_subkey_name(configuration: *mut Configuration,
-    //                                                 key: clingo_id_t,
-    //                                                 offset: size_t,
-    //                                                 name: *mut *const c_char)
-    //                                                 -> u8;
+    /// Get the name associated with the offset-th subkey.
+    ///
+    /// # Pre-condition
+    ///
+    /// The [`configuration_type()`](struct.Configuration.html#method.configuration_type) type of the entry must be [`ConfigurationType::Map`](enum.ConfigurationType.html#variant.Map).
+    ///
+    /// # Arguments:
+    ///
+    /// * `key` - the key
+    /// * `offset` - the offset of the name
+    pub fn map_subkey_name(&mut self, Id(key): Id, offset: usize) -> Option<&str> {
+        let Configuration(ref mut conf) = *self;
+        let mut name_ptr = unsafe { mem::uninitialized() };
+        if unsafe {
+            clingo_configuration_map_subkey_name(
+                conf,
+                key,
+                offset,
+                &mut name_ptr as *mut *const c_char,
+            )
+        } {
+            let cstr = unsafe { CStr::from_ptr(name_ptr) };
+            Some(cstr.to_str().unwrap())
+        } else {
+            None
+        }
+    }
 
     /// Lookup a subkey under the given name.
     ///
