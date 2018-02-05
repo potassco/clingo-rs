@@ -2094,13 +2094,39 @@ impl Backend {
         }
     }
 
-    //TODO     pub fn clingo_backend_acyc_edge(backend: *mut Backend,
-    //                                     node_u: c_int,
-    //                                     node_v: c_int,
-    //                                     condition: *const clingo_literal_t,
-    //                                     size: size_t)
-    //                                     -> u8;
-
+    /// Add an edge directive.
+    ///
+    /// # Arguments:
+    ///
+    /// * `node_u` - the start vertex of the edge
+    /// * `node_v` - the end vertex of the edge
+    /// * `condition` - the condition under which the edge is part of the graph
+    ///
+    /// # Errors:
+    ///
+    /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
+    pub fn acyc_edge(
+        &mut self,
+        node_u: i32,
+        node_v: i32,
+        condition: &[Literal],
+    ) -> Result<(), Error> {
+        let size = condition.len();
+        if unsafe {
+            clingo_backend_acyc_edge(
+                &mut self.0,
+                node_u,
+                node_v,
+                condition.as_ptr() as *const clingo_literal_t,
+                size,
+            )
+        } {
+            Ok(())
+        } else {
+            Err(error())
+        }
+    }
+    
     /// Get a fresh atom to be used in aspif directives.
     pub fn add_atom(&mut self) -> Option<Atom> {
         let mut atom = 0 as clingo_atom_t;
