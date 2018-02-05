@@ -1892,12 +1892,7 @@ impl Backend {
     /// # Errors
     ///
     /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
-    pub fn rule(
-        &mut self,
-        choice: bool,
-        head: &[Atom],
-        body: &[Literal],
-    ) -> Result<(), &'static str> {
+    pub fn rule(&mut self, choice: bool, head: &[Atom], body: &[Literal]) -> Result<(), Error> {
         if unsafe {
             clingo_backend_rule(
                 &mut self.0,
@@ -1910,7 +1905,7 @@ impl Backend {
         } {
             Ok(())
         } else {
-            Err(error_message())
+            Err(error())
         }
     }
 
@@ -1926,7 +1921,7 @@ impl Backend {
     ///
     /// # Errors
     ///
-    /// - ::clingo_error_bad_alloc
+    /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
     pub fn weight_rule(
         &mut self,
         choice: bool,
@@ -1950,20 +1945,31 @@ impl Backend {
             Err(error())
         }
     }
-    //TODO     pub fn clingo_backend_weight_rule(backend: *mut Backend,
-    //                                       choice: u8,
-    //                                       head: *const clingo_atom_t,
-    //                                       head_size: size_t,
-    //                                       lower_bound: clingo_weight_t,
-    //                                       body: *const clingo_weighted_literal_t,
-    //                                       body_size: size_t)
-    //                                       -> u8;
 
-    //TODO     pub fn clingo_backend_minimize(backend: *mut Backend,
-    //                                    priority: clingo_weight_t,
-    //                                    literals: *const clingo_weighted_literal_t,
-    //                                    size: size_t)
-    //                                    -> u8;
+    /// Add a minimize constraint (or weak constraint) to the program.
+    ///
+    /// # Arguments:
+    ///
+    /// * `priority` - the priority of the constraint
+    /// * `literals` - the weighted literals whose sum to minimize
+    ///
+    /// # Errors
+    ///
+    /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
+    pub fn minimize(&mut self, priority: i32, literals: &[WeightedLiteral]) -> Result<(), Error> {
+        if unsafe {
+            clingo_backend_minimize(
+                &mut self.0,
+                priority,
+                literals.as_ptr() as *const clingo_weighted_literal_t,
+                literals.len(),
+            )
+        } {
+            Ok(())
+        } else {
+            Err(error())
+        }
+    }
 
     //TODO     pub fn clingo_backend_project(backend: *mut Backend,
     //                                   atoms: *const clingo_atom_t,
