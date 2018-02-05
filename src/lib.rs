@@ -353,13 +353,13 @@ pub fn create_infimum() -> Symbol {
 /// #  Errors:
 ///
 /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
-pub fn create_string(string: &str) -> Result<Symbol, &'static str> {
+pub fn create_string(string: &str) -> Result<Symbol, Error> {
     let mut symbol = 0 as clingo_symbol_t;
     let c_str = CString::new(string).unwrap();
     if unsafe { clingo_symbol_create_string(c_str.as_ptr(), &mut symbol) } {
         Ok(Symbol(symbol))
     } else {
-        Err(error_message())
+        Err(error())
     }
 }
 
@@ -376,14 +376,14 @@ pub fn create_string(string: &str) -> Result<Symbol, &'static str> {
 /// # Errors
 ///
 /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
-pub fn create_id(name: &str, positive: bool) -> Result<Symbol, &'static str> {
+pub fn create_id(name: &str, positive: bool) -> Result<Symbol, Error> {
     let mut symbol = 0 as clingo_symbol_t;
     let name_c_str = CString::new(name).unwrap();
     if unsafe { clingo_symbol_create_id(name_c_str.as_ptr(), positive, &mut symbol) } {
         //             println!("create Symbol! sym {} {:?}", symbol, name_c_str);
         Ok(Symbol(symbol))
     } else {
-        Err(error_message())
+        Err(error())
     }
 }
 
@@ -396,7 +396,6 @@ pub fn create_id(name: &str, positive: bool) -> Result<Symbol, &'static str> {
 ///
 /// * `name` - the name of the function
 /// * `arguments` - the arguments of the function
-/// * `arguments_size` - the number of arguments
 /// * `positive` - whether the symbol has a classical negation sign
 ///
 /// # Errors
@@ -406,7 +405,7 @@ pub fn create_function(
     name: &str,
     arguments: &[Symbol],
     positive: bool,
-) -> Result<Symbol, &'static str> {
+) -> Result<Symbol, Error> {
     let mut symbol = 0 as clingo_symbol_t;
     let name_c_str = CString::new(name).unwrap();
     if unsafe {
@@ -420,7 +419,7 @@ pub fn create_function(
     } {
         Ok(Symbol(symbol))
     } else {
-        Err(error_message())
+        Err(error())
     }
 }
 
@@ -430,12 +429,12 @@ impl Symbol {
     /// # Errors
     ///
     /// - [`Error::Runtime`](enum.Error.html#variant.Runtime) if symbol is not of type `SymbolType::Number`
-    pub fn number(&self) -> Result<i32, &'static str> {
+    pub fn number(&self) -> Result<i32, Error> {
         let mut number = 0;
         if unsafe { clingo_symbol_number(self.0, &mut number) } {
             Ok(number)
         } else {
-            Err(error_message())
+            Err(error())
         }
     }
 
@@ -444,13 +443,13 @@ impl Symbol {
     /// # Errors
     ///
     /// - [`Error::Runtime`](enum.Error.html#variant.Runtime) if symbol is not of type `SymbolType::Function`
-    pub fn name(&self) -> Result<&str, &'static str> {
+    pub fn name(&self) -> Result<&str, Error> {
         let mut char_ptr = std::ptr::null() as *const c_char;
         if unsafe { clingo_symbol_name(self.0, &mut char_ptr) } {
             let c_str = unsafe { CStr::from_ptr(char_ptr) };
             Ok(c_str.to_str().unwrap())
         } else {
-            Err(error_message())
+            Err(error())
         }
     }
 
@@ -459,13 +458,13 @@ impl Symbol {
     /// # Errors
     ///
     /// - [`Error::Runtime`](enum.Error.html#variant.Runtime) if symbol is not of type `SymbolType::String`
-    pub fn string(&self) -> Result<&str, &'static str> {
+    pub fn string(&self) -> Result<&str, Error> {
         let mut char_ptr = std::ptr::null() as *const c_char;
         if unsafe { clingo_symbol_string(self.0, &mut char_ptr) } {
             let c_str = unsafe { CStr::from_ptr(char_ptr) };
             Ok(c_str.to_str().unwrap())
         } else {
-            Err(error_message())
+            Err(error())
         }
     }
 
@@ -474,12 +473,12 @@ impl Symbol {
     /// # Errors
     ///
     /// - [`Error::Runtime`](enum.Error.html#variant.Runtime) if symbol is not of type `SymbolType::Function`
-    pub fn is_positive(&self) -> Result<bool, &'static str> {
+    pub fn is_positive(&self) -> Result<bool, Error> {
         let mut positive = false;
         if unsafe { clingo_symbol_is_positive(self.0, &mut positive) } {
             Ok(positive)
         } else {
-            Err(error_message())
+            Err(error())
         }
     }
 
@@ -488,12 +487,12 @@ impl Symbol {
     /// # Errors
     ///
     /// - [`Error::Runtime`](enum.Error.html#variant.Runtime) if symbol is not of type `SymbolType::Function`
-    pub fn is_negative(&self) -> Result<bool, &'static str> {
+    pub fn is_negative(&self) -> Result<bool, Error> {
         let mut negative = false;
         if unsafe { clingo_symbol_is_negative(self.0, &mut negative) } {
             Ok(negative)
         } else {
-            Err(error_message())
+            Err(error())
         }
     }
 
@@ -502,7 +501,7 @@ impl Symbol {
     /// # Errors
     ///
     /// - [`Error::Runtime`](enum.Error.html#variant.Runtime) if symbol is not of type `SymbolType::Function`
-    pub fn arguments(&self) -> Result<Vec<Symbol>, &'static str> {
+    pub fn arguments(&self) -> Result<Vec<Symbol>, Error> {
         let mut symbol_ptr = std::ptr::null() as *const clingo_symbol_t;
         let mut size: usize = 0;
         if unsafe { clingo_symbol_arguments(self.0, &mut symbol_ptr, &mut size) } {
@@ -514,7 +513,7 @@ impl Symbol {
             }
             Ok(symbols)
         } else {
-            Err(error_message())
+            Err(error())
         }
     }
 
@@ -607,7 +606,7 @@ pub fn parse_program<D, T: AstStatementHandler<D>>(
     program_: &str,
     _callback: &T,
     callback_data: &mut D,
-) -> Result<(), &'static str> {
+) -> Result<(), Error> {
     let logger = None;
     //         let logger = Some(MaLogger::unsafe_logging_callback as LoggingCallback);
     let logger_data = std::ptr::null_mut();
@@ -625,7 +624,7 @@ pub fn parse_program<D, T: AstStatementHandler<D>>(
     } {
         Ok(())
     } else {
-        Err(error_message())
+        Err(error())
     }
 }
 
@@ -651,7 +650,7 @@ pub fn parse_program_with_logger<CD, C: AstStatementHandler<CD>, LD, L: Logger<L
     _logger: &L,
     ldata_: &mut LD,
     message_limit: u32,
-) -> Result<(), &'static str> {
+) -> Result<(), Error> {
     let callback_data = cdata_ as *mut CD;
     let logger_data = ldata_ as *mut LD;
     let program = CString::new(program_).unwrap();
@@ -667,7 +666,7 @@ pub fn parse_program_with_logger<CD, C: AstStatementHandler<CD>, LD, L: Logger<L
     } {
         Ok(())
     } else {
-        Err(error_message())
+        Err(error())
     }
 }
 pub fn create_location(
@@ -867,7 +866,7 @@ impl Control {
     pub fn new(
         arguments: std::vec::Vec<String>,
         message_limit: u32,
-    ) -> Result<Control, &'static str> {
+    ) -> Result<Control, Error> {
         let logger = None;
         let logger_data = std::ptr::null_mut();
 
@@ -898,14 +897,14 @@ impl Control {
                 ctl: Unique::new(ctl).unwrap(),
             })
         } else {
-            Err(error_message())
+            Err(error())
         }
     }
 
     /// Create a new control object.
     ///
-    /// **Note:** Only gringo options (without <code>\-\-output</code>) and clasp`s options are supported as arguments,
-    /// except basic options such as <code>\-\-help</code>.
+    /// **Note:** Only gringo options (without `--output`) and clasp`s options are supported as arguments,
+    /// except basic options such as `--help`.
     /// Furthermore, a control object is blocked while a search call is active;
     /// you must not call any member function during search.
     ///
@@ -925,7 +924,7 @@ impl Control {
         _logger: &T,
         logger_data: &mut D,
         message_limit: u32,
-    ) -> Result<Control, &'static str> {
+    ) -> Result<Control, Error> {
         // create a vector of zero terminated strings
         let mut args: Vec<CString> = Vec::new();
         for arg in arguments {
@@ -954,7 +953,7 @@ impl Control {
                 ctl: Unique::new(ctl).unwrap(),
             })
         } else {
-            Err(error_message())
+            Err(error())
         }
     }
 
@@ -982,7 +981,7 @@ impl Control {
         name_: &str,
         parameters: Vec<&str>,
         program_: &str,
-    ) -> Result<(), &'static str> {
+    ) -> Result<(), Error> {
         let name = CString::new(name_).unwrap();
         let name_ptr = name.as_ptr();
 
@@ -1014,7 +1013,7 @@ impl Control {
         } {
             Ok(())
         } else {
-            Err(error_message())
+            Err(error())
         }
     }
 
@@ -1035,7 +1034,7 @@ impl Control {
     /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
     ///
     /// **See:** [`Part`](struct.Part.html)
-    pub fn ground(&mut self, sparts: &[Part]) -> Result<(), &'static str> {
+    pub fn ground(&mut self, sparts: &[Part]) -> Result<(), Error> {
         let parts = sparts
             .iter()
             .map(|arg| arg.from())
@@ -1053,7 +1052,7 @@ impl Control {
         } {
             Ok(())
         } else {
-            Err(error_message())
+            Err(error())
         }
     }
 
@@ -1083,7 +1082,7 @@ impl Control {
         sparts: &[Part],
         _ground_callback: &T,
         ground_callback_data: &mut D,
-    ) -> Result<(), &'static str> {
+    ) -> Result<(), Error> {
         let parts = sparts
             .iter()
             .map(|arg| arg.from())
@@ -1102,7 +1101,7 @@ impl Control {
         } {
             Ok(())
         } else {
-            Err(error_message())
+            Err(error())
         }
     }
 
@@ -1167,7 +1166,6 @@ impl Control {
         data_: &mut D,
     ) -> Result<&mut SolveHandle, &'static str> {
         let mut handle = std::ptr::null_mut() as *mut clingo_solve_handle_t;
-
         let data = data_ as *mut D;
         if unsafe {
             clingo_control_solve(
@@ -1198,11 +1196,11 @@ impl Control {
     /// # Errors
     ///
     /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
-    pub fn cleanup(&mut self) -> Result<(), &'static str> {
+    pub fn cleanup(&mut self) -> Result<(), Error> {
         if unsafe { clingo_control_cleanup(self.ctl.as_ptr()) } {
             Ok(())
         } else {
-            Err(error_message())
+            Err(error())
         }
     }
 
@@ -1222,7 +1220,7 @@ impl Control {
         &mut self,
         symbol: &Symbol,
         value: TruthValue,
-    ) -> Result<(), &'static str> {
+    ) -> Result<(), Error> {
         if unsafe {
             clingo_control_assign_external(
                 self.ctl.as_ptr(),
@@ -1232,7 +1230,7 @@ impl Control {
         } {
             Ok(())
         } else {
-            Err(error_message())
+            Err(error())
         }
     }
 
@@ -1273,7 +1271,7 @@ impl Control {
         _propagator_builder: &T,
         data: &mut D,
         sequential: bool,
-    ) -> Result<(), &'static str> {
+    ) -> Result<(), Error> {
         let propagator = T::new();
         let propagator_ptr: *const Propagator = &propagator;
         let data_ptr = data as *mut D;
@@ -1287,7 +1285,7 @@ impl Control {
         } {
             Ok(())
         } else {
-            Err(error_message())
+            Err(error())
         }
     }
 
@@ -1387,13 +1385,13 @@ impl Control {
     /// - [`Error::Runtime`](enum.Error.html#variant.Runtime) if constant definition does not exist
     ///
     /// **See:** [`Part::get_const()`](struct.Part.html#method.get_const)
-    pub fn has_const(&mut self, name: &str) -> Result<bool, &'static str> {
+    pub fn has_const(&mut self, name: &str) -> Result<bool, Error> {
         let c_str_name = CString::new(name).unwrap();
         let mut exist = false;
         if unsafe { clingo_control_has_const(self.ctl.as_ptr(), c_str_name.as_ptr(), &mut exist) } {
             Ok(exist)
         } else {
-            Err(error_message())
+            Err(error())
         }
     }
 
@@ -1476,12 +1474,12 @@ impl ProgramBuilder {
     ///
     /// - [`Error::Runtime`](enum.Error.html#variant.Runtime) for statements of invalid form
     /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
-    pub fn add(&mut self, statement: &AstStatement) -> Result<(), &'static str> {
+    pub fn add(&mut self, statement: &AstStatement) -> Result<(),Error> {
         let AstStatement(ref stm) = *statement;
         if unsafe { clingo_program_builder_add(&mut self.0, stm) } {
             Ok(())
         } else {
-            Err(error_message())
+            Err(error())
         }
     }
 
@@ -1793,7 +1791,7 @@ impl Configuration {
     ///
     /// The [`configuration_type()`](struct.Configuration.html#method.configuration_type) type of the entry must be [`ConfigurationType::Map`](enum.ConfigurationType.html#variant.Map).
     ///
-    /// # Arguments:
+    /// # Arguments
     ///
     /// * `key` - the key
     /// * `offset` - the offset of the name
@@ -1838,7 +1836,7 @@ impl Configuration {
     ///
     /// The [`configuration_type()`](struct.Configuration.html#method.configuration_type) type of the entry must be [`ConfigurationType::Value`](enum.ConfigurationType.html#variant.Value).
     ///
-    /// # Arguments:
+    /// # Arguments
     ///
     /// * `key` - the key
     pub fn value_is_assigned(&mut self, Id(key): Id) -> Option<bool> {
@@ -1858,7 +1856,7 @@ impl Configuration {
     ///
     /// - The [`configuration_type()`](struct.Configuration.html#method.configuration_type) type of the entry must be [`ConfigurationType::Value`](enum.ConfigurationType.html#variant.Value).
     ///
-    /// # Arguments:
+    /// # Arguments
     ///
     /// * `key` - the key
     pub fn value_get(&mut self, Id(key): Id) -> Option<&str> {
@@ -1882,7 +1880,7 @@ impl Configuration {
     ///
     /// The [`configuration_type()`](struct.Configuration.html#method.configuration_type) type of the entry must be [`ConfigurationType::Value`](enum.ConfigurationType.html#variant.Value).
     ///
-    /// # Arguments:
+    /// # Arguments
     ///
     /// * `key` - the key
     /// * `value` - the value to set
@@ -1900,13 +1898,13 @@ pub struct Backend(clingo_backend_t);
 impl Backend {
     /// Add a rule to the program.
     ///
-    /// # Arguments:
+    /// # Arguments
     ///
     /// * `choice` determines if the head is a choice or a disjunction
     /// * `head` - the head atoms
     /// * `body` - the body literals
     ///
-    /// # Errors:
+    /// # Errors
     ///
     /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
     pub fn rule(&mut self, choice: bool, head: &[Atom], body: &[Literal]) -> Result<(), Error> {
@@ -1930,13 +1928,13 @@ impl Backend {
     ///
     /// **Attention:** All weights and the lower bound must be positive.
     ///
-    /// # Arguments:
+    /// # Arguments
     /// * `choice` - determines if the head is a choice or a disjunction
     /// * `head` - the head atoms
     /// * `lower_bound` - the lower bound of the weight rule
     /// * `body` - the weighted body literals
     ///
-    /// # Errors:
+    /// # Errors
     ///
     /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
     pub fn weight_rule(
@@ -1965,12 +1963,12 @@ impl Backend {
 
     /// Add a minimize constraint (or weak constraint) to the program.
     ///
-    /// # Arguments:
+    /// # Arguments
     ///
     /// * `priority` - the priority of the constraint
     /// * `literals` - the weighted literals whose sum to minimize
     ///
-    /// # Errors:
+    /// # Errors
     ///
     /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
     pub fn minimize(&mut self, priority: i32, literals: &[WeightedLiteral]) -> Result<(), Error> {
@@ -1990,11 +1988,11 @@ impl Backend {
 
     /// Add a projection directive.
     ///
-    /// # Arguments:
+    /// # Arguments
     ///
     /// * `atoms` - the atoms to project on
     ///
-    /// # Errors:
+    /// # Errors
     ///
     /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
     pub fn project(&mut self, atoms: &[Atom]) -> Result<(), Error> {
@@ -2013,12 +2011,12 @@ impl Backend {
 
     /// Add an external statement.
     ///
-    /// # Arguments:
+    /// # Arguments
     ///
     /// * `atom` - the external atom
     /// * `type` - the type of the external statement
     ///
-    /// # Errors:
+    /// # Errors
     ///
     /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
     pub fn external(&mut self, atom: &Atom, type_: ExternalType) -> Result<(), Error> {
@@ -2032,12 +2030,12 @@ impl Backend {
 
     /// Add an assumption directive.
     ///
-    /// # Arguments:
+    /// # Arguments
     ///
     /// * `literals` - the literals to assume (positive literals are true and negative literals
     /// false for the next solve call)
     ///
-    /// # Errors:
+    /// # Errors
     ///
     /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
     pub fn assume(&mut self, literals: &[Literal]) -> Result<(), Error> {
@@ -2057,7 +2055,7 @@ impl Backend {
 
     /// Add an heuristic directive.
     ///
-    /// # Arguments:
+    /// # Arguments
     ///
     /// * `atom` - the target atom
     /// * `type` - the type of the heuristic modification
@@ -2065,7 +2063,7 @@ impl Backend {
     /// * `priority` - the heuristic priority
     /// * `condition` - the condition under which to apply the heuristic modification
     ///
-    /// # Errors:
+    /// # Errors
     ///
     /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
     pub fn heuristic(
@@ -2096,13 +2094,13 @@ impl Backend {
 
     /// Add an edge directive.
     ///
-    /// # Arguments:
+    /// # Arguments
     ///
     /// * `node_u` - the start vertex of the edge
     /// * `node_v` - the end vertex of the edge
     /// * `condition` - the condition under which the edge is part of the graph
     ///
-    /// # Errors:
+    /// # Errors
     ///
     /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
     pub fn acyc_edge(
@@ -2292,14 +2290,14 @@ impl Signature {
     /// # Errors
     ///
     /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
-    pub fn create(name_: &str, arity: u32, positive: bool) -> Result<Signature, &'static str> {
+    pub fn create(name_: &str, arity: u32, positive: bool) -> Result<Signature, Error> {
         let name_c_str = CString::new(name_).unwrap();
         let mut signature = 0;
         if unsafe { clingo_signature_create(name_c_str.as_ptr(), arity, positive, &mut signature) }
         {
             Ok(Signature(signature))
         } else {
-            Err(error_message())
+            Err(error())
         }
     }
 }
@@ -2683,10 +2681,7 @@ impl Model {
         }
     }
 
-    //NOTTODO pub fn clingo_model_symbols_size(model: *mut Model,
-    //  show: clingo_show_type_bitset_t,
-    //  size: *mut size_t)
-    //  -> bool;
+    //NOTTODO: pub fn clingo_model_symbols_size(&mut self.0, show as clingo_show_type_bitset_t, size)
 
     /// Get the symbols of the selected types in the model.
     ///
@@ -2705,7 +2700,7 @@ impl Model {
     pub fn symbols(
         &mut self,
         show: clingo_show_type_bitset_t,
-    ) -> Result<Vec<Symbol>, &'static str> {
+    ) -> Result<Vec<Symbol>, Error> {
         let Model(ref mut model) = *self;
         let mut size: usize = 0;
         let size_p = &mut size as *mut usize;
@@ -2725,10 +2720,10 @@ impl Model {
                     unsafe { std::slice::from_raw_parts(symbols_ptr as *const Symbol, size) };
                 Ok(symbols_ref.to_owned())
             } else {
-                Err(error_message())
+                Err(error())
             }
         } else {
-            Err(error_message())
+            Err(error())
         }
     }
 
@@ -2764,7 +2759,7 @@ impl SolveControl {
     ///
     /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
     /// - [`Error::Runtime`](enum.Error.html#variant.Runtime) if adding the clause fails
-    pub fn add_clause(&mut self, clause: &[Literal]) -> Result<(), &'static str> {
+    pub fn add_clause(&mut self, clause: &[Literal]) -> Result<(), Error> {
         if unsafe {
             clingo_solve_control_add_clause(
                 &mut self.0,
@@ -2774,7 +2769,7 @@ impl SolveControl {
         } {
             Ok(())
         } else {
-            Err(error_message())
+            Err(error())
         }
     }
 }
@@ -2811,7 +2806,7 @@ impl PropagateControl {
         &mut self,
         clause: &[Literal],
         type_: ClauseType,
-    ) -> Result<bool, &'static str> {
+    ) -> Result<bool, Error> {
         let mut result = false;
         if unsafe {
             clingo_propagate_control_add_clause(
@@ -2824,7 +2819,7 @@ impl PropagateControl {
         } {
             Ok(result)
         } else {
-            Err(error_message())
+            Err(error())
         }
     }
 
@@ -2841,12 +2836,12 @@ impl PropagateControl {
     /// # Errors
     ///
     /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
-    pub fn propagate(&mut self) -> Result<bool, &'static str> {
+    pub fn propagate(&mut self) -> Result<bool, Error> {
         let mut result = false;
         if unsafe { clingo_propagate_control_propagate(&mut self.0, &mut result) } {
             Ok(result)
         } else {
-            Err(error_message())
+            Err(error())
         }
     }
 }
@@ -2917,12 +2912,13 @@ impl SolveHandle {
     ///
     /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
     /// - [`Error::Runtime`](enum.Error.html#variant.Runtime) if solving fails
-    pub fn get(&mut self) -> Result<clingo_solve_result_bitset_t, &'static str> {
+    //TODO? SolveResult
+    pub fn get(&mut self) -> Result<clingo_solve_result_bitset_t, Error> {
         let mut result = 0;
         if unsafe { clingo_solve_handle_get(&mut self.0, &mut result) } {
             Ok(result)
         } else {
-            Err(error_message())
+            Err(error())
         }
     }
 
@@ -2954,12 +2950,12 @@ impl SolveHandle {
     ///
     /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
     /// - [`Error::Runtime`](enum.Error.html#variant.Runtime) if solving fails
-    pub fn resume(&mut self) -> Result<(), &'static str> {
+    pub fn resume(&mut self) -> Result<(), Error> {
         let SolveHandle(ref mut handle) = *self;
         if unsafe { clingo_solve_handle_resume(handle) } {
             Ok(())
         } else {
-            Err(error_message())
+            Err(error())
         }
     }
 
@@ -2972,12 +2968,12 @@ impl SolveHandle {
     ///
     /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
     /// - [`Error::Runtime`](enum.Error.html#variant.Runtime) if solving fails
-    pub fn close(&mut self) -> Result<(), &'static str> {
+    pub fn close(&mut self) -> Result<(), Error> {
         let SolveHandle(ref mut handle) = *self;
         if unsafe { clingo_solve_handle_close(handle) } {
             Ok(())
         } else {
-            Err(error_message())
+            Err(error())
         }
     }
 }
