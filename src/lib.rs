@@ -273,6 +273,19 @@ impl Literal {
         self.0
     }
 }
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub struct WeightedLiteral(clingo_literal_t);
+//TODO check impl WeightedLiteral {
+//     pub fn negate(&self) -> Literal {
+//         Literal(-(self.0))
+//     }
+//     pub fn UNSAFE_from(Atom(atom): Atom) -> Literal {
+//         Literal(atom as clingo_literal_t)
+//     }
+//     pub fn get_integer(&self) -> i32 {
+//         self.0
+//     }
+// }
 
 #[derive(Debug, Copy, Clone)]
 pub struct Atom(clingo_atom_t);
@@ -1820,7 +1833,7 @@ impl Configuration {
         }
     }
 
-    //NOTTODO clingo_configuration_value_get_size(&mut self.0, key, &mut size) } {
+    //NOTTODO obsolete: clingo_configuration_value_get_size(&mut self.0, key, &mut size) }
 
     /// Get the string value of the given entry.
     ///
@@ -1901,6 +1914,42 @@ impl Backend {
         }
     }
 
+    /// Add a weight rule to the program.
+    ///
+    /// **Attention:** All weights and the lower bound must be positive.
+    ///
+    /// # Arguments
+    /// * `choice` - determines if the head is a choice or a disjunction
+    /// * `head` - the head atoms
+    /// * `lower_bound` - the lower bound of the weight rule
+    /// * `body` - the weighted body literals
+    ///
+    /// # Errors
+    ///
+    /// - ::clingo_error_bad_alloc
+    pub fn weight_rule(
+        &mut self,
+        choice: bool,
+        head: &[Atom],
+        lower_bound: i32,
+        body: &[WeightedLiteral],
+    ) -> Result<(), Error> {
+        if unsafe {
+            clingo_backend_weight_rule(
+                &mut self.0,
+                choice,
+                head.as_ptr() as *const clingo_atom_t,
+                head.len(),
+                lower_bound,
+                body.as_ptr() as *const clingo_weighted_literal_t,
+                body.len(),
+            )
+        } {
+            Ok(())
+        } else {
+            Err(error())
+        }
+    }
     //TODO     pub fn clingo_backend_weight_rule(backend: *mut Backend,
     //                                       choice: u8,
     //                                       head: *const clingo_atom_t,
