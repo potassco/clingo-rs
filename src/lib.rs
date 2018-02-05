@@ -1699,7 +1699,7 @@ impl Configuration {
             clingo_configuration_description(
                 &mut self.0,
                 key,
-                &mut description_ptr as *mut *const ::std::os::raw::c_char,
+                &mut description_ptr as *mut *const c_char,
             )
         } {
             let cstr = unsafe { CStr::from_ptr(description_ptr) };
@@ -1820,16 +1820,31 @@ impl Configuration {
         }
     }
 
-    //TODO     pub fn clingo_configuration_value_get_size(configuration: *mut Configuration,
-    //                                                key: clingo_id_t,
-    //                                                size: *mut size_t)
-    //                                                -> u8;
+    //NOTTODO clingo_configuration_value_get_size(&mut self.0, key, &mut size) } {
 
-    //TODO     pub fn clingo_configuration_value_get(configuration: *mut Configuration,
-    //                                           key: clingo_id_t,
-    //                                           value: *mut c_char,
-    //                                           size: size_t)
-    //                                           -> u8;
+    /// Get the string value of the given entry.
+    ///
+    /// # Pre-condition
+    ///
+    /// - The [`configuration_type()`](struct.Configuration.html#method.configuration_type) type of the entry must be [`ConfigurationType::Value`](enum.ConfigurationType.html#variant.Value).
+    ///
+    /// # Arguments:
+    ///
+    /// * `key` - the key
+    pub fn value_get(&mut self, Id(key): Id) -> Option<&str> {
+        let mut size = 0;
+        if unsafe { clingo_configuration_value_get_size(&mut self.0, key, &mut size) } {
+            let mut value_ptr = unsafe { mem::uninitialized() };
+            if unsafe { clingo_configuration_value_get(&mut self.0, key, &mut value_ptr, size) } {
+                let cstr = unsafe { CStr::from_ptr(&value_ptr) };
+                Some(cstr.to_str().unwrap())
+            } else {
+                None
+            }
+        } else {
+            None
+        }
+    }
 
     /// Set the value of an entry.
     ///
