@@ -134,6 +134,16 @@ pub enum ExternalType {
     False = clingo_external_type_clingo_external_type_false as isize,
     Release = clingo_external_type_clingo_external_type_release as isize,
 }
+
+#[derive(Debug, Copy, Clone)]
+pub enum HeuristicType {
+    Level = clingo_heuristic_type_clingo_heuristic_type_level as isize,
+    Sign = clingo_heuristic_type_clingo_heuristic_type_sign as isize,
+    Factor = clingo_heuristic_type_clingo_heuristic_type_factor as isize,
+    Init = clingo_heuristic_type_clingo_heuristic_type_init as isize,
+    True = clingo_heuristic_type_clingo_heuristic_type_true as isize,
+    False = clingo_heuristic_type_clingo_heuristic_type_false as isize,
+}
 type SolveEventCallback = unsafe extern "C" fn(
     type_: clingo_solve_event_type_t,
     event: *mut ::std::os::raw::c_void,
@@ -1840,7 +1850,7 @@ impl Configuration {
         }
     }
 
-    //NOTTODO obsolete: clingo_configuration_value_get_size(&mut self.0, key, &mut size) }
+    //NOTTODO only used to get string size: clingo_configuration_value_get_size(&mut self.0, key, &mut size) }
 
     /// Get the string value of the given entry.
     ///
@@ -1872,7 +1882,7 @@ impl Configuration {
     ///
     /// The [`configuration_type()`](struct.Configuration.html#method.configuration_type) type of the entry must be [`ConfigurationType::Value`](enum.ConfigurationType.html#variant.Value).
     ///
-    /// # Arguments
+    /// # Arguments:
     ///
     /// * `key` - the key
     /// * `value` - the value to set
@@ -1890,13 +1900,13 @@ pub struct Backend(clingo_backend_t);
 impl Backend {
     /// Add a rule to the program.
     ///
-    /// # Arguments
+    /// # Arguments:
     ///
     /// * `choice` determines if the head is a choice or a disjunction
     /// * `head` - the head atoms
     /// * `body` - the body literals
     ///
-    /// # Errors
+    /// # Errors:
     ///
     /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
     pub fn rule(&mut self, choice: bool, head: &[Atom], body: &[Literal]) -> Result<(), Error> {
@@ -1920,13 +1930,13 @@ impl Backend {
     ///
     /// **Attention:** All weights and the lower bound must be positive.
     ///
-    /// # Arguments
+    /// # Arguments:
     /// * `choice` - determines if the head is a choice or a disjunction
     /// * `head` - the head atoms
     /// * `lower_bound` - the lower bound of the weight rule
     /// * `body` - the weighted body literals
     ///
-    /// # Errors
+    /// # Errors:
     ///
     /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
     pub fn weight_rule(
@@ -1960,7 +1970,7 @@ impl Backend {
     /// * `priority` - the priority of the constraint
     /// * `literals` - the weighted literals whose sum to minimize
     ///
-    /// # Errors
+    /// # Errors:
     ///
     /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
     pub fn minimize(&mut self, priority: i32, literals: &[WeightedLiteral]) -> Result<(), Error> {
@@ -1984,7 +1994,7 @@ impl Backend {
     ///
     /// * `atoms` - the atoms to project on
     ///
-    /// # Errors
+    /// # Errors:
     ///
     /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
     pub fn project(&mut self, atoms: &[Atom]) -> Result<(), Error> {
@@ -2005,15 +2015,15 @@ impl Backend {
     ///
     /// # Arguments:
     ///
-    /// * `backend` - the target backend
     /// * `atom` - the external atom
     /// * `type` - the type of the external statement
     ///
-    /// # Errors
+    /// # Errors:
     ///
     /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
     pub fn external(&mut self, atom: &Atom, type_: ExternalType) -> Result<(), Error> {
-        if unsafe { clingo_backend_external(&mut self.0, atom.0, type_ as clingo_external_type_t) } {
+        if unsafe { clingo_backend_external(&mut self.0, atom.0, type_ as clingo_external_type_t) }
+        {
             Ok(())
         } else {
             Err(error())
@@ -2022,15 +2032,15 @@ impl Backend {
 
     /// Add an assumption directive.
     ///
-    /// # Arguments
+    /// # Arguments:
     ///
     /// * `literals` - the literals to assume (positive literals are true and negative literals
     /// false for the next solve call)
     ///
-    /// # Errors
+    /// # Errors:
     ///
     /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
-    pub fn assume(&mut self, literals: &[Literal]) -> Result<(), &'static str> {
+    pub fn assume(&mut self, literals: &[Literal]) -> Result<(), Error> {
         let size = literals.len();
         if unsafe {
             clingo_backend_assume(
@@ -2041,18 +2051,48 @@ impl Backend {
         } {
             Ok(())
         } else {
-            Err(error_message())
+            Err(error())
         }
     }
 
-    //TODO     pub fn clingo_backend_heuristic(backend: *mut Backend,
-    //                                     atom: clingo_atom_t,
-    //                                     type_: clingo_heuristic_type_t,
-    //                                     bias: c_int,
-    //                                     priority: ::std::os::raw::c_uint,
-    //                                     condition: *const clingo_literal_t,
-    //                                     size: size_t)
-    //                                     -> u8;
+    /// Add an heuristic directive.
+    ///
+    /// # Arguments:
+    ///
+    /// * `atom` - the target atom
+    /// * `type` - the type of the heuristic modification
+    /// * `bias` - the heuristic bias
+    /// * `priority` - the heuristic priority
+    /// * `condition` - the condition under which to apply the heuristic modification
+    ///
+    /// # Errors:
+    ///
+    /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
+    pub fn heuristic(
+        &mut self,
+        atom: &Atom,
+        type_: HeuristicType,
+        bias: i32,
+        priority: u32,
+        condition: &[Literal],
+    ) -> Result<(), Error> {
+        let size = condition.len();
+        if unsafe {
+            clingo_backend_heuristic(
+                &mut self.0,
+                atom.0,
+                type_ as clingo_heuristic_type_t,
+                bias,
+                priority,
+                condition.as_ptr() as *const clingo_literal_t,
+                size,
+            )
+        } {
+            Ok(())
+        } else {
+            Err(error())
+        }
+    }
 
     //TODO     pub fn clingo_backend_acyc_edge(backend: *mut Backend,
     //                                     node_u: c_int,
