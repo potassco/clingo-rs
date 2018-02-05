@@ -1971,10 +1971,28 @@ impl Backend {
         }
     }
 
-    //TODO     pub fn clingo_backend_project(backend: *mut Backend,
-    //                                   atoms: *const clingo_atom_t,
-    //                                   size: size_t)
-    //                                   -> u8;
+    /// Add a projection directive.
+    ///
+    /// # Arguments:
+    ///
+    /// * `atoms` - the atoms to project on
+    ///
+    /// # Errors
+    ///
+    /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
+    pub fn project(&mut self, atoms: &[Atom]) -> Result<(), Error> {
+        if unsafe {
+            clingo_backend_project(
+                &mut self.0,
+                atoms.as_ptr() as *const clingo_atom_t,
+                atoms.len(),
+            )
+        } {
+            Ok(())
+        } else {
+            Err(error())
+        }
+    }
 
     //TODO     pub fn clingo_backend_external(backend: *mut Backend,
     //                                    atom: clingo_atom_t,
