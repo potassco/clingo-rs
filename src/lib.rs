@@ -1662,9 +1662,8 @@ pub struct Configuration(clingo_configuration_t);
 impl Configuration {
     /// Get the root key of the configuration.
     pub fn root(&mut self) -> Option<Id> {
-        let Configuration(ref mut conf) = *self;
         let mut root_key = 0 as clingo_id_t;
-        if unsafe { clingo_configuration_root(conf, &mut root_key) } {
+        if unsafe { clingo_configuration_root(&mut self.0, &mut root_key) } {
             Some(Id(root_key))
         } else {
             None
@@ -1674,9 +1673,8 @@ impl Configuration {
     /// Get the type of a key.
     // TODO: The type is bitset, an entry can have multiple (but at least one) type.
     pub fn configuration_type(&mut self, Id(key): Id) -> Result<ConfigurationType, &'static str> {
-        let Configuration(ref mut conf) = *self;
         let mut ctype = 0 as clingo_configuration_type_bitset_t;
-        if unsafe { clingo_configuration_type(conf, key, &mut ctype) } {
+        if unsafe { clingo_configuration_type(&mut self.0, key, &mut ctype) } {
             match ctype as u32 {
                 clingo_configuration_type_clingo_configuration_type_value => {
                     Ok(ConfigurationType::Value)
@@ -1696,11 +1694,10 @@ impl Configuration {
 
     /// Get the description of an entry.
     pub fn description(&mut self, Id(key): Id) -> Option<&str> {
-        let Configuration(ref mut conf) = *self;
         let mut description_ptr = unsafe { mem::uninitialized() };
         if unsafe {
             clingo_configuration_description(
-                conf,
+                &mut self.0,
                 key,
                 &mut description_ptr as *mut *const ::std::os::raw::c_char,
             )
@@ -1718,9 +1715,8 @@ impl Configuration {
     ///
     /// The [`configuration_type()`](struct.Configuration.html#method.configuration_type) type of the entry must be  [`ConfigurationType::Array`](enum.ConfigurationType.html#variant.Array).
     pub fn array_size(&mut self, Id(key): Id) -> Option<usize> {
-        let Configuration(ref mut conf) = *self;
         let mut size = 0;
-        if unsafe { clingo_configuration_array_size(conf, key, &mut size) } {
+        if unsafe { clingo_configuration_array_size(&mut self.0, key, &mut size) } {
             Some(size)
         } else {
             None
@@ -1753,9 +1749,8 @@ impl Configuration {
     ///
     /// The [`configuration_type()`](struct.Configuration.html#method.configuration_type) type of the entry must be [`ConfigurationType::Map`](enum.ConfigurationType.html#variant.Map).
     pub fn map_size(&mut self, Id(key): Id) -> Option<usize> {
-        let Configuration(ref mut conf) = *self;
         let mut size = 0;
-        if unsafe { clingo_configuration_map_size(conf, key, &mut size) } {
+        if unsafe { clingo_configuration_map_size(&mut self.0, key, &mut size) } {
             Some(size)
         } else {
             None
@@ -1773,11 +1768,10 @@ impl Configuration {
     /// * `key` - the key
     /// * `offset` - the offset of the name
     pub fn map_subkey_name(&mut self, Id(key): Id, offset: usize) -> Option<&str> {
-        let Configuration(ref mut conf) = *self;
         let mut name_ptr = unsafe { mem::uninitialized() };
         if unsafe {
             clingo_configuration_map_subkey_name(
-                conf,
+                &mut self.0,
                 key,
                 offset,
                 &mut name_ptr as *mut *const c_char,
@@ -1808,10 +1802,23 @@ impl Configuration {
         }
     }
 
-    //TODO     pub fn clingo_configuration_value_is_assigned(configuration: *mut Configuration,
-    //                                                   key: clingo_id_t,
-    //                                                   assigned: *mut u8)
-    //                                                   -> u8;
+    /// Check whether a entry has a value.
+    ///
+    /// # Pre-condition
+    ///
+    /// The [`configuration_type()`](struct.Configuration.html#method.configuration_type) type of the entry must be [`ConfigurationType::Value`](enum.ConfigurationType.html#variant.Value).
+    ///
+    /// # Arguments:
+    ///
+    /// * `key` - the key
+    pub fn value_is_assigned(&mut self, Id(key): Id) -> Option<bool> {
+        let mut assigned = false;
+        if unsafe { clingo_configuration_value_is_assigned(&mut self.0, key, &mut assigned) } {
+            Some(assigned)
+        } else {
+            None
+        }
+    }
 
     //TODO     pub fn clingo_configuration_value_get_size(configuration: *mut Configuration,
     //                                                key: clingo_id_t,
