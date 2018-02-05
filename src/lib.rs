@@ -127,6 +127,13 @@ pub enum ConfigurationType {
     Array = clingo_configuration_type_clingo_configuration_type_array as isize,
     Map = clingo_configuration_type_clingo_configuration_type_map as isize,
 }
+#[derive(Debug, Copy, Clone)]
+pub enum ExternalType {
+    Free = clingo_external_type_clingo_external_type_free as isize,
+    True = clingo_external_type_clingo_external_type_true as isize,
+    False = clingo_external_type_clingo_external_type_false as isize,
+    Release = clingo_external_type_clingo_external_type_release as isize,
+}
 type SolveEventCallback = unsafe extern "C" fn(
     type_: clingo_solve_event_type_t,
     event: *mut ::std::os::raw::c_void,
@@ -1994,10 +2001,24 @@ impl Backend {
         }
     }
 
-    //TODO     pub fn clingo_backend_external(backend: *mut Backend,
-    //                                    atom: clingo_atom_t,
-    //                                    type_: clingo_external_type_t)
-    //                                    -> u8;
+    /// Add an external statement.
+    ///
+    /// # Arguments:
+    ///
+    /// * `backend` - the target backend
+    /// * `atom` - the external atom
+    /// * `type` - the type of the external statement
+    ///
+    /// # Errors
+    ///
+    /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
+    pub fn external(&mut self, atom: &Atom, type_: ExternalType) -> Result<(), Error> {
+        if unsafe { clingo_backend_external(&mut self.0, atom.0, type_ as clingo_external_type_t) } {
+            Ok(())
+        } else {
+            Err(error())
+        }
+    }
 
     /// Add an assumption directive.
     ///
@@ -2411,7 +2432,7 @@ impl TheoryAtoms {
     ///
     /// # Pre-condition
     ///
-    /// The term must be of type ::clingo_theory_term_type_function or ::clingo_theory_term_type_symbol.
+    ///TODO The term must be of type ::clingo_theory_term_type_function or ::clingo_theory_term_type_symbol.
     ///
     /// # Arguments
     ///
