@@ -65,7 +65,7 @@ struct PropagatorT {
 }
 
 // returns the offset'th numeric argument of the function symbol sym
-fn get_arg(sym: &Symbol, offset: usize) -> Result<i32, &'static str> {
+fn get_arg(sym: &Symbol, offset: usize) -> Result<i32, Error> {
     // get the arguments of the function symbol
     let args = sym.arguments().unwrap();
     // get the requested numeric argument
@@ -306,7 +306,7 @@ fn main() {
             solve(&mut ctl);
         }
         Err(e) => {
-            println!("{}", e);
+            println!("{:?}", e);
         }
     }
 }

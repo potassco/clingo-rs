@@ -144,6 +144,15 @@ pub enum HeuristicType {
     True = clingo_heuristic_type_clingo_heuristic_type_true as isize,
     False = clingo_heuristic_type_clingo_heuristic_type_false as isize,
 }
+#[derive(Debug, Copy, Clone)]
+pub enum TermType {
+    Tuple = clingo_theory_term_type_clingo_theory_term_type_tuple as isize,
+    List = clingo_theory_term_type_clingo_theory_term_type_list as isize,
+    Set = clingo_theory_term_type_clingo_theory_term_type_set as isize,
+    Function = clingo_theory_term_type_clingo_theory_term_type_function as isize,
+    Number = clingo_theory_term_type_clingo_theory_term_type_number as isize,
+    Symbol = clingo_theory_term_type_clingo_theory_term_type_symbol as isize,
+}
 type SolveEventCallback = unsafe extern "C" fn(
     type_: clingo_solve_event_type_t,
     event: *mut ::std::os::raw::c_void,
@@ -401,11 +410,7 @@ pub fn create_id(name: &str, positive: bool) -> Result<Symbol, Error> {
 /// # Errors
 ///
 /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
-pub fn create_function(
-    name: &str,
-    arguments: &[Symbol],
-    positive: bool,
-) -> Result<Symbol, Error> {
+pub fn create_function(name: &str, arguments: &[Symbol], positive: bool) -> Result<Symbol, Error> {
     let mut symbol = 0 as clingo_symbol_t;
     let name_c_str = CString::new(name).unwrap();
     if unsafe {
@@ -543,10 +548,7 @@ impl Symbol {
     ///
     pub fn to_string(&self) -> Option<String> {
         let mut size: usize = 0;
-        let err = unsafe { clingo_symbol_to_string_size(self.0, &mut size) };
-        if !err {
-            None
-        } else {
+        if unsafe { clingo_symbol_to_string_size(self.0, &mut size) } {
             let a1 = vec![1; size];
             let cstring = unsafe { CString::from_vec_unchecked(a1) };
             let err =
@@ -556,6 +558,8 @@ impl Symbol {
             } else {
                 cstring.into_string().ok()
             }
+        } else {
+            None
         }
     }
 
@@ -863,10 +867,7 @@ impl Control {
     ///
     /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
     /// - [`Error::Runtime`](enum.Error.html#variant.Runtime) if argument parsing fails
-    pub fn new(
-        arguments: std::vec::Vec<String>,
-        message_limit: u32,
-    ) -> Result<Control, Error> {
+    pub fn new(arguments: std::vec::Vec<String>, message_limit: u32) -> Result<Control, Error> {
         let logger = None;
         let logger_data = std::ptr::null_mut();
 
@@ -976,12 +977,7 @@ impl Control {
     ///
     /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
     /// - [`Error::Runtime`](enum.Error.html#variant.Runtime) if parsing fails
-    pub fn add(
-        &mut self,
-        name_: &str,
-        parameters: Vec<&str>,
-        program_: &str,
-    ) -> Result<(), Error> {
+    pub fn add(&mut self, name_: &str, parameters: Vec<&str>, program_: &str) -> Result<(), Error> {
         let name = CString::new(name_).unwrap();
         let name_ptr = name.as_ptr();
 
@@ -1216,11 +1212,7 @@ impl Control {
     /// # Errors
     ///
     /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
-    pub fn assign_external(
-        &mut self,
-        symbol: &Symbol,
-        value: TruthValue,
-    ) -> Result<(), Error> {
+    pub fn assign_external(&mut self, symbol: &Symbol, value: TruthValue) -> Result<(), Error> {
         if unsafe {
             clingo_control_assign_external(
                 self.ctl.as_ptr(),
@@ -1343,8 +1335,8 @@ impl Control {
     /// answer sets with or without projection, or finding optimal models, as well
     /// as clauses added with clingo_solve_control_add_clause().
     ///
-    /// **Attention:** For practical purposes, this option is only interesting for single-shot solving
-    /// or before the last solve call to squeeze out a tiny bit of performance.
+    /// **Attention:** For practical purposes, this option is only interesting for single-shot
+    /// solving or before the last solve call to squeeze out a tiny bit of performance.
     /// Initially, the enumeration assumption is enabled.
     ///
     /// # Arguments
@@ -1358,7 +1350,7 @@ impl Control {
         }
     }
 
-    /// Return the symbol for a constant definition of form: <tt>\#const name = symbol</tt>.
+    /// Return the symbol for a constant definition of form: `#const name = symbol`.
     ///
     /// # Arguments
     ///
@@ -1474,7 +1466,7 @@ impl ProgramBuilder {
     ///
     /// - [`Error::Runtime`](enum.Error.html#variant.Runtime) for statements of invalid form
     /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
-    pub fn add(&mut self, statement: &AstStatement) -> Result<(),Error> {
+    pub fn add(&mut self, statement: &AstStatement) -> Result<(), Error> {
         let AstStatement(ref stm) = *statement;
         if unsafe { clingo_program_builder_add(&mut self.0, stm) } {
             Ok(())
@@ -1700,23 +1692,23 @@ impl Configuration {
 
     /// Get the type of a key.
     // TODO: The type is bitset, an entry can have multiple (but at least one) type.
-    pub fn configuration_type(&mut self, Id(key): Id) -> Result<ConfigurationType, &'static str> {
+    pub fn configuration_type(&mut self, Id(key): Id) -> Option<ConfigurationType> {
         let mut ctype = 0 as clingo_configuration_type_bitset_t;
         if unsafe { clingo_configuration_type(&mut self.0, key, &mut ctype) } {
             match ctype as u32 {
                 clingo_configuration_type_clingo_configuration_type_value => {
-                    Ok(ConfigurationType::Value)
+                    Some(ConfigurationType::Value)
                 }
                 clingo_configuration_type_clingo_configuration_type_array => {
-                    Ok(ConfigurationType::Array)
+                    Some(ConfigurationType::Array)
                 }
                 clingo_configuration_type_clingo_configurations_type_map => {
-                    Ok(ConfigurationType::Map)
+                    Some(ConfigurationType::Map)
                 }
-                _ => Err("Rust binding failed to match clingo configuration type"),
+                _ => None,
             }
         } else {
-            Err("Rust binding failed to detect clingo configuration type")
+            None
         }
     }
 
@@ -1741,7 +1733,8 @@ impl Configuration {
     ///
     /// # Pre-condition
     ///
-    /// The [`configuration_type()`](struct.Configuration.html#method.configuration_type) type of the entry must be  [`ConfigurationType::Array`](enum.ConfigurationType.html#variant.Array).
+    /// The [`configuration_type()`](struct.Configuration.html#method.configuration_type) type of
+    /// the entry must be  [`ConfigurationType::Array`](enum.ConfigurationType.html#variant.Array).
     pub fn array_size(&mut self, Id(key): Id) -> Option<usize> {
         let mut size = 0;
         if unsafe { clingo_configuration_array_size(&mut self.0, key, &mut size) } {
@@ -1753,10 +1746,13 @@ impl Configuration {
 
     /// Get the subkey at the given offset of an array entry.
     ///
-    /// **Note:** Some array entries, like fore example the solver configuration, can be accessed past there actual size to add subentries.
+    /// **Note:** Some array entries, like fore example the solver configuration, can be accessed
+    /// past there actual size to add subentries.
+    ///
     /// # Pre-condition
     ///
-    /// The [`configuration_type()`](struct.Configuration.html#method.configuration_type) type of the entry must be [`ConfigurationType::Array`](enum.ConfigurationType.html#variant.Array).
+    /// The [`configuration_type()`](struct.Configuration.html#method.configuration_type) type of
+    /// the entry must be [`ConfigurationType::Array`](enum.ConfigurationType.html#variant.Array).
     ///
     /// # Arguments
     ///
@@ -1775,7 +1771,8 @@ impl Configuration {
     ///
     /// # Pre-condition
     ///
-    /// The [`configuration_type()`](struct.Configuration.html#method.configuration_type) type of the entry must be [`ConfigurationType::Map`](enum.ConfigurationType.html#variant.Map).
+    /// The [`configuration_type()`](struct.Configuration.html#method.configuration_type) type of
+    /// the entry must be [`ConfigurationType::Map`](enum.ConfigurationType.html#variant.Map).
     pub fn map_size(&mut self, Id(key): Id) -> Option<usize> {
         let mut size = 0;
         if unsafe { clingo_configuration_map_size(&mut self.0, key, &mut size) } {
@@ -1789,7 +1786,8 @@ impl Configuration {
     ///
     /// # Pre-condition
     ///
-    /// The [`configuration_type()`](struct.Configuration.html#method.configuration_type) type of the entry must be [`ConfigurationType::Map`](enum.ConfigurationType.html#variant.Map).
+    /// The [`configuration_type()`](struct.Configuration.html#method.configuration_type) type of
+    /// the entry must be [`ConfigurationType::Map`](enum.ConfigurationType.html#variant.Map).
     ///
     /// # Arguments
     ///
@@ -1816,7 +1814,8 @@ impl Configuration {
     ///
     /// # Pre-condition
     ///
-    /// The [`configuration_type()`](struct.Configuration.html#method.configuration_type) type of the entry must be [`ConfigurationType::Map`](enum.ConfigurationType.html#variant.Map).
+    /// The [`configuration_type()`](struct.Configuration.html#method.configuration_type) type of
+    /// the entry must be [`ConfigurationType::Map`](enum.ConfigurationType.html#variant.Map).
     ///
     /// **Note:** Multiple levels can be looked up by concatenating keys with a period.
     pub fn map_at(&mut self, Id(key): Id, name: &str) -> Option<Id> {
@@ -1834,7 +1833,8 @@ impl Configuration {
     ///
     /// # Pre-condition
     ///
-    /// The [`configuration_type()`](struct.Configuration.html#method.configuration_type) type of the entry must be [`ConfigurationType::Value`](enum.ConfigurationType.html#variant.Value).
+    /// The [`configuration_type()`](struct.Configuration.html#method.configuration_type) type of
+    /// the entry must be [`ConfigurationType::Value`](enum.ConfigurationType.html#variant.Value).
     ///
     /// # Arguments
     ///
@@ -1848,13 +1848,14 @@ impl Configuration {
         }
     }
 
-    //NOTTODO only used to get string size: clingo_configuration_value_get_size(&mut self.0, key, &mut size) }
+    //NOTTODO: clingo_configuration_value_get_size(&mut self.0, key, &mut size)
 
     /// Get the string value of the given entry.
     ///
     /// # Pre-condition
     ///
-    /// - The [`configuration_type()`](struct.Configuration.html#method.configuration_type) type of the entry must be [`ConfigurationType::Value`](enum.ConfigurationType.html#variant.Value).
+    /// The [`configuration_type()`](struct.Configuration.html#method.configuration_type) type of
+    /// the entry must be [`ConfigurationType::Value`](enum.ConfigurationType.html#variant.Value).
     ///
     /// # Arguments
     ///
@@ -1878,7 +1879,8 @@ impl Configuration {
     ///
     /// # Pre-condition
     ///
-    /// The [`configuration_type()`](struct.Configuration.html#method.configuration_type) type of the entry must be [`ConfigurationType::Value`](enum.ConfigurationType.html#variant.Value).
+    /// The [`configuration_type()`](struct.Configuration.html#method.configuration_type) type of
+    /// the entry must be [`ConfigurationType::Value`](enum.ConfigurationType.html#variant.Value).
     ///
     /// # Arguments
     ///
@@ -2124,7 +2126,7 @@ impl Backend {
             Err(error())
         }
     }
-    
+
     /// Get a fresh atom to be used in aspif directives.
     pub fn add_atom(&mut self) -> Option<Atom> {
         let mut atom = 0 as clingo_atom_t;
@@ -2149,22 +2151,18 @@ impl Statistics {
     }
 
     /// Get the type of a key.
-    ///
-    /// # Errors
-    ///
-    /// - Failure to match clingo statistics type
-    pub fn statistics_type(&mut self, key: u64) -> Result<StatisticsType, &'static str> {
+    pub fn statistics_type(&mut self, key: u64) -> Option<StatisticsType> {
         let mut stype = 0 as clingo_statistics_type_t;
         if unsafe { clingo_statistics_type(&mut self.0, key, &mut stype) } {
             match stype as u32 {
-                clingo_statistics_type_clingo_statistics_type_empty => Ok(StatisticsType::Empty),
-                clingo_statistics_type_clingo_statistics_type_value => Ok(StatisticsType::Value),
-                clingo_statistics_type_clingo_statistics_type_array => Ok(StatisticsType::Array),
-                clingo_statistics_type_clingo_statistics_type_map => Ok(StatisticsType::Map),
-                _ => Err("Rust binding failed to match clingo statistics type"),
+                clingo_statistics_type_clingo_statistics_type_empty => Some(StatisticsType::Empty),
+                clingo_statistics_type_clingo_statistics_type_value => Some(StatisticsType::Value),
+                clingo_statistics_type_clingo_statistics_type_array => Some(StatisticsType::Array),
+                clingo_statistics_type_clingo_statistics_type_map => Some(StatisticsType::Map),
+                _ => None,
             }
         } else {
-            Err(error_message())
+            None
         }
     }
 
@@ -2276,7 +2274,7 @@ impl Statistics {
         }
     }
 }
-
+#[derive(Debug, Copy, Clone)]
 pub struct Signature(clingo_signature_t);
 impl Signature {
     /// Create a new signature.
@@ -2311,6 +2309,7 @@ impl SymbolicAtoms {
     /// # Arguments
     ///
     /// * `signature` optional signature
+    // TODO implement Iterator trait
     pub fn begin(
         &mut self,
         opt_sig: Option<&Signature>,
@@ -2448,14 +2447,37 @@ impl SymbolicAtoms {
         }
     }
 
-    //TODO     pub fn clingo_symbolic_atoms_signatures_size(atoms: *mut SymbolicAtoms,
-    //                                                  size: *mut size_t)
-    //                                                  -> u8;
+    //NOTTODO: fn clingo_symbolic_atoms_signatures_size()
 
-    //TODO     pub fn clingo_symbolic_atoms_signatures(atoms: *mut SymbolicAtoms,
-    //                                             signatures: *mut clingo_signature_t,
-    //                                             size: size_t)
-    //                                             -> u8;
+    /// Get the predicate signatures occurring in a logic program.
+    ///
+    /// # Errors
+    ///
+    /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
+    /// - [`Error::Runtime`](enum.Error.html#variant.Runtime) if the size is too small
+    pub fn signatures(&mut self) -> Result<Vec<Signature>, Error> {
+        let SymbolicAtoms(ref mut atoms) = *self;
+        let mut size = 0;
+        if unsafe { clingo_symbolic_atoms_signatures_size(atoms, &mut size) } {
+            let signatures = Vec::<Signature>::with_capacity(size);
+            let signatures_ptr = signatures.as_ptr();
+            if unsafe {
+                clingo_symbolic_atoms_signatures(
+                    atoms,
+                    signatures_ptr as *mut clingo_signature_t,
+                    size,
+                )
+            } {
+                let signatures_ref =
+                    unsafe { std::slice::from_raw_parts(signatures_ptr as *const Signature, size) };
+                Ok(signatures_ref.to_owned())
+            } else {
+                Err(error())
+            }
+        } else {
+            Err(error())
+        }
+    }
 
     /// Get an iterator to the next element in the sequence of symbolic atoms.
     ///
@@ -2474,29 +2496,73 @@ impl SymbolicAtoms {
         }
     }
 
-    //TODO     pub fn clingo_symbolic_atoms_is_valid(atoms: *mut SymbolicAtoms,
-    //                                           iterator: clingo_symbolic_atom_iterator_t,
-    //                                           valid: *mut u8)
-    //                                           -> u8;
+    /// Check whether the given iterator points to some element with the sequence
+    /// of symbolic atoms or to the end of the sequence.
+    ///
+    /// # Arguments
+    ///
+    /// * `iterator` - the iterator
+    pub fn is_valid(&mut self, iterator: clingo_symbolic_atom_iterator_t) -> Option<bool> {
+        let mut valid = false;
+        if unsafe { clingo_symbolic_atoms_is_valid(&mut self.0, iterator, &mut valid) } {
+            Some(valid)
+        } else {
+            None
+        }
+    }
 }
 
 pub struct TheoryAtoms(clingo_theory_atoms_t);
 impl TheoryAtoms {
-    //TODO     pub fn clingo_theory_atoms_term_type(atoms: *mut TheoryAtoms,
-    //                                          term: clingo_id_t,
-    //                                          type_: *mut clingo_theory_term_type_t)
-    //                                          -> u8;
+    /// Get the type of the given theory term.
+    ///
+    /// # Arguments
+    ///
+    /// * `term` - id of the term
+    // TODO ? is this needed in an Rust API
+    pub fn term_type(&mut self, Id(term): Id) -> Option<TermType> {
+        let mut ttype = 0 as clingo_theory_term_type_t;
+        if unsafe { clingo_theory_atoms_term_type(&mut self.0, term, &mut ttype) } {
+            match ttype as u32 {
+                clingo_theory_term_type_clingo_theory_term_type_tuple => Some(TermType::Tuple),
+                clingo_theory_term_type_clingo_theory_term_type_list => Some(TermType::List),
+                clingo_theory_term_type_clingo_theory_term_type_set => Some(TermType::Set),
+                clingo_theory_term_type_clingo_theory_term_type_function => {
+                    Some(TermType::Function)
+                }
+                clingo_theory_term_type_clingo_theory_term_type_number => Some(TermType::Number),
+                clingo_theory_term_type_clingo_theory_term_type_symbol => Some(TermType::Symbol),
+                _ => None,
+            }
+        } else {
+            None
+        }
+    }
 
-    //TODO     pub fn clingo_theory_atoms_term_number(atoms: *mut TheoryAtoms,
-    //                                            term: clingo_id_t,
-    //                                            number: *mut c_int)
-    //                                            -> u8;
+    /// Get the number of the given numeric theory term.
+    ///
+    /// # Pre-condition
+    ///
+    /// The term must be of type [`TermType::Number](enum.TermType.html#variant.Number) .
+    ///
+    /// # Arguments
+    ///
+    /// * `term` - id of the term
+    pub fn term_number(&mut self, Id(term): Id) -> Option<i32> {
+        let mut number = 0;
+        if unsafe { clingo_theory_atoms_term_number(&mut self.0, term, &mut number) } {
+            Some(number)
+        } else {
+            None
+        }
+    }
 
     /// Get the name of the given constant or function theory term.
     ///
     /// # Pre-condition
     ///
-    ///TODO The term must be of type ::clingo_theory_term_type_function or ::clingo_theory_term_type_symbol.
+    /// The term must be of type [`TermType::Function`](enum.TermType.html#variant.Function) or
+    /// [`TermType::Symbol`](enum.TermType.html#variant.Symbol).
     ///
     /// # Arguments
     ///
@@ -2511,13 +2577,24 @@ impl TheoryAtoms {
         }
     }
 
-    //TODO     pub fn clingo_theory_atoms_term_arguments(atoms: *mut TheoryAtoms,
-    //                                               term: clingo_id_t,
-    //                                               arguments: *mut *const clingo_id_t,
-    //                                               size: *mut size_t)
-    //                                               -> u8;
+    /// Get the arguments of the given function theory term.
+    ///
+    /// # Pre-condition
+    ///
+    /// The term must be of type [`TermType::Function`](enum.TermType.html#variant.Function).
+    ///
+    /// # Arguments
+    ///
+    /// * `term` - id of the term
+    pub fn term_arguments(&mut self, Id(term): Id) -> Option<Vec<Id>> {
+        //TODO     pub fn clingo_theory_atoms_term_arguments(atoms: *mut TheoryAtoms,
+        //                                               term: clingo_id_t,
+        //                                               arguments: *mut *const clingo_id_t,
+        //                                               size: *mut size_t)
+        //                                               -> bool;
+    }
 
-    //TODO     pub fn clingo_theory_atoms_term_to_string_size(atoms: *mut TheoryAtoms,
+    //NOTTODO: pub fn clingo_theory_atoms_term_to_string_size(atoms: *mut TheoryAtoms,
     //                                                    term: clingo_id_t,
     //                                                    size: *mut size_t)
     //                                                    -> u8;
@@ -2545,7 +2622,7 @@ impl TheoryAtoms {
     //                                                     condition: *mut clingo_literal_t)
     //                                                     -> u8;
 
-    //TODO     pub fn clingo_theory_atoms_element_to_string_size(atoms: *mut TheoryAtoms,
+    //NOTTODO: pub fn clingo_theory_atoms_element_to_string_size(atoms: *mut TheoryAtoms,
     //                                                       element: clingo_id_t,
     //                                                       size: *mut size_t)
     //                                                       -> u8;
@@ -2620,7 +2697,7 @@ impl TheoryAtoms {
         }
     }
 
-    //TODO     pub fn clingo_theory_atoms_atom_to_string_size(atoms: *mut TheoryAtoms,
+    //NOTTODO: pub fn clingo_theory_atoms_atom_to_string_size(atoms: *mut TheoryAtoms,
     //                                                    atom: clingo_id_t,
     //                                                    size: *mut size_t)
     //                                                    -> u8;
@@ -2697,15 +2774,10 @@ impl Model {
     ///
     /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
     /// - [`Error::Runtime`](enum.Error.html#variant.Runtime) if the size is too small
-    pub fn symbols(
-        &mut self,
-        show: clingo_show_type_bitset_t,
-    ) -> Result<Vec<Symbol>, Error> {
+    pub fn symbols(&mut self, show: clingo_show_type_bitset_t) -> Result<Vec<Symbol>, Error> {
         let Model(ref mut model) = *self;
         let mut size: usize = 0;
-        let size_p = &mut size as *mut usize;
-
-        if unsafe { clingo_model_symbols_size(model, show, size_p) } {
+        if unsafe { clingo_model_symbols_size(model, show, &mut size) } {
             let symbols = Vec::<Symbol>::with_capacity(size);
             let symbols_ptr = symbols.as_ptr();
             if unsafe {
@@ -2732,7 +2804,7 @@ impl Model {
     //                                  contained: *mut u8)
     //                                  -> u8;
 
-    //TODO     pub fn clingo_model_cost_size(model: *mut Model, size: *mut size_t) -> u8;
+    //NOTTODO     pub fn clingo_model_cost_size(model: *mut Model, size: *mut size_t) -> u8;
 
     //TODO     pub fn clingo_model_cost(model: *mut Model, costs: *mut int64_t, size: size_t) -> u8;
 
@@ -2802,11 +2874,7 @@ impl PropagateControl {
     /// # Errors
     ///
     /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
-    pub fn add_clause(
-        &mut self,
-        clause: &[Literal],
-        type_: ClauseType,
-    ) -> Result<bool, Error> {
+    pub fn add_clause(&mut self, clause: &[Literal], type_: ClauseType) -> Result<bool, Error> {
         let mut result = false;
         if unsafe {
             clingo_propagate_control_add_clause(
@@ -2942,7 +3010,8 @@ impl SolveHandle {
 
     /// Discards the last model and starts the search for the next one.
     ///
-    /// If the search has been started asynchronously, this function continues the search in the background.
+    /// If the search has been started asynchronously, this function continues the search in the
+    /// background.
     ///
     /// **Note:** This function does not block.
     ///
