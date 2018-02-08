@@ -1226,22 +1226,23 @@ impl Control {
         }
     }
 
-    /// Release an external atom.
-    ///
-    /// After this call, an external atom is no longer external and subject to
-    /// program simplifications.  If the atom does not exist or is not external,
-    /// this is a noop.
-    ///
-    /// # Arguments
-    ///
-    /// * `atom` - atom to release
-    ///
-    /// # Errors
-    ///
-    /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
-    //     pub fn clingo_control_release_external(control: *mut Control,
-    //                                            atom: clingo_symbol_t)
-    //                                            -> u8;
+//TODO     /// Release an external atom.
+//     ///
+//     /// After this call, an external atom is no longer external and subject to
+//     /// program simplifications.  If the atom does not exist or is not external,
+//     /// this is a noop.
+//     ///
+//     /// # Arguments
+//     ///
+//     /// * `atom` - atom to release
+//     ///
+//     /// # Errors
+//     ///
+//     /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
+//     pub fn clingo_control_release_external(control: *mut Control,
+//                                            atom: clingo_symbol_t)
+//                                            -> u8;
+    
     /// Register a custom propagator with the control object.
     ///
     /// If the sequential flag is set to true, the propagator is called
@@ -1439,6 +1440,25 @@ impl Control {
             None
         }
     }
+
+//TODO     /// Get low-level access to clasp.
+//     ///
+//     /// @attention
+//     /// This function is intended for experimental use only and not part of the stable API.
+//     ///
+//     /// This function may return a <code>nullptr</code>.
+//     /// Otherwise, the returned pointer can be casted to a ClaspFacade pointer.
+//     ///
+//     /// **Parameters:**
+//     ///
+//     /// * `control` - the target
+//     /// * `clasp` - pointer to the ClaspFacade object (may be <code>nullptr</code>)
+//     ///
+//     /// **Returns** whether the call was successful
+//     pub fn clingo_control_clasp_facade(
+//         control: *mut clingo_control_t,
+//         clasp: *mut *mut ::std::os::raw::c_void,
+//     ) -> bool;
 }
 
 pub struct ProgramBuilder(clingo_program_builder_t);
