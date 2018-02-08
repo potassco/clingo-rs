@@ -3014,6 +3014,20 @@ impl SolveControl {
             Err(error())
         }
     }
+    
+    /// TODO
+    /// Get an object to inspect the symbolic atoms.
+    ///
+    /// **Parameters:**
+    ///
+    /// * `control` - the target
+    /// * `atoms` - the resulting object
+    ///
+    /// **Returns** whether the call was successful
+//     pub fn clingo_solve_control_symbolic_atoms(
+//         control: *mut clingo_solve_control_t,
+//         atoms: *mut *mut clingo_symbolic_atoms_t,
+//     ) -> bool;
 }
 
 pub struct PropagateControl(clingo_propagate_control_t);
