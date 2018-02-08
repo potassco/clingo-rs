@@ -2587,51 +2587,133 @@ impl TheoryAtoms {
     ///
     /// * `term` - id of the term
     pub fn term_arguments(&mut self, Id(term): Id) -> Option<Vec<Id>> {
-        //TODO     pub fn clingo_theory_atoms_term_arguments(atoms: *mut TheoryAtoms,
-        //                                               term: clingo_id_t,
-        //                                               arguments: *mut *const clingo_id_t,
-        //                                               size: *mut size_t)
-        //                                               -> bool;
+        let mut size = 0;
+        let mut c_ptr = unsafe { mem::uninitialized() };
+        if unsafe { clingo_theory_atoms_term_arguments(&mut self.0, term, &mut c_ptr, &mut size) } {
+            let arguments_ref = unsafe { std::slice::from_raw_parts(c_ptr as *const Id, size) };
+            Some(arguments_ref.to_owned())
+        } else {
+            None
+        }
     }
 
-    //NOTTODO: pub fn clingo_theory_atoms_term_to_string_size(atoms: *mut TheoryAtoms,
-    //                                                    term: clingo_id_t,
-    //                                                    size: *mut size_t)
-    //                                                    -> u8;
+    //NOTTODO: pub fn clingo_theory_atoms_term_to_string_size()
 
-    //TODO     pub fn clingo_theory_atoms_term_to_string(atoms: *mut TheoryAtoms,
-    //                                               term: clingo_id_t,
-    //                                               string: *mut c_char,
-    //                                               size: size_t)
-    //                                               -> u8;
+    /// Get the string representation of the given theory term.
+    ///
+    /// # Arguments
+    ///
+    /// * `term` - id of the term
+    ///
+    /// # Errors
+    ///
+    /// - [`Error::Runtime`](enum.Error.html#variant.Runtime) if the size is too small
+    /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
+    pub fn term_to_string(&mut self, Id(term): Id) -> Result<&str, Error> {
+        let mut size = 0;
+        if unsafe { clingo_theory_atoms_term_to_string_size(&mut self.0, term, &mut size) } {
+            let mut c_ptr = unsafe { mem::uninitialized() };
+            if unsafe { clingo_theory_atoms_term_to_string(&mut self.0, term, &mut c_ptr, size) } {
+                let cstr = unsafe { CStr::from_ptr(&c_ptr) };
+                Ok(cstr.to_str().unwrap())
+            } else {
+                Err(error())
+            }
+        } else {
+            Err(error())
+        }
+    }
 
-    //TODO     pub fn clingo_theory_atoms_element_tuple(atoms: *mut TheoryAtoms,
-    //                                              element: clingo_id_t,
-    //                                              tuple: *mut *const clingo_id_t,
-    //                                              size: *mut size_t)
-    //                                              -> u8;
+    /// Get the tuple (array of theory terms) of the given theory element.
+    ///
+    /// # Arguments
+    ///
+    /// * `element` - id of the element
+    pub fn element_tuple(&mut self, Id(element): Id) -> Option<Vec<Id>> {
+        let mut size = 0;
+        let mut tuple_ptr = unsafe { mem::uninitialized() };
+        if unsafe {
+            clingo_theory_atoms_element_tuple(&mut self.0, element, &mut tuple_ptr, &mut size)
+        } {
+            let tuple_ref = unsafe { std::slice::from_raw_parts(tuple_ptr as *const Id, size) };
+            Some(tuple_ref.to_owned())
+        } else {
+            None
+        }
+    }
 
-    //TODO     pub fn clingo_theory_atoms_element_condition(atoms: *mut TheoryAtoms,
-    //                                                  element: clingo_id_t,
-    //                                                  condition: *mut *const clingo_literal_t,
-    //                                                  size: *mut size_t)
-    //                                                  -> u8;
+    /// Get the condition (array of aspif literals) of the given theory element.
+    ///
+    /// # Arguments
+    ///
+    /// * `element` - id of the element
+    pub fn element_condition(&mut self, Id(element): Id) -> Option<Vec<Literal>> {
+        let mut size = 0;
+        let mut condition_ptr = unsafe { mem::uninitialized() };
+        if unsafe {
+            clingo_theory_atoms_element_condition(
+                &mut self.0,
+                element,
+                &mut condition_ptr,
+                &mut size,
+            )
+        } {
+            let condition_ref =
+                unsafe { std::slice::from_raw_parts(condition_ptr as *const Literal, size) };
+            Some(condition_ref.to_owned())
+        } else {
+            None
+        }
+    }
 
-    //TODO     pub fn clingo_theory_atoms_element_condition_id(atoms: *mut TheoryAtoms,
-    //                                                     element: clingo_id_t,
-    //                                                     condition: *mut clingo_literal_t)
-    //                                                     -> u8;
+    /// Get the id of the condition of the given theory element.
+    ///
+    /// **Note:**
+    /// This id can be mapped to a solver literal using [`PropagateInit::solver_literal()`](struct.PropagateInit.html#method.solver_literal).
+    /// This id is not (necessarily) an aspif literal;
+    /// to get aspif literals use [`TheoryAtoms::element_condition()`](struct.TheoryAtoms.html#method.element_condition).
+    ///
+    /// # Arguments
+    ///
+    /// * `element` - id of the element
+    pub fn element_condition_id(&mut self, Id(element): Id) -> Option<Literal> {
+        let mut condition = unsafe { mem::uninitialized() };
+        if unsafe { clingo_theory_atoms_element_condition_id(&mut self.0, element, &mut condition) }
+        {
+            Some(Literal(condition))
+        } else {
+            None
+        }
+    }
 
-    //NOTTODO: pub fn clingo_theory_atoms_element_to_string_size(atoms: *mut TheoryAtoms,
-    //                                                       element: clingo_id_t,
-    //                                                       size: *mut size_t)
-    //                                                       -> u8;
+    //NOTTODO: pub fn clingo_theory_atoms_element_to_string_size()
 
-    //TODO     pub fn clingo_theory_atoms_element_to_string(atoms: *mut TheoryAtoms,
-    //                                                  element: clingo_id_t,
-    //                                                  string: *mut c_char,
-    //                                                  size: size_t)
-    //                                                  -> u8;
+    /// Get the string representation of the given theory element.
+    ///
+    /// # Arguments
+    ///
+    /// * `element` - id of the element
+    ///
+    /// # Errors
+    ///
+    /// - [`Error::Runtime`](enum.Error.html#variant.Runtime) if the size is too small
+    /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
+    pub fn clingo_theory_atoms_element_to_string(
+        &mut self,
+        Id(element): Id) -> Result<&str,Error> {
+        let mut size = 0;
+        if unsafe { clingo_theory_atoms_element_to_string_size(&mut self.0, element, &mut size) } {
+            let mut c_ptr = unsafe { mem::uninitialized() };
+            if unsafe { clingo_theory_atoms_element_to_string(&mut self.0, element, &mut c_ptr, size) } {
+                let cstr = unsafe { CStr::from_ptr(&c_ptr) };
+                Ok(cstr.to_str().unwrap())
+            } else {
+                Err(error())
+            }
+        } else {
+            Err(error())
+        }
+    }
 
     /// Get the total number of theory atoms.
     pub fn size(&mut self) -> Option<usize> {
