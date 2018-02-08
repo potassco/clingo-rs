@@ -2802,16 +2802,32 @@ impl TheoryAtoms {
         }
     }
 
-    //NOTTODO: pub fn clingo_theory_atoms_atom_to_string_size(atoms: *mut TheoryAtoms,
-    //                                                    atom: clingo_id_t,
-    //                                                    size: *mut size_t)
-    //                                                    -> u8;
+    //NOTTODO: pub fn clingo_theory_atoms_atom_to_string_size()
 
-    //TODO     pub fn clingo_theory_atoms_atom_to_string(atoms: *mut TheoryAtoms,
-    //                                               atom: clingo_id_t,
-    //                                               string: *mut c_char,
-    //                                               size: size_t)
-    //                                               -> u8;
+    /// Get the string representation of the given theory atom.
+    ///
+    /// # Arguments
+    ///
+    /// * `atom` - id of the element
+    ///
+    /// # Errors
+    ///
+    /// - [`Error::Runtime`](enum.Error.html#variant.Runtime) if the size is too small
+    /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
+    pub fn atom_to_string(&mut self, Id(atom): Id) -> Result<&str, Error> {
+        let mut size = 0;
+        if unsafe { clingo_theory_atoms_atom_to_string_size(&mut self.0, atom, &mut size) } {
+            let mut c_ptr = unsafe { mem::uninitialized() };
+            if unsafe { clingo_theory_atoms_atom_to_string(&mut self.0, atom, &mut c_ptr, size) } {
+                let cstr = unsafe { CStr::from_ptr(&c_ptr) };
+                Ok(cstr.to_str().unwrap())
+            } else {
+                Err(error())
+            }
+        } else {
+            Err(error())
+        }
+    }
 }
 pub struct UNSAFE_TheoryAtomsIterator {
     count: usize,
