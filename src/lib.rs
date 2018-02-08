@@ -2739,11 +2739,24 @@ impl TheoryAtoms {
         }
     }
 
-    //TODO     pub fn clingo_theory_atoms_atom_elements(atoms: *mut TheoryAtoms,
-    //                                              atom: clingo_id_t,
-    //                                              elements: *mut *const clingo_id_t,
-    //                                              size: *mut size_t)
-    //                                              -> u8;
+    /// Get the theory elements associated with the theory atom.
+    ///
+    /// # Arguments
+    ///
+    /// * `atom` - id of the atom
+    pub fn atom_elements(&mut self, Id(atom): Id) -> Option<Vec<Id>> {
+        let mut size = 0;
+        let mut elements_ptr = unsafe { mem::uninitialized() };
+        if unsafe {
+            clingo_theory_atoms_atom_elements(&mut self.0, atom, &mut elements_ptr, &mut size)
+        } {
+            let elements_ref =
+                unsafe { std::slice::from_raw_parts(elements_ptr as *const Id, size) };
+            Some(elements_ref.to_owned())
+        } else {
+            None
+        }
+    }
 
     /// Whether the theory atom has a guard.
     ///
