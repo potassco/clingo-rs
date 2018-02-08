@@ -2699,15 +2699,15 @@ impl TheoryAtoms {
     /// - [`Error::Runtime`](enum.Error.html#variant.Runtime) if the size is too small
     /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
     pub fn element_to_string(
-       Id(element):        Id(element): Id,
+        &mut self,
+        Id(element): Id,
     ) -> Result<&str, Error> {
+        let mut size = 0;
         if unsafe { clingo_theory_atoms_element_to_string_size(&mut self.0, element, &mut size) } {
             let mut c_ptr = unsafe { mem::uninitialized() };
-            i            i            if unsafe {
+            if unsafe {
                 clingo_theory_atoms_element_to_string(&mut self.0, element, &mut c_ptr, size)
             } {
-           } {
-           } {
                 let cstr = unsafe { CStr::from_ptr(&c_ptr) };
                 Ok(cstr.to_str().unwrap())
             } else {
