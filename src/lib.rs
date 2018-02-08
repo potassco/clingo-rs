@@ -2928,7 +2928,7 @@ impl Model {
         }
     }
 
-    //NOTTODO     pub fn clingo_model_cost_size(model: *mut Model, size: *mut size_t) -> u8;
+    //NOTTODO: pub fn clingo_model_cost_size(model: *mut Model, size: *mut size_t) -> u8;
 
     /// Get the cost vector of a model.
     ///
@@ -3047,8 +3047,6 @@ impl PropagateControl {
     ///
     /// * `clause` - the clause to add
     /// * `type` - the clause type determining its lifetime
-    ///
-    /// **Returns** result indicating whether propagation has to be stopped
     ///
     /// # Errors
     ///
