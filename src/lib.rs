@@ -2920,10 +2920,19 @@ impl Model {
         }
     }
 
-    //TODO     pub fn clingo_model_contains(model: *mut Model,
-    //                                  atom: clingo_symbol_t,
-    //                                  contained: *mut u8)
-    //                                  -> u8;
+    /// Constant time lookup to test whether an atom is in a model.
+    ///
+    /// # Arguments
+    ///
+    /// * `atom` - the atom to lookup
+    pub fn contains(&mut self, Symbol(atom): Symbol) -> Option<bool> {
+        let mut contained = false;
+        if unsafe { clingo_model_contains(&mut self.0, atom, &mut contained) } {
+            Some(contained)
+        } else {
+            None
+        }
+    }
 
     //NOTTODO     pub fn clingo_model_cost_size(model: *mut Model, size: *mut size_t) -> u8;
 
