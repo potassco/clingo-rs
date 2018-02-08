@@ -336,8 +336,7 @@ impl PartialEq for Symbol {
 impl Eq for Symbol {}
 
 /// Construct a symbol representing a number.
-// TODO replace c_int with u32 ?
-pub fn create_number(number: c_int) -> Symbol {
+pub fn create_number(number: i32) -> Symbol {
     let mut symbol = 0 as clingo_symbol_t;
     unsafe { clingo_symbol_create_number(number, &mut symbol) };
     Symbol(symbol)
