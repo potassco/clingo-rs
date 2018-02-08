@@ -1432,24 +1432,7 @@ impl Control {
         }
     }
 
-//TODO     /// Get low-level access to clasp.
-//     ///
-//     /// @attention
-//     /// This function is intended for experimental use only and not part of the stable API.
-//     ///
-//     /// This function may return a <code>nullptr</code>.
-//     /// Otherwise, the returned pointer can be casted to a ClaspFacade pointer.
-//     ///
-//     /// **Parameters:**
-//     ///
-//     /// * `control` - the target
-//     /// * `clasp` - pointer to the ClaspFacade object (may be <code>nullptr</code>)
-//     ///
-//     /// **Returns** whether the call was successful
-//     pub fn clingo_control_clasp_facade(
-//         control: *mut clingo_control_t,
-//         clasp: *mut *mut ::std::os::raw::c_void,
-//     ) -> bool;
+    // NOTTODO: pub fn clingo_control_clasp_facade()
 }
 
 pub struct ProgramBuilder(clingo_program_builder_t);
