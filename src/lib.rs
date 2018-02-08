@@ -1225,23 +1225,27 @@ impl Control {
         }
     }
 
-//TODO     /// Release an external atom.
-//     ///
-//     /// After this call, an external atom is no longer external and subject to
-//     /// program simplifications.  If the atom does not exist or is not external,
-//     /// this is a noop.
-//     ///
-//     /// # Arguments
-//     ///
-//     /// * `atom` - atom to release
-//     ///
-//     /// # Errors
-//     ///
-//     /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
-//     pub fn clingo_control_release_external(control: *mut Control,
-//                                            atom: clingo_symbol_t)
-//                                            -> u8;
-    
+    /// Release an external atom.
+    ///
+    /// After this call, an external atom is no longer external and subject to
+    /// program simplifications.  If the atom does not exist or is not external,
+    /// this is a noop.
+    ///
+    /// # Arguments
+    ///
+    /// * `atom` - atom to release
+    ///
+    /// # Errors
+    ///
+    /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
+    pub fn release_external(&mut self, Symbol(atom): Symbol) -> Result<(), Error> {
+        if unsafe { clingo_control_release_external(self.ctl.as_ptr(), atom) } {
+            Ok(())
+        } else {
+            Err(error())
+        }
+    }
+
     /// Register a custom propagator with the control object.
     ///
     /// If the sequential flag is set to true, the propagator is called
