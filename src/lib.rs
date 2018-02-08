@@ -956,7 +956,7 @@ impl Control {
         }
     }
 
-    //TODO     pub fn clingo_control_load(control: *mut Control, file: *const c_char) -> bool;
+    //NOTTODO: pub fn clingo_control_load(control: *mut Control, file: *const c_char) -> bool;
 
     /// Extend the logic program with the given non-ground logic program in string form.
     ///
