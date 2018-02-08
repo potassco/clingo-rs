@@ -2960,7 +2960,17 @@ impl Model {
         }
     }
 
-    //TODO     pub fn clingo_model_optimality_proven(model: *mut Model, proven: *mut u8) -> u8;
+    /// Whether the optimality of a model has been proven.
+    ///
+    /// **See:** [`Model::cost()`](struct.Model.html#method.cost)
+    pub fn optimality_proven(&mut self) -> Option<bool> {
+        let mut proven = false;
+        if unsafe { clingo_model_optimality_proven(&mut self.0, &mut proven) } {
+            Some(proven)
+        } else {
+            None
+        }
+    }
 
     //TODO     pub fn clingo_model_context(model: *mut Model,
     //                                 control: *mut *mut SolveControl)
