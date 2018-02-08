@@ -300,17 +300,6 @@ impl Literal {
 }
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct WeightedLiteral(clingo_literal_t);
-//TODO check impl WeightedLiteral {
-//     pub fn negate(&self) -> Literal {
-//         Literal(-(self.0))
-//     }
-//     pub fn UNSAFE_from(Atom(atom): Atom) -> Literal {
-//         Literal(atom as clingo_literal_t)
-//     }
-//     pub fn get_integer(&self) -> i32 {
-//         self.0
-//     }
-// }
 
 #[derive(Debug, Copy, Clone)]
 pub struct Atom(clingo_atom_t);
