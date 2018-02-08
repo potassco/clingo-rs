@@ -3141,9 +3141,15 @@ impl PropagateInit {
         }
     }
 
-    //TODO     pub fn clingo_propagate_init_theory_atoms(init: &mut PropagateInit,
-    //                                               atoms: *mut *mut TheoryAtoms)
-    //                                               -> bool;
+    /// Get an object to inspect the theory atoms.
+    pub fn theory_atoms(&mut self) -> Option<&mut TheoryAtoms> {
+        let mut atoms_ptr = unsafe { std::mem::uninitialized() };
+        if unsafe { clingo_propagate_init_theory_atoms(&mut self.0, &mut atoms_ptr) } {
+            unsafe { (atoms_ptr as *mut TheoryAtoms).as_mut() }
+        } else {
+            None
+        }
+    }
 
     /// Get the number of threads used in subsequent solving.
     /// **See:** [`PropagateControl::thread_id()`](struct.PropagateControl.html#method.thread_id)
