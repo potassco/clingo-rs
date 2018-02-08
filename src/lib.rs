@@ -2772,11 +2772,21 @@ impl TheoryAtoms {
         }
     }
 
-    //TODO     pub fn clingo_theory_atoms_atom_guard(atoms: *mut TheoryAtoms,
-    //                                           atom: clingo_id_t,
-    //                                           connective: *mut *const c_char,
-    //                                           term: *mut clingo_id_t)
-    //                                           -> u8;
+    /// Get the guard consisting of a theory operator and a theory term of the given theory atom.
+    ///
+    /// # Arguments
+    ///
+    /// * `atom` - id of the atom
+    pub fn atom_guard(&mut self, Id(atom): Id) -> Option<(&str, Id)> {
+        let mut c_ptr = unsafe { mem::uninitialized() };
+        let mut term = 0 as clingo_id_t;
+        if unsafe { clingo_theory_atoms_atom_guard(&mut self.0, atom, &mut c_ptr, &mut term) } {
+            let cstr = unsafe { CStr::from_ptr(c_ptr) };
+            Some((cstr.to_str().unwrap(), Id(term)))
+        } else {
+            None
+        }
+    }
 
     /// Get the aspif literal associated with the given theory atom.
     ///
