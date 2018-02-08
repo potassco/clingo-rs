@@ -6,7 +6,6 @@ use std::ptr::Unique;
 
 use std::ffi::CStr;
 use std::ffi::CString;
-use libc::c_int;
 use libc::c_char;
 use clingo_sys::*;
 
