@@ -2936,7 +2936,29 @@ impl Model {
 
     //NOTTODO     pub fn clingo_model_cost_size(model: *mut Model, size: *mut size_t) -> u8;
 
-    //TODO     pub fn clingo_model_cost(model: *mut Model, costs: *mut int64_t, size: size_t) -> u8;
+    /// Get the cost vector of a model.
+    ///
+    /// # Errors
+    ///
+    /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
+    /// - [`Error::Runtime`](enum.Error.html#variant.Runtime) if the size is too small
+    ///
+    /// **See:** [`Model::optimality_proven()`](struct.Model.html#method.optimality_proven)
+    pub fn cost(&mut self) -> Result<Vec<i64>, Error> {
+        let mut size: usize = 0;
+        if unsafe { clingo_model_cost_size(&mut self.0, &mut size) } {
+            let cost = Vec::<i64>::with_capacity(size);
+            let cost_ptr = cost.as_ptr();
+            if unsafe { clingo_model_cost(&mut self.0, cost_ptr as *mut i64, size) } {
+                let cost_ref = unsafe { std::slice::from_raw_parts(cost_ptr as *const i64, size) };
+                Ok(cost_ref.to_owned())
+            } else {
+                Err(error())
+            }
+        } else {
+            Err(error())
+        }
+    }
 
     //TODO     pub fn clingo_model_optimality_proven(model: *mut Model, proven: *mut u8) -> u8;
 
