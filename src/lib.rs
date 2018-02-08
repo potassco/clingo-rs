@@ -2972,9 +2972,17 @@ impl Model {
         }
     }
 
-    //TODO     pub fn clingo_model_context(model: *mut Model,
-    //                                 control: *mut *mut SolveControl)
-    //                                 -> u8;
+    /// Get the associated solve control object of a model.
+    ///
+    /// This object allows for adding clauses during model enumeration.
+    pub fn context(&mut self) -> Option<&mut SolveControl> {
+        let mut control = unsafe { mem::uninitialized() };
+        if unsafe { clingo_model_context(&mut self.0, &mut control) } {
+            unsafe { (control as *mut SolveControl).as_mut() }
+        } else {
+            None
+        }
+    }
 }
 
 pub struct SolveControl(clingo_solve_control_t);
