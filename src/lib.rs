@@ -3133,7 +3133,7 @@ impl PropagateInit {
 
     /// Get an object to inspect the symbolic atoms.
     pub fn symbolic_atoms<'a>(&mut self) -> Option<&'a mut SymbolicAtoms> {
-        let mut atoms_ptr = std::ptr::null_mut();
+        let mut atoms_ptr = unsafe { std::mem::uninitialized() };
         if unsafe { clingo_propagate_init_symbolic_atoms(&mut self.0, &mut atoms_ptr) } {
             unsafe { (atoms_ptr as *mut SymbolicAtoms).as_mut() }
         } else {
