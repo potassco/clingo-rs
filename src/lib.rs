@@ -3014,20 +3014,16 @@ impl SolveControl {
             Err(error())
         }
     }
-    
-    /// TODO
+
     /// Get an object to inspect the symbolic atoms.
-    ///
-    /// **Parameters:**
-    ///
-    /// * `control` - the target
-    /// * `atoms` - the resulting object
-    ///
-    /// **Returns** whether the call was successful
-//     pub fn clingo_solve_control_symbolic_atoms(
-//         control: *mut clingo_solve_control_t,
-//         atoms: *mut *mut clingo_symbolic_atoms_t,
-//     ) -> bool;
+    pub fn symbolic_atoms(&mut self) -> Option<&mut SymbolicAtoms> {
+        let mut atoms = std::ptr::null_mut() as *mut clingo_symbolic_atoms_t;
+        if unsafe { clingo_solve_control_symbolic_atoms(&mut self.0, &mut atoms) } {
+            unsafe { (atoms as *mut SymbolicAtoms).as_mut() }
+        } else {
+            None
+        }
+    }
 }
 
 pub struct PropagateControl(clingo_propagate_control_t);
