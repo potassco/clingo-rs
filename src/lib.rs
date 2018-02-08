@@ -3049,6 +3049,8 @@ impl SolveControl {
     }
 }
 
+pub struct Assignment(clingo_assignment_t);
+
 pub struct PropagateControl(clingo_propagate_control_t);
 impl PropagateControl {
     /// Get the id of the underlying solver thread.
@@ -3058,8 +3060,11 @@ impl PropagateControl {
         unsafe { clingo_propagate_control_thread_id(&mut self.0) }
     }
 
-    //TODO     pub fn clingo_propagate_control_assignment(control: *mut PropagateControl)
-    //                                           -> *mut clingo_assignment_t;
+    /// Get the assignment associated with the underlying solver.
+    pub fn assignment(&mut self) -> &mut Assignment {
+        unsafe { (clingo_propagate_control_assignment(&mut self.0) as *mut Assignment).as_mut() }
+            .unwrap()
+    }
 
     /// Add the given clause to the solver.
     ///
