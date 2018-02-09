@@ -22,11 +22,6 @@ pub enum Error {
     Unknown = clingo_error_clingo_error_unknown as isize,
 }
 #[derive(Debug, Copy, Clone)]
-pub enum SolveMode {
-    Async = clingo_solve_mode_clingo_solve_mode_async as isize,
-    Yield = clingo_solve_mode_clingo_solve_mode_yield as isize,
-}
-#[derive(Debug, Copy, Clone)]
 pub enum TruthValue {
     Free = clingo_truth_value_clingo_truth_value_free as isize,
     True = clingo_truth_value_clingo_truth_value_true as isize,
@@ -141,6 +136,39 @@ pub enum TermType {
     Function = clingo_theory_term_type_clingo_theory_term_type_function as isize,
     Number = clingo_theory_term_type_clingo_theory_term_type_number as isize,
     Symbol = clingo_theory_term_type_clingo_theory_term_type_symbol as isize,
+}
+
+/// Bit flags of solve modes.
+pub struct SolveMode(clingo_solve_mode);
+impl SolveMode {
+    pub const Async: SolveMode = SolveMode(clingo_solve_mode_clingo_solve_mode_async);
+    pub const Yield: SolveMode = SolveMode(clingo_solve_mode_clingo_solve_mode_yield);
+}
+impl ::std::ops::BitOr<SolveMode> for SolveMode {
+    type Output = Self;
+    #[inline]
+    fn bitor(self, other: Self) -> Self {
+        SolveMode(self.0 | other.0)
+    }
+}
+impl ::std::ops::BitOrAssign for SolveMode {
+    #[inline]
+    fn bitor_assign(&mut self, rhs: SolveMode) {
+        self.0 |= rhs.0;
+    }
+}
+impl ::std::ops::BitAnd<SolveMode> for SolveMode {
+    type Output = Self;
+    #[inline]
+    fn bitand(self, other: Self) -> Self {
+        SolveMode(self.0 & other.0)
+    }
+}
+impl ::std::ops::BitAndAssign for SolveMode {
+    #[inline]
+    fn bitand_assign(&mut self, rhs: SolveMode) {
+        self.0 &= rhs.0;
+    }
 }
 /// Bit flags to select symbols in models.
 pub struct ShowType(clingo_show_type);
@@ -1137,7 +1165,7 @@ impl Control {
         if unsafe {
             clingo_control_solve(
                 self.ctl.as_ptr(),
-                mode as clingo_solve_mode_bitset_t,
+                mode.0,
                 assumptions.as_ptr() as *const clingo_symbolic_literal_t,
                 assumptions.len(),
                 None,
@@ -1170,7 +1198,7 @@ impl Control {
     /// - [`Error::Runtime`](enum.Error.html#variant.Runtime) if solving could not be started
     pub fn solve_with_event_handler<D, T: SolveEventHandler<D>>(
         &mut self,
-        mode: clingo_solve_mode_bitset_t,
+        mode: SolveMode,
         assumptions: &[SymbolicLiteral],
         _notify: &T,
         data_: &mut D,
@@ -1180,7 +1208,7 @@ impl Control {
         if unsafe {
             clingo_control_solve(
                 self.ctl.as_ptr(),
-                mode,
+                mode.0,
                 assumptions.as_ptr() as *const clingo_symbolic_literal_t,
                 assumptions.len(),
                 Some(T::unsafe_solve_callback as SolveEventCallback),

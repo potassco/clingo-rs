@@ -44,8 +44,7 @@ fn main() {
 
     // create a solve handle with an attached event handler
     let handle = ctl.solve_with_event_handler(
-        (SolveMode::Async as clingo_solve_mode_bitset_t)
-            + (SolveMode::Yield as clingo_solve_mode_bitset_t),
+        SolveMode::Async | SolveMode::Yield,
         &[],
         &MySEHandler,
         &mut running,
