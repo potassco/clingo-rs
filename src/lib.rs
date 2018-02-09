@@ -9,8 +9,6 @@ use std::ffi::CString;
 use libc::c_char;
 use clingo_sys::*;
 
-pub use clingo_sys::{clingo_ast_statement_t, clingo_ast_term_type_t, clingo_logger_t};
-
 #[derive(Debug, Copy, Clone)]
 pub enum Error {
     Success = clingo_error_clingo_error_success as isize,
