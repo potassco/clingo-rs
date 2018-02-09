@@ -125,18 +125,13 @@ fn main() {
 
     // add a logic program to the base part
     let parameters: Vec<&str> = Vec::new();
-    if let Err(e) = ctl.add("base", parameters, "a :- not b. b :- not a.") {
-        println!("{}", e);
-        return;
-    }
+    ctl.add("base", parameters, "a :- not b. b :- not a.")
+        .unwrap();
 
     // ground the base part
     let part = Part::new("base", &[]);
     let parts = vec![part];
-    if let Err(e) = ctl.ground(&parts) {
-        println!("{}", e);
-        return;
-    }
+    ctl.ground(&parts).unwrap();
 
     // solve
     solve(&mut ctl);

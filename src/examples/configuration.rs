@@ -19,11 +19,8 @@ fn print_model(model: &mut Model) {
 }
 
 fn solve(ctl: &mut Control) {
-    let solve_mode = SolveMode::Yield;
-    let assumptions = vec![];
-
     // get a solve handle
-    let handle = ctl.solve(solve_mode, &assumptions)
+    let handle = ctl.solve(SolveMode::Yield, &vec![])
         .expect("Failed retrieving solve handle.");
 
     // loop over all models
