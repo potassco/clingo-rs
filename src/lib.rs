@@ -203,6 +203,7 @@ impl ::std::ops::BitAndAssign for SolveMode {
         self.0 &= rhs.0;
     }
 }
+
 /// Bit flags to select symbols in models.
 pub struct ShowType(clingo_show_type);
 impl ShowType {
@@ -240,6 +241,8 @@ impl ::std::ops::BitAndAssign for ShowType {
         self.0 &= rhs.0;
     }
 }
+
+/// Bit flags for solve call results
 pub struct SolveResult(clingo_solve_result);
 impl SolveResult {
     pub const Satisfiable: SolveResult =
@@ -277,6 +280,24 @@ impl ::std::ops::BitAndAssign for SolveResult {
         self.0 &= rhs.0;
     }
 }
+
+// TODO: check documentation
+/// Callback function called during search to notify when the search is finished or a model is ready.
+///
+/// If a (non-recoverable) clingo API function fails in this callback, it must return false.
+/// In case of errors not related to clingo, set error code ::clingo_error_unknown and return false to stop solving with an error.
+///
+/// **Attention:** If the search is finished, the model is NULL.
+///
+/// # Arguments
+///
+/// * `model` - the current model
+/// * `data` - user data of the callback
+/// * `goon` - can be set to false to stop solving
+///
+/// **Returns** whether the call was successful
+///
+/// @see clingo_control_solve()
 type SolveEventCallback = unsafe extern "C" fn(
     type_: clingo_solve_event_type_t,
     event: *mut ::std::os::raw::c_void,
@@ -324,6 +345,18 @@ pub trait AstStatementHandler<T> {
     }
 }
 
+//TODO: check documentation
+/// Callback to intercept warning messages.
+///
+/// **Parameters:**
+///
+/// * `code` - associated warning code
+/// * `message` - warning message
+/// * `data` - user data for callback
+///
+/// @see clingo_control_new()
+/// @see clingo_parse_term()
+/// @see clingo_parse_program()
 type LoggingCallback = unsafe extern "C" fn(
     code: clingo_warning_t,
     message: *const ::std::os::raw::c_char,
@@ -875,15 +908,101 @@ pub fn set_error(code: Error, message: &str) {
 pub struct Propagator(clingo_propagator_t);
 
 pub trait PropagatorBuilder<T> {
+    //TODO
+    /// This function is called once before each solving step.
+    /// It is used to map relevant program literals to solver literals, add watches for solver literals, and initialize the data structures used during propagation.
+    ///
+    /// **Note:** This is the last point to access symbolic and theory atoms.
+    /// Once the search has started, they are no longer accessible.
+    ///
+    /// **Parameters:**
+    ///
+    /// * `init` - initizialization object
+    /// * `data` - user data for the callback
+    ///
+    /// **Returns** whether the call was successful
+    /// @see ::clingo_propagator_init_callback_t
     fn init(_init: &mut PropagateInit, _data: &mut T) -> bool {
         true
     }
+
+    //TODO
+    /// Can be used to propagate solver literals given a @link clingo_assignment_t partial assignment@endlink.
+    ///
+    /// Called during propagation with a non-empty array of @link clingo_propagate_init_add_watch() watched solver literals@endlink
+    /// that have been assigned to true since the last call to either propagate, undo, (or the start of the search) - the change set.
+    /// Only watched solver literals are contained in the change set.
+    /// Each literal in the change set is true w.r.t. the current @link clingo_assignment_t assignment@endlink.
+    /// @ref clingo_propagate_control_add_clause() can be used to add clauses.
+    /// If a clause is unit resulting, it can be propagated using @ref clingo_propagate_control_propagate().
+    /// If the result of either of the two methods is false, the propagate function must return immediately.
+    ///
+    /// The following snippet shows how to use the methods to add clauses and propagate consequences within the callback.
+    /// The important point is to return true (true to indicate there was no error) if the result of either of the methods is false.
+    /// ~~~~~~~~~~~~~~~{.c}
+    /// bool result;
+    /// clingo_literal_t clause[] = { ... };
+    ///
+    /// // add a clause
+    /// if (!clingo_propagate_control_add_clause(control, clause, clingo_clause_type_learnt, &result) { return false; }
+    /// if (!result) { return true; }
+    /// // propagate its consequences
+    /// if (!clingo_propagate_control_propagate(control, &result) { return false; }
+    /// if (!result) { return true; }
+    ///
+    /// // add further clauses and propagate them
+    /// ...
+    ///
+    /// return true;
+    /// ~~~~~~~~~~~~~~~
+    ///
+    /// **Note:**
+    /// This function can be called from different solving threads.
+    /// Each thread has its own assignment and id, which can be obtained using @ref clingo_propagate_control_thread_id().
+    ///
+    /// **Parameters:**
+    ///
+    /// * `control` - control object for the target solver
+    /// * `changes` - the change set
+    /// * `size` - the size of the change set
+    /// * `data` - user data for the callback
+    ///
+    /// **Returns** whether the call was successful
+    /// @see ::clingo_propagator_propagate_callback_t
     fn propagate(_control: &mut PropagateControl, _changes: &[Literal], _data: &mut T) -> bool {
         true
     }
+
+    //TODO: check documentation
+    /// Called whenever a solver undoes assignments to watched solver literals.
+    ///
+    /// This callback is meant to update assignment dependent state in the propagator.
+    ///
+    /// **Note:** No clauses must be propagated in this callback.
+    ///
+    /// **Parameters:**
+    ///
+    /// * `control` - control object for the target solver
+    /// * `changes` - the change set
+    /// * `size` - the size of the change set
+    /// * `data` - user data for the callback
+    /// @see ::clingo_propagator_undo_callback_t
     fn undo(_control: &mut PropagateControl, _changes: &[Literal], _data: &mut T) -> bool {
         true
     }
+
+    //TODO: check documentation
+    /// This function is similar to @ref clingo_propagate_control_propagate() but is only called on total assignments without a change set.
+    ///
+    /// **Note:** This function is called even if no watches have been added.
+    ///
+    /// **Parameters:**
+    ///
+    /// * `control` - control object for the target solver
+    /// * `data` - user data for the callback
+    ///
+    /// **Returns** whether the call was successful
+    /// @see ::clingo_propagator_check_callback_t
     fn check(_control: &mut PropagateControl, _data: &mut T) -> bool {
         true
     }
@@ -1528,6 +1647,24 @@ impl Control {
             None
         }
     }
+
+    // TODO
+    //     /// Register a program observer with the control object.
+    //     ///
+    //     /// **Parameters:**
+    //     ///
+    //     /// * `control` - the target
+    //     /// * `observer` - the observer to register
+    //     /// * `replace` - just pass the grounding to the observer but not the solver
+    //     /// * `data` - user data passed to the observer functions
+    //     ///
+    //     /// **Returns** whether the call was successful
+    //     pub fn clingo_control_register_observer(
+    //         control: *mut clingo_control_t,
+    //         observer: *const clingo_ground_program_observer_t,
+    //         replace: bool,
+    //         data: *mut ::std::os::raw::c_void,
+    //     ) -> bool;
 
     /// Get an object to add ground directives to the program.
     ///
@@ -2937,6 +3074,8 @@ impl TheoryAtoms {
         }
     }
 }
+
+//TODO: make safe
 pub struct UNSAFE_TheoryAtomsIterator {
     count: usize,
     size: usize,
@@ -2996,7 +3135,7 @@ impl Model {
         }
     }
 
-    //NOTTODO: pub fn clingo_model_symbols_size(&mut self.0, show as clingo_show_type_bitset_t, size)
+    //NOTTODO: pub fn clingo_model_symbols_size()
 
     /// Get the symbols of the selected types in the model.
     ///
@@ -3346,6 +3485,8 @@ impl SolveHandle {
         }
     }
 }
+
+// TODO clingo_ground_program_observer
 
 #[cfg(test)]
 mod tests {
