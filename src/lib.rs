@@ -207,6 +207,43 @@ impl ::std::ops::BitAndAssign for ShowType {
         self.0 &= rhs.0;
     }
 }
+pub struct SolveResult(clingo_solve_result);
+impl SolveResult {
+    pub const Satisfiable: SolveResult =
+        SolveResult(clingo_solve_result_clingo_solve_result_satisfiable);
+    pub const Unsatisfiable: SolveResult =
+        SolveResult(clingo_solve_result_clingo_solve_result_unsatisfiable);
+    pub const Exhausted: SolveResult =
+        SolveResult(clingo_solve_result_clingo_solve_result_exhausted);
+    pub const Interrupted: SolveResult =
+        SolveResult(clingo_solve_result_clingo_solve_result_interrupted);
+}
+impl ::std::ops::BitOr<SolveResult> for SolveResult {
+    type Output = Self;
+    #[inline]
+    fn bitor(self, other: Self) -> Self {
+        SolveResult(self.0 | other.0)
+    }
+}
+impl ::std::ops::BitOrAssign for SolveResult {
+    #[inline]
+    fn bitor_assign(&mut self, rhs: SolveResult) {
+        self.0 |= rhs.0;
+    }
+}
+impl ::std::ops::BitAnd<SolveResult> for SolveResult {
+    type Output = Self;
+    #[inline]
+    fn bitand(self, other: Self) -> Self {
+        SolveResult(self.0 & other.0)
+    }
+}
+impl ::std::ops::BitAndAssign for SolveResult {
+    #[inline]
+    fn bitand_assign(&mut self, rhs: SolveResult) {
+        self.0 &= rhs.0;
+    }
+}
 type SolveEventCallback = unsafe extern "C" fn(
     type_: clingo_solve_event_type_t,
     event: *mut ::std::os::raw::c_void,
@@ -3213,11 +3250,10 @@ impl SolveHandle {
     ///
     /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
     /// - [`Error::Runtime`](enum.Error.html#variant.Runtime) if solving fails
-    //TODO? SolveResult
-    pub fn get(&mut self) -> Result<clingo_solve_result_bitset_t, Error> {
+    pub fn get(&mut self) -> Result<SolveResult, Error> {
         let mut result = 0;
         if unsafe { clingo_solve_handle_get(&mut self.0, &mut result) } {
-            Ok(result)
+            Ok(SolveResult(result))
         } else {
             Err(error())
         }
