@@ -3,7 +3,7 @@ extern crate clingo;
 use std::env;
 use clingo::*;
 
-fn print_model(model: &mut Model, label: &str, show: clingo_show_type_bitset_t) {
+fn print_model(model: &mut Model, label: &str, show: ShowType) {
     print!("{}:", label);
 
     // retrieve the symbols in the model
@@ -30,12 +30,10 @@ fn solve(ctl: &mut Control) {
             // get model type
             let model_type = model.model_type().unwrap();
 
-            let mut type_string = "";
-            match model_type {
-                0 => type_string = "Stable model",
-                1 => type_string = "Brave consequences",
-                2 => type_string = "Cautious consequences",
-                _ => {}
+            let mut type_string = match model_type {
+                ModelType::StableModel => "Stable model",
+                ModelType::BraveConsequences => "Brave consequences",
+                ModelType::CautiousConsequences => "Cautious consequences",
             };
 
             // get running number of model
@@ -43,27 +41,10 @@ fn solve(ctl: &mut Control) {
 
             println!("{}: {}", type_string, number);
 
-            print_model(
-                model,
-                "  shown",
-                ShowType::Shown as clingo_show_type_bitset_t,
-            );
-            print_model(
-                model,
-                "  atoms",
-                ShowType::Atoms as clingo_show_type_bitset_t,
-            );
-            print_model(
-                model,
-                "  terms",
-                ShowType::Terms as clingo_show_type_bitset_t,
-            );
-            print_model(
-                model,
-                " ~atoms",
-                ShowType::Complement as clingo_show_type_bitset_t
-                    + ShowType::Atoms as clingo_show_type_bitset_t,
-            );
+            print_model(model, "  shown", ShowType::Shown);
+            print_model(model, "  atoms", ShowType::Atoms);
+            print_model(model, "  terms", ShowType::Terms);
+            print_model(model, " ~atoms", ShowType::Complement | ShowType::Atoms);
         } else {
             // stop if there are no more models
             break;

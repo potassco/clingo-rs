@@ -2916,19 +2916,14 @@ impl Model {
     ///
     /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
     /// - [`Error::Runtime`](enum.Error.html#variant.Runtime) if the size is too small
-    pub fn symbols(&mut self, show: clingo_show_type_bitset_t) -> Result<Vec<Symbol>, Error> {
+    pub fn symbols(&mut self, show: ShowType) -> Result<Vec<Symbol>, Error> {
         let Model(ref mut model) = *self;
         let mut size: usize = 0;
-        if unsafe { clingo_model_symbols_size(model, show, &mut size) } {
+        if unsafe { clingo_model_symbols_size(model, show.0, &mut size) } {
             let symbols = Vec::<Symbol>::with_capacity(size);
             let symbols_ptr = symbols.as_ptr();
             if unsafe {
-                clingo_model_symbols(
-                    model,
-                    show as clingo_show_type_bitset_t,
-                    symbols_ptr as *mut clingo_symbol_t,
-                    size,
-                )
+                clingo_model_symbols(model, show.0, symbols_ptr as *mut clingo_symbol_t, size)
             } {
                 let symbols_ref =
                     unsafe { std::slice::from_raw_parts(symbols_ptr as *const Symbol, size) };

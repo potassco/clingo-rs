@@ -70,7 +70,7 @@ fn print_statistics(stats: &mut Statistics, key: u64, depth: u8) {
 fn print_model(model: &mut Model) {
     // retrieve the symbols in the model
     let atoms = model
-        .symbols(ShowType::Shown as clingo_show_type_bitset_t)
+        .symbols(ShowType::Shown)
         .expect("Failed to retrieve symbols in the model.");
 
     print!("Model:");
