@@ -27,16 +27,6 @@ pub enum SolveMode {
     Yield = clingo_solve_mode_clingo_solve_mode_yield as isize,
 }
 #[derive(Debug, Copy, Clone)]
-pub enum ShowType {
-    CSP = clingo_show_type_clingo_show_type_csp as isize,
-    Shown = clingo_show_type_clingo_show_type_shown as isize,
-    Atoms = clingo_show_type_clingo_show_type_atoms as isize,
-    Terms = clingo_show_type_clingo_show_type_terms as isize,
-    Extra = clingo_show_type_clingo_show_type_extra as isize,
-    All = clingo_show_type_clingo_show_type_all as isize,
-    Complement = clingo_show_type_clingo_show_type_complement as isize,
-}
-#[derive(Debug, Copy, Clone)]
 pub enum TruthValue {
     Free = clingo_truth_value_clingo_truth_value_free as isize,
     True = clingo_truth_value_clingo_truth_value_true as isize,
@@ -151,6 +141,43 @@ pub enum TermType {
     Function = clingo_theory_term_type_clingo_theory_term_type_function as isize,
     Number = clingo_theory_term_type_clingo_theory_term_type_number as isize,
     Symbol = clingo_theory_term_type_clingo_theory_term_type_symbol as isize,
+}
+/// Bit flags to select symbols in models.
+pub struct ShowType(clingo_show_type);
+impl ShowType {
+    pub const CSP: ShowType = ShowType(clingo_show_type_clingo_show_type_csp);
+    pub const Shown: ShowType = ShowType(clingo_show_type_clingo_show_type_shown);
+    pub const Atoms: ShowType = ShowType(clingo_show_type_clingo_show_type_atoms);
+    pub const Terms: ShowType = ShowType(clingo_show_type_clingo_show_type_terms);
+    pub const Extra: ShowType = ShowType(clingo_show_type_clingo_show_type_extra);
+    pub const All: ShowType = ShowType(clingo_show_type_clingo_show_type_all);
+    pub const Complement: ShowType = ShowType(clingo_show_type_clingo_show_type_complement);
+}
+impl ::std::ops::BitOr<ShowType> for ShowType {
+    type Output = Self;
+    #[inline]
+    fn bitor(self, other: Self) -> Self {
+        ShowType(self.0 | other.0)
+    }
+}
+impl ::std::ops::BitOrAssign for ShowType {
+    #[inline]
+    fn bitor_assign(&mut self, rhs: ShowType) {
+        self.0 |= rhs.0;
+    }
+}
+impl ::std::ops::BitAnd<ShowType> for ShowType {
+    type Output = Self;
+    #[inline]
+    fn bitand(self, other: Self) -> Self {
+        ShowType(self.0 & other.0)
+    }
+}
+impl ::std::ops::BitAndAssign for ShowType {
+    #[inline]
+    fn bitand_assign(&mut self, rhs: ShowType) {
+        self.0 &= rhs.0;
+    }
 }
 type SolveEventCallback = unsafe extern "C" fn(
     type_: clingo_solve_event_type_t,
