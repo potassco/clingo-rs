@@ -10,8 +10,6 @@ use libc::c_char;
 use clingo_sys::*;
 
 pub use clingo_sys::{clingo_ast_statement_t, clingo_ast_term_type_t, clingo_logger_t};
-pub use clingo_sys::clingo_show_type_bitset_t;
-pub use clingo_sys::clingo_solve_mode_bitset_t;
 
 #[derive(Debug, Copy, Clone)]
 pub enum Error {
