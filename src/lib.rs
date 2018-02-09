@@ -137,6 +137,12 @@ pub enum TermType {
     Number = clingo_theory_term_type_clingo_theory_term_type_number as isize,
     Symbol = clingo_theory_term_type_clingo_theory_term_type_symbol as isize,
 }
+#[derive(Debug, Copy, Clone)]
+pub enum ModelType {
+    StableModel = clingo_model_type_clingo_model_type_stable_model as isize,
+    BraveConsequences = clingo_model_type_clingo_model_type_brave_consequences as isize,
+    CautiousConsequences = clingo_model_type_clingo_model_type_cautious_consequences as isize,
+}
 
 /// Bit flags of solve modes.
 pub struct SolveMode(clingo_solve_mode);
@@ -2946,10 +2952,19 @@ impl UNSAFE_TheoryAtomsIterator {
 pub struct Model(clingo_model_t);
 impl Model {
     /// Get the type of the model.
-    pub fn model_type(&mut self) -> Option<clingo_model_type_t> {
+    pub fn model_type(&mut self) -> Option<ModelType> {
         let mut mtype = 0 as clingo_model_type_t;
         if unsafe { clingo_model_type(&mut self.0, &mut mtype) } {
-            Some(mtype)
+            match mtype as u32 {
+                clingo_model_type_clingo_model_type_stable_model => Some(ModelType::StableModel),
+                clingo_model_type_clingo_model_type_brave_consequences => {
+                    Some(ModelType::BraveConsequences)
+                }
+                clingo_model_type_clingo_model_type_cautious_consequences => {
+                    Some(ModelType::CautiousConsequences)
+                }
+                _ => None,
+            }
         } else {
             None
         }
