@@ -104,12 +104,6 @@ pub enum Warning {
     Other = clingo_warning_clingo_warning_other as isize,
 }
 #[derive(Debug, Copy, Clone)]
-pub enum ConfigurationType {
-    Value = clingo_configuration_type_clingo_configuration_type_value as isize,
-    Array = clingo_configuration_type_clingo_configuration_type_array as isize,
-    Map = clingo_configuration_type_clingo_configuration_type_map as isize,
-}
-#[derive(Debug, Copy, Clone)]
 pub enum ExternalType {
     Free = clingo_external_type_clingo_external_type_free as isize,
     True = clingo_external_type_clingo_external_type_true as isize,
@@ -140,6 +134,43 @@ pub enum ModelType {
     StableModel = clingo_model_type_clingo_model_type_stable_model as isize,
     BraveConsequences = clingo_model_type_clingo_model_type_brave_consequences as isize,
     CautiousConsequences = clingo_model_type_clingo_model_type_cautious_consequences as isize,
+}
+
+/// Bit flags for entries of the configuration
+pub struct ConfigurationType(clingo_configuration_type);
+impl ConfigurationType {
+    pub const Value: ConfigurationType =
+        ConfigurationType(clingo_configuration_type_clingo_configuration_type_value);
+    pub const Array: ConfigurationType =
+        ConfigurationType(clingo_configuration_type_clingo_configuration_type_array);
+    pub const Map: ConfigurationType =
+        ConfigurationType(clingo_configuration_type_clingo_configuration_type_map);
+}
+impl ::std::ops::BitOr<ConfigurationType> for ConfigurationType {
+    type Output = Self;
+    #[inline]
+    fn bitor(self, other: Self) -> Self {
+        ConfigurationType(self.0 | other.0)
+    }
+}
+impl ::std::ops::BitOrAssign for ConfigurationType {
+    #[inline]
+    fn bitor_assign(&mut self, rhs: ConfigurationType) {
+        self.0 |= rhs.0;
+    }
+}
+impl ::std::ops::BitAnd<ConfigurationType> for ConfigurationType {
+    type Output = Self;
+    #[inline]
+    fn bitand(self, other: Self) -> Self {
+        ConfigurationType(self.0 & other.0)
+    }
+}
+impl ::std::ops::BitAndAssign for ConfigurationType {
+    #[inline]
+    fn bitand_assign(&mut self, rhs: ConfigurationType) {
+        self.0 &= rhs.0;
+    }
 }
 
 /// Bit flags of solve modes.
@@ -1781,22 +1812,11 @@ impl Configuration {
     }
 
     /// Get the type of a key.
-    // TODO: The type is bitset, an entry can have multiple (but at least one) type.
+    /// The type is bitset, an entry can have multiple (but at least one) type.
     pub fn configuration_type(&mut self, Id(key): Id) -> Option<ConfigurationType> {
         let mut ctype = 0 as clingo_configuration_type_bitset_t;
         if unsafe { clingo_configuration_type(&mut self.0, key, &mut ctype) } {
-            match ctype as u32 {
-                clingo_configuration_type_clingo_configuration_type_value => {
-                    Some(ConfigurationType::Value)
-                }
-                clingo_configuration_type_clingo_configuration_type_array => {
-                    Some(ConfigurationType::Array)
-                }
-                clingo_configuration_type_clingo_configurations_type_map => {
-                    Some(ConfigurationType::Map)
-                }
-                _ => None,
-            }
+            Some(ConfigurationType(ctype))
         } else {
             None
         }
@@ -1824,7 +1844,7 @@ impl Configuration {
     /// # Pre-condition
     ///
     /// The [`configuration_type()`](struct.Configuration.html#method.configuration_type) type of
-    /// the entry must be  [`ConfigurationType::Array`](enum.ConfigurationType.html#variant.Array).
+    /// the entry must be  [`ConfigurationType::Array`](struct.ConfigurationType.html#associatedconstant.Array).
     pub fn array_size(&mut self, Id(key): Id) -> Option<usize> {
         let mut size = 0;
         if unsafe { clingo_configuration_array_size(&mut self.0, key, &mut size) } {
@@ -1842,7 +1862,7 @@ impl Configuration {
     /// # Pre-condition
     ///
     /// The [`configuration_type()`](struct.Configuration.html#method.configuration_type) type of
-    /// the entry must be [`ConfigurationType::Array`](enum.ConfigurationType.html#variant.Array).
+    /// the entry must be [`ConfigurationType::Array`](struct.ConfigurationType.html#associatedconstant..Array).
     ///
     /// # Arguments
     ///
@@ -1862,7 +1882,7 @@ impl Configuration {
     /// # Pre-condition
     ///
     /// The [`configuration_type()`](struct.Configuration.html#method.configuration_type) type of
-    /// the entry must be [`ConfigurationType::Map`](enum.ConfigurationType.html#variant.Map).
+    /// the entry must be [`ConfigurationType::Map`](struct.ConfigurationType.html#associatedconstant.Map).
     pub fn map_size(&mut self, Id(key): Id) -> Option<usize> {
         let mut size = 0;
         if unsafe { clingo_configuration_map_size(&mut self.0, key, &mut size) } {
@@ -1877,7 +1897,7 @@ impl Configuration {
     /// # Pre-condition
     ///
     /// The [`configuration_type()`](struct.Configuration.html#method.configuration_type) type of
-    /// the entry must be [`ConfigurationType::Map`](enum.ConfigurationType.html#variant.Map).
+    /// the entry must be [`ConfigurationType::Map`](struct.ConfigurationType.html#associatedconstant.Map).
     ///
     /// # Arguments
     ///
@@ -1905,7 +1925,7 @@ impl Configuration {
     /// # Pre-condition
     ///
     /// The [`configuration_type()`](struct.Configuration.html#method.configuration_type) type of
-    /// the entry must be [`ConfigurationType::Map`](enum.ConfigurationType.html#variant.Map).
+    /// the entry must be [`ConfigurationType::Map`](struct.ConfigurationType.html#associatedconstant.Map).
     ///
     /// **Note:** Multiple levels can be looked up by concatenating keys with a period.
     pub fn map_at(&mut self, Id(key): Id, name: &str) -> Option<Id> {
@@ -1924,7 +1944,7 @@ impl Configuration {
     /// # Pre-condition
     ///
     /// The [`configuration_type()`](struct.Configuration.html#method.configuration_type) type of
-    /// the entry must be [`ConfigurationType::Value`](enum.ConfigurationType.html#variant.Value).
+    /// the entry must be [`ConfigurationType::Value`](struct.ConfigurationType.html#associatedconstant.Value).
     ///
     /// # Arguments
     ///
@@ -1945,7 +1965,7 @@ impl Configuration {
     /// # Pre-condition
     ///
     /// The [`configuration_type()`](struct.Configuration.html#method.configuration_type) type of
-    /// the entry must be [`ConfigurationType::Value`](enum.ConfigurationType.html#variant.Value).
+    /// the entry must be [`ConfigurationType::Value`](struct.ConfigurationType.html#associatedconstant.Value).
     ///
     /// # Arguments
     ///
@@ -1970,7 +1990,7 @@ impl Configuration {
     /// # Pre-condition
     ///
     /// The [`configuration_type()`](struct.Configuration.html#method.configuration_type) type of
-    /// the entry must be [`ConfigurationType::Value`](enum.ConfigurationType.html#variant.Value).
+    /// the entry must be [`ConfigurationType::Value`](struct.ConfigurationType.html#associatedconstant.Value).
     ///
     /// # Arguments
     ///
