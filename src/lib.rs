@@ -137,11 +137,11 @@ pub enum ModelType {
 /// Bit flags for entries of the configuration
 pub struct ConfigurationType(clingo_configuration_type);
 impl ConfigurationType {
-    pub const Value: ConfigurationType =
+    pub const VALUE: ConfigurationType =
         ConfigurationType(clingo_configuration_type_clingo_configuration_type_value);
-    pub const Array: ConfigurationType =
+    pub const ARRAY: ConfigurationType =
         ConfigurationType(clingo_configuration_type_clingo_configuration_type_array);
-    pub const Map: ConfigurationType =
+    pub const MAP: ConfigurationType =
         ConfigurationType(clingo_configuration_type_clingo_configuration_type_map);
 }
 impl ::std::ops::BitOr<ConfigurationType> for ConfigurationType {
@@ -174,8 +174,8 @@ impl ::std::ops::BitAndAssign for ConfigurationType {
 /// Bit flags of solve modes.
 pub struct SolveMode(clingo_solve_mode);
 impl SolveMode {
-    pub const Async: SolveMode = SolveMode(clingo_solve_mode_clingo_solve_mode_async);
-    pub const Yield: SolveMode = SolveMode(clingo_solve_mode_clingo_solve_mode_yield);
+    pub const ASYNC: SolveMode = SolveMode(clingo_solve_mode_clingo_solve_mode_async);
+    pub const YIELD: SolveMode = SolveMode(clingo_solve_mode_clingo_solve_mode_yield);
 }
 impl ::std::ops::BitOr<SolveMode> for SolveMode {
     type Output = Self;
@@ -208,12 +208,12 @@ impl ::std::ops::BitAndAssign for SolveMode {
 pub struct ShowType(clingo_show_type);
 impl ShowType {
     pub const CSP: ShowType = ShowType(clingo_show_type_clingo_show_type_csp);
-    pub const Shown: ShowType = ShowType(clingo_show_type_clingo_show_type_shown);
-    pub const Atoms: ShowType = ShowType(clingo_show_type_clingo_show_type_atoms);
-    pub const Terms: ShowType = ShowType(clingo_show_type_clingo_show_type_terms);
-    pub const Extra: ShowType = ShowType(clingo_show_type_clingo_show_type_extra);
-    pub const All: ShowType = ShowType(clingo_show_type_clingo_show_type_all);
-    pub const Complement: ShowType = ShowType(clingo_show_type_clingo_show_type_complement);
+    pub const SHOWN: ShowType = ShowType(clingo_show_type_clingo_show_type_shown);
+    pub const ATOMS: ShowType = ShowType(clingo_show_type_clingo_show_type_atoms);
+    pub const TERMS: ShowType = ShowType(clingo_show_type_clingo_show_type_terms);
+    pub const EXTRA: ShowType = ShowType(clingo_show_type_clingo_show_type_extra);
+    pub const ALL: ShowType = ShowType(clingo_show_type_clingo_show_type_all);
+    pub const COMPLEMENT: ShowType = ShowType(clingo_show_type_clingo_show_type_complement);
 }
 impl ::std::ops::BitOr<ShowType> for ShowType {
     type Output = Self;
@@ -245,13 +245,13 @@ impl ::std::ops::BitAndAssign for ShowType {
 /// Bit flags for solve call results
 pub struct SolveResult(clingo_solve_result);
 impl SolveResult {
-    pub const Satisfiable: SolveResult =
+    pub const SATISFIABLE: SolveResult =
         SolveResult(clingo_solve_result_clingo_solve_result_satisfiable);
-    pub const Unsatisfiable: SolveResult =
+    pub const UNSATISFIABLE: SolveResult =
         SolveResult(clingo_solve_result_clingo_solve_result_unsatisfiable);
-    pub const Exhausted: SolveResult =
+    pub const EXHAUSTED: SolveResult =
         SolveResult(clingo_solve_result_clingo_solve_result_exhausted);
-    pub const Interrupted: SolveResult =
+    pub const INTERRUPTED: SolveResult =
         SolveResult(clingo_solve_result_clingo_solve_result_interrupted);
 }
 impl ::std::ops::BitOr<SolveResult> for SolveResult {
@@ -1979,7 +1979,7 @@ impl Configuration {
     /// # Pre-condition
     ///
     /// The [`configuration_type()`](struct.Configuration.html#method.configuration_type) type of
-    /// the entry must be  [`ConfigurationType::Array`](struct.ConfigurationType.html#associatedconstant.Array).
+    /// the entry must be  [`ConfigurationType::ARRAY`](struct.ConfigurationType.html#associatedconstant.ARRAY).
     pub fn array_size(&mut self, Id(key): Id) -> Option<usize> {
         let mut size = 0;
         if unsafe { clingo_configuration_array_size(&mut self.0, key, &mut size) } {
@@ -1997,7 +1997,7 @@ impl Configuration {
     /// # Pre-condition
     ///
     /// The [`configuration_type()`](struct.Configuration.html#method.configuration_type) type of
-    /// the entry must be [`ConfigurationType::Array`](struct.ConfigurationType.html#associatedconstant..Array).
+    /// the entry must be [`ConfigurationType::ARRAY`](struct.ConfigurationType.html#associatedconstant.ARRAY).
     ///
     /// # Arguments
     ///
@@ -2017,7 +2017,7 @@ impl Configuration {
     /// # Pre-condition
     ///
     /// The [`configuration_type()`](struct.Configuration.html#method.configuration_type) type of
-    /// the entry must be [`ConfigurationType::Map`](struct.ConfigurationType.html#associatedconstant.Map).
+    /// the entry must be [`ConfigurationType::MAP`](struct.ConfigurationType.html#associatedconstant.MAP).
     pub fn map_size(&mut self, Id(key): Id) -> Option<usize> {
         let mut size = 0;
         if unsafe { clingo_configuration_map_size(&mut self.0, key, &mut size) } {
@@ -2032,7 +2032,7 @@ impl Configuration {
     /// # Pre-condition
     ///
     /// The [`configuration_type()`](struct.Configuration.html#method.configuration_type) type of
-    /// the entry must be [`ConfigurationType::Map`](struct.ConfigurationType.html#associatedconstant.Map).
+    /// the entry must be [`ConfigurationType::MAP`](struct.ConfigurationType.html#associatedconstant.MAP).
     ///
     /// # Arguments
     ///
@@ -2060,7 +2060,7 @@ impl Configuration {
     /// # Pre-condition
     ///
     /// The [`configuration_type()`](struct.Configuration.html#method.configuration_type) type of
-    /// the entry must be [`ConfigurationType::Map`](struct.ConfigurationType.html#associatedconstant.Map).
+    /// the entry must be [`ConfigurationType::MAP`](struct.ConfigurationType.html#associatedconstant.MAP).
     ///
     /// **Note:** Multiple levels can be looked up by concatenating keys with a period.
     pub fn map_at(&mut self, Id(key): Id, name: &str) -> Option<Id> {
@@ -2079,7 +2079,7 @@ impl Configuration {
     /// # Pre-condition
     ///
     /// The [`configuration_type()`](struct.Configuration.html#method.configuration_type) type of
-    /// the entry must be [`ConfigurationType::Value`](struct.ConfigurationType.html#associatedconstant.Value).
+    /// the entry must be [`ConfigurationType::VALUE`](struct.ConfigurationType.html#associatedconstant.VALUE).
     ///
     /// # Arguments
     ///
@@ -2100,7 +2100,7 @@ impl Configuration {
     /// # Pre-condition
     ///
     /// The [`configuration_type()`](struct.Configuration.html#method.configuration_type) type of
-    /// the entry must be [`ConfigurationType::Value`](struct.ConfigurationType.html#associatedconstant.Value).
+    /// the entry must be [`ConfigurationType::VALUE`](struct.ConfigurationType.html#associatedconstant.VALUE).
     ///
     /// # Arguments
     ///
@@ -2125,7 +2125,7 @@ impl Configuration {
     /// # Pre-condition
     ///
     /// The [`configuration_type()`](struct.Configuration.html#method.configuration_type) type of
-    /// the entry must be [`ConfigurationType::Value`](struct.ConfigurationType.html#associatedconstant.Value).
+    /// the entry must be [`ConfigurationType::VALUE`](struct.ConfigurationType.html#associatedconstant.VALUE).
     ///
     /// # Arguments
     ///

@@ -20,7 +20,7 @@ fn print_model(model: &mut Model, label: &str, show: ShowType) {
 
 fn solve(ctl: &mut Control) {
     // get a solve handle
-    let handle = ctl.solve(SolveMode::Yield, &[])
+    let handle = ctl.solve(SolveMode::YIELD, &[])
         .expect("Failed retrieving solve handle.");
 
     // loop over all models
@@ -41,10 +41,10 @@ fn solve(ctl: &mut Control) {
 
             println!("{}: {}", type_string, number);
 
-            print_model(model, "  shown", ShowType::Shown);
-            print_model(model, "  atoms", ShowType::Atoms);
-            print_model(model, "  terms", ShowType::Terms);
-            print_model(model, " ~atoms", ShowType::Complement | ShowType::Atoms);
+            print_model(model, "  shown", ShowType::SHOWN);
+            print_model(model, "  atoms", ShowType::ATOMS);
+            print_model(model, "  terms", ShowType::TERMS);
+            print_model(model, " ~atoms", ShowType::COMPLEMENT | ShowType::ATOMS);
         } else {
             // stop if there are no more models
             break;

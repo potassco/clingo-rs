@@ -44,7 +44,7 @@ fn main() {
 
     // create a solve handle with an attached event handler
     let handle = ctl.solve_with_event_handler(
-        SolveMode::Async | SolveMode::Yield,
+        SolveMode::ASYNC | SolveMode::YIELD,
         &[],
         &MySEHandler,
         &mut running,

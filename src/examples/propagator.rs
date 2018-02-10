@@ -9,7 +9,7 @@ use clingo::*;
 fn print_model(model: &mut Model) {
     // retrieve the symbols in the model
     let atoms = model
-        .symbols(ShowType::Shown)
+        .symbols(ShowType::SHOWN)
         .expect("Failed to retrieve symbols in the model.");
 
     print!("Model:");
@@ -22,11 +22,8 @@ fn print_model(model: &mut Model) {
 }
 
 fn solve(ctl: &mut Control) {
-    let solve_mode = SolveMode::Yield;
-    let assumptions = vec![];
-
     // get a solve handle
-    let handle = ctl.solve(solve_mode, &assumptions)
+    let handle = ctl.solve(SolveMode::YIELD, &[])
         .expect("Failed to retrieve solve handle.");
 
     // loop over all models
