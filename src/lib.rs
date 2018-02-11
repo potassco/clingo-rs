@@ -1347,7 +1347,7 @@ impl Control {
     /// - [`Error::Runtime`](enum.Error.html#variant.Runtime) if solving could not be started
     pub fn solve(
         &mut self,
-        mode: SolveMode,
+        mode: &SolveMode,
         assumptions: &[SymbolicLiteral],
     ) -> Result<&mut SolveHandle, &'static str> {
         let mut handle = std::ptr::null_mut() as *mut clingo_solve_handle_t;
@@ -1387,7 +1387,7 @@ impl Control {
     /// - [`Error::Runtime`](enum.Error.html#variant.Runtime) if solving could not be started
     pub fn solve_with_event_handler<D, T: SolveEventHandler<D>>(
         &mut self,
-        mode: SolveMode,
+        mode: &SolveMode,
         assumptions: &[SymbolicLiteral],
         _notify: &T,
         data_: &mut D,
@@ -3151,7 +3151,7 @@ impl Model {
     ///
     /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
     /// - [`Error::Runtime`](enum.Error.html#variant.Runtime) if the size is too small
-    pub fn symbols(&mut self, show: ShowType) -> Result<Vec<Symbol>, Error> {
+    pub fn symbols(&mut self, show: &ShowType) -> Result<Vec<Symbol>, Error> {
         let Model(ref mut model) = *self;
         let mut size: usize = 0;
         if unsafe { clingo_model_symbols_size(model, show.0, &mut size) } {
