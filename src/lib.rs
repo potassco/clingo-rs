@@ -1,4 +1,5 @@
 #![feature(ptr_internals)]
+#![allow(non_upper_case_globals)]
 extern crate clingo_sys;
 extern crate libc;
 use std::mem;
