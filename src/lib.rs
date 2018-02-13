@@ -441,8 +441,19 @@ pub trait GroundEventHandler<T> {
     }
 }
 
+/// Represents a symbolic literal.
 #[derive(Debug, Copy, Clone)]
 pub struct SymbolicLiteral(clingo_symbolic_literal_t);
+impl SymbolicLiteral {
+    /// Get the associated symbol (must be a function)
+    pub fn symbol(&self) -> Symbol {
+        Symbol(self.0.symbol)
+    }
+    /// Whether the literal has a sign
+    pub fn positive(&self) -> bool {
+        self.0.positive
+    }
+}
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Literal(clingo_literal_t);
