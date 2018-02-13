@@ -468,8 +468,6 @@ impl Literal {
         self.0
     }
 }
-#[derive(Debug, Copy, Clone, PartialEq)]
-pub struct WeightedLiteral(clingo_literal_t);
 
 #[derive(Debug, Copy, Clone)]
 pub struct Atom(clingo_atom_t);
@@ -479,6 +477,22 @@ pub struct Id(clingo_id_t);
 impl Id {
     pub fn get_integer(&self) -> u32 {
         self.0
+    }
+}
+
+/// Signed integer type for weights in sum aggregates and minimize constraints.
+pub type Weight = clingo_weight_t;
+
+/// A Literal with an associated weight.
+/// @ingroup ProgramInspection
+#[derive(Debug, Copy, Clone)]
+pub struct WeightedLiteral(clingo_weighted_literal);
+impl WeightedLiteral {
+    pub fn literal(&self) -> Literal {
+        Literal(self.0.literal)
+    }
+    pub fn weight(&self) -> Weight {
+        self.0.weight
     }
 }
 #[derive(Debug, Copy, Clone)]
