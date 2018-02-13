@@ -495,8 +495,35 @@ impl WeightedLiteral {
         self.0.weight
     }
 }
+
+/// Represents a source code location marking its beginnig and end.
+///
+/// **Note:** Not all locations refer to physical files.
+/// By convention, such locations use a name put in angular brackets as filename.
 #[derive(Debug, Copy, Clone)]
 pub struct Location(clingo_location);
+impl Location {
+    //TODO  /// < the file where the location begins
+    //     pub begin_file: *const ::std::os::raw::c_char,
+    //TODO  /// < the file where the location ends
+    //     pub end_file: *const ::std::os::raw::c_char,
+    /// < the line where the location begins
+    pub fn begin_line(&self) -> usize {
+        self.0.begin_line
+    }
+    /// < the line where the location ends
+    pub fn end_line(&self) -> usize {
+        self.0.end_line
+    }
+    /// < the column where the location begins
+    pub fn begin_column(&self) -> usize {
+        self.0.begin_column
+    }
+    /// < the column where the location ends
+    pub fn end_column(&self) -> usize {
+        self.0.end_column
+    }
+}
 
 #[derive(Debug, Clone)]
 pub struct Symbol(clingo_symbol_t);
