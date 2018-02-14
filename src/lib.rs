@@ -2,9 +2,11 @@
 #![allow(non_upper_case_globals)]
 extern crate clingo_sys;
 extern crate libc;
+
 use std::mem;
 use std::ptr::Unique;
-
+use std::cmp::Ordering;
+use std::hash::{Hash, Hasher};
 use std::ffi::CStr;
 use std::ffi::CString;
 use libc::c_char;
@@ -525,7 +527,41 @@ impl Location {
     }
 }
 
-#[derive(Debug, Clone)]
+/// Represents a predicate signature.
+///
+/// Signatures have a name and an arity, and can be positive or negative (to
+/// represent classical negation).
+#[derive(Debug, Copy, Clone)]
+pub struct Signature(clingo_signature_t);
+impl PartialEq for Signature {
+    /// Check if two signatures are equal.
+    fn eq(&self, other: &Signature) -> bool {
+        unsafe { clingo_signature_is_equal_to(self.0, other.0) }
+        //         self.isbn == other.isbn
+    }
+}
+impl Eq for Signature {}
+impl PartialOrd for Signature {
+    /// Compare two signatures.
+    ///
+    /// Signatures are compared first by sign (unsigned < signed), then by arity,
+    /// then by name.
+    fn partial_cmp(&self, other: &Signature) -> Option<Ordering> {
+        if unsafe { clingo_signature_is_less_than(self.0, other.0) } {
+            Some(Ordering::Less)
+        } else if unsafe { clingo_signature_is_less_than(other.0, self.0) } {
+            Some(Ordering::Greater)
+        } else {
+            Some(Ordering::Equal)
+        }
+    }
+}
+impl Hash for Signature {
+    /// Calculate a hash code of a signature.
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        unsafe { clingo_signature_hash(self.0) }.hash(state);
+    }
+}
 pub struct Symbol(clingo_symbol_t);
 impl PartialEq for Symbol {
     fn eq(&self, other: &Symbol) -> bool {
