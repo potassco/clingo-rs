@@ -2680,6 +2680,10 @@ impl Statistics {
     }
 }
 
+/// Object to inspect symbolic atoms in a program---the relevant Herbrand base
+/// gringo uses to instantiate programs.
+///
+/// @see clingo_control_symbolic_atoms()
 #[derive(Debug)]
 pub struct SymbolicAtoms(clingo_symbolic_atoms_t);
 impl SymbolicAtoms {
@@ -3206,6 +3210,44 @@ impl TheoryAtoms {
             }
         } else {
             Err(error())
+        }
+    }
+}
+
+//TODO: make safe
+/// Object to iterate over symbolic atoms.
+///
+/// Such an iterator either points to a symbolic atom within a sequence of
+/// symbolic atoms or to the end of the sequence.
+///
+/// **Note:** Iterators are valid as long as the underlying sequence is not modified.
+/// Operations that can change this sequence are ::clingo_control_ground(),
+/// ::clingo_control_cleanup(), and functions that modify the underlying
+/// non-ground program.
+pub struct UNSAFE_SymbolicAtomsIterator {
+    count: usize,
+    size: usize,
+}
+impl Iterator for UNSAFE_SymbolicAtomsIterator {
+    type Item = Id;
+
+    fn next(&mut self) -> Option<Id> {
+        // increment our count. This is why we started at zero.
+        self.count += 1;
+
+        // check to see if we've finished counting or not.
+        if self.count < self.size {
+            Some(Id(self.count as u32))
+        } else {
+            None
+        }
+    }
+}
+impl UNSAFE_SymbolicAtomsIterator {
+    pub fn from(cta: &mut TheoryAtoms) -> UNSAFE_SymbolicAtomsIterator {
+        UNSAFE_SymbolicAtomsIterator {
+            count: 0,
+            size: cta.size().unwrap(),
         }
     }
 }
