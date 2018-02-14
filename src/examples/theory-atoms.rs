@@ -35,7 +35,7 @@ fn solve(ctl: &mut Control) {
     }
 
     // close the solve handle
-    let _result = handle
+    handle
         .get()
         .expect("Failed to get result from solve handle.");
     handle.close().expect("Failed to close solve handle.");
