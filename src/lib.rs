@@ -3663,6 +3663,48 @@ impl SolveHandle {
     }
 }
 
+//TODO     /// Internalize a string.
+//     ///
+//     /// This functions takes a string as input and returns an equal unique string
+//     /// that is (at the moment) not freed until the program is closed.  All strings
+//     /// returned from clingo API functions are internalized and must not be freed.
+//     ///
+//     /// **Parameters:**
+//     ///
+//     /// * `string` - the string to internalize
+//     /// * `result` - the internalized string
+//     ///
+//     /// **Returns** whether the call was successful; might set one of the following error codes:
+//     /// - ::clingo_error_bad_alloc
+//     pub fn clingo_add_string(
+//         string: *const ::std::os::raw::c_char,
+//         result: *mut *const ::std::os::raw::c_char,
+//     ) -> bool;
+
+//TODO     /// Parse a term in string form.
+//     ///
+//     /// The result of this function is a symbol. The input term can contain
+//     /// unevaluated functions, which are evaluated during parsing.
+//     ///
+//     /// **Parameters:**
+//     ///
+//     /// * `string` - the string to parse
+//     /// * `logger` - ouptional logger to report warnings during parsing
+//     /// * `logger_data` - user data for the logger
+//     /// * `message_limit` - maximum number of times to call the logger
+//     /// * `symbol` - the resulting symbol
+//     ///
+//     /// **Returns** whether the call was successful; might set one of the following error codes:
+//     /// - ::clingo_error_bad_alloc
+//     /// - ::clingo_error_runtime if parsing fails
+//     pub fn clingo_parse_term(
+//         string: *const ::std::os::raw::c_char,
+//         logger: clingo_logger_t,
+//         logger_data: *mut ::std::os::raw::c_void,
+//         message_limit: ::std::os::raw::c_uint,
+//         symbol: *mut clingo_symbol_t,
+//     ) -> bool;
+
 // TODO clingo_ground_program_observer
 
 #[cfg(test)]
