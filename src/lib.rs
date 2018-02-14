@@ -138,6 +138,7 @@ pub enum ModelType {
 }
 
 /// Bit flags for entries of the configuration
+#[derive(Debug, Copy, Clone)]
 pub struct ConfigurationType(clingo_configuration_type);
 impl ConfigurationType {
     pub const VALUE: ConfigurationType =
@@ -175,6 +176,7 @@ impl ::std::ops::BitAndAssign for ConfigurationType {
 }
 
 /// Bit flags of solve modes.
+#[derive(Debug, Copy, Clone)]
 pub struct SolveMode(clingo_solve_mode);
 impl SolveMode {
     pub const ASYNC: SolveMode = SolveMode(clingo_solve_mode_clingo_solve_mode_async);
@@ -208,6 +210,7 @@ impl ::std::ops::BitAndAssign for SolveMode {
 }
 
 /// Bit flags to select symbols in models.
+#[derive(Debug, Copy, Clone)]
 pub struct ShowType(clingo_show_type);
 impl ShowType {
     pub const CSP: ShowType = ShowType(clingo_show_type_clingo_show_type_csp);
@@ -246,6 +249,7 @@ impl ::std::ops::BitAndAssign for ShowType {
 }
 
 /// Bit flags for solve call results
+#[derive(Debug, Copy, Clone)]
 pub struct SolveResult(clingo_solve_result);
 impl SolveResult {
     pub const SATISFIABLE: SolveResult =
