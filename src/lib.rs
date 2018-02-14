@@ -461,6 +461,7 @@ impl SymbolicLiteral {
     }
 }
 
+/// Signed integer type used for aspif and solver literals.
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Literal(clingo_literal_t);
 impl Literal {
@@ -475,9 +476,11 @@ impl Literal {
     }
 }
 
+/// Unsigned integer type used for aspif atoms.
 #[derive(Debug, Copy, Clone)]
 pub struct Atom(clingo_atom_t);
 
+/// Unsigned integer type used in various places.
 #[derive(Debug, Copy, Clone)]
 pub struct Id(clingo_id_t);
 impl Id {
