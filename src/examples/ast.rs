@@ -102,8 +102,7 @@ fn main() {
 
     let mut ctl = Control::new(options, 20).expect("Failed creating Control.");
 
-    let sym = create_id("enable", true).unwrap();
-    let sym2 = sym.clone();
+    let sym = Symbol::create_id("enable", true).unwrap();
 
     {
         // get the program builder
@@ -153,13 +152,13 @@ fn main() {
 
     // solve with external enable = true
     println!("Solving with enable = true...");
-    ctl.assign_external(&sym2, TruthValue::True)
+    ctl.assign_external(&sym, TruthValue::True)
         .expect("Failed to assign #external enable true.");
     solve(&mut ctl);
 
     // solve with external enable = false
     println!("Solving with enable = false...");
-    ctl.assign_external(&sym2, TruthValue::False)
+    ctl.assign_external(&sym, TruthValue::False)
         .expect("Failed to assign #external enable false.");
     solve(&mut ctl);
 }

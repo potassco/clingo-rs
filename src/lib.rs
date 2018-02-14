@@ -624,6 +624,12 @@ impl Signature {
     //     /// **Returns** whether the signature has a sign
     //     pub fn clingo_signature_is_negative(signature: clingo_signature_t) -> bool;
 }
+
+/// Represents a symbol.
+///
+/// This includes numbers, strings, functions (including constants when
+/// arguments are empty and tuples when the name is empty), \#inf and \#sup.
+#[derive(Debug, Copy, Clone)]
 pub struct Symbol(clingo_symbol_t);
 impl PartialEq for Symbol {
     fn eq(&self, other: &Symbol) -> bool {
@@ -631,100 +637,124 @@ impl PartialEq for Symbol {
     }
 }
 impl Eq for Symbol {}
-
-/// Construct a symbol representing a number.
-pub fn create_number(number: i32) -> Symbol {
-    let mut symbol = 0 as clingo_symbol_t;
-    unsafe { clingo_symbol_create_number(number, &mut symbol) };
-    Symbol(symbol)
-}
-
-/// Construct a symbol representing \#sup.
-pub fn create_supremum() -> Symbol {
-    let mut symbol = 0 as clingo_symbol_t;
-    unsafe { clingo_symbol_create_supremum(&mut symbol) };
-    Symbol(symbol)
-}
-
-/// Construct a symbol representing \#inf
-pub fn create_infimum() -> Symbol {
-    let mut symbol = 0 as clingo_symbol_t;
-    unsafe { clingo_symbol_create_infimum(&mut symbol) };
-    Symbol(symbol)
-}
-
-/// Construct a symbol representing a string.
-///
-/// #  Errors:
-///
-/// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
-pub fn create_string(string: &str) -> Result<Symbol, Error> {
-    let mut symbol = 0 as clingo_symbol_t;
-    let c_str = CString::new(string).unwrap();
-    if unsafe { clingo_symbol_create_string(c_str.as_ptr(), &mut symbol) } {
-        Ok(Symbol(symbol))
-    } else {
-        Err(error())
+impl PartialOrd for Symbol {
+    /// Compare two symbols.
+    ///
+    /// Symbols are first compared by type.  If the types are equal, the values are
+    /// compared (where strings are compared using strcmp).  Functions are first
+    /// compared by signature and then lexicographically by arguments.
+    fn partial_cmp(&self, other: &Symbol) -> Option<Ordering> {
+        if unsafe { clingo_symbol_is_less_than(self.0, other.0) } {
+            Some(Ordering::Less)
+        } else if unsafe { clingo_symbol_is_less_than(other.0, self.0) } {
+            Some(Ordering::Greater)
+        } else {
+            Some(Ordering::Equal)
+        }
     }
 }
-
-/// Construct a symbol representing an id.
-///
-/// **Note:** This is just a shortcut for `create_function()` with
-/// empty arguments.
-///
-/// # Arguments
-///
-/// * `name` - the name of the symbol
-/// * `positive` - whether the symbol has a classical negation sign
-///
-/// # Errors
-///
-/// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
-pub fn create_id(name: &str, positive: bool) -> Result<Symbol, Error> {
-    let mut symbol = 0 as clingo_symbol_t;
-    let name_c_str = CString::new(name).unwrap();
-    if unsafe { clingo_symbol_create_id(name_c_str.as_ptr(), positive, &mut symbol) } {
-        //             println!("create Symbol! sym {} {:?}", symbol, name_c_str);
-        Ok(Symbol(symbol))
-    } else {
-        Err(error())
+impl Hash for Symbol {
+    /// Calculate a hash code of a symbol.
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        unsafe { clingo_symbol_hash(self.0) }.hash(state);
     }
 }
-
-/// Construct a symbol representing a function or tuple.
-///
-///
-/// **Note:** To create tuples, the empty string has to be used as name.
-///
-/// # Arguments
-///
-/// * `name` - the name of the function
-/// * `arguments` - the arguments of the function
-/// * `positive` - whether the symbol has a classical negation sign
-///
-/// # Errors
-///
-/// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
-pub fn create_function(name: &str, arguments: &[Symbol], positive: bool) -> Result<Symbol, Error> {
-    let mut symbol = 0 as clingo_symbol_t;
-    let name_c_str = CString::new(name).unwrap();
-    if unsafe {
-        clingo_symbol_create_function(
-            name_c_str.as_ptr(),
-            arguments.as_ptr() as *const clingo_symbol_t,
-            arguments.len(),
-            positive,
-            &mut symbol,
-        )
-    } {
-        Ok(Symbol(symbol))
-    } else {
-        Err(error())
-    }
-}
-
 impl Symbol {
+    /// Construct a symbol representing a number.
+    pub fn create_number(number: i32) -> Symbol {
+        let mut symbol = 0 as clingo_symbol_t;
+        unsafe { clingo_symbol_create_number(number, &mut symbol) };
+        Symbol(symbol)
+    }
+
+    /// Construct a symbol representing \#sup.
+    pub fn create_supremum() -> Symbol {
+        let mut symbol = 0 as clingo_symbol_t;
+        unsafe { clingo_symbol_create_supremum(&mut symbol) };
+        Symbol(symbol)
+    }
+
+    /// Construct a symbol representing \#inf
+    pub fn create_infimum() -> Symbol {
+        let mut symbol = 0 as clingo_symbol_t;
+        unsafe { clingo_symbol_create_infimum(&mut symbol) };
+        Symbol(symbol)
+    }
+
+    /// Construct a symbol representing a string.
+    ///
+    /// #  Errors:
+    ///
+    /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
+    pub fn create_string(string: &str) -> Result<Symbol, Error> {
+        let mut symbol = 0 as clingo_symbol_t;
+        let c_str = CString::new(string).unwrap();
+        if unsafe { clingo_symbol_create_string(c_str.as_ptr(), &mut symbol) } {
+            Ok(Symbol(symbol))
+        } else {
+            Err(error())
+        }
+    }
+
+    /// Construct a symbol representing an id.
+    ///
+    /// **Note:** This is just a shortcut for `create_function()` with
+    /// empty arguments.
+    ///
+    /// # Arguments
+    ///
+    /// * `name` - the name of the symbol
+    /// * `positive` - whether the symbol has a classical negation sign
+    ///
+    /// # Errors
+    ///
+    /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
+    pub fn create_id(name: &str, positive: bool) -> Result<Symbol, Error> {
+        let mut symbol = 0 as clingo_symbol_t;
+        let name_c_str = CString::new(name).unwrap();
+        if unsafe { clingo_symbol_create_id(name_c_str.as_ptr(), positive, &mut symbol) } {
+            //             println!("create Symbol! sym {} {:?}", symbol, name_c_str);
+            Ok(Symbol(symbol))
+        } else {
+            Err(error())
+        }
+    }
+
+    /// Construct a symbol representing a function or tuple.
+    ///
+    ///
+    /// **Note:** To create tuples, the empty string has to be used as name.
+    ///
+    /// # Arguments
+    ///
+    /// * `name` - the name of the function
+    /// * `arguments` - the arguments of the function
+    /// * `positive` - whether the symbol has a classical negation sign
+    ///
+    /// # Errors
+    ///
+    /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
+    pub fn create_function(
+        name: &str,
+        arguments: &[Symbol],
+        positive: bool,
+    ) -> Result<Symbol, Error> {
+        let mut symbol = 0 as clingo_symbol_t;
+        let name_c_str = CString::new(name).unwrap();
+        if unsafe {
+            clingo_symbol_create_function(
+                name_c_str.as_ptr(),
+                arguments.as_ptr() as *const clingo_symbol_t,
+                arguments.len(),
+                positive,
+                &mut symbol,
+            )
+        } {
+            Ok(Symbol(symbol))
+        } else {
+            Err(error())
+        }
+    }
     /// Get the number of a symbol.
     ///
     /// # Errors
@@ -857,27 +887,6 @@ impl Symbol {
         } else {
             None
         }
-    }
-
-    /// Check if a symbol is less than another symbol.
-    ///
-    /// Symbols are first compared by type.  If the types are equal, the values are
-    /// compared (where strings are compared using strcmp).  Functions are first
-    /// compared by signature and then lexicographically by arguments.
-    ///
-    /// # Arguments
-    ///
-    /// * `a` - first symbol
-    /// * `b` - second symbol
-    ///
-    /// **Returns** whether a < b
-    pub fn is_less_than(&self, other: &Symbol) -> bool {
-        unsafe { clingo_symbol_is_less_than(self.0, other.0) }
-    }
-
-    /// Calculate a hash code of a symbol.
-    pub fn hash(&self) -> usize {
-        unsafe { clingo_symbol_hash(self.0) }
     }
 }
 

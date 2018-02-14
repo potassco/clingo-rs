@@ -1,22 +1,26 @@
 extern crate clingo;
 
 use clingo::*;
+use std::collections::hash_map::DefaultHasher;
+use std::hash::{Hash, Hasher};
 
 fn main() {
     // create a number, identifier (function without arguments), and a function symbol
-    let number_symbol = create_number(42);
-    let identifier_symbol = create_id("x", true).unwrap();
+    let number_symbol = Symbol::create_number(42);
+    let identifier_symbol = Symbol::create_id("x", true).unwrap();
 
     let mut symbols = vec![number_symbol, identifier_symbol];
-    let function_symbol = create_function("x", &symbols, true).unwrap();
-    symbols.push(function_symbol.clone());
+    let function_symbol = Symbol::create_function("x", &symbols, true).unwrap();
+    symbols.push(function_symbol);
 
     // print the symbols along with their hash values
+    let mut hasher = DefaultHasher::new();
     for symbol in &symbols {
+        symbol.hash(&mut hasher);
         println!(
             "the hash of {} is {}",
             symbol.to_string().unwrap(),
-            symbol.hash()
+            hasher.finish()
         );
     }
 
@@ -36,7 +40,7 @@ fn main() {
 
     // less than comparison
     print!("{} is ", symbols[0].to_string().unwrap());
-    if symbols[0].is_less_than(&symbols[1]) {
+    if symbols[0] < symbols[1] {
         print!("less");
     } else {
         print!("not less");
