@@ -562,6 +562,68 @@ impl Hash for Signature {
         unsafe { clingo_signature_hash(self.0) }.hash(state);
     }
 }
+impl Signature {
+    /// Create a new signature.
+    ///
+    /// # Arguments
+    ///
+    /// * `name` name of the signature
+    /// * `arity` arity of the signature
+    /// * `positive` false if the signature has a classical negation sign
+    ///
+    /// # Errors
+    ///
+    /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
+    pub fn create(name_: &str, arity: u32, positive: bool) -> Result<Signature, Error> {
+        let name_c_str = CString::new(name_).unwrap();
+        let mut signature = 0;
+        if unsafe { clingo_signature_create(name_c_str.as_ptr(), arity, positive, &mut signature) }
+        {
+            Ok(Signature(signature))
+        } else {
+            Err(error())
+        }
+    }
+    // TODO
+    //     /// Get the name of a signature.
+    //     ///
+    //     /// **Parameters:**
+    //     ///
+    //     /// * `signature` - the target signature
+    //     ///
+    //     /// **Returns** the name of the signature
+    //     pub fn clingo_signature_name(signature: clingo_signature_t) -> *const ::std::os::raw::c_char;
+
+    // TODO
+    //     /// Get the arity of a signature.
+    //     ///
+    //     /// **Parameters:**
+    //     ///
+    //     /// * `signature` - the target signature
+    //     ///
+    //     /// **Returns** the arity of the signature
+    //     pub fn clingo_signature_arity(signature: clingo_signature_t) -> u32;
+
+    // TODO
+    //     /// Whether the signature is positive (is not classically negated).
+    //     ///
+    //     /// **Parameters:**
+    //     ///
+    //     /// * `signature` - the target signature
+    //     ///
+    //     /// **Returns** whether the signature has no sign
+    //     pub fn clingo_signature_is_positive(signature: clingo_signature_t) -> bool;
+
+    // TODO
+    //     /// Whether the signature is negative (is classically negated).
+    //     ///
+    //     /// **Parameters:**
+    //     ///
+    //     /// * `signature` - the target signature
+    //     ///
+    //     /// **Returns** whether the signature has a sign
+    //     pub fn clingo_signature_is_negative(signature: clingo_signature_t) -> bool;
+}
 pub struct Symbol(clingo_symbol_t);
 impl PartialEq for Symbol {
     fn eq(&self, other: &Symbol) -> bool {
@@ -2605,31 +2667,6 @@ impl Statistics {
             Some(value)
         } else {
             None
-        }
-    }
-}
-#[derive(Debug, Copy, Clone)]
-pub struct Signature(clingo_signature_t);
-impl Signature {
-    /// Create a new signature.
-    ///
-    /// # Arguments
-    ///
-    /// * `name` name of the signature
-    /// * `arity` arity of the signature
-    /// * `positive` false if the signature has a classical negation sign
-    ///
-    /// # Errors
-    ///
-    /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
-    pub fn create(name_: &str, arity: u32, positive: bool) -> Result<Signature, Error> {
-        let name_c_str = CString::new(name_).unwrap();
-        let mut signature = 0;
-        if unsafe { clingo_signature_create(name_c_str.as_ptr(), arity, positive, &mut signature) }
-        {
-            Ok(Signature(signature))
-        } else {
-            Err(error())
         }
     }
 }
