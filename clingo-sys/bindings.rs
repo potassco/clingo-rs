@@ -888,7 +888,7 @@ extern "C" {
     ///
     /// **Returns** whether the call was successful
     pub fn clingo_symbolic_atoms_size(
-        atoms: *mut clingo_symbolic_atoms_t,
+        atoms: *const clingo_symbolic_atoms_t,
         size: *mut usize,
     ) -> bool;
 }
@@ -904,7 +904,7 @@ extern "C" {
     ///
     /// **Returns** whether the call was successful
     pub fn clingo_symbolic_atoms_begin(
-        atoms: *mut clingo_symbolic_atoms_t,
+        atoms: *const clingo_symbolic_atoms_t,
         signature: *const clingo_signature_t,
         iterator: *mut clingo_symbolic_atom_iterator_t,
     ) -> bool;
@@ -919,7 +919,7 @@ extern "C" {
     ///
     /// **Returns** whether the call was successful
     pub fn clingo_symbolic_atoms_end(
-        atoms: *mut clingo_symbolic_atoms_t,
+        atoms: *const clingo_symbolic_atoms_t,
         iterator: *mut clingo_symbolic_atom_iterator_t,
     ) -> bool;
 }
@@ -935,7 +935,7 @@ extern "C" {
     ///
     /// **Returns** whether the call was successful
     pub fn clingo_symbolic_atoms_find(
-        atoms: *mut clingo_symbolic_atoms_t,
+        atoms: *const clingo_symbolic_atoms_t,
         symbol: clingo_symbol_t,
         iterator: *mut clingo_symbolic_atom_iterator_t,
     ) -> bool;
@@ -952,7 +952,7 @@ extern "C" {
     ///
     /// **Returns** whether the call was successful
     pub fn clingo_symbolic_atoms_iterator_is_equal_to(
-        atoms: *mut clingo_symbolic_atoms_t,
+        atoms: *const clingo_symbolic_atoms_t,
         a: clingo_symbolic_atom_iterator_t,
         b: clingo_symbolic_atom_iterator_t,
         equal: *mut bool,
@@ -969,7 +969,7 @@ extern "C" {
     ///
     /// **Returns** whether the call was successful
     pub fn clingo_symbolic_atoms_symbol(
-        atoms: *mut clingo_symbolic_atoms_t,
+        atoms: *const clingo_symbolic_atoms_t,
         iterator: clingo_symbolic_atom_iterator_t,
         symbol: *mut clingo_symbol_t,
     ) -> bool;
@@ -989,7 +989,7 @@ extern "C" {
     ///
     /// **Returns** whether the call was successful
     pub fn clingo_symbolic_atoms_is_fact(
-        atoms: *mut clingo_symbolic_atoms_t,
+        atoms: *const clingo_symbolic_atoms_t,
         iterator: clingo_symbolic_atom_iterator_t,
         fact: *mut bool,
     ) -> bool;
@@ -1008,7 +1008,7 @@ extern "C" {
     ///
     /// **Returns** whether the call was successful
     pub fn clingo_symbolic_atoms_is_external(
-        atoms: *mut clingo_symbolic_atoms_t,
+        atoms: *const clingo_symbolic_atoms_t,
         iterator: clingo_symbolic_atom_iterator_t,
         external: *mut bool,
     ) -> bool;
@@ -1028,7 +1028,7 @@ extern "C" {
     ///
     /// **Returns** whether the call was successful
     pub fn clingo_symbolic_atoms_literal(
-        atoms: *mut clingo_symbolic_atoms_t,
+        atoms: *const clingo_symbolic_atoms_t,
         iterator: clingo_symbolic_atom_iterator_t,
         literal: *mut clingo_literal_t,
     ) -> bool;
@@ -1043,7 +1043,7 @@ extern "C" {
     ///
     /// **Returns** whether the call was successful
     pub fn clingo_symbolic_atoms_signatures_size(
-        atoms: *mut clingo_symbolic_atoms_t,
+        atoms: *const clingo_symbolic_atoms_t,
         size: *mut usize,
     ) -> bool;
 }
@@ -1062,7 +1062,7 @@ extern "C" {
     ///
     /// @see clingo_symbolic_atoms_signatures_size()
     pub fn clingo_symbolic_atoms_signatures(
-        atoms: *mut clingo_symbolic_atoms_t,
+        atoms: *const clingo_symbolic_atoms_t,
         signatures: *mut clingo_signature_t,
         size: usize,
     ) -> bool;
@@ -1078,7 +1078,7 @@ extern "C" {
     ///
     /// **Returns** whether the call was successful
     pub fn clingo_symbolic_atoms_next(
-        atoms: *mut clingo_symbolic_atoms_t,
+        atoms: *const clingo_symbolic_atoms_t,
         iterator: clingo_symbolic_atom_iterator_t,
         next: *mut clingo_symbolic_atom_iterator_t,
     ) -> bool;
@@ -1096,7 +1096,7 @@ extern "C" {
     ///
     /// **Returns** whether the call was successful
     pub fn clingo_symbolic_atoms_is_valid(
-        atoms: *mut clingo_symbolic_atoms_t,
+        atoms: *const clingo_symbolic_atoms_t,
         iterator: clingo_symbolic_atom_iterator_t,
         valid: *mut bool,
     ) -> bool;
@@ -1660,7 +1660,7 @@ extern "C" {
     /// **Returns** whether the call was successful
     pub fn clingo_solve_control_symbolic_atoms(
         control: *mut clingo_solve_control_t,
-        atoms: *mut *mut clingo_symbolic_atoms_t,
+        atoms: *mut *const clingo_symbolic_atoms_t,
     ) -> bool;
 }
 extern "C" {
@@ -1891,7 +1891,7 @@ extern "C" {
     /// **Returns** whether the call was successful
     pub fn clingo_propagate_init_symbolic_atoms(
         init: *mut clingo_propagate_init_t,
-        atoms: *mut *mut clingo_symbolic_atoms_t,
+        atoms: *mut *const clingo_symbolic_atoms_t,
     ) -> bool;
 }
 extern "C" {
@@ -2096,11 +2096,6 @@ extern "C" {
 }
 extern "C" {
     /// The number of assigned literals in the assignment.
-    /// **Parameters:**
-    ///
-    /// * `assignment`- the target
-    ///
-    /// **Returns** the number of literals
     pub fn clingo_assignment_size(assignment: *mut clingo_assignment_t) -> usize;
 }
 extern "C" {
@@ -7698,7 +7693,7 @@ extern "C" {
     /// **Returns** whether the call was successful
     pub fn clingo_control_symbolic_atoms(
         control: *mut clingo_control_t,
-        atoms: *mut *mut clingo_symbolic_atoms_t,
+        atoms: *mut *const clingo_symbolic_atoms_t,
     ) -> bool;
 }
 extern "C" {

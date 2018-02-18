@@ -2552,9 +2552,19 @@ impl Statistics {
 /// gringo uses to instantiate programs.
 ///
 /// @see clingo_control_symbolic_atoms()
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub struct SymbolicAtoms(clingo_symbolic_atoms_t);
 impl SymbolicAtoms {
+    /// Get the number of different atoms occurring in a logic program.
+    pub fn size(&self) -> Option<usize> {
+        let mut size = 0 as usize;
+        if unsafe { clingo_symbolic_atoms_size(&self.0, &mut size) } {
+            Some(size)
+        } else {
+            None
+        }
+    }
+
     /// Get a forward iterator to the beginning of the sequence of all symbolic
     /// atoms optionally restricted to a given signature.
     ///
@@ -2562,14 +2572,11 @@ impl SymbolicAtoms {
     ///
     /// * `signature` optional signature
     // TODO implement Iterator trait
-    pub fn begin(
-        &mut self,
-        opt_sig: Option<&Signature>,
-    ) -> Option<clingo_symbolic_atom_iterator_t> {
+    pub fn begin(&self, opt_sig: Option<&Signature>) -> Option<clingo_symbolic_atom_iterator_t> {
         match opt_sig {
             Some(sig) => {
                 let mut iterator = 0 as clingo_symbolic_atom_iterator_t;
-                if unsafe { clingo_symbolic_atoms_begin(&mut self.0, &sig.0, &mut iterator) } {
+                if unsafe { clingo_symbolic_atoms_begin(&self.0, &sig.0, &mut iterator) } {
                     Some(iterator)
                 } else {
                     None
@@ -2578,7 +2585,7 @@ impl SymbolicAtoms {
             None => {
                 let signature = std::ptr::null();
                 let mut iterator = 0 as clingo_symbolic_atom_iterator_t;
-                if unsafe { clingo_symbolic_atoms_begin(&mut self.0, signature, &mut iterator) } {
+                if unsafe { clingo_symbolic_atoms_begin(&self.0, signature, &mut iterator) } {
                     Some(iterator)
                 } else {
                     None
@@ -2588,9 +2595,9 @@ impl SymbolicAtoms {
     }
 
     /// Iterator pointing to the end of the sequence of symbolic atoms.
-    pub fn end(&mut self) -> Option<clingo_symbolic_atom_iterator_t> {
+    pub fn end(&self) -> Option<clingo_symbolic_atom_iterator_t> {
         let mut iterator = 0 as clingo_symbolic_atom_iterator_t;
-        if unsafe { clingo_symbolic_atoms_end(&mut self.0, &mut iterator) } {
+        if unsafe { clingo_symbolic_atoms_end(&self.0, &mut iterator) } {
             Some(iterator)
         } else {
             None
@@ -2604,9 +2611,9 @@ impl SymbolicAtoms {
     /// * `symbol` - the symbol to lookup
     /// * `iterator` iterator pointing to the symbolic atom or to the end
     /// of the sequence if no corresponding atom is found
-    pub fn find(&mut self, Symbol(symbol): Symbol) -> Option<clingo_symbolic_atom_iterator_t> {
+    pub fn find(&self, Symbol(symbol): Symbol) -> Option<clingo_symbolic_atom_iterator_t> {
         let mut iterator = 0 as clingo_symbolic_atom_iterator_t;
-        if unsafe { clingo_symbolic_atoms_find(&mut self.0, symbol, &mut iterator) } {
+        if unsafe { clingo_symbolic_atoms_find(&self.0, symbol, &mut iterator) } {
             Some(iterator)
         } else {
             None
@@ -2620,12 +2627,12 @@ impl SymbolicAtoms {
     /// * `a` - the first iterator
     /// * `b` - the second iterator
     pub fn iterator_is_equal_to(
-        &mut self,
+        &self,
         a: clingo_symbolic_atom_iterator_t,
         b: clingo_symbolic_atom_iterator_t,
     ) -> Option<bool> {
         let mut equal = false;
-        if unsafe { clingo_symbolic_atoms_iterator_is_equal_to(&mut self.0, a, b, &mut equal) } {
+        if unsafe { clingo_symbolic_atoms_iterator_is_equal_to(&self.0, a, b, &mut equal) } {
             Some(equal)
         } else {
             None
@@ -2637,9 +2644,9 @@ impl SymbolicAtoms {
     /// # Arguments
     ///
     /// * `iterator` iterator to the atom
-    pub fn symbol(&mut self, iterator: clingo_symbolic_atom_iterator_t) -> Option<Symbol> {
+    pub fn symbol(&self, iterator: clingo_symbolic_atom_iterator_t) -> Option<Symbol> {
         let mut symbol = 0 as clingo_symbol_t;
-        if unsafe { clingo_symbolic_atoms_symbol(&mut self.0, iterator, &mut symbol) } {
+        if unsafe { clingo_symbolic_atoms_symbol(&self.0, iterator, &mut symbol) } {
             Some(Symbol(symbol))
         } else {
             None
@@ -2655,9 +2662,9 @@ impl SymbolicAtoms {
     /// # Arguments
     ///
     /// * `iterator` iterator to the atom
-    pub fn is_fact(&mut self, iterator: clingo_symbolic_atom_iterator_t) -> Option<bool> {
+    pub fn is_fact(&self, iterator: clingo_symbolic_atom_iterator_t) -> Option<bool> {
         let mut fact = false;
-        if unsafe { clingo_symbolic_atoms_is_fact(&mut self.0, iterator, &mut fact) } {
+        if unsafe { clingo_symbolic_atoms_is_fact(&self.0, iterator, &mut fact) } {
             Some(fact)
         } else {
             None
@@ -2672,9 +2679,9 @@ impl SymbolicAtoms {
     /// # Arguments
     ///
     /// * `iterator` iterator to the atom
-    pub fn is_external(&mut self, iterator: clingo_symbolic_atom_iterator_t) -> Option<bool> {
+    pub fn is_external(&self, iterator: clingo_symbolic_atom_iterator_t) -> Option<bool> {
         let mut external = false;
-        if unsafe { clingo_symbolic_atoms_is_external(&mut self.0, iterator, &mut external) } {
+        if unsafe { clingo_symbolic_atoms_is_external(&self.0, iterator, &mut external) } {
             Some(external)
         } else {
             None
@@ -2690,9 +2697,9 @@ impl SymbolicAtoms {
     /// # Arguments
     ///
     /// * `iterator` iterator to the atom
-    pub fn literal(&mut self, iterator: clingo_symbolic_atom_iterator_t) -> Option<Literal> {
+    pub fn literal(&self, iterator: clingo_symbolic_atom_iterator_t) -> Option<Literal> {
         let mut literal = 0 as clingo_literal_t;
-        if unsafe { clingo_symbolic_atoms_literal(&mut self.0, iterator, &mut literal) } {
+        if unsafe { clingo_symbolic_atoms_literal(&self.0, iterator, &mut literal) } {
             Some(Literal(literal))
         } else {
             None
@@ -2707,15 +2714,14 @@ impl SymbolicAtoms {
     ///
     /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
     /// - [`Error::Runtime`](enum.Error.html#variant.Runtime) if the size is too small
-    pub fn signatures(&mut self) -> Result<Vec<Signature>, Error> {
-        let SymbolicAtoms(ref mut atoms) = *self;
+    pub fn signatures(&self) -> Result<Vec<Signature>, Error> {
         let mut size = 0;
-        if unsafe { clingo_symbolic_atoms_signatures_size(atoms, &mut size) } {
+        if unsafe { clingo_symbolic_atoms_signatures_size(&self.0, &mut size) } {
             let signatures = Vec::<Signature>::with_capacity(size);
             let signatures_ptr = signatures.as_ptr();
             if unsafe {
                 clingo_symbolic_atoms_signatures(
-                    atoms,
+                    &self.0,
                     signatures_ptr as *mut clingo_signature_t,
                     size,
                 )
@@ -2737,11 +2743,11 @@ impl SymbolicAtoms {
     ///
     /// * `iterator` - the current iterator
     pub fn next(
-        &mut self,
+        &self,
         iterator: clingo_symbolic_atom_iterator_t,
     ) -> Option<clingo_symbolic_atom_iterator_t> {
         let mut next = 0 as clingo_symbolic_atom_iterator_t;
-        if unsafe { clingo_symbolic_atoms_next(&mut self.0, iterator, &mut next) } {
+        if unsafe { clingo_symbolic_atoms_next(&self.0, iterator, &mut next) } {
             Some(next)
         } else {
             None
@@ -2754,9 +2760,9 @@ impl SymbolicAtoms {
     /// # Arguments
     ///
     /// * `iterator` - the iterator
-    pub fn is_valid(&mut self, iterator: clingo_symbolic_atom_iterator_t) -> Option<bool> {
+    pub fn is_valid(&self, iterator: clingo_symbolic_atom_iterator_t) -> Option<bool> {
         let mut valid = false;
-        if unsafe { clingo_symbolic_atoms_is_valid(&mut self.0, iterator, &mut valid) } {
+        if unsafe { clingo_symbolic_atoms_is_valid(&self.0, iterator, &mut valid) } {
             Some(valid)
         } else {
             None
@@ -3097,25 +3103,33 @@ pub struct UNSAFE_SymbolicAtomsIterator {
     size: usize,
 }
 impl Iterator for UNSAFE_SymbolicAtomsIterator {
-    type Item = Id;
+    type Item = Symbol;
 
-    fn next(&mut self) -> Option<Id> {
+    fn next(&mut self) -> Option<Symbol> {
         // increment our count. This is why we started at zero.
         self.count += 1;
 
         // check to see if we've finished counting or not.
         if self.count < self.size {
-            Some(Id(self.count as u32))
+            Some(Symbol(self.count as u64))
         } else {
             None
         }
     }
 }
+// impl IntoIterator for SymbolicAtoms {
+//     type Item = Symbol;
+//     type IntoIter = UNSAFE_SymbolicAtomsIterator;
+//     fn into_iter(self) -> Self::IntoIter {
+//         UNSAFE_SymbolicAtomsIterator::from(&self)
+//     }
+// }
+
 impl UNSAFE_SymbolicAtomsIterator {
-    pub fn from(cta: &mut TheoryAtoms) -> UNSAFE_SymbolicAtomsIterator {
+    pub fn from(sa: &SymbolicAtoms) -> UNSAFE_SymbolicAtomsIterator {
         UNSAFE_SymbolicAtomsIterator {
             count: 0,
-            size: cta.size().unwrap(),
+            size: sa.size().unwrap(),
         }
     }
 }
@@ -3312,10 +3326,10 @@ impl SolveControl {
     }
 
     /// Get an object to inspect the symbolic atoms.
-    pub fn symbolic_atoms(&mut self) -> Option<&mut SymbolicAtoms> {
-        let mut atoms = std::ptr::null_mut() as *mut clingo_symbolic_atoms_t;
+    pub fn symbolic_atoms(&mut self) -> Option<&SymbolicAtoms> {
+        let mut atoms = std::ptr::null_mut() as *const clingo_symbolic_atoms_t;
         if unsafe { clingo_solve_control_symbolic_atoms(&mut self.0, &mut atoms) } {
-            unsafe { (atoms as *mut SymbolicAtoms).as_mut() }
+            unsafe { (atoms as *const SymbolicAtoms).as_ref() }
         } else {
             None
         }
