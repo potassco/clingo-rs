@@ -239,15 +239,6 @@ impl PropagatorBuilder<PropagatorT> for MyPropagator {
     }
 }
 
-struct MyLogger;
-impl Logger<u32> for MyLogger {
-    fn log(code: Warning, message: &str, data: &mut u32) {
-        println!("log: {}", message);
-        println!("warn: {:?}", code);
-        println!("data: {:?}", data);
-    }
-}
-
 fn main() {
     // collect clingo options from the command line
     let options = env::args().skip(1).collect();
@@ -263,9 +254,7 @@ fn main() {
     };
 
     // create a control object and pass command line arguments
-    //     let option = Control::new(options, 20);
-    let mut logdata: u32 = 0;
-    let option = Control::new_with_logger(options, &MyLogger, &mut logdata, 20);
+    let option = Control::new(options, 20);
 
     match option {
         Ok(mut ctl) => {
