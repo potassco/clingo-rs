@@ -1032,12 +1032,14 @@ pub fn set_error(code: Error, message: &str) {
     unsafe { clingo_set_error(code as clingo_error_t, message_c_str.as_ptr()) }
 }
 
-pub struct Propagator(clingo_propagator_t);
-
-pub trait PropagatorBuilder<T> {
+/// An instance of this trait has to be registered with a solver to implement a custom propagator.
+///
+/// For all functions exist default implementations and they must not be implemented manually.
+pub trait Propagator<T> {
     //TODO
     /// This function is called once before each solving step.
-    /// It is used to map relevant program literals to solver literals, add watches for solver literals, and initialize the data structures used during propagation.
+    /// It is used to map relevant program literals to solver literals, add watches for solver
+    /// literals, and initialize the data structures used during propagation.
     ///
     /// **Note:** This is the last point to access symbolic and theory atoms.
     /// Once the search has started, they are no longer accessible.
@@ -1062,10 +1064,13 @@ pub trait PropagatorBuilder<T> {
     /// Each literal in the change set is true w.r.t. the current @link clingo_assignment_t assignment@endlink.
     /// @ref clingo_propagate_control_add_clause() can be used to add clauses.
     /// If a clause is unit resulting, it can be propagated using @ref clingo_propagate_control_propagate().
-    /// If the result of either of the two methods is false, the propagate function must return immediately.
+    /// If the result of either of the two methods is false, the propagate function must return
+    /// immediately.
     ///
-    /// The following snippet shows how to use the methods to add clauses and propagate consequences within the callback.
-    /// The important point is to return true (true to indicate there was no error) if the result of either of the methods is false.
+    /// The following snippet shows how to use the methods to add clauses and propagate consequences
+    /// within the callback.
+    /// The important point is to return true (true to indicate there was no error) if the result of
+    /// either of the methods is false.
     /// ~~~~~~~~~~~~~~~{.c}
     /// bool result;
     /// clingo_literal_t clause[] = { ... };
@@ -1121,6 +1126,8 @@ pub trait PropagatorBuilder<T> {
     //TODO: check documentation
     /// This function is similar to @ref clingo_propagate_control_propagate() but is only called on total assignments without a change set.
     ///
+    /// When exactly this function is called, can be configured using the @ref clingo_propagate_init_set_check_mode() function.
+    ///
     /// **Note:** This function is called even if no watches have been added.
     ///
     /// **Parameters:**
@@ -1132,16 +1139,6 @@ pub trait PropagatorBuilder<T> {
     /// @see ::clingo_propagator_check_callback_t
     fn check(_control: &mut PropagateControl, _data: &mut T) -> bool {
         true
-    }
-    /// Get a Propagator
-    fn new() -> Propagator {
-        let prop = clingo_propagator_t {
-            init: Some(Self::unsafe_init),
-            propagate: Some(Self::unsafe_propagate),
-            undo: Some(Self::unsafe_undo),
-            check: Some(Self::unsafe_check),
-        };
-        Propagator(prop)
     }
     #[doc(hidden)]
     unsafe extern "C" fn unsafe_init(
@@ -1621,19 +1618,23 @@ impl Control {
     /// # Errors
     ///
     /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
-    pub fn register_propagator<D, T: PropagatorBuilder<D>>(
+    pub fn register_propagator<D, T: Propagator<D>>(
         &mut self,
         _propagator_builder: &T,
         data: &mut D,
         sequential: bool,
     ) -> Result<(), Error> {
-        let propagator = T::new();
-        let propagator_ptr: *const Propagator = &propagator;
+        let propagator = clingo_propagator_t {
+            init: Some(T::unsafe_init),
+            propagate: Some(T::unsafe_propagate),
+            undo: Some(T::unsafe_undo),
+            check: Some(T::unsafe_check),
+        };
         let data_ptr = data as *mut D;
         if unsafe {
             clingo_control_register_propagator(
                 self.ctl.as_ptr(),
-                propagator_ptr as *const clingo_propagator,
+                &propagator,
                 data_ptr as *mut ::std::os::raw::c_void,
                 sequential,
             )

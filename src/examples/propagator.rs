@@ -70,7 +70,7 @@ fn get_arg(sym: &Symbol, offset: usize) -> Result<i32, Error> {
 }
 
 struct MyPropagator;
-impl PropagatorBuilder<PropagatorT> for MyPropagator {
+impl Propagator<PropagatorT> for MyPropagator {
     fn init(init: &mut PropagateInit, propagator: &mut PropagatorT) -> bool {
         // stores the (numeric) maximum of the solver literals capturing pigeon placements
         // note that the code below assumes that this literal is not negative
