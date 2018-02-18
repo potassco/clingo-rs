@@ -2979,14 +2979,20 @@ impl TheoryAtoms {
         let mut ttype = 0 as clingo_theory_term_type_t;
         if unsafe { clingo_theory_atoms_term_type(&mut self.0, term, &mut ttype) } {
             match ttype as u32 {
-                clingo_theory_term_type_clingo_theory_term_type_tuple => Some(TheoryTermType::Tuple),
+                clingo_theory_term_type_clingo_theory_term_type_tuple => {
+                    Some(TheoryTermType::Tuple)
+                }
                 clingo_theory_term_type_clingo_theory_term_type_list => Some(TheoryTermType::List),
                 clingo_theory_term_type_clingo_theory_term_type_set => Some(TheoryTermType::Set),
                 clingo_theory_term_type_clingo_theory_term_type_function => {
                     Some(TheoryTermType::Function)
                 }
-                clingo_theory_term_type_clingo_theory_term_type_number => Some(TheoryTermType::Number),
-                clingo_theory_term_type_clingo_theory_term_type_symbol => Some(TheoryTermType::Symbol),
+                clingo_theory_term_type_clingo_theory_term_type_number => {
+                    Some(TheoryTermType::Number)
+                }
+                clingo_theory_term_type_clingo_theory_term_type_symbol => {
+                    Some(TheoryTermType::Symbol)
+                }
                 _ => None,
             }
         } else {
