@@ -12,6 +12,7 @@ use std::ffi::CString;
 use libc::c_char;
 use clingo_sys::*;
 
+/// Functions and data structures to work with program ASTs
 pub mod ast;
 
 /// Enumeration of error codes.
