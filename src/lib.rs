@@ -639,6 +639,30 @@ impl WeightedLiteral {
 #[derive(Debug, Copy, Clone)]
 pub struct Location(clingo_location);
 impl Location {
+    /// Create a new location.
+    ///
+    /// # Arguments
+    // TODO
+    pub fn new(
+        begin_line: usize,
+        end_line: usize,
+        begin_column: usize,
+        end_column: usize,
+        begin_file_: &str,
+        end_file_: &str,
+    ) -> Location {
+        let begin_file = CString::new(begin_file_).unwrap();
+        let end_file = CString::new(end_file_).unwrap();
+        let loc = clingo_location {
+            begin_line: begin_line,
+            end_line: end_line,
+            begin_column: begin_column,
+            end_column: end_column,
+            begin_file: begin_file.as_ptr(),
+            end_file: end_file.as_ptr(),
+        };
+        Location(loc)
+    }
     //TODO  /// < the file where the location begins
     //     pub begin_file: *const ::std::os::raw::c_char,
     //TODO  /// < the file where the location ends
@@ -1110,26 +1134,6 @@ pub fn parse_program_with_logger<CD, C: AstStatementHandler<CD>, LD, L: Logger<L
     } else {
         Err(error())
     }
-}
-pub fn create_location(
-    begin_line: usize,
-    end_line: usize,
-    begin_column: usize,
-    end_column: usize,
-    begin_file_: &str,
-    end_file_: &str,
-) -> Location {
-    let begin_file = CString::new(begin_file_).unwrap();
-    let end_file = CString::new(end_file_).unwrap();
-    let loc = clingo_location {
-        begin_line: begin_line,
-        end_line: end_line,
-        begin_column: begin_column,
-        end_column: end_column,
-        begin_file: begin_file.as_ptr(),
-        end_file: end_file.as_ptr(),
-    };
-    Location(loc)
 }
 
 /// Obtain the clingo version.
