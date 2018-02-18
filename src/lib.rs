@@ -13,88 +13,188 @@ use libc::c_char;
 use clingo_sys::*;
 
 pub mod ast;
+
+/// Enumeration of error codes.
+///
+/// **Note:** Errors can only be recovered from if explicitly mentioned; most
+/// functions do not provide strong exception guarantees.  This means that in
+/// case of errors associated objects cannot be used further.
 #[derive(Debug, Copy, Clone)]
 pub enum Error {
-    Success = clingo_error_clingo_error_success as isize,
-    Runtime = clingo_error_clingo_error_runtime as isize,
-    Logic = clingo_error_clingo_error_logic as isize,
-    BadAlloc = clingo_error_clingo_error_bad_alloc as isize,
-    Unknown = clingo_error_clingo_error_unknown as isize,
+    /// successful API calls
+    Success,
+    /// errors only detectable at runtime like invalid input
+    Runtime,
+    /// wrong usage of the clingo API
+    Logic,
+    /// memory could not be allocated
+    BadAlloc,
+    /// errors unrelated to clingo
+    Unknown,
 }
+impl From<i32> for Error {
+    fn from(error: i32) -> Self {
+        match error as u32 {
+            clingo_error_clingo_error_success => Error::Success,
+            clingo_error_clingo_error_runtime => Error::Runtime,
+            clingo_error_clingo_error_logic => Error::Logic,
+            clingo_error_clingo_error_bad_alloc => Error::BadAlloc,
+            clingo_error_clingo_error_unknown => Error::Unknown,
+            _ => panic!("Failed to match clingo_error."),
+        }
+    }
+}
+
+/// Represents three-valued truth values.
 #[derive(Debug, Copy, Clone)]
 pub enum TruthValue {
+    // no truth value
     Free = clingo_truth_value_clingo_truth_value_free as isize,
+    //     true
     True = clingo_truth_value_clingo_truth_value_true as isize,
+    //     false
     False = clingo_truth_value_clingo_truth_value_false as isize,
 }
+
+/// Enumeration of clause types determining the lifetime of a clause.
+///
+/// Clauses in the solver are either cleaned up based on a configurable deletion policy or at the end of a solving step.
+/// The values of this enumeration determine if a clause is subject to one of the above deletion strategies.
 #[derive(Debug, Copy, Clone)]
 pub enum ClauseType {
+    ///  clause is subject to the solvers deletion policy
     Learnt = clingo_clause_type_clingo_clause_type_learnt as isize,
+    /// clause is not subject to the solvers deletion policy
     Static = clingo_clause_type_clingo_clause_type_static as isize,
+    /// like `Learnt` but the clause is deleted after a solving step
     Volatile = clingo_clause_type_clingo_clause_type_volatile as isize,
+    /// like `Static` but the clause is deleted after a solving step
     VolatileStatic = clingo_clause_type_clingo_clause_type_volatile_static as isize,
 }
+
+/// Enumeration of solve events.
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum SolveEventType {
+    /// Issued if a model is found.
     Model = clingo_solve_event_type_clingo_solve_event_type_model as isize,
+    /// Issued if the search has completed.
     Finish = clingo_solve_event_type_clingo_solve_event_type_finish as isize,
 }
+
+/// Enumeration for entries of the statistics.
 #[derive(Debug, Copy, Clone)]
 pub enum StatisticsType {
+    /// the entry is invalid (has neither of the types below)
     Empty = clingo_statistics_type_clingo_statistics_type_empty as isize,
+    /// the entry is a (string) value
     Value = clingo_statistics_type_clingo_statistics_type_value as isize,
+    /// the entry is an array
     Array = clingo_statistics_type_clingo_statistics_type_array as isize,
+    /// the entry is a map
     Map = clingo_statistics_type_clingo_statistics_type_map as isize,
 }
+
+/// Enumeration of available symbol types.
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum SymbolType {
+    /// the `#inf` symbol
     Infimum = clingo_symbol_type_clingo_symbol_type_infimum as isize,
+    /// a numeric symbol, e.g., `1`
     Number = clingo_symbol_type_clingo_symbol_type_number as isize,
+    /// a string symbol, e.g., `"a"`
     String = clingo_symbol_type_clingo_symbol_type_string as isize,
+    /// a numeric symbol, e.g., `c`, `(1, "a")`, or `f(1,"a")`
     Function = clingo_symbol_type_clingo_symbol_type_function as isize,
+    /// the `#sup` symbol
     Supremum = clingo_symbol_type_clingo_symbol_type_supremum as isize,
 }
+
+/// Enumeration of warning codes.
 #[derive(Debug, Copy, Clone)]
 pub enum Warning {
+    /// undefined arithmetic operation or weight of aggregate
     OperationUndefined = clingo_warning_clingo_warning_operation_undefined as isize,
+    /// to report multiple errors; a corresponding runtime error is raised later
     RuntimeError = clingo_warning_clingo_warning_runtime_error as isize,
+    /// undefined atom in program
     AtomUndefined = clingo_warning_clingo_warning_atom_undefined as isize,
+    /// same file included multiple times
     FileIncluded = clingo_warning_clingo_warning_file_included as isize,
+    /// CSP variable with unbounded domain
     VariableUnbound = clingo_warning_clingo_warning_variable_unbounded as isize,
+    /// global variable in tuple of aggregate element
     GlobalVariable = clingo_warning_clingo_warning_global_variable as isize,
+    /// other kinds of warnings
     Other = clingo_warning_clingo_warning_other as isize,
 }
+
+/// Enumeration of different external statements.
 #[derive(Debug, Copy, Clone)]
 pub enum ExternalType {
+    /// allow an external to be assigned freely
     Free = clingo_external_type_clingo_external_type_free as isize,
+    /// assign an external to true
     True = clingo_external_type_clingo_external_type_true as isize,
+    /// assign an external to false
     False = clingo_external_type_clingo_external_type_false as isize,
+    /// no longer treat an atom as external
     Release = clingo_external_type_clingo_external_type_release as isize,
 }
 
+/// Enumeration of different heuristic modifiers.
 #[derive(Debug, Copy, Clone)]
 pub enum HeuristicType {
+    /// set the level of an atom
     Level = clingo_heuristic_type_clingo_heuristic_type_level as isize,
+    /// configure which sign to chose for an atom
     Sign = clingo_heuristic_type_clingo_heuristic_type_sign as isize,
+    /// modify VSIDS factor of an atom
     Factor = clingo_heuristic_type_clingo_heuristic_type_factor as isize,
+    /// modify the initial VSIDS score of an atom
     Init = clingo_heuristic_type_clingo_heuristic_type_init as isize,
+    /// set the level of an atom and choose a positive sign
     True = clingo_heuristic_type_clingo_heuristic_type_true as isize,
+    /// set the level of an atom and choose a negative sign
     False = clingo_heuristic_type_clingo_heuristic_type_false as isize,
 }
+
+/// Enumeration of theory term types.
 #[derive(Debug, Copy, Clone)]
-pub enum TermType {
+pub enum TheoryTermType {
+    /// a tuple term, e.g., `(1,2,3)`
     Tuple = clingo_theory_term_type_clingo_theory_term_type_tuple as isize,
+    /// a list term, e.g., `[1,2,3]`
     List = clingo_theory_term_type_clingo_theory_term_type_list as isize,
+    /// a set term, e.g., `{1,2,3}`
     Set = clingo_theory_term_type_clingo_theory_term_type_set as isize,
+    /// a function term, e.g., `f(1,2,3)`
     Function = clingo_theory_term_type_clingo_theory_term_type_function as isize,
+    /// a number term, e.g., `42`
     Number = clingo_theory_term_type_clingo_theory_term_type_number as isize,
+    /// a symbol term, e.g., `c`
     Symbol = clingo_theory_term_type_clingo_theory_term_type_symbol as isize,
 }
+
+/// Enumeration for the different model types.
 #[derive(Debug, Copy, Clone)]
 pub enum ModelType {
+    /// The model represents a stable model.
     StableModel = clingo_model_type_clingo_model_type_stable_model as isize,
+    /// The model represents a set of brave consequences.
     BraveConsequences = clingo_model_type_clingo_model_type_brave_consequences as isize,
+    /// The model represents a set of cautious consequences.
     CautiousConsequences = clingo_model_type_clingo_model_type_cautious_consequences as isize,
+}
+
+/// Supported check modes for propagators.
+#[derive(Debug, Copy, Clone)]
+pub enum PropagatorCheckMode {
+    /// do not call @ref ::clingo_propagator::check() at all
+    None = clingo_propagator_check_mode_clingo_propagator_check_mode_none as isize,
+    /// call @ref ::clingo_propagator::check() on total assignment
+    Total = clingo_propagator_check_mode_clingo_propagator_check_mode_total as isize,
+    /// call @ref ::clingo_propagator::check() on propagation fixpoints
+    Fixpoimt = clingo_propagator_check_mode_clingo_propagator_check_mode_fixpoint as isize,
 }
 
 /// Bit flags for entries of the configuration
@@ -248,23 +348,6 @@ impl ::std::ops::BitAndAssign for SolveResult {
     }
 }
 
-// TODO: check documentation
-/// Callback function called during search to notify when the search is finished or a model is ready.
-///
-/// If a (non-recoverable) clingo API function fails in this callback, it must return false.
-/// In case of errors not related to clingo, set error code ::clingo_error_unknown and return false to stop solving with an error.
-///
-/// **Attention:** If the search is finished, the model is NULL.
-///
-/// # Arguments
-///
-/// * `model` - the current model
-/// * `data` - user data of the callback
-/// * `goon` - can be set to false to stop solving
-///
-/// **Returns** whether the call was successful
-///
-/// @see clingo_control_solve()
 type SolveEventCallback = unsafe extern "C" fn(
     type_: clingo_solve_event_type_t,
     event: *mut ::std::os::raw::c_void,
@@ -272,6 +355,23 @@ type SolveEventCallback = unsafe extern "C" fn(
     goon: *mut bool,
 ) -> bool;
 pub trait SolveEventHandler<T> {
+    // TODO: check documentation
+    /// Callback function called during search to notify when the search is finished or a model is ready.
+    ///
+    /// If a (non-recoverable) clingo API function fails in this callback, it must return false.
+    /// In case of errors not related to clingo, set error code ::clingo_error_unknown and return false to stop solving with an error.
+    ///
+    /// **Attention:** If the search is finished, the model is NULL.
+    ///
+    /// # Arguments
+    ///
+    /// * `model` - the current model
+    /// * `data` - user data of the callback
+    /// * `goon` - can be set to false to stop solving
+    ///
+    /// **Returns** whether the call was successful
+    ///
+    /// @see clingo_control_solve()
     fn on_solve_event(type_: SolveEventType, data: &mut T, goon: &mut bool) -> bool;
     #[doc(hidden)]
     unsafe extern "C" fn unsafe_solve_callback(
@@ -286,7 +386,7 @@ pub trait SolveEventHandler<T> {
         let event_type = match type_ {
             clingo_solve_event_type_clingo_solve_event_type_model => SolveEventType::Model,
             clingo_solve_event_type_clingo_solve_event_type_finish => SolveEventType::Finish,
-            _ => panic!("Rust binding failed to match clingo solve event type"),
+            _ => panic!("Failed to match clingo_solve_event_type."),
         };
         let data = (data_ as *mut T).as_mut().unwrap();
         let goon = goon_.as_mut().unwrap();
@@ -312,24 +412,24 @@ pub trait AstStatementHandler<T> {
     }
 }
 
-//TODO: check documentation
-/// Callback to intercept warning messages.
-///
-/// **Parameters:**
-///
-/// * `code` - associated warning code
-/// * `message` - warning message
-/// * `data` - user data for callback
-///
-/// @see clingo_control_new()
-/// @see clingo_parse_term()
-/// @see clingo_parse_program()
 type LoggingCallback = unsafe extern "C" fn(
     code: clingo_warning_t,
     message: *const ::std::os::raw::c_char,
     data: *mut ::std::os::raw::c_void,
 );
 pub trait Logger<T> {
+    //TODO: check documentation
+    /// Callback to intercept warning messages.
+    ///
+    /// **Parameters:**
+    ///
+    /// * `code` - associated warning code
+    /// * `message` - warning message
+    /// * `data` - user data for callback
+    ///
+    /// @see clingo_control_new()
+    /// @see clingo_parse_term()
+    /// @see clingo_parse_program()
     fn log(code: Warning, message: &str, data: &mut T);
     #[doc(hidden)]
     unsafe extern "C" fn unsafe_logging_callback(
@@ -347,12 +447,40 @@ pub trait Logger<T> {
             clingo_warning_clingo_warning_other => Warning::Other,
             clingo_warning_clingo_warning_runtime_error => Warning::RuntimeError,
             clingo_warning_clingo_warning_variable_unbounded => Warning::VariableUnbound,
-            _ => panic!("Rust binding failed to match clingo warning"),
+            _ => panic!("Failed to match clingo_warning."),
         };
         let c_str = CStr::from_ptr(message_);
         let message = c_str.to_str().unwrap();
         let data = (data_ as *mut T).as_mut().unwrap();
         Self::log(warning, message, data)
+    }
+}
+
+//TODO
+pub trait SymbolInjector {
+    /// Callback function to inject symbols.
+    ///
+    /// **Parameters:**
+    ///
+    /// * `symbols` - array of symbols
+    /// * `symbols_size` - size of the symbol array
+    /// * `data` - user data of the callback
+    ///
+    /// **Returns** whether the call was successful; might set one of the following error codes:
+    /// - ::clingo_error_bad_alloc
+    /// @see ::clingo_ground_callback_t
+    fn symbol_callback(
+        symbols: *const clingo_symbol_t,
+        symbols_size: usize,
+        data: *mut ::std::os::raw::c_void,
+    ) -> bool;
+    #[doc(hidden)]
+    unsafe extern "C" fn unsafe_symbol_callback(
+        symbols: *const clingo_symbol_t,
+        symbols_size: usize,
+        data: *mut ::std::os::raw::c_void,
+    ) -> bool {
+        false
     }
 }
 
@@ -366,6 +494,48 @@ type GroundCallback = unsafe extern "C" fn(
     symbol_callback_data: *mut ::std::os::raw::c_void,
 ) -> bool;
 pub trait GroundEventHandler<T> {
+    /// Callback function to implement external functions.
+    ///
+    /// If an external function of form <tt>\@name(parameters)</tt> occurs in a logic program,
+    /// then this function is called with its location, name, parameters, and a callback to inject symbols as arguments.
+    /// The callback can be called multiple times; all symbols passed are injected.
+    ///
+    /// If a (non-recoverable) clingo API function fails in this callback, for example, the symbol callback, the callback must return false.
+    /// In case of errors not related to clingo, this function can set error ::clingo_error_unknown and return false to stop grounding with an error.
+    ///
+    /// **Parameters:**
+    ///
+    /// * `location` - location from which the external function was called
+    /// * `name` - name of the called external function
+    /// * `arguments` - arguments of the called external function
+    /// * `arguments_size` - number of arguments
+    /// * `data` - user data of the callback
+    /// * `symbol_callback` - function to inject symbols
+    /// * `symbol_callback_data` - user data for the symbol callback
+    ///            (must be passed untouched)
+    ///
+    /// **Returns** whether the call was successful
+    /// @see clingo_control_ground()
+    ///
+    /// The following example implements the external function <tt>\@f()</tt> returning 42.
+    /// ~~~~~~~~~~~~~~~{.c}
+    /// bool
+    /// ground_callback(clingo_location_t const *location,
+    ///                 char const *name,
+    ///                 clingo_symbol_t const *arguments,
+    ///                 size_t arguments_size,
+    ///                 void *data,
+    ///                 clingo_symbol_callback_t symbol_callback,
+    ///                 void *symbol_callback_data) {
+    ///   if (strcmp(name, "f") == 0 && arguments_size == 0) {
+    ///     clingo_symbol_t sym;
+    ///     clingo_symbol_create_number(42, &sym);
+    ///     return symbol_callback(&sym, 1, symbol_callback_data);
+    ///   }
+    ///   clingo_set_error(clingo_error_runtime, "function not found");
+    ///   return false;
+    /// }
+    /// ~~~~~~~~~~~~~~~
     fn on_ground_event(
         location: &Location,
         name: &str,
@@ -449,9 +619,6 @@ impl Id {
     }
 }
 
-/// Signed integer type for weights in sum aggregates and minimize constraints.
-pub type Weight = clingo_weight_t;
-
 /// A Literal with an associated weight.
 /// @ingroup ProgramInspection
 #[derive(Debug, Copy, Clone)]
@@ -460,7 +627,7 @@ impl WeightedLiteral {
     pub fn literal(&self) -> Literal {
         Literal(self.0.literal)
     }
-    pub fn weight(&self) -> Weight {
+    pub fn weight(&self) -> i32 {
         self.0.weight
     }
 }
@@ -504,7 +671,6 @@ impl PartialEq for Signature {
     /// Check if two signatures are equal.
     fn eq(&self, other: &Signature) -> bool {
         unsafe { clingo_signature_is_equal_to(self.0, other.0) }
-        //         self.isbn == other.isbn
     }
 }
 impl Eq for Signature {}
@@ -680,7 +846,6 @@ impl Symbol {
         let mut symbol = 0 as clingo_symbol_t;
         let name_c_str = CString::new(name).unwrap();
         if unsafe { clingo_symbol_create_id(name_c_str.as_ptr(), positive, &mut symbol) } {
-            //             println!("create Symbol! sym {} {:?}", symbol, name_c_str);
             Ok(Symbol(symbol))
         } else {
             Err(error())
@@ -722,6 +887,7 @@ impl Symbol {
             Err(error())
         }
     }
+
     /// Get the number of a symbol.
     ///
     /// # Errors
@@ -821,15 +987,15 @@ impl Symbol {
     ///
     /// - may failed to match clingo symbol type
     //TODO maybe unnecesary function in Rust API?
-    pub fn get_type(&self) -> Result<SymbolType, &'static str> {
-        let stype = unsafe { clingo_symbol_type(self.0) } as u32;
-        match stype {
-            clingo_symbol_type_clingo_symbol_type_infimum => Ok(SymbolType::Infimum),
-            clingo_symbol_type_clingo_symbol_type_number => Ok(SymbolType::Number),
-            clingo_symbol_type_clingo_symbol_type_string => Ok(SymbolType::String),
-            clingo_symbol_type_clingo_symbol_type_function => Ok(SymbolType::Function),
-            clingo_symbol_type_clingo_symbol_type_supremum => Ok(SymbolType::Supremum),
-            _ => Err("Rust binding failed to match clingo symbol type"),
+    pub fn symbol_type(&self) -> SymbolType {
+        let stype = unsafe { clingo_symbol_type(self.0) };
+        match stype as u32 {
+            clingo_symbol_type_clingo_symbol_type_infimum => SymbolType::Infimum,
+            clingo_symbol_type_clingo_symbol_type_number => SymbolType::Number,
+            clingo_symbol_type_clingo_symbol_type_string => SymbolType::String,
+            clingo_symbol_type_clingo_symbol_type_function => SymbolType::Function,
+            clingo_symbol_type_clingo_symbol_type_supremum => SymbolType::Supremum,
+            _ => panic!("Failed to match clingo_symbol_type."),
         }
     }
 
@@ -978,6 +1144,17 @@ pub fn version() -> (i32, i32, i32) {
     (major, minor, revision)
 }
 
+/// Struct used to specify the program parts that have to be grounded.
+///
+/// Programs may be structured into parts, which can be grounded independently with ::clingo_control_ground.
+/// Program parts are mainly interesting for incremental grounding and multi-shot solving.
+/// For single-shot solving, program parts are not needed.
+///
+/// **Note:** Parts of a logic program without an explicit <tt>\#program</tt>
+/// specification are by default put into a program called `base` - without
+/// arguments.
+///
+/// @see clingo_control_ground()
 pub struct Part<'a> {
     name: CString,
     params: &'a [Symbol],
@@ -1002,15 +1179,7 @@ impl<'a> Part<'a> {
 ///
 /// **Note:** Each thread has its own local error code.
 pub fn error() -> Error {
-    let code = unsafe { clingo_error_code() };
-    match code as u32 {
-        clingo_error_clingo_error_success => Error::Success,
-        clingo_error_clingo_error_runtime => Error::Runtime,
-        clingo_error_clingo_error_logic => Error::Logic,
-        clingo_error_clingo_error_bad_alloc => Error::BadAlloc,
-        clingo_error_clingo_error_unknown => Error::Unknown,
-        _ => panic!("Rust binding failed to match clingo error"),
-    }
+    Error::from(unsafe { clingo_error_code() })
 }
 
 /// Get the last error message set if an API call fails.
@@ -1194,6 +1363,7 @@ pub trait Propagator<T> {
     }
 }
 
+/// Control object holding grounding and solving state.
 #[derive(Debug)]
 pub struct Control {
     ctl: Unique<clingo_control_t>,
@@ -1259,7 +1429,8 @@ impl Control {
 
     /// Create a new control object.
     ///
-    /// **Note:** Only gringo options (without `--output`) and clasp`s options are supported as arguments,
+    /// **Note:** Only gringo options (without `--output`) and clasp`s options are supported as
+    /// arguments,
     /// except basic options such as `--help`.
     /// Furthermore, a control object is blocked while a search call is active;
     /// you must not call any member function during search.
@@ -1368,7 +1539,8 @@ impl Control {
         }
     }
 
-    /// Ground the selected [`Part`](struct.Part.html) parts of the current (non-ground) logic program.
+    /// Ground the selected [`Part`](struct.Part.html) parts of the current (non-ground) logic
+    /// program.
     ///
     /// After grounding, logic programs can be solved with `solve()`.
     ///
@@ -1456,7 +1628,8 @@ impl Control {
         }
     }
 
-    /// Solve the currently [`ground()`](struct.Control.html#method.ground) grounded logic program enumerating its models.
+    /// Solve the currently [`ground()`](struct.Control.html#method.ground) grounded logic program
+    /// enumerating its models.
     ///
     /// See the [`SolveHandle`](struct.SolveHandle.html) module for more information.
     ///
@@ -1755,10 +1928,10 @@ impl Control {
     /// for grounding.
     ///
     /// See the [`SymbolicAtoms`](struct.SymbolicAtoms.html) module for more information.
-    pub fn symbolic_atoms(&mut self) -> Option<&mut SymbolicAtoms> {
-        let mut atoms = std::ptr::null_mut() as *mut clingo_symbolic_atoms_t;
+    pub fn symbolic_atoms(&mut self) -> Option<&SymbolicAtoms> {
+        let mut atoms = std::ptr::null() as *const clingo_symbolic_atoms_t;
         if unsafe { clingo_control_symbolic_atoms(self.ctl.as_ptr(), &mut atoms) } {
-            unsafe { (atoms as *mut SymbolicAtoms).as_mut() }
+            unsafe { (atoms as *const SymbolicAtoms).as_ref() }
         } else {
             None
         }
@@ -1824,51 +1997,6 @@ impl Control {
 
     // NOTTODO: pub fn clingo_control_clasp_facade()
 }
-
-pub struct ProgramBuilder(clingo_program_builder_t);
-impl ProgramBuilder {
-    /// Begin building a program.
-    pub fn begin(&mut self) -> Option<()> {
-        if unsafe { clingo_program_builder_begin(&mut self.0) } {
-            Some(())
-        } else {
-            None
-        }
-    }
-
-    /// Adds a statement to the program.
-    ///
-    /// **Attention:** [`begin()`](struct.ProgramBuilder.html#method.begin) must be called before
-    /// adding statements and [`end()`](struct.ProgramBuilder.html#method.end) must be called after
-    /// all statements have been added.
-    ///
-    /// # Arguments
-    ///
-    /// * `statement` - the statement to add
-    ///
-    /// # Errors
-    ///
-    /// - [`Error::Runtime`](enum.Error.html#variant.Runtime) for statements of invalid form
-    /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
-    pub fn add(&mut self, statement: &AstStatement) -> Result<(), Error> {
-        let AstStatement(ref stm) = *statement;
-        if unsafe { clingo_program_builder_add(&mut self.0, stm) } {
-            Ok(())
-        } else {
-            Err(error())
-        }
-    }
-
-    /// End building a program.
-    pub fn end(&mut self) -> Option<()> {
-        if unsafe { clingo_program_builder_end(&mut self.0) } {
-            Some(())
-        } else {
-            None
-        }
-    }
-}
-
 #[derive(Clone)]
 pub struct AstStatement(clingo_ast_statement_t);
 impl AstStatement {
@@ -1954,15 +2082,52 @@ impl AstStatement {
     }
 }
 
+/// Object to build non-ground programs.
+pub struct ProgramBuilder(clingo_program_builder_t);
+impl ProgramBuilder {
+    /// Begin building a program.
+    pub fn begin(&mut self) -> Option<()> {
+        if unsafe { clingo_program_builder_begin(&mut self.0) } {
+            Some(())
+        } else {
+            None
+        }
     }
 
-    pub fn location(&self) -> Location {
-        Location(self.0.location)
+    /// Adds a statement to the program.
+    ///
+    /// **Attention:** [`begin()`](struct.ProgramBuilder.html#method.begin) must be called before
+    /// adding statements and [`end()`](struct.ProgramBuilder.html#method.end) must be called after
+    /// all statements have been added.
+    ///
+    /// # Arguments
+    ///
+    /// * `statement` - the statement to add
+    ///
+    /// # Errors
+    ///
+    /// - [`Error::Runtime`](enum.Error.html#variant.Runtime) for statements of invalid form
+    /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
+    pub fn add(&mut self, stm: &AstStatement) -> Result<(), Error> {
+        if unsafe { clingo_program_builder_add(&mut self.0, &stm.0) } {
+            Ok(())
+        } else {
+            Err(error())
+        }
     }
 
+    /// End building a program.
+    pub fn end(&mut self) -> Option<()> {
+        if unsafe { clingo_program_builder_end(&mut self.0) } {
+            Some(())
+        } else {
+            None
+        }
     }
 }
 
+/// Handle for to the solver configuration.
+#[derive(Debug, Copy, Clone)]
 pub struct Configuration(clingo_configuration_t);
 impl Configuration {
     /// Get the root key of the configuration.
@@ -2055,6 +2220,27 @@ impl Configuration {
             None
         }
     }
+
+    //TODO     /// Query whether the map has a key.
+    //     ///
+    //     /// @pre The @link clingo_configuration_type() type@endlink of the entry must be @ref ::clingo_configuration_type_map.
+    //     ///
+    //     /// **Note:** Multiple levels can be looked up by concatenating keys with a period.
+    //     ///
+    //     /// **Parameters:**
+    //     ///
+    //     /// * `configuration` - the target configuration
+    //     /// * `key` - the key
+    //     /// * `name` - the name to lookup the subkey
+    //     /// * `result` - whether the key is in the map
+    //     ///
+    //     /// **Returns** whether the call was successful
+    //     pub fn clingo_configuration_map_has_subkey(
+    //         configuration: *mut clingo_configuration_t,
+    //         key: clingo_id_t,
+    //         name: *const ::std::os::raw::c_char,
+    //         result: *mut bool,
+    //     ) -> bool;
 
     /// Get the name associated with the offset-th subkey.
     ///
@@ -2170,6 +2356,8 @@ impl Configuration {
     }
 }
 
+/// Handle to the backend to add directives in aspif format.
+#[derive(Debug, Copy, Clone)]
 pub struct Backend(clingo_backend_t);
 impl Backend {
     /// Add a rule to the program.
@@ -2412,6 +2600,8 @@ impl Backend {
     }
 }
 
+/// Handle for to the solver statistics.
+#[derive(Debug, Copy, Clone)]
 pub struct Statistics(clingo_statistics_t);
 impl Statistics {
     /// Get the root key of the statistics.
@@ -2771,6 +2961,8 @@ impl SymbolicAtoms {
     }
 }
 
+/// Container that stores theory atoms, elements, and terms (see @ref clingo_control_theory_atoms())
+#[derive(Debug, Copy, Clone)]
 pub struct TheoryAtoms(clingo_theory_atoms_t);
 impl TheoryAtoms {
     /// Get the type of the given theory term.
@@ -2779,18 +2971,18 @@ impl TheoryAtoms {
     ///
     /// * `term` - id of the term
     // TODO ? is this needed in an Rust API
-    pub fn term_type(&mut self, Id(term): Id) -> Option<TermType> {
+    pub fn term_type(&mut self, Id(term): Id) -> Option<TheoryTermType> {
         let mut ttype = 0 as clingo_theory_term_type_t;
         if unsafe { clingo_theory_atoms_term_type(&mut self.0, term, &mut ttype) } {
             match ttype as u32 {
-                clingo_theory_term_type_clingo_theory_term_type_tuple => Some(TermType::Tuple),
-                clingo_theory_term_type_clingo_theory_term_type_list => Some(TermType::List),
-                clingo_theory_term_type_clingo_theory_term_type_set => Some(TermType::Set),
+                clingo_theory_term_type_clingo_theory_term_type_tuple => Some(TheoryTermType::Tuple),
+                clingo_theory_term_type_clingo_theory_term_type_list => Some(TheoryTermType::List),
+                clingo_theory_term_type_clingo_theory_term_type_set => Some(TheoryTermType::Set),
                 clingo_theory_term_type_clingo_theory_term_type_function => {
-                    Some(TermType::Function)
+                    Some(TheoryTermType::Function)
                 }
-                clingo_theory_term_type_clingo_theory_term_type_number => Some(TermType::Number),
-                clingo_theory_term_type_clingo_theory_term_type_symbol => Some(TermType::Symbol),
+                clingo_theory_term_type_clingo_theory_term_type_number => Some(TheoryTermType::Number),
+                clingo_theory_term_type_clingo_theory_term_type_symbol => Some(TheoryTermType::Symbol),
                 _ => None,
             }
         } else {
@@ -3164,6 +3356,8 @@ impl UNSAFE_TheoryAtomsIterator {
     }
 }
 
+/// Object representing a model.
+#[derive(Debug, Copy, Clone)]
 pub struct Model(clingo_model_t);
 impl Model {
     /// Get the type of the model.
@@ -3212,13 +3406,17 @@ impl Model {
     /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
     /// - [`Error::Runtime`](enum.Error.html#variant.Runtime) if the size is too small
     pub fn symbols(&mut self, show: &ShowType) -> Result<Vec<Symbol>, Error> {
-        let Model(ref mut model) = *self;
         let mut size: usize = 0;
-        if unsafe { clingo_model_symbols_size(model, show.0, &mut size) } {
+        if unsafe { clingo_model_symbols_size(&mut self.0, show.0, &mut size) } {
             let symbols = Vec::<Symbol>::with_capacity(size);
             let symbols_ptr = symbols.as_ptr();
             if unsafe {
-                clingo_model_symbols(model, show.0, symbols_ptr as *mut clingo_symbol_t, size)
+                clingo_model_symbols(
+                    &mut self.0,
+                    show.0,
+                    symbols_ptr as *mut clingo_symbol_t,
+                    size,
+                )
             } {
                 let symbols_ref =
                     unsafe { std::slice::from_raw_parts(symbols_ptr as *const Symbol, size) };
@@ -3244,6 +3442,21 @@ impl Model {
             None
         }
     }
+
+    //TODO     /// Check if a program literal is true in a model.
+    //     ///
+    //     /// **Parameters:**
+    //     ///
+    //     /// * `model` - the target
+    //     /// * `literal` - the literal to lookup
+    //     /// * `result` - whether the literal is true
+    //     ///
+    //     /// **Returns** whether the call was successful
+    //     pub fn clingo_model_is_true(
+    //         model: *mut clingo_model_t,
+    //         literal: clingo_literal_t,
+    //         result: *mut bool,
+    //     ) -> bool;
 
     //NOTTODO: pub fn clingo_model_cost_size(model: *mut Model, size: *mut size_t) -> u8;
 
@@ -3283,6 +3496,16 @@ impl Model {
         }
     }
 
+    //TODO     /// Get the id of the solver thread that found the model.
+    //     ///
+    //     /// **Parameters:**
+    //     ///
+    //     /// * `model` - the target
+    //     /// * `id` - the resulting thread id
+    //     ///
+    //     /// **Returns** whether the call was successful
+    //     pub fn clingo_model_thread_id(model: *mut clingo_model_t, id: *mut clingo_id_t) -> bool;
+
     /// Get the associated solve control object of a model.
     ///
     /// This object allows for adding clauses during model enumeration.
@@ -3296,6 +3519,8 @@ impl Model {
     }
 }
 
+/// Object to add clauses during search.
+#[derive(Debug, Copy, Clone)]
 pub struct SolveControl(clingo_solve_control_t);
 impl SolveControl {
     /// Add a clause that applies to the current solving step during model
@@ -3337,8 +3562,171 @@ impl SolveControl {
     }
 }
 
+/// Represents a (partial) assignment of a particular solver.
+///
+/// An assignment assigns truth values to a set of literals.
+/// A literal is assigned to either @link clingo_assignment_truth_value() true or false, or is unassigned@endlink.
+/// Furthermore, each assigned literal is associated with a @link clingo_assignment_level() decision level@endlink.
+/// There is exactly one @link clingo_assignment_decision() decision literal@endlink for each decision level greater than zero.
+/// Assignments to all other literals on the same level are consequences implied by the current and possibly previous decisions.
+/// Assignments on level zero are immediate consequences of the current program.
+/// Decision levels are consecutive numbers starting with zero up to and including the @link clingo_assignment_decision_level() current decision level@endlink.
+#[derive(Debug, Copy, Clone)]
 pub struct Assignment(clingo_assignment_t);
+// impl Assignment {
+//TODO     /// Get the current decision level.
+//     ///
+//     /// **Parameters:**
+//     ///
+//     /// * `assignment` - the target assignment
+//     ///
+//     /// **Returns** the decision level
+//     pub fn clingo_assignment_decision_level(assignment: *mut clingo_assignment_t) -> u32;
 
+//TODO     /// Check if the given assignment is conflicting.
+//     ///
+//     /// **Parameters:**
+//     ///
+//     /// * `assignment` - the target assignment
+//     ///
+//     /// **Returns** whether the assignment is conflicting
+//     pub fn clingo_assignment_has_conflict(assignment: *mut clingo_assignment_t) -> bool;
+
+//TODO     /// Check if the given literal is part of a (partial) assignment.
+//     ///
+//     /// **Parameters:**
+//     ///
+//     /// * `assignment` - the target assignment
+//     /// * `literal` - the literal
+//     ///
+//     /// **Returns** whether the literal is valid
+//     pub fn clingo_assignment_has_literal(
+//         assignment: *mut clingo_assignment_t,
+//         literal: clingo_literal_t,
+//     ) -> bool;
+
+//TODO     /// Determine the decision level of a given literal.
+//     ///
+//     /// **Parameters:**
+//     ///
+//     /// * `assignment` - the target assignment
+//     /// * `literal` - the literal
+//     /// * `level` - the resulting level
+//     ///
+//     /// **Returns** whether the call was successful
+//     pub fn clingo_assignment_level(
+//         assignment: *mut clingo_assignment_t,
+//         literal: clingo_literal_t,
+//         level: *mut u32,
+//     ) -> bool;
+
+//TODO     /// Determine the decision literal given a decision level.
+//     ///
+//     /// **Parameters:**
+//     ///
+//     /// * `assignment` - the target assignment
+//     /// * `level` - the level
+//     /// * `literal` - the resulting literal
+//     ///
+//     /// **Returns** whether the call was successful
+//     pub fn clingo_assignment_decision(
+//         assignment: *mut clingo_assignment_t,
+//         level: u32,
+//         literal: *mut clingo_literal_t,
+//     ) -> bool;
+
+//TODO     /// Check if a literal has a fixed truth value.
+//     ///
+//     /// **Parameters:**
+//     ///
+//     /// * `assignment` - the target assignment
+//     /// * `literal` - the literal
+//     /// * `is_fixed` - whether the literal is fixed
+//     ///
+//     /// **Returns** whether the call was successful
+//     pub fn clingo_assignment_is_fixed(
+//         assignment: *mut clingo_assignment_t,
+//         literal: clingo_literal_t,
+//         is_fixed: *mut bool,
+//     ) -> bool;
+
+//TODO     /// Check if a literal is true.
+//     ///
+//     /// **Parameters:**
+//     ///
+//     /// * `assignment` - the target assignment
+//     /// * `literal` - the literal
+//     /// * `is_true` - whether the literal is true
+//     ///
+//     /// **Returns** whether the call was successful
+//     /// @see clingo_assignment_truth_value()
+//     pub fn clingo_assignment_is_true(
+//         assignment: *mut clingo_assignment_t,
+//         literal: clingo_literal_t,
+//         is_true: *mut bool,
+//     ) -> bool;
+
+//TODO     /// Check if a literal has a fixed truth value.
+//     ///
+//     /// **Parameters:**
+//     ///
+//     /// * `assignment` - the target assignment
+//     /// * `literal` - the literal
+//     /// * `is_false` - whether the literal is false
+//     ///
+//     /// **Returns** whether the call was successful
+//     /// @see clingo_assignment_truth_value()
+//     pub fn clingo_assignment_is_false(
+//         assignment: *mut clingo_assignment_t,
+//         literal: clingo_literal_t,
+//         is_false: *mut bool,
+//     ) -> bool;
+
+//TODO     /// Determine the truth value of a given literal.
+//     ///
+//     /// **Parameters:**
+//     ///
+//     /// * `assignment` - the target assignment
+//     /// * `literal` - the literal
+//     /// * `value` - the resulting truth value
+//     ///
+//     /// **Returns** whether the call was successful
+//     pub fn clingo_assignment_truth_value(
+//         assignment: *mut clingo_assignment_t,
+//         literal: clingo_literal_t,
+//         value: *mut clingo_truth_value_t,
+//     ) -> bool;
+
+//TODO     /// The number of assigned literals in the assignment.
+//     /// **Parameters:**
+//     ///
+//     /// * `assignment`- the target
+//     ///
+//     /// **Returns** the number of literals
+//     pub fn clingo_assignment_size(assignment: *mut clingo_assignment_t) -> usize;
+
+//TODO     /// The maximum size of the assignment (if all literals are assigned).
+//     ///
+//     /// **Parameters:**
+//     ///
+//     /// * `assignment`- the target
+//     ///
+//     /// **Returns** the maximum size
+//     pub fn clingo_assignment_max_size(assignment: *mut clingo_assignment_t) -> usize;
+
+//TODO     /// Check if the assignmen is total, i.e. - size == max_size.
+//     ///
+//     /// **Parameters:**
+//     ///
+//     /// * `assignment`- the target
+//     ///
+//     /// **Returns** wheather the assignment is total
+//     pub fn clingo_assignment_is_total(assignment: *mut clingo_assignment_t) -> bool;
+
+// }
+
+/// This object can be used to add clauses and propagate literals while solving.
+#[derive(Debug, Copy, Clone)]
 pub struct PropagateControl(clingo_propagate_control_t);
 impl PropagateControl {
     /// Get the id of the underlying solver thread.
@@ -3353,6 +3741,68 @@ impl PropagateControl {
         unsafe { (clingo_propagate_control_assignment(&mut self.0) as *mut Assignment).as_mut() }
             .unwrap()
     }
+
+    //TODO     /// Adds a new volatile literal to the underlying solver thread.
+    //     ///
+    //     /// @attention The literal is only valid within the current solving step and solver thread.
+    //     /// All volatile literals and clauses involving a volatile literal are deleted after the current search.
+    //     ///
+    //     /// **Parameters:**
+    //     ///
+    //     /// * `control` - the target
+    //     /// * `result` - the (positive) solver literal
+    //     ///
+    //     /// **Returns** whether the call was successful; might set one of the following error codes:
+    //     /// - ::clingo_error_bad_alloc
+    //     /// - ::clingo_error_logic if the assignment is conflicting
+    //     pub fn clingo_propagate_control_add_literal(
+    //         control: *mut clingo_propagate_control_t,
+    //         result: *mut clingo_literal_t,
+    //     ) -> bool;
+
+    //TODO     /// Add a watch for the solver literal in the given phase.
+    //     ///
+    //     /// **Note:** Unlike @ref clingo_propagate_init_add_watch() this does not add a watch to all solver threads but just the current one.
+    //     ///
+    //     /// **Parameters:**
+    //     ///
+    //     /// * `control` - the target
+    //     /// * `literal` - the literal to watch
+    //     ///
+    //     /// **Returns** whether the call was successful; might set one of the following error codes:
+    //     /// - ::clingo_error_bad_alloc
+    //     /// - ::clingo_error_logic if the literal is invalid
+    //     /// @see clingo_propagate_control_remove_watch()
+    //     pub fn clingo_propagate_control_add_watch(
+    //         control: *mut clingo_propagate_control_t,
+    //         literal: clingo_literal_t,
+    //     ) -> bool;
+
+    //TODO     /// Check whether a literal is watched in the current solver thread.
+    //     ///
+    //     /// **Parameters:**
+    //     ///
+    //     /// * `control` - the target
+    //     /// * `literal` - the literal to check
+    //     ///
+    //     /// **Returns** whether the literal is watched
+    //     pub fn clingo_propagate_control_has_watch(
+    //         control: *mut clingo_propagate_control_t,
+    //         literal: clingo_literal_t,
+    //     ) -> bool;
+
+    //TODO     /// Removes the watch (if any) for the given solver literal.
+    //     ///
+    //     /// **Note:** Similar to @ref clingo_propagate_init_add_watch() this just removes the watch in the current solver thread.
+    //     ///
+    //     /// **Parameters:**
+    //     ///
+    //     /// * `control` - the target
+    //     /// * `literal` - the literal to remove
+    //     pub fn clingo_propagate_control_remove_watch(
+    //         control: *mut clingo_propagate_control_t,
+    //         literal: clingo_literal_t,
+    //     );
 
     /// Add the given clause to the solver.
     ///
@@ -3408,6 +3858,16 @@ impl PropagateControl {
     }
 }
 
+/// Object to initialize a user-defined propagator before each solving step.
+///
+/// Each @link SymbolicAtoms symbolic@endlink or @link TheoryAtoms theory atom@endlink is uniquely associated with an aspif atom in form of a positive integer (@ref ::clingo_literal_t).
+/// Aspif literals additionally are signed to represent default negation.
+/// Furthermore, there are non-zero integer solver literals (also represented using @ref ::clingo_literal_t).
+/// There is a surjective mapping from program atoms to solver literals.
+///
+/// All methods called during propagation use solver literals whereas clingo_symbolic_atoms_literal() and clingo_theory_atoms_atom_literal() return program literals.
+/// The function clingo_propagate_init_solver_literal() can be used to map program literals or @link clingo_theory_atoms_element_condition_id() condition ids@endlink to solver literals.
+#[derive(Debug, Copy, Clone)]
 pub struct PropagateInit(clingo_propagate_init_t);
 impl PropagateInit {
     /// Map the given program literal or condition id to its solver literal.
@@ -3466,9 +3926,35 @@ impl PropagateInit {
     pub fn number_of_threads(&mut self) -> usize {
         (unsafe { clingo_propagate_init_number_of_threads(&mut self.0) } as usize)
     }
+
+    //TODO     /// Configure when to call the check method of the propagator.
+    //     ///
+    //     /// **Parameters:**
+    //     ///
+    //     /// * `init` - the target
+    //     /// *`mode`- bitmask when to call the propagator
+    //     /// @see @ref ::clingo_propagator::check()
+    //     pub fn clingo_propagate_init_set_check_mode(
+    //         init: *mut clingo_propagate_init_t,
+    //         mode: clingo_propagator_check_mode_t,
+    //     );
+
+    //TODO     /// Get the current check mode of the propagator.
+    //     ///
+    //     /// **Parameters:**
+    //     ///
+    //     /// * `init`- the target
+    //     ///
+    //     /// **Returns**  bitmask when to call the propagator
+    //     /// @see clingo_propagate_init_set_check_mode()
+    //     pub fn clingo_propagate_init_get_check_mode(
+    //         init: *mut clingo_propagate_init_t,
+    //     ) -> clingo_propagator_check_mode_t;
 }
 
-pub struct SolveHandle(clingo_solve_handle);
+/// Search handle to a solve call.
+#[derive(Debug, Copy, Clone)]
+pub struct SolveHandle(clingo_solve_handle_t);
 impl SolveHandle {
     /// Get the next solve result.
     ///
@@ -3489,6 +3975,22 @@ impl SolveHandle {
         }
     }
 
+    //TODO     /// Wait for the specified amount of time to check if the next result is ready.
+    //     ///
+    //     /// If the time is set to zero, this function can be used to poll if the search is still active.
+    //     /// If the time is negative, the function blocks until the search is finished.
+    //     ///
+    //     /// **Parameters:**
+    //     ///
+    //     /// * `handle` - the target
+    //     /// * `timeout` - the maximum time to wait
+    //     /// * `result` - whether the search has finished
+    //     pub fn clingo_solve_handle_wait(
+    //         handle: *mut clingo_solve_handle_t,
+    //         timeout: f64,
+    //         result: *mut bool,
+    //     );
+
     /// Get the next model (or zero if there are no more models).
     /// (it is NULL if there are no more models)
     ///
@@ -3497,9 +3999,8 @@ impl SolveHandle {
     /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
     /// - [`Error::Runtime`](enum.Error.html#variant.Runtime) if solving fails
     pub fn model(&mut self) -> Result<&mut Model, &'static str> {
-        let SolveHandle(ref mut handle) = *self;
         let mut model = std::ptr::null_mut() as *mut clingo_model_t;
-        if unsafe { clingo_solve_handle_model(handle, &mut model) } {
+        if unsafe { clingo_solve_handle_model(&mut self.0, &mut model) } {
             unsafe { (model as *mut Model).as_mut() }
                 .ok_or("Rust binding failed to dereference pointer to clingo model")
         } else {
@@ -3519,13 +4020,23 @@ impl SolveHandle {
     /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
     /// - [`Error::Runtime`](enum.Error.html#variant.Runtime) if solving fails
     pub fn resume(&mut self) -> Result<(), Error> {
-        let SolveHandle(ref mut handle) = *self;
-        if unsafe { clingo_solve_handle_resume(handle) } {
+        if unsafe { clingo_solve_handle_resume(&mut self.0) } {
             Ok(())
         } else {
             Err(error())
         }
     }
+
+    // TODO    /// Stop the running search and block until done.
+    //     ///
+    //     /// **Parameters:**
+    //     ///
+    //     /// * `handle` - the target
+    //     ///
+    //     /// **Returns** whether the call was successful; might set one of the following error codes:
+    //     /// - ::clingo_error_bad_alloc
+    //     /// - ::clingo_error_runtime if solving fails
+    //     pub fn clingo_solve_handle_cancel(handle: *mut clingo_solve_handle_t) -> bool;
 
     /// Stops the running search and releases the handle.
     ///
@@ -3537,8 +4048,7 @@ impl SolveHandle {
     /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
     /// - [`Error::Runtime`](enum.Error.html#variant.Runtime) if solving fails
     pub fn close(&mut self) -> Result<(), Error> {
-        let SolveHandle(ref mut handle) = *self;
-        if unsafe { clingo_solve_handle_close(handle) } {
+        if unsafe { clingo_solve_handle_close(&mut self.0) } {
             Ok(())
         } else {
             Err(error())
@@ -3588,8 +4098,410 @@ impl SolveHandle {
 //         symbol: *mut clingo_symbol_t,
 //     ) -> bool;
 
-// TODO clingo_ground_program_observer
+// TODO
+pub trait GroundProgramObserver<T> {
+    /// Called once in the beginning.
+    ///
+    /// If the incremental flag is true, there can be multiple calls to @ref clingo_control_solve().
+    ///
+    /// **Parameters:**
+    ///
+    /// * `incremental` - whether the program is incremental
+    /// * `data` - user data for the callback
+    ///
+    /// **Returns** whether the call was successful
+    fn init_program(incremental: bool, data: &mut T) -> bool;
+    #[doc(hidden)]
+    unsafe extern "C" fn unsafe_init_program(
+        incremental: bool,
+        data: *mut ::std::os::raw::c_void,
+    ) -> bool {
+        false
+    }
 
+    /// Marks the beginning of a block of directives passed to the solver.
+    ///
+    /// @see @ref end_step
+    ///
+    /// **Parameters:**
+    ///
+    /// * `data` - user data for the callback
+    ///
+    /// **Returns** whether the call was successful
+    unsafe extern "C" fn begin_step(data: *mut ::std::os::raw::c_void) -> bool {
+        false
+    }
+
+    /// Marks the end of a block of directives passed to the solver.
+    ///
+    /// This function is called before solving starts.
+    ///
+    /// @see @ref begin_step
+    ///
+    /// **Parameters:**
+    ///
+    /// * `data` - user data for the callback
+    ///
+    /// **Returns** whether the call was successful
+    unsafe extern "C" fn end_step(data: *mut ::std::os::raw::c_void) -> bool {
+        false
+    }
+
+    /// Observe rules passed to the solver.
+    ///
+    /// **Parameters:**
+    ///
+    /// * `choice` - determines if the head is a choice or a disjunction
+    /// * `head` - the head atoms
+    /// * `head_size` - the number of atoms in the head
+    /// * `body` - the body literals
+    /// * `body_size` - the number of literals in the body
+    /// * `data` - user data for the callback
+    ///
+    /// **Returns** whether the call was successful
+    unsafe extern "C" fn rule(
+        choice: bool,
+        head: *const clingo_atom_t,
+        head_size: usize,
+        body: *const clingo_literal_t,
+        body_size: usize,
+        data: *mut ::std::os::raw::c_void,
+    ) -> bool {
+        false
+    }
+
+    /// Observe weight rules passed to the solver.
+    ///
+    /// **Parameters:**
+    ///
+    /// * `choice` - determines if the head is a choice or a disjunction
+    /// * `head` - the head atoms
+    /// * `head_size` - the number of atoms in the head
+    /// * `lower_bound` - the lower bound of the weight rule
+    /// * `body` - the weighted body literals
+    /// * `body_size` - the number of weighted literals in the body
+    /// * `data` - user data for the callback
+    ///
+    /// **Returns** whether the call was successful
+    unsafe extern "C" fn weight_rule(
+        choice: bool,
+        head: *const clingo_atom_t,
+        head_size: usize,
+        lower_bound: clingo_weight_t,
+        body: *const clingo_weighted_literal_t,
+        body_size: usize,
+        data: *mut ::std::os::raw::c_void,
+    ) -> bool {
+        false
+    }
+
+    /// Observe minimize constraints (or weak constraints) passed to the solver.
+    ///
+    /// **Parameters:**
+    ///
+    /// * `priority` - the priority of the constraint
+    /// * `literals` - the weighted literals whose sum to minimize
+    /// * `size` - the number of weighted literals
+    /// * `data` - user data for the callback
+    ///
+    /// **Returns** whether the call was successful
+    unsafe extern "C" fn minimize(
+        priority: clingo_weight_t,
+        literals: *const clingo_weighted_literal_t,
+        size: usize,
+        data: *mut ::std::os::raw::c_void,
+    ) -> bool {
+        false
+    }
+
+    /// Observe projection directives passed to the solver.
+    ///
+    /// **Parameters:**
+    ///
+    /// * `atoms` - the atoms to project on
+    /// * `size` - the number of atoms
+    /// * `data` - user data for the callback
+    ///
+    /// **Returns** whether the call was successful
+    unsafe extern "C" fn project(
+        atoms: *const clingo_atom_t,
+        size: usize,
+        data: *mut ::std::os::raw::c_void,
+    ) -> bool {
+        false
+    }
+
+    /// Observe shown atoms passed to the solver.
+    /// \note Facts do not have an associated aspif atom.
+    /// The value of the atom is set to zero.
+    ///
+    /// **Parameters:**
+    ///
+    /// * `symbol` - the symbolic representation of the atom
+    /// * `atom` - the aspif atom (0 for facts)
+    /// * `data` - user data for the callback
+    ///
+    /// **Returns** whether the call was successful
+    unsafe extern "C" fn output_atom(
+        symbol: clingo_symbol_t,
+        atom: clingo_atom_t,
+        data: *mut ::std::os::raw::c_void,
+    ) -> bool {
+        false
+    }
+
+    /// Observe shown terms passed to the solver.
+    ///
+    /// **Parameters:**
+    ///
+    /// * `symbol` - the symbolic representation of the term
+    /// * `condition` - the literals of the condition
+    /// * `size` - the size of the condition
+    /// * `data` - user data for the callback
+    ///
+    /// **Returns** whether the call was successful
+    unsafe extern "C" fn output_term(
+        symbol: clingo_symbol_t,
+        condition: *const clingo_literal_t,
+        size: usize,
+        data: *mut ::std::os::raw::c_void,
+    ) -> bool {
+        false
+    }
+
+    /// Observe shown csp variables passed to the solver.
+    ///
+    /// **Parameters:**
+    ///
+    /// * `symbol` - the symbolic representation of the variable
+    /// * `value` - the value of the variable
+    /// * `condition` - the literals of the condition
+    /// * `size` - the size of the condition
+    /// * `data` - user data for the callback
+    ///
+    /// **Returns** whether the call was successful
+    unsafe extern "C" fn output_csp(
+        symbol: clingo_symbol_t,
+        value: ::std::os::raw::c_int,
+        condition: *const clingo_literal_t,
+        size: usize,
+        data: *mut ::std::os::raw::c_void,
+    ) -> bool {
+        false
+    }
+
+    /// Observe external statements passed to the solver.
+    ///
+    /// **Parameters:**
+    ///
+    /// * `atom` - the external atom
+    /// * `type` - the type of the external statement
+    /// * `data` - user data for the callback
+    ///
+    /// **Returns** whether the call was successful
+    unsafe extern "C" fn external(
+        atom: clingo_atom_t,
+        type_: clingo_external_type_t,
+        data: *mut ::std::os::raw::c_void,
+    ) -> bool {
+        false
+    }
+
+    /// Observe assumption directives passed to the solver.
+    ///
+    /// **Parameters:**
+    ///
+    /// * `literals` - the literals to assume (positive literals are true and negative literals
+    /// false for the next solve call)
+    /// * `size` - the number of atoms
+    /// * `data` - user data for the callback
+    ///
+    /// **Returns** whether the call was successful
+    unsafe extern "C" fn assume(
+        literals: *const clingo_literal_t,
+        size: usize,
+        data: *mut ::std::os::raw::c_void,
+    ) -> bool {
+        false
+    }
+
+    /// Observe heuristic directives passed to the solver.
+    ///
+    /// **Parameters:**
+    ///
+    /// * `atom` - the target atom
+    /// * `type` - the type of the heuristic modification
+    /// * `bias` - the heuristic bias
+    /// * `priority` - the heuristic priority
+    /// * `condition` - the condition under which to apply the heuristic modification
+    /// * `size` - the number of atoms in the condition
+    /// * `data` - user data for the callback
+    ///
+    /// **Returns** whether the call was successful
+    unsafe extern "C" fn heuristic(
+        atom: clingo_atom_t,
+        type_: clingo_heuristic_type_t,
+        bias: ::std::os::raw::c_int,
+        priority: ::std::os::raw::c_uint,
+        condition: *const clingo_literal_t,
+        size: usize,
+        data: *mut ::std::os::raw::c_void,
+    ) -> bool {
+        false
+    }
+
+    /// Observe edge directives passed to the solver.
+    ///
+    /// **Parameters:**
+    ///
+    /// * `node_u` - the start vertex of the edge
+    /// * `node_v` - the end vertex of the edge
+    /// * `condition` - the condition under which the edge is part of the graph
+    /// * `size` - the number of atoms in the condition
+    /// * `data` - user data for the callback
+    ///
+    /// **Returns** whether the call was successful
+    unsafe extern "C" fn acyc_edge(
+        node_u: ::std::os::raw::c_int,
+        node_v: ::std::os::raw::c_int,
+        condition: *const clingo_literal_t,
+        size: usize,
+        data: *mut ::std::os::raw::c_void,
+    ) -> bool {
+        false
+    }
+
+    /// Observe numeric theory terms.
+    ///
+    /// **Parameters:**
+    ///
+    /// * `term_id` - the id of the term
+    /// * `number` - the value of the term
+    /// * `data` - user data for the callback
+    ///
+    /// **Returns** whether the call was successful
+    unsafe extern "C" fn theory_term_number(
+        term_id: clingo_id_t,
+        number: ::std::os::raw::c_int,
+        data: *mut ::std::os::raw::c_void,
+    ) -> bool {
+        false
+    }
+
+    /// Observe string theory terms.
+    ///
+    /// **Parameters:**
+    ///
+    /// * `term_id` - the id of the term
+    /// * `name` - the value of the term
+    /// * `data` - user data for the callback
+    ///
+    /// **Returns** whether the call was successful
+    unsafe extern "C" fn theory_term_string(
+        term_id: clingo_id_t,
+        name: *const ::std::os::raw::c_char,
+        data: *mut ::std::os::raw::c_void,
+    ) -> bool {
+        false
+    }
+
+    /// Observe compound theory terms.
+    ///
+    /// The name_id_or_type gives the type of the compound term:
+    /// - if it is -1, then it is a tuple
+    /// - if it is -2, then it is a set
+    /// - if it is -3, then it is a list
+    /// - otherwise, it is a function and name_id_or_type refers to the id of the name (in form of a
+    /// string term)
+    ///
+    /// **Parameters:**
+    ///
+    /// * `term_id` - the id of the term
+    /// * `name_id_or_type` - the name or type of the term
+    /// * `arguments` - the arguments of the term
+    /// * `size` - the number of arguments
+    /// * `data` - user data for the callback
+    ///
+    /// **Returns** whether the call was successful
+    unsafe extern "C" fn theory_term_compound(
+        term_id: clingo_id_t,
+        name_id_or_type: ::std::os::raw::c_int,
+        arguments: *const clingo_id_t,
+        size: usize,
+        data: *mut ::std::os::raw::c_void,
+    ) -> bool {
+        false
+    }
+
+    /// Observe theory elements.
+    ///
+    /// **Parameters:**
+    ///
+    /// * `element_id` - the id of the element
+    /// * `terms` - the term tuple of the element
+    /// * `terms_size` - the number of terms in the tuple
+    /// * `condition` - the condition of the elemnt
+    /// * `condition_size` - the number of literals in the condition
+    /// * `data` - user data for the callback
+    ///
+    /// **Returns** whether the call was successful
+    unsafe extern "C" fn theory_element(
+        element_id: clingo_id_t,
+        terms: *const clingo_id_t,
+        terms_size: usize,
+        condition: *const clingo_literal_t,
+        condition_size: usize,
+        data: *mut ::std::os::raw::c_void,
+    ) -> bool {
+        false
+    }
+
+    /// Observe theory atoms without guard.
+    ///
+    /// **Parameters:**
+    ///
+    /// * `atom_id_or_zero` - the id of the atom or zero for directives
+    /// * `term_id` - the term associated with the atom
+    /// * `elements` - the elements of the atom
+    /// * `size` - the number of elements
+    /// * `data` - user data for the callback
+    ///
+    /// **Returns** whether the call was successful
+    unsafe extern "C" fn theory_atom(
+        atom_id_or_zero: clingo_id_t,
+        term_id: clingo_id_t,
+        elements: *const clingo_id_t,
+        size: usize,
+        data: *mut ::std::os::raw::c_void,
+    ) -> bool {
+        false
+    }
+
+    /// Observe theory atoms with guard.
+    ///
+    /// **Parameters:**
+    ///
+    /// * `atom_id_or_zero` - the id of the atom or zero for directives
+    /// * `term_id` - the term associated with the atom
+    /// * `elements` - the elements of the atom
+    /// * `size` - the number of elements
+    /// * `operator_id` - the id of the operator (a string term)
+    /// * `right_hand_side_id` - the id of the term on the right hand side of the atom
+    /// * `data` - user data for the callback
+    ///
+    /// **Returns** whether the call was successful
+    unsafe extern "C" fn theory_atom_with_guard(
+        atom_id_or_zero: clingo_id_t,
+        term_id: clingo_id_t,
+        elements: *const clingo_id_t,
+        size: usize,
+        operator_id: clingo_id_t,
+        right_hand_side_id: clingo_id_t,
+        data: *mut ::std::os::raw::c_void,
+    ) -> bool {
+        false
+    }
+}
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -3602,9 +4514,9 @@ mod tests {
     }
     #[test]
     fn parse_program_test() {
-        let mut sym = create_number(42);
+        let mut sym = Symbol::create_number(42);
         assert!(42 == sym.number().unwrap());
-        sym = create_infimum();
-        assert!(SymbolType::Infimum == sym.get_type().unwrap());
+        sym = Symbol::create_infimum();
+        assert!(SymbolType::Infimum == sym.symbol_type());
     }
 }
