@@ -12,6 +12,7 @@ use std::ffi::CString;
 use libc::c_char;
 use clingo_sys::*;
 
+pub mod ast;
 #[derive(Debug, Copy, Clone)]
 pub enum Error {
     Success = clingo_error_clingo_error_success as isize,
@@ -25,47 +26,6 @@ pub enum TruthValue {
     Free = clingo_truth_value_clingo_truth_value_free as isize,
     True = clingo_truth_value_clingo_truth_value_true as isize,
     False = clingo_truth_value_clingo_truth_value_false as isize,
-}
-#[derive(Debug, Copy, Clone, PartialEq)]
-pub enum AstStatementType {
-    Rule = clingo_ast_statement_type_clingo_ast_statement_type_rule as isize,
-    Const = clingo_ast_statement_type_clingo_ast_statement_type_const as isize,
-    ShowSignature = clingo_ast_statement_type_clingo_ast_statement_type_show_signature as isize,
-    ShowTerm = clingo_ast_statement_type_clingo_ast_statement_type_show_term as isize,
-    Minimize = clingo_ast_statement_type_clingo_ast_statement_type_minimize as isize,
-    Script = clingo_ast_statement_type_clingo_ast_statement_type_script as isize,
-    Program = clingo_ast_statement_type_clingo_ast_statement_type_program as isize,
-    External = clingo_ast_statement_type_clingo_ast_statement_type_external as isize,
-    Edge = clingo_ast_statement_type_clingo_ast_statement_type_edge as isize,
-    Heuristic = clingo_ast_statement_type_clingo_ast_statement_type_heuristic as isize,
-    ProjectAtom = clingo_ast_statement_type_clingo_ast_statement_type_project_atom as isize,
-    ProjectAtomSignature =
-        clingo_ast_statement_type_clingo_ast_statement_type_project_atom_signature as isize,
-    TheoryDefinition =
-        clingo_ast_statement_type_clingo_ast_statement_type_theory_definition as isize,
-}
-#[derive(Debug, Copy, Clone)]
-pub enum AstSign {
-    None = clingo_ast_sign_clingo_ast_sign_none as isize,
-    Negation = clingo_ast_sign_clingo_ast_sign_negation as isize,
-    DoubleNegation = clingo_ast_sign_clingo_ast_sign_double_negation as isize,
-}
-#[derive(Debug, Copy, Clone)]
-pub enum AstLiteralType {
-    Boolean = clingo_ast_literal_type_clingo_ast_literal_type_boolean as isize,
-    Symbolic = clingo_ast_literal_type_clingo_ast_literal_type_symbolic as isize,
-    Comparison = clingo_ast_literal_type_clingo_ast_literal_type_comparison as isize,
-    CSP = clingo_ast_literal_type_clingo_ast_literal_type_csp as isize,
-}
-#[derive(Debug, Copy, Clone)]
-pub enum AstBodyLiteralType {
-    Literal = clingo_ast_body_literal_type_clingo_ast_body_literal_type_literal as isize,
-    Conditional = clingo_ast_body_literal_type_clingo_ast_body_literal_type_conditional as isize,
-    Aggregate = clingo_ast_body_literal_type_clingo_ast_body_literal_type_aggregate as isize,
-    BodyAggregate =
-        clingo_ast_body_literal_type_clingo_ast_body_literal_type_body_aggregate as isize,
-    TheoryAtom = clingo_ast_body_literal_type_clingo_ast_body_literal_type_theory_atom as isize,
-    Disjoint = clingo_ast_body_literal_type_clingo_ast_body_literal_type_disjoint as isize,
 }
 #[derive(Debug, Copy, Clone)]
 pub enum ClauseType {
@@ -1908,80 +1868,15 @@ impl ProgramBuilder {
     }
 }
 
-#[derive(Clone, Copy)]
-pub struct AstHeadLiteral(clingo_ast_head_literal_t);
-
-#[derive(Clone, Copy)]
-pub struct AstBodyLiteral(clingo_ast_body_literal_t);
-impl AstBodyLiteral {
-    pub fn new(
-        Location(location): Location,
-        sign: AstSign,
-        type_: AstBodyLiteralType,
-        lit_ref: &AstLiteral,
-    ) -> AstBodyLiteral {
-        let _bg_union_2 = clingo_ast_body_literal__bindgen_ty_1 {
-            literal: (lit_ref as *const AstLiteral) as *const clingo_ast_literal,
-        };
-        AstBodyLiteral(clingo_ast_body_literal_t {
-            location: location,
-            sign: sign as clingo_ast_sign_t,
-            type_: type_ as clingo_ast_body_literal_type_t,
-            __bindgen_anon_1: _bg_union_2,
-        })
-    }
-}
-
-#[derive(Clone, Copy)]
-pub struct AstRule(clingo_ast_rule_t);
-impl AstRule {
-    pub fn new(AstHeadLiteral(head): AstHeadLiteral, body: &[AstBodyLiteral]) -> AstRule {
-        let rule = clingo_ast_rule {
-            head: head,
-            body: body.as_ptr() as *const clingo_ast_body_literal_t,
-            size: body.len(),
-        };
-        AstRule(rule)
-    }
-
-    pub fn head(&self) -> AstHeadLiteral {
-        let AstRule(ref rule) = *self;
-        AstHeadLiteral(rule.head)
-    }
-
-    pub fn body(&self) -> &[AstBodyLiteral] {
-        let AstRule(ref rule) = *self;
-        unsafe { std::slice::from_raw_parts(rule.body as *const AstBodyLiteral, rule.size) }
-    }
-
-    pub fn size(&self) -> usize {
-        let AstRule(ref rule) = *self;
-        rule.size
-    }
-}
-
-#[derive(Clone, Copy)]
-pub struct AstExternal(clingo_ast_external_t);
-impl AstExternal {
-    pub fn new(AstTerm(term): AstTerm, body: &[AstBodyLiteral]) -> AstExternal {
-        let ext = clingo_ast_external {
-            atom: term,
-            body: body.as_ptr() as *const clingo_ast_body_literal_t,
-            size: body.len(),
-        };
-        AstExternal(ext)
-    }
-}
-
 #[derive(Clone)]
 pub struct AstStatement(clingo_ast_statement_t);
 impl AstStatement {
     pub fn new_external(
         Location(location): Location,
-        type_: AstStatementType,
-        ext: &AstExternal,
+        type_: ast::StatementType,
+        ext: &ast::External,
     ) -> AstStatement {
-        let external: *const AstExternal = ext;
+        let external: *const ast::External = ext;
         let _bg_union_2 = clingo_ast_statement__bindgen_ty_1 {
             external: external as *const clingo_ast_external,
         };
@@ -1993,15 +1888,15 @@ impl AstStatement {
         AstStatement(stm)
     }
 
-    pub fn new_rule(Location(location): Location, rule_: &AstRule) -> AstStatement {
-        let rule: *const AstRule = rule_;
+    pub fn new_rule(Location(location): Location, rule_: &ast::Rule) -> AstStatement {
+        let rule: *const ast::Rule = rule_;
 
         let _bg_union_2 = clingo_ast_statement__bindgen_ty_1 {
             rule: rule as *const clingo_ast_rule,
         };
         let stm = clingo_ast_statement_t {
             location: location,
-            type_: AstStatementType::Rule as clingo_ast_statement_type_t,
+            type_: ast::StatementType::Rule as clingo_ast_statement_type_t,
             __bindgen_anon_1: _bg_union_2,
         };
         AstStatement(stm)
@@ -2011,93 +1906,59 @@ impl AstStatement {
         Location(self.0.location)
     }
 
-    pub fn get_type(&self) -> Result<AstStatementType, &'static str> {
+    pub fn statement_type(&self) -> ast::StatementType {
         let AstStatement(ref stm) = *self;
         match stm.type_ as u32 {
-            clingo_ast_statement_type_clingo_ast_statement_type_rule => Ok(AstStatementType::Rule),
-            clingo_ast_statement_type_clingo_ast_statement_type_const => {
-                Ok(AstStatementType::Const)
-            }
+            clingo_ast_statement_type_clingo_ast_statement_type_rule => ast::StatementType::Rule,
+            clingo_ast_statement_type_clingo_ast_statement_type_const => ast::StatementType::Const,
             clingo_ast_statement_type_clingo_ast_statement_type_show_signature => {
-                Ok(AstStatementType::ShowSignature)
+                ast::StatementType::ShowSignature
             }
             clingo_ast_statement_type_clingo_ast_statement_type_show_term => {
-                Ok(AstStatementType::ShowTerm)
+                ast::StatementType::ShowTerm
             }
             clingo_ast_statement_type_clingo_ast_statement_type_minimize => {
-                Ok(AstStatementType::Minimize)
+                ast::StatementType::Minimize
             }
             clingo_ast_statement_type_clingo_ast_statement_type_script => {
-                Ok(AstStatementType::Script)
+                ast::StatementType::Script
             }
             clingo_ast_statement_type_clingo_ast_statement_type_program => {
-                Ok(AstStatementType::Program)
+                ast::StatementType::Program
             }
             clingo_ast_statement_type_clingo_ast_statement_type_external => {
-                Ok(AstStatementType::External)
+                ast::StatementType::External
             }
-            clingo_ast_statement_type_clingo_ast_statement_type_edge => Ok(AstStatementType::Edge),
+            clingo_ast_statement_type_clingo_ast_statement_type_edge => ast::StatementType::Edge,
             clingo_ast_statement_type_clingo_ast_statement_type_heuristic => {
-                Ok(AstStatementType::Heuristic)
+                ast::StatementType::Heuristic
             }
             clingo_ast_statement_type_clingo_ast_statement_type_project_atom => {
-                Ok(AstStatementType::ProjectAtom)
+                ast::StatementType::ProjectAtom
             }
             clingo_ast_statement_type_clingo_ast_statement_type_project_atom_signature => {
-                Ok(AstStatementType::ProjectAtomSignature)
+                ast::StatementType::ProjectAtomSignature
             }
             clingo_ast_statement_type_clingo_ast_statement_type_theory_definition => {
-                Ok(AstStatementType::TheoryDefinition)
+                ast::StatementType::TheoryDefinition
             }
-            _ => Err("Rust binding failed to match clingo ast statement type"),
+            _ => panic!("Failed to match clingo_ast_statement_type."),
         }
     }
 
-    pub unsafe fn rule(&self) -> &AstRule {
+    pub unsafe fn rule(&self) -> &ast::Rule {
         let AstStatement(ref stm) = *self;
         let ast_rule_ptr = stm.__bindgen_anon_1.rule as *const clingo_ast_rule_t;
-        (ast_rule_ptr as *const AstRule).as_ref().unwrap()
+        (ast_rule_ptr as *const ast::Rule).as_ref().unwrap()
     }
 }
 
-#[derive(Clone, Copy)]
-pub struct AstTerm(clingo_ast_term_t);
-impl AstTerm {
-    pub fn new_symbol(Location(location): Location, Symbol(symbol): Symbol) -> AstTerm {
-        let _bg_union_1 = clingo_ast_term__bindgen_ty_1 { symbol: symbol };
-        let term = clingo_ast_term_t {
-            location: location,
-            type_: clingo_ast_term_type_clingo_ast_term_type_symbol as clingo_ast_term_type_t,
-            __bindgen_anon_1: _bg_union_1,
-        };
-        AstTerm(term)
     }
 
     pub fn location(&self) -> Location {
         Location(self.0.location)
     }
-}
 
-#[derive(Clone, Copy)]
-pub struct AstLiteral(clingo_ast_literal_t);
-impl AstLiteral {
-    pub fn new(
-        Location(location): Location,
-        sign: AstSign,
-        type_: AstLiteralType,
-        sym: &AstTerm,
-    ) -> AstLiteral {
-        let symbol: *const AstTerm = sym;
-        let _bg_union_2 = clingo_ast_literal__bindgen_ty_1 {
-            symbol: symbol as *const clingo_sys::clingo_ast_term,
-        };
-        let lit = clingo_ast_literal_t {
-            location: location,
-            type_: type_ as clingo_ast_literal_type_t,
-            sign: sign as clingo_ast_sign_t,
-            __bindgen_anon_1: _bg_union_2,
-        };
-        AstLiteral(lit)
     }
 }
 

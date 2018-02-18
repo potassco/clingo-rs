@@ -4,7 +4,7 @@ use std::env;
 use clingo::*;
 
 pub struct OnStatementData<'a> {
-    atom: AstTerm,
+    atom: ast::Term,
     builder: &'a mut ProgramBuilder,
 }
 
@@ -13,7 +13,7 @@ impl<'a> AstStatementHandler<OnStatementData<'a>> for MyAstHandler {
     // adds atom enable to all rule bodies
     fn on_statement(stm: &AstStatement, data: &mut OnStatementData) -> bool {
         // pass through all statements that are not rules
-        if stm.get_type() != Ok(AstStatementType::Rule) {
+        if stm.statement_type() != ast::StatementType::Rule {
             data.builder
                 .add(stm)
                 .expect("Failed to add statement to ProgramBuilder.");
@@ -28,24 +28,24 @@ impl<'a> AstStatementHandler<OnStatementData<'a>> for MyAstHandler {
         }
 
         // create atom enable
-        let lit = AstLiteral::new(
+        let lit = ast::Literal::new(
             data.atom.location(),
-            AstSign::None,
-            AstLiteralType::Symbolic,
+            ast::Sign::None,
+            ast::LiteralType::Symbolic,
             &data.atom,
         );
         // add atom enable to the rule body
-        let y: AstBodyLiteral = AstBodyLiteral::new(
+        let y = ast::BodyLiteral::new(
             data.atom.location(),
-            AstSign::None,
-            AstBodyLiteralType::Literal,
+            ast::Sign::None,
+            ast::BodyLiteralType::Literal,
             &lit,
         );
         extended_body.push(y);
 
         // initialize the rule
         let head = unsafe { stm.rule() }.head();
-        let rule = AstRule::new(head, &extended_body);
+        let rule = ast::Rule::new(head, &extended_body);
 
         // initialize the statement
         let stm2 = AstStatement::new_rule(stm.location(), &rule);
@@ -115,7 +115,7 @@ fn main() {
         let location = create_location(0, 0, 0, 0, "<rewrite>", "<rewrite>");
 
         // initilize atom to add
-        let atom = AstTerm::new_symbol(location, sym);
+        let atom = ast::Term::new_symbol(location, sym);
 
         let mut data = OnStatementData {
             atom: atom,
@@ -127,9 +127,9 @@ fn main() {
             .expect("Failed to parse logic program.");
 
         // add the external statement: #external enable.
-        let ext = AstExternal::new(atom, &[]);
+        let ext = ast::External::new(atom, &[]);
 
-        let stm = AstStatement::new_external(location, AstStatementType::External, &ext);
+        let stm = AstStatement::new_external(location, ast::StatementType::External, &ext);
         data.builder
             .add(&stm)
             .expect("Failed to add statement to ProgramBuilder.");
