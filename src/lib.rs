@@ -2628,7 +2628,7 @@ impl Statistics {
                 clingo_statistics_type_clingo_statistics_type_value => Some(StatisticsType::Value),
                 clingo_statistics_type_clingo_statistics_type_array => Some(StatisticsType::Array),
                 clingo_statistics_type_clingo_statistics_type_map => Some(StatisticsType::Map),
-                _ => None,
+                _ => panic!("Failed to match clingo_statistics_type."),
             }
         } else {
             None
@@ -2994,7 +2994,7 @@ impl TheoryAtoms {
                 clingo_theory_term_type_clingo_theory_term_type_symbol => {
                     Some(TheoryTermType::Symbol)
                 }
-                _ => None,
+                _ => panic!("Failed to match clingo_theory_term_type."),
             }
         } else {
             None
@@ -3383,7 +3383,7 @@ impl Model {
                 clingo_model_type_clingo_model_type_cautious_consequences => {
                     Some(ModelType::CautiousConsequences)
                 }
-                _ => None,
+                _ => panic!("Failed to match clingo_model_type."),
             }
         } else {
             None
