@@ -11,6 +11,8 @@ repository = "https://github.com/sthiele/clingo-rs"
 clingo-sys = { path = "./clingo-sys" }
 libc = "0.2.20"
 rand = "0.3"
+failure = "0.1.1"
+failure_derive = "0.1.1"
 
 [lib]
 name = "clingo"
