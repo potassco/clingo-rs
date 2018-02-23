@@ -407,19 +407,24 @@ pub trait SolveEventHandler<T> {
     unsafe extern "C" fn unsafe_solve_callback(
         type_: clingo_solve_event_type_t,
         event: *mut ::std::os::raw::c_void,
-        data_: *mut ::std::os::raw::c_void,
-        goon_: *mut bool,
+        data: *mut ::std::os::raw::c_void,
+        goon: *mut bool,
     ) -> bool {
         // TODO               assert!(!event.is_null());
-        assert!(!data_.is_null());
-        assert!(!goon_.is_null());
         let event_type = match type_ {
             clingo_solve_event_type_clingo_solve_event_type_model => SolveEventType::Model,
             clingo_solve_event_type_clingo_solve_event_type_finish => SolveEventType::Finish,
             _ => panic!("Failed to match clingo_solve_event_type."),
         };
-        let data = (data_ as *mut T).as_mut().unwrap();
-        let goon = goon_.as_mut().unwrap();
+
+        assert!(!data.is_null());
+        let data = (data as *mut T)
+            .as_mut()
+            .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."));
+
+        assert!(!goon.is_null());
+        let goon = goon.as_mut()
+            .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."));
         Self::on_solve_event(event_type, data, goon)
     }
 }
@@ -431,13 +436,19 @@ pub trait AstStatementHandler<T> {
     fn on_statement(arg1: &AstStatement, arg2: &mut T) -> bool;
     #[doc(hidden)]
     unsafe extern "C" fn unsafe_ast_callback(
-        stm_: *const clingo_ast_statement_t,
-        data_: *mut ::std::os::raw::c_void,
+        stm: *const clingo_ast_statement_t,
+        data: *mut ::std::os::raw::c_void,
     ) -> bool {
-        assert!(!stm_.is_null());
-        assert!(!data_.is_null());
-        let stm = (stm_ as *const AstStatement).as_ref().unwrap();
-        let data = (data_ as *mut T).as_mut().unwrap();
+        assert!(!stm.is_null());
+        let stm = (stm as *const AstStatement)
+            .as_ref()
+            .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."));
+
+        assert!(!data.is_null());
+        let data = (data as *mut T)
+            .as_mut()
+            .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."));
+
         Self::on_statement(stm, data)
     }
 }
@@ -461,15 +472,12 @@ pub trait Logger<T> {
     /// @see clingo_parse_term()
     /// @see clingo_parse_program()
     fn log(code: Warning, message: &str, data: &mut T);
-    #[doc(hidden)]
     unsafe extern "C" fn unsafe_logging_callback(
-        code_: clingo_warning_t,
-        message_: *const ::std::os::raw::c_char,
-        data_: *mut ::std::os::raw::c_void,
+        code: clingo_warning_t,
+        message: *const ::std::os::raw::c_char,
+        data: *mut ::std::os::raw::c_void,
     ) {
-        assert!(!message_.is_null());
-        assert!(!data_.is_null());
-        let warning = match code_ as u32 {
+        let warning = match code as u32 {
             clingo_warning_clingo_warning_atom_undefined => Warning::AtomUndefined,
             clingo_warning_clingo_warning_file_included => Warning::FileIncluded,
             clingo_warning_clingo_warning_global_variable => Warning::GlobalVariable,
@@ -479,9 +487,18 @@ pub trait Logger<T> {
             clingo_warning_clingo_warning_variable_unbounded => Warning::VariableUnbound,
             _ => panic!("Failed to match clingo_warning."),
         };
-        let c_str = CStr::from_ptr(message_);
-        let message = c_str.to_str().unwrap();
-        let data = (data_ as *mut T).as_mut().unwrap();
+
+        assert!(!message.is_null());
+        let c_str = CStr::from_ptr(message);
+        let message = c_str.to_str().unwrap_or_else(|err| {
+            panic!(err);
+        });
+
+        assert!(!data.is_null());
+        let data = (data as *mut T)
+            .as_mut()
+            .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."));
+
         Self::log(warning, message, data)
     }
 }
@@ -576,26 +593,34 @@ pub trait GroundEventHandler<T> {
     ) -> bool;
     #[doc(hidden)]
     unsafe extern "C" fn unsafe_ground_callback(
-        location_: *const clingo_location_t,
-        name_: *const ::std::os::raw::c_char,
-        arguments_: *const clingo_symbol_t,
+        location: *const clingo_location_t,
+        name: *const ::std::os::raw::c_char,
+        arguments: *const clingo_symbol_t,
         arguments_size: usize,
-        data_: *mut ::std::os::raw::c_void,
+        data: *mut ::std::os::raw::c_void,
         symbol_callback: clingo_symbol_callback_t,
         symbol_callback_data: *mut ::std::os::raw::c_void,
         //TODO wrap symbol call back
     ) -> bool {
-        assert!(!location_.is_null());
-        assert!(!name_.is_null());
-        assert!(!arguments_.is_null());
-        assert!(!data_.is_null());
+        assert!(!location.is_null());
+        let location = (location as *const Location)
+            .as_ref()
+            .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."));
+
+        assert!(!name.is_null());
+        let c_str = CStr::from_ptr(name);
+        let name = c_str.to_str().unwrap();
+
+        assert!(!arguments.is_null());
+        let arguments = std::slice::from_raw_parts(arguments as *const Symbol, arguments_size);
+
+        assert!(!data.is_null());
+        let data = (data as *mut T)
+            .as_mut()
+            .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."));
+
         assert!(!symbol_callback_data.is_null());
 
-        let location = (location_ as *const Location).as_ref().unwrap();
-        let c_str = CStr::from_ptr(name_);
-        let name = c_str.to_str().unwrap();
-        let arguments = std::slice::from_raw_parts(arguments_ as *const Symbol, arguments_size);
-        let data = (data_ as *mut T).as_mut().unwrap();
         Self::on_ground_event(
             location,
             name,
@@ -1258,7 +1283,23 @@ pub trait Propagator<T> {
     fn init(_init: &mut PropagateInit, _data: &mut T) -> bool {
         true
     }
+    #[doc(hidden)]
+    unsafe extern "C" fn unsafe_init(
+        init: *mut clingo_propagate_init_t,
+        data: *mut ::std::os::raw::c_void,
+    ) -> bool {
+        assert!(!init.is_null());
+        let init = (init as *mut PropagateInit)
+            .as_mut()
+            .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."));
 
+        assert!(!data.is_null());
+        let data = (data as *mut T)
+            .as_mut()
+            .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."));
+
+        Self::init(init, data)
+    }
     //TODO
     /// Can be used to propagate solver literals given a @link clingo_assignment_t partial assignment@endlink.
     ///
@@ -1308,7 +1349,28 @@ pub trait Propagator<T> {
     fn propagate(_control: &mut PropagateControl, _changes: &[Literal], _data: &mut T) -> bool {
         true
     }
+    #[doc(hidden)]
+    unsafe extern "C" fn unsafe_propagate(
+        control: *mut clingo_propagate_control_t,
+        changes: *const clingo_literal_t,
+        size: usize,
+        data: *mut ::std::os::raw::c_void,
+    ) -> bool {
+        assert!(!control.is_null());
+        let control = (control as *mut PropagateControl)
+            .as_mut()
+            .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."));
 
+        assert!(!changes.is_null());
+        let changes = std::slice::from_raw_parts(changes as *const Literal, size);
+
+        assert!(!data.is_null());
+        let data = (data as *mut T)
+            .as_mut()
+            .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."));
+
+        Self::propagate(control, changes, data)
+    }
     //TODO: check documentation
     /// Called whenever a solver undoes assignments to watched solver literals.
     ///
@@ -1326,7 +1388,28 @@ pub trait Propagator<T> {
     fn undo(_control: &mut PropagateControl, _changes: &[Literal], _data: &mut T) -> bool {
         true
     }
+    #[doc(hidden)]
+    unsafe extern "C" fn unsafe_undo(
+        control: *mut clingo_propagate_control_t,
+        changes: *const clingo_literal_t,
+        size: usize,
+        data: *mut ::std::os::raw::c_void,
+    ) -> bool {
+        assert!(!control.is_null());
+        let control = (control as *mut PropagateControl)
+            .as_mut()
+            .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."));
 
+        assert!(!changes.is_null());
+        let changes = std::slice::from_raw_parts(changes as *const Literal, size);
+
+        assert!(!data.is_null());
+        let data = (data as *mut T)
+            .as_mut()
+            .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."));
+
+        Self::undo(control, changes, data)
+    }
     //TODO: check documentation
     /// This function is similar to @ref clingo_propagate_control_propagate() but is only called on total assignments without a change set.
     ///
