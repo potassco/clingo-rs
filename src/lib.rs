@@ -1474,7 +1474,7 @@ impl Control {
     ///
     /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
     /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if argument parsing fails
-    pub fn new(arguments: std::vec::Vec<String>, message_limit: u32) -> Result<Control, Error> {
+    pub fn new(arguments: std::vec::Vec<String>) -> Result<Control, Error> {
         let logger = None;
         let logger_data = std::ptr::null_mut();
 
@@ -1497,7 +1497,7 @@ impl Control {
                 c_args.len(),
                 logger,
                 logger_data,
-                message_limit,
+                0,
                 &mut ctl,
             )
         } {

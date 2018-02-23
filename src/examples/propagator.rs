@@ -254,7 +254,7 @@ fn main() {
     };
 
     // create a control object and pass command line arguments
-    let option = Control::new(options, 20);
+    let option = Control::new(options);
 
     match option {
         Ok(mut ctl) => {

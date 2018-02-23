@@ -46,7 +46,7 @@ fn main() {
     let options = env::args().skip(1).collect();
 
     // create a control object and pass command line arguments
-    let mut ctl = Control::new(options, 20).expect("Failed creating Control.");
+    let mut ctl = Control::new(options).expect("Failed creating Control.");
 
     {
         // get the configuration object and its root key
