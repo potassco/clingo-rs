@@ -1,6 +1,9 @@
 #![feature(ptr_internals)]
 #![allow(non_upper_case_globals)]
 extern crate clingo_sys;
+extern crate failure;
+#[macro_use]
+extern crate failure_derive;
 extern crate libc;
 
 use std::mem;
@@ -11,17 +14,41 @@ use std::ffi::CStr;
 use std::ffi::CString;
 use libc::c_char;
 use clingo_sys::*;
+pub use failure::Error;
 
 /// Functions and data structures to work with program ASTs
 pub mod ast;
 
-/// Enumeration of error codes.
+/// Error from the clingo library.
 ///
 /// **Note:** Errors can only be recovered from if explicitly mentioned; most
 /// functions do not provide strong exception guarantees.  This means that in
 /// case of errors associated objects cannot be used further.
+#[derive(Debug, Fail)]
+#[fail(display = "ClingoError: {:?}, {}", type_, msg)]
+pub struct ClingoError {
+    type_: ErrorType,
+    msg: &'static str,
+}
+impl ClingoError {
+    pub fn error_type(&self) -> ErrorType {
+        self.type_
+    }
+    pub fn message(&self) -> &'static str {
+        self.msg
+    }
+}
+
+/// Error discovered in the bindings
+#[derive(Debug, Fail)]
+#[fail(display = "Error discovered in the bindings: {}", msg)]
+pub struct BindingError {
+    msg: &'static str,
+}
+
+/// Enumeration of error types.
 #[derive(Debug, Copy, Clone)]
-pub enum Error {
+pub enum ErrorType {
     /// successful API calls
     Success,
     /// errors only detectable at runtime like invalid input
@@ -32,16 +59,18 @@ pub enum Error {
     BadAlloc,
     /// errors unrelated to clingo
     Unknown,
+    /// custom error set by the user
+    CustomError,
 }
-impl From<i32> for Error {
+impl From<i32> for ErrorType {
     fn from(error: i32) -> Self {
         match error as u32 {
-            clingo_error_clingo_error_success => Error::Success,
-            clingo_error_clingo_error_runtime => Error::Runtime,
-            clingo_error_clingo_error_logic => Error::Logic,
-            clingo_error_clingo_error_bad_alloc => Error::BadAlloc,
-            clingo_error_clingo_error_unknown => Error::Unknown,
-            _ => panic!("Failed to match clingo_error."),
+            clingo_error_clingo_error_success => ErrorType::Success,
+            clingo_error_clingo_error_runtime => ErrorType::Runtime,
+            clingo_error_clingo_error_logic => ErrorType::Logic,
+            clingo_error_clingo_error_bad_alloc => ErrorType::BadAlloc,
+            clingo_error_clingo_error_unknown => ErrorType::Unknown,
+            _ => ErrorType::CustomError,
         }
     }
 }
@@ -378,19 +407,24 @@ pub trait SolveEventHandler<T> {
     unsafe extern "C" fn unsafe_solve_callback(
         type_: clingo_solve_event_type_t,
         event: *mut ::std::os::raw::c_void,
-        data_: *mut ::std::os::raw::c_void,
-        goon_: *mut bool,
+        data: *mut ::std::os::raw::c_void,
+        goon: *mut bool,
     ) -> bool {
         // TODO               assert!(!event.is_null());
-        assert!(!data_.is_null());
-        assert!(!goon_.is_null());
         let event_type = match type_ {
             clingo_solve_event_type_clingo_solve_event_type_model => SolveEventType::Model,
             clingo_solve_event_type_clingo_solve_event_type_finish => SolveEventType::Finish,
             _ => panic!("Failed to match clingo_solve_event_type."),
         };
-        let data = (data_ as *mut T).as_mut().unwrap();
-        let goon = goon_.as_mut().unwrap();
+
+        assert!(!data.is_null());
+        let data = (data as *mut T)
+            .as_mut()
+            .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."));
+
+        assert!(!goon.is_null());
+        let goon = goon.as_mut()
+            .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."));
         Self::on_solve_event(event_type, data, goon)
     }
 }
@@ -402,13 +436,19 @@ pub trait AstStatementHandler<T> {
     fn on_statement(arg1: &AstStatement, arg2: &mut T) -> bool;
     #[doc(hidden)]
     unsafe extern "C" fn unsafe_ast_callback(
-        stm_: *const clingo_ast_statement_t,
-        data_: *mut ::std::os::raw::c_void,
+        stm: *const clingo_ast_statement_t,
+        data: *mut ::std::os::raw::c_void,
     ) -> bool {
-        assert!(!stm_.is_null());
-        assert!(!data_.is_null());
-        let stm = (stm_ as *const AstStatement).as_ref().unwrap();
-        let data = (data_ as *mut T).as_mut().unwrap();
+        assert!(!stm.is_null());
+        let stm = (stm as *const AstStatement)
+            .as_ref()
+            .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."));
+
+        assert!(!data.is_null());
+        let data = (data as *mut T)
+            .as_mut()
+            .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."));
+
         Self::on_statement(stm, data)
     }
 }
@@ -432,15 +472,12 @@ pub trait Logger<T> {
     /// @see clingo_parse_term()
     /// @see clingo_parse_program()
     fn log(code: Warning, message: &str, data: &mut T);
-    #[doc(hidden)]
     unsafe extern "C" fn unsafe_logging_callback(
-        code_: clingo_warning_t,
-        message_: *const ::std::os::raw::c_char,
-        data_: *mut ::std::os::raw::c_void,
+        code: clingo_warning_t,
+        message: *const ::std::os::raw::c_char,
+        data: *mut ::std::os::raw::c_void,
     ) {
-        assert!(!message_.is_null());
-        assert!(!data_.is_null());
-        let warning = match code_ as u32 {
+        let warning = match code as u32 {
             clingo_warning_clingo_warning_atom_undefined => Warning::AtomUndefined,
             clingo_warning_clingo_warning_file_included => Warning::FileIncluded,
             clingo_warning_clingo_warning_global_variable => Warning::GlobalVariable,
@@ -450,9 +487,18 @@ pub trait Logger<T> {
             clingo_warning_clingo_warning_variable_unbounded => Warning::VariableUnbound,
             _ => panic!("Failed to match clingo_warning."),
         };
-        let c_str = CStr::from_ptr(message_);
-        let message = c_str.to_str().unwrap();
-        let data = (data_ as *mut T).as_mut().unwrap();
+
+        assert!(!message.is_null());
+        let c_str = CStr::from_ptr(message);
+        let message = c_str.to_str().unwrap_or_else(|err| {
+            panic!(err);
+        });
+
+        assert!(!data.is_null());
+        let data = (data as *mut T)
+            .as_mut()
+            .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."));
+
         Self::log(warning, message, data)
     }
 }
@@ -547,26 +593,34 @@ pub trait GroundEventHandler<T> {
     ) -> bool;
     #[doc(hidden)]
     unsafe extern "C" fn unsafe_ground_callback(
-        location_: *const clingo_location_t,
-        name_: *const ::std::os::raw::c_char,
-        arguments_: *const clingo_symbol_t,
+        location: *const clingo_location_t,
+        name: *const ::std::os::raw::c_char,
+        arguments: *const clingo_symbol_t,
         arguments_size: usize,
-        data_: *mut ::std::os::raw::c_void,
+        data: *mut ::std::os::raw::c_void,
         symbol_callback: clingo_symbol_callback_t,
         symbol_callback_data: *mut ::std::os::raw::c_void,
         //TODO wrap symbol call back
     ) -> bool {
-        assert!(!location_.is_null());
-        assert!(!name_.is_null());
-        assert!(!arguments_.is_null());
-        assert!(!data_.is_null());
+        assert!(!location.is_null());
+        let location = (location as *const Location)
+            .as_ref()
+            .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."));
+
+        assert!(!name.is_null());
+        let c_str = CStr::from_ptr(name);
+        let name = c_str.to_str().unwrap();
+
+        assert!(!arguments.is_null());
+        let arguments = std::slice::from_raw_parts(arguments as *const Symbol, arguments_size);
+
+        assert!(!data.is_null());
+        let data = (data as *mut T)
+            .as_mut()
+            .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."));
+
         assert!(!symbol_callback_data.is_null());
 
-        let location = (location_ as *const Location).as_ref().unwrap();
-        let c_str = CStr::from_ptr(name_);
-        let name = c_str.to_str().unwrap();
-        let arguments = std::slice::from_raw_parts(arguments_ as *const Symbol, arguments_size);
-        let data = (data_ as *mut T).as_mut().unwrap();
         Self::on_ground_event(
             location,
             name,
@@ -731,7 +785,7 @@ impl Signature {
     ///
     /// # Errors
     ///
-    /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
+    /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
     pub fn create(name_: &str, arity: u32, positive: bool) -> Result<Signature, Error> {
         let name_c_str = CString::new(name_).unwrap();
         let mut signature = 0;
@@ -739,7 +793,7 @@ impl Signature {
         {
             Ok(Signature(signature))
         } else {
-            Err(error())
+            Err(error())?
         }
     }
     // TODO
@@ -843,14 +897,14 @@ impl Symbol {
     ///
     /// #  Errors:
     ///
-    /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
+    /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
     pub fn create_string(string: &str) -> Result<Symbol, Error> {
         let mut symbol = 0 as clingo_symbol_t;
         let c_str = CString::new(string).unwrap();
         if unsafe { clingo_symbol_create_string(c_str.as_ptr(), &mut symbol) } {
             Ok(Symbol(symbol))
         } else {
-            Err(error())
+            Err(error())?
         }
     }
 
@@ -866,14 +920,14 @@ impl Symbol {
     ///
     /// # Errors
     ///
-    /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
+    /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
     pub fn create_id(name: &str, positive: bool) -> Result<Symbol, Error> {
         let mut symbol = 0 as clingo_symbol_t;
         let name_c_str = CString::new(name).unwrap();
         if unsafe { clingo_symbol_create_id(name_c_str.as_ptr(), positive, &mut symbol) } {
             Ok(Symbol(symbol))
         } else {
-            Err(error())
+            Err(error())?
         }
     }
 
@@ -890,7 +944,7 @@ impl Symbol {
     ///
     /// # Errors
     ///
-    /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
+    /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
     pub fn create_function(
         name: &str,
         arguments: &[Symbol],
@@ -909,7 +963,7 @@ impl Symbol {
         } {
             Ok(Symbol(symbol))
         } else {
-            Err(error())
+            Err(error())?
         }
     }
 
@@ -917,13 +971,13 @@ impl Symbol {
     ///
     /// # Errors
     ///
-    /// - [`Error::Runtime`](enum.Error.html#variant.Runtime) if symbol is not of type `SymbolType::Number`
+    /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if symbol is not of type `SymbolType::Number`
     pub fn number(&self) -> Result<i32, Error> {
         let mut number = 0;
         if unsafe { clingo_symbol_number(self.0, &mut number) } {
             Ok(number)
         } else {
-            Err(error())
+            Err(error())?
         }
     }
 
@@ -931,14 +985,14 @@ impl Symbol {
     ///
     /// # Errors
     ///
-    /// - [`Error::Runtime`](enum.Error.html#variant.Runtime) if symbol is not of type `SymbolType::Function`
+    /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if symbol is not of type `SymbolType::Function`
     pub fn name(&self) -> Result<&str, Error> {
         let mut char_ptr = std::ptr::null() as *const c_char;
         if unsafe { clingo_symbol_name(self.0, &mut char_ptr) } {
             let c_str = unsafe { CStr::from_ptr(char_ptr) };
-            Ok(c_str.to_str().unwrap())
+            Ok(c_str.to_str()?)
         } else {
-            Err(error())
+            Err(error())?
         }
     }
 
@@ -946,14 +1000,14 @@ impl Symbol {
     ///
     /// # Errors
     ///
-    /// - [`Error::Runtime`](enum.Error.html#variant.Runtime) if symbol is not of type `SymbolType::String`
+    /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if symbol is not of type `SymbolType::String`
     pub fn string(&self) -> Result<&str, Error> {
         let mut char_ptr = std::ptr::null() as *const c_char;
         if unsafe { clingo_symbol_string(self.0, &mut char_ptr) } {
             let c_str = unsafe { CStr::from_ptr(char_ptr) };
-            Ok(c_str.to_str().unwrap())
+            Ok(c_str.to_str()?)
         } else {
-            Err(error())
+            Err(error())?
         }
     }
 
@@ -961,13 +1015,13 @@ impl Symbol {
     ///
     /// # Errors
     ///
-    /// - [`Error::Runtime`](enum.Error.html#variant.Runtime) if symbol is not of type `SymbolType::Function`
+    /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if symbol is not of type `SymbolType::Function`
     pub fn is_positive(&self) -> Result<bool, Error> {
         let mut positive = false;
         if unsafe { clingo_symbol_is_positive(self.0, &mut positive) } {
             Ok(positive)
         } else {
-            Err(error())
+            Err(error())?
         }
     }
 
@@ -975,13 +1029,13 @@ impl Symbol {
     ///
     /// # Errors
     ///
-    /// - [`Error::Runtime`](enum.Error.html#variant.Runtime) if symbol is not of type `SymbolType::Function`
+    /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if symbol is not of type `SymbolType::Function`
     pub fn is_negative(&self) -> Result<bool, Error> {
         let mut negative = false;
         if unsafe { clingo_symbol_is_negative(self.0, &mut negative) } {
             Ok(negative)
         } else {
-            Err(error())
+            Err(error())?
         }
     }
 
@@ -989,7 +1043,7 @@ impl Symbol {
     ///
     /// # Errors
     ///
-    /// - [`Error::Runtime`](enum.Error.html#variant.Runtime) if symbol is not of type `SymbolType::Function`
+    /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if symbol is not of type `SymbolType::Function`
     pub fn arguments(&self) -> Result<Vec<Symbol>, Error> {
         let mut symbol_ptr = std::ptr::null() as *const clingo_symbol_t;
         let mut size: usize = 0;
@@ -1002,7 +1056,7 @@ impl Symbol {
             }
             Ok(symbols)
         } else {
-            Err(error())
+            Err(error())?
         }
     }
 
@@ -1028,22 +1082,20 @@ impl Symbol {
     ///
     /// # Errors
     ///
-    /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
+    /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
     ///
-    pub fn to_string(&self) -> Option<String> {
+    pub fn to_string(&self) -> Result<String, Error> {
         let mut size: usize = 0;
         if unsafe { clingo_symbol_to_string_size(self.0, &mut size) } {
             let a1 = vec![1; size];
             let cstring = unsafe { CString::from_vec_unchecked(a1) };
-            let err =
-                unsafe { clingo_symbol_to_string(self.0, cstring.as_ptr() as *mut c_char, size) };
-            if !err {
-                None
+            if unsafe { clingo_symbol_to_string(self.0, cstring.as_ptr() as *mut c_char, size) } {
+                Ok(cstring.into_string()?)
             } else {
-                cstring.into_string().ok()
+                Err(error())?
             }
         } else {
-            None
+            Err(error())?
         }
     }
 }
@@ -1067,8 +1119,8 @@ impl Symbol {
 ///
 /// # Errors
 ///
-/// - [`Error::Runtime`](enum.Error.html#variant.Runtime) if parsing fails
-/// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
+/// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if parsing fails
+/// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
 pub fn parse_program<D, T: AstStatementHandler<D>>(
     program_: &str,
     _callback: &T,
@@ -1091,7 +1143,7 @@ pub fn parse_program<D, T: AstStatementHandler<D>>(
     } {
         Ok(())
     } else {
-        Err(error())
+        Err(error())?
     }
 }
 
@@ -1108,8 +1160,8 @@ pub fn parse_program<D, T: AstStatementHandler<D>>(
 ///
 /// # Errors
 ///
-/// - [`Error::Runtime`](enum.Error.html#variant.Runtime) if parsing fails
-/// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
+/// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if parsing fails
+/// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
 pub fn parse_program_with_logger<CD, C: AstStatementHandler<CD>, LD, L: Logger<LD>>(
     program_: &str,
     _callback: &C,
@@ -1133,7 +1185,7 @@ pub fn parse_program_with_logger<CD, C: AstStatementHandler<CD>, LD, L: Logger<L
     } {
         Ok(())
     } else {
-        Err(error())
+        Err(error())?
     }
 }
 
@@ -1183,14 +1235,17 @@ impl<'a> Part<'a> {
 /// Get the last error code set by a clingo API call.
 ///
 /// **Note:** Each thread has its own local error code.
-pub fn error() -> Error {
-    Error::from(unsafe { clingo_error_code() })
+fn error() -> ClingoError {
+    ClingoError {
+        type_: ErrorType::from(unsafe { clingo_error_code() }),
+        msg: error_message(),
+    }
 }
 
 /// Get the last error message set if an API call fails.
 ///
 /// **Note:** Each thread has its own local error message.
-pub fn error_message() -> &'static str {
+fn error_message() -> &'static str {
     let char_ptr: *const c_char = unsafe { clingo_error_message() };
     if char_ptr.is_null() {
         ""
@@ -1201,7 +1256,7 @@ pub fn error_message() -> &'static str {
 }
 
 /// Set a custom error code and message in the active thread.
-pub fn set_error(code: Error, message: &str) {
+pub fn set_error(code: ErrorType, message: &str) {
     let message_c_str = CString::new(message).unwrap();
     unsafe { clingo_set_error(code as clingo_error_t, message_c_str.as_ptr()) }
 }
@@ -1228,7 +1283,23 @@ pub trait Propagator<T> {
     fn init(_init: &mut PropagateInit, _data: &mut T) -> bool {
         true
     }
+    #[doc(hidden)]
+    unsafe extern "C" fn unsafe_init(
+        init: *mut clingo_propagate_init_t,
+        data: *mut ::std::os::raw::c_void,
+    ) -> bool {
+        assert!(!init.is_null());
+        let init = (init as *mut PropagateInit)
+            .as_mut()
+            .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."));
 
+        assert!(!data.is_null());
+        let data = (data as *mut T)
+            .as_mut()
+            .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."));
+
+        Self::init(init, data)
+    }
     //TODO
     /// Can be used to propagate solver literals given a @link clingo_assignment_t partial assignment@endlink.
     ///
@@ -1278,7 +1349,28 @@ pub trait Propagator<T> {
     fn propagate(_control: &mut PropagateControl, _changes: &[Literal], _data: &mut T) -> bool {
         true
     }
+    #[doc(hidden)]
+    unsafe extern "C" fn unsafe_propagate(
+        control: *mut clingo_propagate_control_t,
+        changes: *const clingo_literal_t,
+        size: usize,
+        data: *mut ::std::os::raw::c_void,
+    ) -> bool {
+        assert!(!control.is_null());
+        let control = (control as *mut PropagateControl)
+            .as_mut()
+            .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."));
 
+        assert!(!changes.is_null());
+        let changes = std::slice::from_raw_parts(changes as *const Literal, size);
+
+        assert!(!data.is_null());
+        let data = (data as *mut T)
+            .as_mut()
+            .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."));
+
+        Self::propagate(control, changes, data)
+    }
     //TODO: check documentation
     /// Called whenever a solver undoes assignments to watched solver literals.
     ///
@@ -1296,7 +1388,28 @@ pub trait Propagator<T> {
     fn undo(_control: &mut PropagateControl, _changes: &[Literal], _data: &mut T) -> bool {
         true
     }
+    #[doc(hidden)]
+    unsafe extern "C" fn unsafe_undo(
+        control: *mut clingo_propagate_control_t,
+        changes: *const clingo_literal_t,
+        size: usize,
+        data: *mut ::std::os::raw::c_void,
+    ) -> bool {
+        assert!(!control.is_null());
+        let control = (control as *mut PropagateControl)
+            .as_mut()
+            .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."));
 
+        assert!(!changes.is_null());
+        let changes = std::slice::from_raw_parts(changes as *const Literal, size);
+
+        assert!(!data.is_null());
+        let data = (data as *mut T)
+            .as_mut()
+            .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."));
+
+        Self::undo(control, changes, data)
+    }
     //TODO: check documentation
     /// This function is similar to @ref clingo_propagate_control_propagate() but is only called on total assignments without a change set.
     ///
@@ -1315,56 +1428,20 @@ pub trait Propagator<T> {
         true
     }
     #[doc(hidden)]
-    unsafe extern "C" fn unsafe_init(
-        init_: *mut clingo_propagate_init_t,
-        data: *mut ::std::os::raw::c_void,
-    ) -> bool {
-        assert!(!init_.is_null());
-        assert!(!data.is_null());
-        let init = (init_ as *mut PropagateInit).as_mut().unwrap();
-        let propagator = (data as *mut T).as_mut().unwrap();
-        Self::init(init, propagator)
-    }
-    #[doc(hidden)]
-    unsafe extern "C" fn unsafe_propagate(
-        control_: *mut clingo_propagate_control_t,
-        changes_: *const clingo_literal_t,
-        size: usize,
-        data: *mut ::std::os::raw::c_void,
-    ) -> bool {
-        assert!(!control_.is_null());
-        assert!(!changes_.is_null());
-        assert!(!data.is_null());
-        let control = (control_ as *mut PropagateControl).as_mut().unwrap();
-        let changes = std::slice::from_raw_parts(changes_ as *const Literal, size);
-        let propagator = (data as *mut T).as_mut().unwrap();
-        Self::propagate(control, changes, propagator)
-    }
-    #[doc(hidden)]
-    unsafe extern "C" fn unsafe_undo(
-        control_: *mut clingo_propagate_control_t,
-        changes_: *const clingo_literal_t,
-        size: usize,
-        data: *mut ::std::os::raw::c_void,
-    ) -> bool {
-        assert!(!control_.is_null());
-        assert!(!changes_.is_null());
-        assert!(!data.is_null());
-        let control = (control_ as *mut PropagateControl).as_mut().unwrap();
-        let changes = std::slice::from_raw_parts(changes_ as *const Literal, size);
-        let propagator = (data as *mut T).as_mut().unwrap();
-        Self::undo(control, changes, propagator)
-    }
-    #[doc(hidden)]
     unsafe extern "C" fn unsafe_check(
-        control_: *mut clingo_propagate_control_t,
+        control: *mut clingo_propagate_control_t,
         data: *mut ::std::os::raw::c_void,
     ) -> bool {
-        assert!(!control_.is_null());
+        assert!(!control.is_null());
+        let control = (control as *mut PropagateControl)
+            .as_mut()
+            .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."));
+
         assert!(!data.is_null());
-        let control = (control_ as *mut PropagateControl).as_mut().unwrap();
-        let propagator = (data as *mut T).as_mut().unwrap();
-        Self::check(control, propagator)
+        let data = (data as *mut T)
+            .as_mut()
+            .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."));
+        Self::check(control, data)
     }
 }
 
@@ -1395,9 +1472,9 @@ impl Control {
     ///
     /// # Errors
     ///
-    /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
-    /// - [`Error::Runtime`](enum.Error.html#variant.Runtime) if argument parsing fails
-    pub fn new(arguments: std::vec::Vec<String>, message_limit: u32) -> Result<Control, Error> {
+    /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
+    /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if argument parsing fails
+    pub fn new(arguments: std::vec::Vec<String>) -> Result<Control, Error> {
         let logger = None;
         let logger_data = std::ptr::null_mut();
 
@@ -1420,7 +1497,7 @@ impl Control {
                 c_args.len(),
                 logger,
                 logger_data,
-                message_limit,
+                0,
                 &mut ctl,
             )
         } {
@@ -1428,7 +1505,7 @@ impl Control {
                 ctl: Unique::new(ctl).unwrap(),
             })
         } else {
-            Err(error())
+            Err(error())?
         }
     }
 
@@ -1449,8 +1526,8 @@ impl Control {
     ///
     /// # Errors
     ///
-    /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
-    /// - [`Error::Runtime`](enum.Error.html#variant.Runtime) if argument parsing fails
+    /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
+    /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if argument parsing fails
     pub fn new_with_logger<D, T: Logger<D>>(
         arguments: std::vec::Vec<String>,
         _logger: &T,
@@ -1485,7 +1562,7 @@ impl Control {
                 ctl: Unique::new(ctl).unwrap(),
             })
         } else {
-            Err(error())
+            Err(error())?
         }
     }
 
@@ -1506,8 +1583,8 @@ impl Control {
     ///
     /// # Errors
     ///
-    /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
-    /// - [`Error::Runtime`](enum.Error.html#variant.Runtime) if parsing fails
+    /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
+    /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if parsing fails
     pub fn add(&mut self, name_: &str, parameters: Vec<&str>, program_: &str) -> Result<(), Error> {
         let name = CString::new(name_).unwrap();
         let name_ptr = name.as_ptr();
@@ -1540,7 +1617,7 @@ impl Control {
         } {
             Ok(())
         } else {
-            Err(error())
+            Err(error())?
         }
     }
 
@@ -1559,7 +1636,7 @@ impl Control {
     ///
     /// # Errors
     ///
-    /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
+    /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
     ///
     /// **See:** [`Part`](struct.Part.html)
     pub fn ground(&mut self, sparts: &[Part]) -> Result<(), Error> {
@@ -1580,7 +1657,7 @@ impl Control {
         } {
             Ok(())
         } else {
-            Err(error())
+            Err(error())?
         }
     }
 
@@ -1601,7 +1678,7 @@ impl Control {
     ///
     /// # Errors
     ///
-    /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
+    /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
     /// - error code of ground callback
     ///
     /// **See:** [`Part`](struct.Part.html)
@@ -1629,7 +1706,7 @@ impl Control {
         } {
             Ok(())
         } else {
-            Err(error())
+            Err(error())?
         }
     }
 
@@ -1645,13 +1722,13 @@ impl Control {
     ///
     /// # Errors
     ///
-    /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
-    /// - [`Error::Runtime`](enum.Error.html#variant.Runtime) if solving could not be started
+    /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
+    /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if solving could not be started
     pub fn solve(
         &mut self,
         mode: &SolveMode,
         assumptions: &[SymbolicLiteral],
-    ) -> Result<&mut SolveHandle, &'static str> {
+    ) -> Result<&mut SolveHandle, Error> {
         let mut handle = std::ptr::null_mut() as *mut clingo_solve_handle_t;
         if unsafe {
             clingo_control_solve(
@@ -1664,10 +1741,14 @@ impl Control {
                 &mut handle,
             )
         } {
-            unsafe { (handle as *mut SolveHandle).as_mut() }
-                .ok_or("Rust binding failed to dereference pointer to clingo solve handle")
+            match unsafe { (handle as *mut SolveHandle).as_mut() } {
+                Some(x) => Ok(x),
+                None => Err(BindingError {
+                    msg: "Failed dereferencing pointer to clingo_solve_handle.",
+                })?,
+            }
         } else {
-            Err(error_message())
+            Err(error())?
         }
     }
 
@@ -1685,15 +1766,15 @@ impl Control {
     ///
     /// # Errors
     ///
-    /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
-    /// - [`Error::Runtime`](enum.Error.html#variant.Runtime) if solving could not be started
+    /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
+    /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if solving could not be started
     pub fn solve_with_event_handler<D, T: SolveEventHandler<D>>(
         &mut self,
         mode: &SolveMode,
         assumptions: &[SymbolicLiteral],
         _notify: &T,
         data_: &mut D,
-    ) -> Result<&mut SolveHandle, &'static str> {
+    ) -> Result<&mut SolveHandle, Error> {
         let mut handle = std::ptr::null_mut() as *mut clingo_solve_handle_t;
         let data = data_ as *mut D;
         if unsafe {
@@ -1707,10 +1788,14 @@ impl Control {
                 &mut handle,
             )
         } {
-            unsafe { (handle as *mut SolveHandle).as_mut() }
-                .ok_or("Rust binding failed to dereference pointer to clingo solve handle")
+            match unsafe { (handle as *mut SolveHandle).as_mut() } {
+                Some(x) => Ok(x),
+                None => Err(BindingError {
+                    msg: "Failed dereferencing pointer to clingo_solve_handle.",
+                })?,
+            }
         } else {
-            Err(error_message())
+            Err(error())?
         }
     }
 
@@ -1724,12 +1809,12 @@ impl Control {
     ///
     /// # Errors
     ///
-    /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
+    /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
     pub fn cleanup(&mut self) -> Result<(), Error> {
         if unsafe { clingo_control_cleanup(self.ctl.as_ptr()) } {
             Ok(())
         } else {
-            Err(error())
+            Err(error())?
         }
     }
 
@@ -1744,7 +1829,7 @@ impl Control {
     ///
     /// # Errors
     ///
-    /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
+    /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
     pub fn assign_external(&mut self, symbol: &Symbol, value: TruthValue) -> Result<(), Error> {
         if unsafe {
             clingo_control_assign_external(
@@ -1755,7 +1840,7 @@ impl Control {
         } {
             Ok(())
         } else {
-            Err(error())
+            Err(error())?
         }
     }
 
@@ -1771,12 +1856,12 @@ impl Control {
     ///
     /// # Errors
     ///
-    /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
+    /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
     pub fn release_external(&mut self, Symbol(atom): Symbol) -> Result<(), Error> {
         if unsafe { clingo_control_release_external(self.ctl.as_ptr(), atom) } {
             Ok(())
         } else {
-            Err(error())
+            Err(error())?
         }
     }
 
@@ -1795,7 +1880,7 @@ impl Control {
     ///
     /// # Errors
     ///
-    /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
+    /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
     pub fn register_propagator<D, T: Propagator<D>>(
         &mut self,
         _propagator_builder: &T,
@@ -1819,7 +1904,7 @@ impl Control {
         } {
             Ok(())
         } else {
-            Err(error())
+            Err(error())?
         }
     }
 
@@ -1839,14 +1924,18 @@ impl Control {
     ///
     /// # Errors
     ///
-    /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
-    pub fn statistics(&mut self) -> Result<&mut Statistics, &'static str> {
+    /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
+    pub fn statistics(&mut self) -> Result<&mut Statistics, Error> {
         let mut stat = std::ptr::null_mut() as *mut clingo_statistics_t;
         if unsafe { clingo_control_statistics(self.ctl.as_ptr(), &mut stat) } {
-            unsafe { (stat as *mut Statistics).as_mut() }
-                .ok_or("Rust bindings failed to dereference pointer to clingo statistics")
+            match unsafe { (stat as *mut Statistics).as_mut() } {
+                Some(x) => Ok(x),
+                None => Err(BindingError {
+                    msg: "Failed dereferencing pointer to clingo_statistics.",
+                })?,
+            }
         } else {
-            Err(error_message())
+            Err(error())?
         }
     }
 
@@ -1916,7 +2005,7 @@ impl Control {
     ///
     /// # Errors
     ///
-    /// - [`Error::Runtime`](enum.Error.html#variant.Runtime) if constant definition does not exist
+    /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if constant definition does not exist
     ///
     /// **See:** [`Part::get_const()`](struct.Part.html#method.get_const)
     pub fn has_const(&mut self, name: &str) -> Result<bool, Error> {
@@ -1925,7 +2014,7 @@ impl Control {
         if unsafe { clingo_control_has_const(self.ctl.as_ptr(), c_str_name.as_ptr(), &mut exist) } {
             Ok(exist)
         } else {
-            Err(error())
+            Err(error())?
         }
     }
 
@@ -1978,7 +2067,7 @@ impl Control {
     ///
     /// # Errors
     ///
-    /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
+    /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
     pub fn backend(&mut self) -> Option<&mut Backend> {
         let mut backend = std::ptr::null_mut();
         if unsafe { clingo_control_backend(self.ctl.as_ptr(), &mut backend) } {
@@ -2111,13 +2200,13 @@ impl ProgramBuilder {
     ///
     /// # Errors
     ///
-    /// - [`Error::Runtime`](enum.Error.html#variant.Runtime) for statements of invalid form
-    /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
+    /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) for statements of invalid form
+    /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
     pub fn add(&mut self, stm: &AstStatement) -> Result<(), Error> {
         if unsafe { clingo_program_builder_add(&mut self.0, &stm.0) } {
             Ok(())
         } else {
-            Err(error())
+            Err(error())?
         }
     }
 
@@ -2375,7 +2464,7 @@ impl Backend {
     ///
     /// # Errors
     ///
-    /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
+    /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
     pub fn rule(&mut self, choice: bool, head: &[Atom], body: &[Literal]) -> Result<(), Error> {
         if unsafe {
             clingo_backend_rule(
@@ -2389,7 +2478,7 @@ impl Backend {
         } {
             Ok(())
         } else {
-            Err(error())
+            Err(error())?
         }
     }
 
@@ -2405,7 +2494,7 @@ impl Backend {
     ///
     /// # Errors
     ///
-    /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
+    /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
     pub fn weight_rule(
         &mut self,
         choice: bool,
@@ -2426,7 +2515,7 @@ impl Backend {
         } {
             Ok(())
         } else {
-            Err(error())
+            Err(error())?
         }
     }
 
@@ -2439,7 +2528,7 @@ impl Backend {
     ///
     /// # Errors
     ///
-    /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
+    /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
     pub fn minimize(&mut self, priority: i32, literals: &[WeightedLiteral]) -> Result<(), Error> {
         if unsafe {
             clingo_backend_minimize(
@@ -2451,7 +2540,7 @@ impl Backend {
         } {
             Ok(())
         } else {
-            Err(error())
+            Err(error())?
         }
     }
 
@@ -2463,7 +2552,7 @@ impl Backend {
     ///
     /// # Errors
     ///
-    /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
+    /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
     pub fn project(&mut self, atoms: &[Atom]) -> Result<(), Error> {
         if unsafe {
             clingo_backend_project(
@@ -2474,7 +2563,7 @@ impl Backend {
         } {
             Ok(())
         } else {
-            Err(error())
+            Err(error())?
         }
     }
 
@@ -2487,13 +2576,13 @@ impl Backend {
     ///
     /// # Errors
     ///
-    /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
+    /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
     pub fn external(&mut self, atom: &Atom, type_: ExternalType) -> Result<(), Error> {
         if unsafe { clingo_backend_external(&mut self.0, atom.0, type_ as clingo_external_type_t) }
         {
             Ok(())
         } else {
-            Err(error())
+            Err(error())?
         }
     }
 
@@ -2506,7 +2595,7 @@ impl Backend {
     ///
     /// # Errors
     ///
-    /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
+    /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
     pub fn assume(&mut self, literals: &[Literal]) -> Result<(), Error> {
         let size = literals.len();
         if unsafe {
@@ -2518,7 +2607,7 @@ impl Backend {
         } {
             Ok(())
         } else {
-            Err(error())
+            Err(error())?
         }
     }
 
@@ -2534,7 +2623,7 @@ impl Backend {
     ///
     /// # Errors
     ///
-    /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
+    /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
     pub fn heuristic(
         &mut self,
         atom: &Atom,
@@ -2557,7 +2646,7 @@ impl Backend {
         } {
             Ok(())
         } else {
-            Err(error())
+            Err(error())?
         }
     }
 
@@ -2571,7 +2660,7 @@ impl Backend {
     ///
     /// # Errors
     ///
-    /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
+    /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
     pub fn acyc_edge(
         &mut self,
         node_u: i32,
@@ -2590,7 +2679,7 @@ impl Backend {
         } {
             Ok(())
         } else {
-            Err(error())
+            Err(error())?
         }
     }
 
@@ -2908,8 +2997,8 @@ impl SymbolicAtoms {
     ///
     /// # Errors
     ///
-    /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
-    /// - [`Error::Runtime`](enum.Error.html#variant.Runtime) if the size is too small
+    /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
+    /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if the size is too small
     pub fn signatures(&self) -> Result<Vec<Signature>, Error> {
         let mut size = 0;
         if unsafe { clingo_symbolic_atoms_signatures_size(&self.0, &mut size) } {
@@ -2926,10 +3015,10 @@ impl SymbolicAtoms {
                     unsafe { std::slice::from_raw_parts(signatures_ptr as *const Signature, size) };
                 Ok(signatures_ref.to_owned())
             } else {
-                Err(error())
+                Err(error())?
             }
         } else {
-            Err(error())
+            Err(error())?
         }
     }
 
@@ -3069,8 +3158,8 @@ impl TheoryAtoms {
     ///
     /// # Errors
     ///
-    /// - [`Error::Runtime`](enum.Error.html#variant.Runtime) if the size is too small
-    /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
+    /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if the size is too small
+    /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
     pub fn term_to_string(&mut self, Id(term): Id) -> Result<&str, Error> {
         let mut size = 0;
         if unsafe { clingo_theory_atoms_term_to_string_size(&mut self.0, term, &mut size) } {
@@ -3079,10 +3168,10 @@ impl TheoryAtoms {
                 let cstr = unsafe { CStr::from_ptr(&c_ptr) };
                 Ok(cstr.to_str().unwrap())
             } else {
-                Err(error())
+                Err(error())?
             }
         } else {
-            Err(error())
+            Err(error())?
         }
     }
 
@@ -3158,8 +3247,8 @@ impl TheoryAtoms {
     ///
     /// # Errors
     ///
-    /// - [`Error::Runtime`](enum.Error.html#variant.Runtime) if the size is too small
-    /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
+    /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if the size is too small
+    /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
     pub fn element_to_string(&mut self, Id(element): Id) -> Result<&str, Error> {
         let mut size = 0;
         if unsafe { clingo_theory_atoms_element_to_string_size(&mut self.0, element, &mut size) } {
@@ -3170,10 +3259,10 @@ impl TheoryAtoms {
                 let cstr = unsafe { CStr::from_ptr(&c_ptr) };
                 Ok(cstr.to_str().unwrap())
             } else {
-                Err(error())
+                Err(error())?
             }
         } else {
-            Err(error())
+            Err(error())?
         }
     }
 
@@ -3274,8 +3363,8 @@ impl TheoryAtoms {
     ///
     /// # Errors
     ///
-    /// - [`Error::Runtime`](enum.Error.html#variant.Runtime) if the size is too small
-    /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
+    /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if the size is too small
+    /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
     pub fn atom_to_string(&mut self, Id(atom): Id) -> Result<&str, Error> {
         let mut size = 0;
         if unsafe { clingo_theory_atoms_atom_to_string_size(&mut self.0, atom, &mut size) } {
@@ -3284,10 +3373,10 @@ impl TheoryAtoms {
                 let cstr = unsafe { CStr::from_ptr(&c_ptr) };
                 Ok(cstr.to_str().unwrap())
             } else {
-                Err(error())
+                Err(error())?
             }
         } else {
-            Err(error())
+            Err(error())?
         }
     }
 }
@@ -3414,8 +3503,8 @@ impl Model {
     ///
     /// # Errors
     ///
-    /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
-    /// - [`Error::Runtime`](enum.Error.html#variant.Runtime) if the size is too small
+    /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
+    /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if the size is too small
     pub fn symbols(&mut self, show: &ShowType) -> Result<Vec<Symbol>, Error> {
         let mut size: usize = 0;
         if unsafe { clingo_model_symbols_size(&mut self.0, show.0, &mut size) } {
@@ -3433,10 +3522,10 @@ impl Model {
                     unsafe { std::slice::from_raw_parts(symbols_ptr as *const Symbol, size) };
                 Ok(symbols_ref.to_owned())
             } else {
-                Err(error())
+                Err(error())?
             }
         } else {
-            Err(error())
+            Err(error())?
         }
     }
 
@@ -3475,8 +3564,8 @@ impl Model {
     ///
     /// # Errors
     ///
-    /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
-    /// - [`Error::Runtime`](enum.Error.html#variant.Runtime) if the size is too small
+    /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
+    /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if the size is too small
     ///
     /// **See:** [`Model::optimality_proven()`](struct.Model.html#method.optimality_proven)
     pub fn cost(&mut self) -> Result<Vec<i64>, Error> {
@@ -3488,10 +3577,10 @@ impl Model {
                 let cost_ref = unsafe { std::slice::from_raw_parts(cost_ptr as *const i64, size) };
                 Ok(cost_ref.to_owned())
             } else {
-                Err(error())
+                Err(error())?
             }
         } else {
-            Err(error())
+            Err(error())?
         }
     }
 
@@ -3546,8 +3635,8 @@ impl SolveControl {
     ///
     /// # Errors
     ///
-    /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
-    /// - [`Error::Runtime`](enum.Error.html#variant.Runtime) if adding the clause fails
+    /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
+    /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if adding the clause fails
     pub fn add_clause(&mut self, clause: &[Literal]) -> Result<(), Error> {
         if unsafe {
             clingo_solve_control_add_clause(
@@ -3558,7 +3647,7 @@ impl SolveControl {
         } {
             Ok(())
         } else {
-            Err(error())
+            Err(error())?
         }
     }
 
@@ -3828,7 +3917,7 @@ impl PropagateControl {
     ///
     /// # Errors
     ///
-    /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
+    /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
     pub fn add_clause(&mut self, clause: &[Literal], type_: ClauseType) -> Result<bool, Error> {
         let mut result = false;
         if unsafe {
@@ -3842,7 +3931,7 @@ impl PropagateControl {
         } {
             Ok(result)
         } else {
-            Err(error())
+            Err(error())?
         }
     }
 
@@ -3858,13 +3947,13 @@ impl PropagateControl {
     ///
     /// # Errors
     ///
-    /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
+    /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
     pub fn propagate(&mut self) -> Result<bool, Error> {
         let mut result = false;
         if unsafe { clingo_propagate_control_propagate(&mut self.0, &mut result) } {
             Ok(result)
         } else {
-            Err(error())
+            Err(error())?
         }
     }
 }
@@ -3975,14 +4064,14 @@ impl SolveHandle {
     ///
     /// # Errors
     ///
-    /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
-    /// - [`Error::Runtime`](enum.Error.html#variant.Runtime) if solving fails
+    /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
+    /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if solving fails
     pub fn get(&mut self) -> Result<SolveResult, Error> {
         let mut result = 0;
         if unsafe { clingo_solve_handle_get(&mut self.0, &mut result) } {
             Ok(SolveResult(result))
         } else {
-            Err(error())
+            Err(error())?
         }
     }
 
@@ -4007,15 +4096,19 @@ impl SolveHandle {
     ///
     /// # Errors
     ///
-    /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
-    /// - [`Error::Runtime`](enum.Error.html#variant.Runtime) if solving fails
-    pub fn model(&mut self) -> Result<&mut Model, &'static str> {
+    /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
+    /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if solving fails
+    pub fn model(&mut self) -> Result<&mut Model, Error> {
         let mut model = std::ptr::null_mut() as *mut clingo_model_t;
         if unsafe { clingo_solve_handle_model(&mut self.0, &mut model) } {
-            unsafe { (model as *mut Model).as_mut() }
-                .ok_or("Rust binding failed to dereference pointer to clingo model")
+            match unsafe { (model as *mut Model).as_mut() } {
+                Some(x) => Ok(x),
+                None => Err(BindingError {
+                    msg: "Failed dereferencing pointer to clingo_model.",
+                })?,
+            }
         } else {
-            Err(error_message())
+            Err(error())?
         }
     }
 
@@ -4028,13 +4121,13 @@ impl SolveHandle {
     ///
     /// # Errors
     ///
-    /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
-    /// - [`Error::Runtime`](enum.Error.html#variant.Runtime) if solving fails
+    /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
+    /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if solving fails
     pub fn resume(&mut self) -> Result<(), Error> {
         if unsafe { clingo_solve_handle_resume(&mut self.0) } {
             Ok(())
         } else {
-            Err(error())
+            Err(error())?
         }
     }
 
@@ -4056,13 +4149,13 @@ impl SolveHandle {
     ///
     /// # Errors
     ///
-    /// - [`Error::BadAlloc`](enum.Error.html#variant.BadAlloc)
-    /// - [`Error::Runtime`](enum.Error.html#variant.Runtime) if solving fails
+    /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
+    /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if solving fails
     pub fn close(&mut self) -> Result<(), Error> {
         if unsafe { clingo_solve_handle_close(&mut self.0) } {
             Ok(())
         } else {
-            Err(error())
+            Err(error())?
         }
     }
 }

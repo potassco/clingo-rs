@@ -90,7 +90,7 @@ impl Propagator<PropagatorT> for MyPropagator {
             // configuration this case is not handled (elegantly) here
             println!("hi propagator.states.is_not_empty");
             if threads > propagator.states.len() {
-                clingo::set_error(Error::Runtime, "more threads than states");
+                set_error(ErrorType::Runtime, "more threads than states");
             }
             return true;
         }
@@ -254,7 +254,7 @@ fn main() {
     };
 
     // create a control object and pass command line arguments
-    let option = Control::new(options, 20);
+    let option = Control::new(options);
 
     match option {
         Ok(mut ctl) => {

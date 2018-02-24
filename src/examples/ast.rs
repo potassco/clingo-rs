@@ -100,7 +100,7 @@ fn main() {
     // collect clingo options from the command line
     let options = env::args().skip(1).collect();
 
-    let mut ctl = Control::new(options, 20).expect("Failed creating Control.");
+    let mut ctl = Control::new(options).expect("Failed creating Control.");
 
     let sym = Symbol::create_id("enable", true).unwrap();
 
