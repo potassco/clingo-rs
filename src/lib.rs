@@ -25,18 +25,10 @@ pub mod ast;
 /// functions do not provide strong exception guarantees.  This means that in
 /// case of errors associated objects cannot be used further.
 #[derive(Debug, Fail)]
-#[fail(display = "ClingoError: {:?}, {}", type_, msg)]
+#[fail(display = "ErrorType::{:?}: {}", type_, msg)]
 pub struct ClingoError {
-    type_: ErrorType,
-    msg: &'static str,
-}
-impl ClingoError {
-    pub fn error_type(&self) -> ErrorType {
-        self.type_
-    }
-    pub fn message(&self) -> &'static str {
-        self.msg
-    }
+    pub type_: ErrorType,
+    pub msg: &'static str,
 }
 
 /// Error discovered in the bindings
@@ -1542,9 +1534,9 @@ impl Control {
     ///
     /// # Arguments
     ///
-    /// * `name` name of the program block
-    /// * `parameters` string array of parameters of the program block
-    /// * `program` string representation of the program
+    /// * `name` - name of the program block
+    /// * `parameters` - string array of parameters of the program block
+    /// * `program` - string representation of the program
     ///
     /// # Errors
     ///
@@ -1586,30 +1578,28 @@ impl Control {
         }
     }
 
-    /// Ground the selected [`Part`](struct.Part.html) parts of the current (non-ground) logic
+    /// Ground the selected parts of the current (non-ground) logic
     /// program.
     ///
     /// After grounding, logic programs can be solved with `solve()`.
     ///
-    /// **Note:** Parts of a logic program without an explicit <tt>\#program</tt>
+    /// **Note:** Parts of a logic program without an explicit `#program`
     /// specification are by default put into a program called `base` - without
     /// arguments.
     ///
     /// # Arguments
     ///
-    /// * `parts` array of parts to ground
+    /// * `parts` -  array of [`Part`](struct.Part.html)s to ground
     ///
     /// # Errors
     ///
     /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
-    ///
-    /// **See:** [`Part`](struct.Part.html)
-    pub fn ground(&mut self, sparts: &[Part]) -> Result<(), Error> {
-        let parts = sparts
+    pub fn ground(&mut self, parts: &[Part]) -> Result<(), Error> {
+        let parts_size = parts.len();
+        let parts = parts
             .iter()
             .map(|arg| arg.from())
             .collect::<Vec<clingo_part>>();
-        let parts_size = sparts.len();
 
         if unsafe {
             clingo_control_ground(
@@ -2816,7 +2806,7 @@ impl SymbolicAtoms {
     ///
     /// # Arguments
     ///
-    /// * `signature` optional signature
+    /// * `signature` - optional signature
     // TODO implement Iterator trait
     pub fn begin(&self, opt_sig: Option<&Signature>) -> Option<clingo_symbolic_atom_iterator_t> {
         match opt_sig {
@@ -2855,7 +2845,7 @@ impl SymbolicAtoms {
     /// # Arguments
     ///
     /// * `symbol` - the symbol to lookup
-    /// * `iterator` iterator pointing to the symbolic atom or to the end
+    /// * `iterator` - iterator pointing to the symbolic atom or to the end
     /// of the sequence if no corresponding atom is found
     pub fn find(&self, Symbol(symbol): Symbol) -> Option<clingo_symbolic_atom_iterator_t> {
         let mut iterator = 0 as clingo_symbolic_atom_iterator_t;
@@ -2889,7 +2879,7 @@ impl SymbolicAtoms {
     ///
     /// # Arguments
     ///
-    /// * `iterator` iterator to the atom
+    /// * `iterator` - iterator to the atom
     pub fn symbol(&self, iterator: clingo_symbolic_atom_iterator_t) -> Option<Symbol> {
         let mut symbol = 0 as clingo_symbol_t;
         if unsafe { clingo_symbolic_atoms_symbol(&self.0, iterator, &mut symbol) } {
@@ -2907,7 +2897,7 @@ impl SymbolicAtoms {
     ///
     /// # Arguments
     ///
-    /// * `iterator` iterator to the atom
+    /// * `iterator` - iterator to the atom
     pub fn is_fact(&self, iterator: clingo_symbolic_atom_iterator_t) -> Option<bool> {
         let mut fact = false;
         if unsafe { clingo_symbolic_atoms_is_fact(&self.0, iterator, &mut fact) } {
@@ -2924,7 +2914,7 @@ impl SymbolicAtoms {
     ///
     /// # Arguments
     ///
-    /// * `iterator` iterator to the atom
+    /// * `iterator` - iterator to the atom
     pub fn is_external(&self, iterator: clingo_symbolic_atom_iterator_t) -> Option<bool> {
         let mut external = false;
         if unsafe { clingo_symbolic_atoms_is_external(&self.0, iterator, &mut external) } {
@@ -2936,9 +2926,8 @@ impl SymbolicAtoms {
 
     /// Returns the (numeric) aspif literal corresponding to the given symbolic atom.
     ///
-    /// Such a literal can be mapped to a solver literal (see the \ref Propagator
-    /// module) or be used in rules in aspif format (see the \ref ProgramBuilder
-    /// module).
+    /// Such a literal can be mapped to a solver literal (see [`Propagator`](struct.Propagator)).
+    /// or be used in rules in aspif format (see [`ProgramBuilder`](struct.ProgramBuilder.html)).
     ///
     /// # Arguments
     ///

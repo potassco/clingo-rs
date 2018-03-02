@@ -260,16 +260,14 @@ fn main() {
             // ground the pigeon part
 
             // set the number of holes
-            let arg0 = Symbol::create_number(8);
+            let arg0 = Symbol::create_number(7);
             // set the number of pigeons
-            let arg1 = Symbol::create_number(8);
+            let arg1 = Symbol::create_number(9);
 
-            let mut args = Vec::new();
-            args.push(arg0);
-            args.push(arg1);
+            let args = vec![arg0, arg1];
 
             // the pigeon program part having the number of holes and pigeons as parameters
-            let part = Part::new("pigeon", args.as_slice());
+            let part = Part::new("pigeon", &args);
             let parts = vec![part];
             ctl.ground(&parts)
                 .expect("Failed to ground a logic program.");
@@ -278,7 +276,7 @@ fn main() {
             solve(&mut ctl);
         }
         Err(e) => {
-            println!("{:?}", e);
+            println!("Error: {}", e.cause());
         }
     }
 }
