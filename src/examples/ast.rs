@@ -5,7 +5,7 @@ use clingo::*;
 
 pub struct OnStatementData<'a> {
     atom: ast::Term,
-    builder: &'a mut ProgramBuilder,
+    builder: Option<ProgramBuilder<'a>>,
 }
 
 impl<'a> AstStatementHandler for OnStatementData<'a> {
@@ -14,6 +14,8 @@ impl<'a> AstStatementHandler for OnStatementData<'a> {
         // pass through all statements that are not rules
         if stm.statement_type() != ast::StatementType::Rule {
             self.builder
+                .as_mut()
+                .unwrap()
                 .add(stm)
                 .expect("Failed to add statement to ProgramBuilder.");
             return true;
@@ -51,6 +53,8 @@ impl<'a> AstStatementHandler for OnStatementData<'a> {
 
         // add the rewritten statement to the program
         self.builder
+            .as_mut()
+            .unwrap()
             .add(&stm2)
             .expect("Failed to add statement to ProgramBuilder.");
         true
@@ -105,10 +109,7 @@ fn main() {
 
     {
         // get the program builder
-        let builder = ctl.program_builder().unwrap();
-
-        // begin building a program
-        builder.begin().expect("Failed building logic program.");
+        let builder = ctl.program_builder();
 
         // initialize the location
         let location = Location::new(0, 0, 0, 0, "<rewrite>", "<rewrite>");
@@ -130,11 +131,15 @@ fn main() {
 
         let stm = AstStatement::new_external(location, ast::StatementType::External, &ext);
         data.builder
+            .as_mut()
+            .unwrap()
             .add(&stm)
             .expect("Failed to add statement to ProgramBuilder.");
 
         // finish building a program
         data.builder
+            .take()
+            .unwrap()
             .end()
             .expect("Failed to finish building a program.");
     }

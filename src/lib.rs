@@ -2038,10 +2038,17 @@ impl Control {
     /// Get an object to add non-ground directives to the program.
     ///
     /// See the [`ProgramBuilder`](struct.ProgramBuilder.html) module for more information.
-    pub fn program_builder(&mut self) -> Option<&mut ProgramBuilder> {
+    pub fn program_builder(&mut self) -> Option<ProgramBuilder> {
         let mut builder = std::ptr::null_mut() as *mut clingo_program_builder_t;
         if unsafe { clingo_control_program_builder(self.ctl.as_ptr(), &mut builder) } {
-            unsafe { (builder as *mut ProgramBuilder).as_mut() }
+            // begin building the program
+            if unsafe { clingo_program_builder_begin(builder) } {
+                Some(ProgramBuilder {
+                    theref: unsafe { builder.as_mut() }.unwrap(),
+                })
+            } else {
+                None
+            }
         } else {
             None
         }
@@ -2130,22 +2137,17 @@ impl AstStatement {
     pub unsafe fn rule(&self) -> &ast::Rule {
         let AstStatement(ref stm) = *self;
         let ast_rule_ptr = stm.__bindgen_anon_1.rule as *const clingo_ast_rule_t;
-        (ast_rule_ptr as *const ast::Rule).as_ref().unwrap()
+        (ast_rule_ptr as *const ast::Rule)
+            .as_ref()
+            .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."))
     }
 }
 
 /// Object to build non-ground programs.
-pub struct ProgramBuilder(clingo_program_builder_t);
-impl ProgramBuilder {
-    /// Begin building a program.
-    pub fn begin(&mut self) -> Option<()> {
-        if unsafe { clingo_program_builder_begin(&mut self.0) } {
-            Some(())
-        } else {
-            None
-        }
-    }
-
+pub struct ProgramBuilder<'a> {
+    theref: &'a mut clingo_program_builder_t,
+}
+impl<'a> ProgramBuilder<'a> {
     /// Adds a statement to the program.
     ///
     /// **Attention:** [`begin()`](struct.ProgramBuilder.html#method.begin) must be called before
@@ -2161,7 +2163,7 @@ impl ProgramBuilder {
     /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) for statements of invalid form
     /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
     pub fn add(&mut self, stm: &AstStatement) -> Result<(), Error> {
-        if unsafe { clingo_program_builder_add(&mut self.0, &stm.0) } {
+        if unsafe { clingo_program_builder_add(self.theref, &stm.0) } {
             Ok(())
         } else {
             Err(error())?
@@ -2169,8 +2171,9 @@ impl ProgramBuilder {
     }
 
     /// End building a program.
-    pub fn end(&mut self) -> Option<()> {
-        if unsafe { clingo_program_builder_end(&mut self.0) } {
+    /// The method consumes the program builder.
+    pub fn end(mut self) -> Option<()> {
+        if unsafe { clingo_program_builder_end(self.theref) } {
             Some(())
         } else {
             None
