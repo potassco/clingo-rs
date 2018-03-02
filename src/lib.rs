@@ -42,15 +42,15 @@ pub struct BindingError {
 #[derive(Debug, Copy, Clone)]
 pub enum ErrorType {
     /// successful API calls
-    Success,
+    Success = clingo_error_clingo_error_success as isize,
     /// errors only detectable at runtime like invalid input
-    Runtime,
+    Runtime = clingo_error_clingo_error_runtime as isize,
     /// wrong usage of the clingo API
-    Logic,
+    Logic = clingo_error_clingo_error_logic as isize,
     /// memory could not be allocated
-    BadAlloc,
+    BadAlloc = clingo_error_clingo_error_bad_alloc as isize,
     /// errors unrelated to clingo
-    Unknown,
+    Unknown = clingo_error_clingo_error_unknown as isize,
     /// custom error set by the user
     CustomError,
 }
