@@ -384,7 +384,7 @@ type SolveEventCallback = unsafe extern "C" fn(
     data: *mut ::std::os::raw::c_void,
     goon: *mut bool,
 ) -> bool;
-pub trait SolveEventHandler<T> {
+pub trait SolveEventHandler {
     // TODO: check documentation
     /// Callback function called during search to notify when the search is finished or a model is ready.
     ///
@@ -396,15 +396,14 @@ pub trait SolveEventHandler<T> {
     /// # Arguments
     ///
     /// * `model` - the current model
-    /// * `data` - user data of the callback
     /// * `goon` - can be set to false to stop solving
     ///
     /// **Returns** whether the call was successful
     ///
     /// @see clingo_control_solve()
-    fn on_solve_event(type_: SolveEventType, data: &mut T, goon: &mut bool) -> bool;
+    fn on_solve_event(&mut self, type_: SolveEventType, goon: &mut bool) -> bool;
     #[doc(hidden)]
-    unsafe extern "C" fn unsafe_solve_callback(
+    unsafe extern "C" fn unsafe_solve_callback<T: SolveEventHandler>(
         type_: clingo_solve_event_type_t,
         event: *mut ::std::os::raw::c_void,
         data: *mut ::std::os::raw::c_void,
@@ -418,24 +417,28 @@ pub trait SolveEventHandler<T> {
         };
 
         assert!(!data.is_null());
-        let data = (data as *mut T)
+        let event_handler = (data as *mut T)
             .as_mut()
             .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."));
 
         assert!(!goon.is_null());
         let goon = goon.as_mut()
             .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."));
-        Self::on_solve_event(event_type, data, goon)
+
+        event_handler.on_solve_event(event_type, goon)
     }
 }
 
 type AstCallback =
     unsafe extern "C" fn(arg1: *const clingo_ast_statement_t, arg2: *mut ::std::os::raw::c_void)
         -> bool;
-pub trait AstStatementHandler<T> {
-    fn on_statement(arg1: &AstStatement, arg2: &mut T) -> bool;
+pub trait AstStatementHandler {
+    /// Callback function called on an AstStatement while traversing the Ast.
+    ///
+    /// **Returns** whether the call was successful
+    fn on_statement(&mut self, arg1: &AstStatement) -> bool;
     #[doc(hidden)]
-    unsafe extern "C" fn unsafe_ast_callback(
+    unsafe extern "C" fn unsafe_ast_callback<T: AstStatementHandler>(
         stm: *const clingo_ast_statement_t,
         data: *mut ::std::os::raw::c_void,
     ) -> bool {
@@ -449,7 +452,7 @@ pub trait AstStatementHandler<T> {
             .as_mut()
             .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."));
 
-        Self::on_statement(stm, data)
+        data.on_statement(stm)
     }
 }
 
@@ -458,7 +461,7 @@ type LoggingCallback = unsafe extern "C" fn(
     message: *const ::std::os::raw::c_char,
     data: *mut ::std::os::raw::c_void,
 );
-pub trait Logger<T> {
+pub trait Logger {
     //TODO: check documentation
     /// Callback to intercept warning messages.
     ///
@@ -466,13 +469,13 @@ pub trait Logger<T> {
     ///
     /// * `code` - associated warning code
     /// * `message` - warning message
-    /// * `data` - user data for callback
     ///
     /// @see clingo_control_new()
     /// @see clingo_parse_term()
     /// @see clingo_parse_program()
-    fn log(code: Warning, message: &str, data: &mut T);
-    unsafe extern "C" fn unsafe_logging_callback(
+    fn log(&mut self, code: Warning, message: &str);
+    #[doc(hidden)]
+    unsafe extern "C" fn unsafe_logging_callback<L: Logger>(
         code: clingo_warning_t,
         message: *const ::std::os::raw::c_char,
         data: *mut ::std::os::raw::c_void,
@@ -495,39 +498,11 @@ pub trait Logger<T> {
         });
 
         assert!(!data.is_null());
-        let data = (data as *mut T)
+        let logger = (data as *mut L)
             .as_mut()
             .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."));
 
-        Self::log(warning, message, data)
-    }
-}
-
-//TODO
-pub trait SymbolInjector {
-    /// Callback function to inject symbols.
-    ///
-    /// **Parameters:**
-    ///
-    /// * `symbols` - array of symbols
-    /// * `symbols_size` - size of the symbol array
-    /// * `data` - user data of the callback
-    ///
-    /// **Returns** whether the call was successful; might set one of the following error codes:
-    /// - ::clingo_error_bad_alloc
-    /// @see ::clingo_ground_callback_t
-    fn symbol_callback(
-        symbols: *const clingo_symbol_t,
-        symbols_size: usize,
-        data: *mut ::std::os::raw::c_void,
-    ) -> bool;
-    #[doc(hidden)]
-    unsafe extern "C" fn unsafe_symbol_callback(
-        symbols: *const clingo_symbol_t,
-        symbols_size: usize,
-        data: *mut ::std::os::raw::c_void,
-    ) -> bool {
-        false
+        logger.log(warning, message)
     }
 }
 
@@ -540,10 +515,10 @@ type GroundCallback = unsafe extern "C" fn(
     symbol_callback: clingo_symbol_callback_t,
     symbol_callback_data: *mut ::std::os::raw::c_void,
 ) -> bool;
-pub trait GroundEventHandler<T> {
+pub trait ExternalFunctionHandler {
     /// Callback function to implement external functions.
     ///
-    /// If an external function of form <tt>\@name(parameters)</tt> occurs in a logic program,
+    /// If an external function of form `@name(parameters)` occurs in a logic program,
     /// then this function is called with its location, name, parameters, and a callback to inject symbols as arguments.
     /// The callback can be called multiple times; all symbols passed are injected.
     ///
@@ -555,44 +530,37 @@ pub trait GroundEventHandler<T> {
     /// * `location` - location from which the external function was called
     /// * `name` - name of the called external function
     /// * `arguments` - arguments of the called external function
-    /// * `arguments_size` - number of arguments
-    /// * `data` - user data of the callback
-    /// * `symbol_callback` - function to inject symbols
-    /// * `symbol_callback_data` - user data for the symbol callback
-    ///            (must be passed untouched)
     ///
-    /// **Returns** whether the call was successful
+    /// **Returns** a vector of symbols
     /// @see clingo_control_ground()
     ///
-    /// The following example implements the external function <tt>\@f()</tt> returning 42.
-    /// ~~~~~~~~~~~~~~~{.c}
-    /// bool
-    /// ground_callback(clingo_location_t const *location,
-    ///                 char const *name,
-    ///                 clingo_symbol_t const *arguments,
-    ///                 size_t arguments_size,
-    ///                 void *data,
-    ///                 clingo_symbol_callback_t symbol_callback,
-    ///                 void *symbol_callback_data) {
-    ///   if (strcmp(name, "f") == 0 && arguments_size == 0) {
-    ///     clingo_symbol_t sym;
-    ///     clingo_symbol_create_number(42, &sym);
-    ///     return symbol_callback(&sym, 1, symbol_callback_data);
-    ///   }
-    ///   clingo_set_error(clingo_error_runtime, "function not found");
-    ///   return false;
+    /// The following example implements the external function `@f()` returning 42.
+    /// ```
+    /// fn on_external_function(
+    ///     &mut self,
+    ///     _location: &Location,
+    ///     name: &str,
+    ///     arguments: &[Symbol],
+    /// ) -> Result<Vec<Symbol>,Error> {
+    ///     if name == "f" && arguments.len() == 0 {
+    ///         let symbol = Symbol::create_number(42);
+    ///         Ok(vec![symbol])
+    ///     } else {
+    ///        Err(ClingoError {
+    ///          type_: ErrorType::Runtime,
+    ///          msg: "function not found",
+    ///        })?
+    ///    }
     /// }
-    /// ~~~~~~~~~~~~~~~
-    fn on_ground_event(
+    /// ```
+    fn on_external_function(
+        &mut self,
         location: &Location,
         name: &str,
         arguments: &[Symbol],
-        data: &mut T,
-        symbol_callback: clingo_symbol_callback_t,
-        symbol_callback_data: *mut ::std::os::raw::c_void,
-    ) -> bool;
+    ) -> Result<Vec<Symbol>, Error>;
     #[doc(hidden)]
-    unsafe extern "C" fn unsafe_ground_callback(
+    unsafe extern "C" fn unsafe_ground_callback<T: ExternalFunctionHandler>(
         location: *const clingo_location_t,
         name: *const ::std::os::raw::c_char,
         arguments: *const clingo_symbol_t,
@@ -600,7 +568,6 @@ pub trait GroundEventHandler<T> {
         data: *mut ::std::os::raw::c_void,
         symbol_callback: clingo_symbol_callback_t,
         symbol_callback_data: *mut ::std::os::raw::c_void,
-        //TODO wrap symbol call back
     ) -> bool {
         assert!(!location.is_null());
         let location = (location as *const Location)
@@ -611,24 +578,29 @@ pub trait GroundEventHandler<T> {
         let c_str = CStr::from_ptr(name);
         let name = c_str.to_str().unwrap();
 
-        assert!(!arguments.is_null());
+        if arguments_size > 0 {
+            assert!(!arguments.is_null());
+        }
         let arguments = std::slice::from_raw_parts(arguments as *const Symbol, arguments_size);
 
         assert!(!data.is_null());
-        let data = (data as *mut T)
+        let event_handler = (data as *mut T)
             .as_mut()
             .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."));
 
-        assert!(!symbol_callback_data.is_null());
+        //         assert!(!symbol_callback_data.is_null());
 
-        Self::on_ground_event(
-            location,
-            name,
-            arguments,
-            data,
-            symbol_callback,
-            symbol_callback_data,
-        )
+        match event_handler.on_external_function(location, name, arguments) {
+            Ok(symbols) => {
+                let symbol_injector = symbol_callback.unwrap();
+                let mut v = vec![];
+                for s in symbols {
+                    v.push(s.clone().0);
+                }
+                symbol_injector((v.as_slice().as_ptr()), v.len(), symbol_callback_data)
+            }
+            Err(e) => false,
+        }
     }
 }
 
@@ -1100,12 +1072,11 @@ impl Symbol {
     }
 }
 
-// struct MaLogger;
-// impl Logger<u32> for MaLogger {
-//
-//     fn log(code: Warning, message: &str, data: &mut u32){
-//         println!("log: {}",message);
-//         println!("warn: {:?}",code);
+// impl Logger for u32 {
+//     fn log(&mut self, code: Warning, message: &str) {
+//         print!("log {}: {}", self, message);
+//         println!("warn: {:?}", code);
+//         *self += 1;
 //     }
 // }
 
@@ -1121,20 +1092,18 @@ impl Symbol {
 ///
 /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if parsing fails
 /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
-pub fn parse_program<D, T: AstStatementHandler<D>>(
+pub fn parse_program<T: AstStatementHandler>(
     program_: &str,
-    _callback: &T,
-    callback_data: &mut D,
+    callback_data: &mut T,
 ) -> Result<(), Error> {
     let logger = None;
-    //         let logger = Some(MaLogger::unsafe_logging_callback as LoggingCallback);
     let logger_data = std::ptr::null_mut();
     let program = CString::new(program_).unwrap();
-    let data = callback_data as *mut D;
+    let data = callback_data as *mut T;
     if unsafe {
         clingo_parse_program(
             program.as_ptr(),
-            Some(T::unsafe_ast_callback as AstCallback),
+            Some(T::unsafe_ast_callback::<T> as AstCallback),
             data as *mut ::std::os::raw::c_void,
             logger,
             logger_data,
@@ -1162,23 +1131,21 @@ pub fn parse_program<D, T: AstStatementHandler<D>>(
 ///
 /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if parsing fails
 /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
-pub fn parse_program_with_logger<CD, C: AstStatementHandler<CD>, LD, L: Logger<LD>>(
+pub fn parse_program_with_logger<T: AstStatementHandler, L: Logger>(
     program_: &str,
-    _callback: &C,
-    cdata_: &mut CD,
-    _logger: &L,
-    ldata_: &mut LD,
+    handler: &mut T,
+    logger: &mut L,
     message_limit: u32,
 ) -> Result<(), Error> {
-    let callback_data = cdata_ as *mut CD;
-    let logger_data = ldata_ as *mut LD;
+    let handler_data = handler as *mut T;
+    let logger_data = logger as *mut L;
     let program = CString::new(program_).unwrap();
     if unsafe {
         clingo_parse_program(
             program.as_ptr(),
-            Some(C::unsafe_ast_callback as AstCallback),
-            callback_data as *mut ::std::os::raw::c_void,
-            Some(L::unsafe_logging_callback as LoggingCallback),
+            Some(T::unsafe_ast_callback::<T> as AstCallback),
+            handler_data as *mut ::std::os::raw::c_void,
+            Some(L::unsafe_logging_callback::<L> as LoggingCallback),
             logger_data as *mut ::std::os::raw::c_void,
             message_limit,
         )
@@ -1264,7 +1231,7 @@ pub fn set_error(code: ErrorType, message: &str) {
 /// An instance of this trait has to be registered with a solver to implement a custom propagator.
 ///
 /// For all functions exist default implementations and they must not be implemented manually.
-pub trait Propagator<T> {
+pub trait Propagator {
     //TODO
     /// This function is called once before each solving step.
     /// It is used to map relevant program literals to solver literals, add watches for solver
@@ -1276,15 +1243,14 @@ pub trait Propagator<T> {
     /// **Parameters:**
     ///
     /// * `init` - initizialization object
-    /// * `data` - user data for the callback
     ///
     /// **Returns** whether the call was successful
     /// @see ::clingo_propagator_init_callback_t
-    fn init(_init: &mut PropagateInit, _data: &mut T) -> bool {
+    fn init(&mut self, _init: &mut PropagateInit) -> bool {
         true
     }
     #[doc(hidden)]
-    unsafe extern "C" fn unsafe_init(
+    unsafe extern "C" fn unsafe_init<T: Propagator>(
         init: *mut clingo_propagate_init_t,
         data: *mut ::std::os::raw::c_void,
     ) -> bool {
@@ -1294,11 +1260,11 @@ pub trait Propagator<T> {
             .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."));
 
         assert!(!data.is_null());
-        let data = (data as *mut T)
+        let propagator = (data as *mut T)
             .as_mut()
             .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."));
 
-        Self::init(init, data)
+        propagator.init(init)
     }
     //TODO
     /// Can be used to propagate solver literals given a @link clingo_assignment_t partial assignment@endlink.
@@ -1346,11 +1312,11 @@ pub trait Propagator<T> {
     ///
     /// **Returns** whether the call was successful
     /// @see ::clingo_propagator_propagate_callback_t
-    fn propagate(_control: &mut PropagateControl, _changes: &[Literal], _data: &mut T) -> bool {
+    fn propagate(&mut self, _control: &mut PropagateControl, _changes: &[Literal]) -> bool {
         true
     }
     #[doc(hidden)]
-    unsafe extern "C" fn unsafe_propagate(
+    unsafe extern "C" fn unsafe_propagate<T: Propagator>(
         control: *mut clingo_propagate_control_t,
         changes: *const clingo_literal_t,
         size: usize,
@@ -1365,11 +1331,11 @@ pub trait Propagator<T> {
         let changes = std::slice::from_raw_parts(changes as *const Literal, size);
 
         assert!(!data.is_null());
-        let data = (data as *mut T)
+        let propagator = (data as *mut T)
             .as_mut()
             .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."));
 
-        Self::propagate(control, changes, data)
+        propagator.propagate(control, changes)
     }
     //TODO: check documentation
     /// Called whenever a solver undoes assignments to watched solver literals.
@@ -1385,11 +1351,11 @@ pub trait Propagator<T> {
     /// * `size` - the size of the change set
     /// * `data` - user data for the callback
     /// @see ::clingo_propagator_undo_callback_t
-    fn undo(_control: &mut PropagateControl, _changes: &[Literal], _data: &mut T) -> bool {
+    fn undo(&mut self, _control: &mut PropagateControl, _changes: &[Literal]) -> bool {
         true
     }
     #[doc(hidden)]
-    unsafe extern "C" fn unsafe_undo(
+    unsafe extern "C" fn unsafe_undo<T: Propagator>(
         control: *mut clingo_propagate_control_t,
         changes: *const clingo_literal_t,
         size: usize,
@@ -1404,11 +1370,11 @@ pub trait Propagator<T> {
         let changes = std::slice::from_raw_parts(changes as *const Literal, size);
 
         assert!(!data.is_null());
-        let data = (data as *mut T)
+        let propagator = (data as *mut T)
             .as_mut()
             .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."));
 
-        Self::undo(control, changes, data)
+        propagator.undo(control, changes)
     }
     //TODO: check documentation
     /// This function is similar to @ref clingo_propagate_control_propagate() but is only called on total assignments without a change set.
@@ -1424,11 +1390,11 @@ pub trait Propagator<T> {
     ///
     /// **Returns** whether the call was successful
     /// @see ::clingo_propagator_check_callback_t
-    fn check(_control: &mut PropagateControl, _data: &mut T) -> bool {
+    fn check(&mut self, _control: &mut PropagateControl) -> bool {
         true
     }
     #[doc(hidden)]
-    unsafe extern "C" fn unsafe_check(
+    unsafe extern "C" fn unsafe_check<T: Propagator>(
         control: *mut clingo_propagate_control_t,
         data: *mut ::std::os::raw::c_void,
     ) -> bool {
@@ -1438,10 +1404,10 @@ pub trait Propagator<T> {
             .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."));
 
         assert!(!data.is_null());
-        let data = (data as *mut T)
+        let propagator = (data as *mut T)
             .as_mut()
             .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."));
-        Self::check(control, data)
+        propagator.check(control)
     }
 }
 
@@ -1519,19 +1485,18 @@ impl Control {
     ///
     /// # Arguments
     ///
-    /// * `arguments` - C string array of command line arguments
+    /// * `arguments` - string array of command line arguments
     /// * `logger` - callback functions for warnings and info messages
-    /// * `logger_data` - user data for the logger callback
     /// * `message_limit` - maximum number of times the logger callback is called
     ///
     /// # Errors
     ///
     /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
     /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if argument parsing fails
-    pub fn new_with_logger<D, T: Logger<D>>(
+
+    pub fn new_with_logger<L: Logger>(
         arguments: std::vec::Vec<String>,
-        _logger: &T,
-        logger_data: &mut D,
+        logger: &mut L,
         message_limit: u32,
     ) -> Result<Control, Error> {
         // create a vector of zero terminated strings
@@ -1547,12 +1512,12 @@ impl Control {
 
         let mut ctl = unsafe { mem::uninitialized() };
 
-        let data = logger_data as *mut D;
+        let data = logger as *mut L;
         if unsafe {
             clingo_control_new(
                 c_args.as_ptr(),
                 c_args.len(),
-                Some(T::unsafe_logging_callback as LoggingCallback),
+                Some(L::unsafe_logging_callback::<L> as LoggingCallback),
                 data as *mut ::std::os::raw::c_void,
                 message_limit,
                 &mut ctl,
@@ -1661,46 +1626,43 @@ impl Control {
         }
     }
 
-    /// Ground the selected [`Part`](struct.Part.html) parts of the current (non-ground) logic
+    /// Ground the selected parts of the current (non-ground) logic
     /// program.
     ///
     /// After grounding, logic programs can be solved with `solve()`.
     ///
-    /// **Note:** Parts of a logic program without an explicit <tt>\#program</tt>
+    /// **Note:** Parts of a logic program without an explicit `#program`
     /// specification are by default put into a program called `base` - without
     /// arguments.
     ///
     /// # Arguments
     ///
-    /// * `parts` array of parts to ground
-    /// * `ground_callback` callback to implement external functions
-    /// * `ground_callback_data` user data for ground_callback
+    /// * `parts` - array of [`Part`](struct.Part.html)s to ground
+    /// * `event_handler` - ExternalFunctionHandler to implement external functions
     ///
     /// # Errors
     ///
     /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
-    /// - error code of ground callback
-    ///
-    /// **See:** [`Part`](struct.Part.html)
-    pub fn ground_with_event_handler<D, T: GroundEventHandler<D>>(
+    /// - error code of the ExternalFunctionHandler
+    //TODO: the error code set in ExternalFunctionHandler is overwritten
+    pub fn ground_with_event_handler<T: ExternalFunctionHandler>(
         &mut self,
-        sparts: &[Part],
-        _ground_callback: &T,
-        ground_callback_data: &mut D,
+        parts: &[Part],
+        event_handler: &mut T,
     ) -> Result<(), Error> {
-        let parts = sparts
+        let parts_size = parts.len();
+        let parts = parts
             .iter()
             .map(|arg| arg.from())
             .collect::<Vec<clingo_part>>();
-        let parts_size = sparts.len();
 
-        let data = ground_callback_data as *mut D;
+        let data = event_handler as *mut T;
         if unsafe {
             clingo_control_ground(
                 self.ctl.as_ptr(),
                 parts.as_ptr(),
                 parts_size,
-                Some(T::unsafe_ground_callback as GroundCallback),
+                Some(T::unsafe_ground_callback::<T> as GroundCallback),
                 data as *mut ::std::os::raw::c_void,
             )
         } {
@@ -1761,29 +1723,27 @@ impl Control {
     ///
     /// * `mode` - configures the search mode
     /// * `assumptions` - array of assumptions to solve under
-    /// * `notify` - the event handler to register
-    /// * `data` - the user data for the event handler
+    /// * `event_handler` - the event handler to register
     ///
     /// # Errors
     ///
     /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
     /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if solving could not be started
-    pub fn solve_with_event_handler<D, T: SolveEventHandler<D>>(
+    pub fn solve_with_event_handler<T: SolveEventHandler>(
         &mut self,
         mode: &SolveMode,
         assumptions: &[SymbolicLiteral],
-        _notify: &T,
-        data_: &mut D,
+        event_handler: &mut T,
     ) -> Result<&mut SolveHandle, Error> {
         let mut handle = std::ptr::null_mut() as *mut clingo_solve_handle_t;
-        let data = data_ as *mut D;
+        let data = event_handler as *mut T;
         if unsafe {
             clingo_control_solve(
                 self.ctl.as_ptr(),
                 mode.0,
                 assumptions.as_ptr() as *const clingo_symbolic_literal_t,
                 assumptions.len(),
-                Some(T::unsafe_solve_callback as SolveEventCallback),
+                Some(T::unsafe_solve_callback::<T> as SolveEventCallback),
                 data as *mut ::std::os::raw::c_void,
                 &mut handle,
             )
@@ -1875,25 +1835,23 @@ impl Control {
     /// # Arguments
     ///
     /// * `propagator` - the propagator
-    /// * `data` user data passed to the propagator functions
     /// * `sequential` - whether the propagator should be called sequentially
     ///
     /// # Errors
     ///
     /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
-    pub fn register_propagator<D, T: Propagator<D>>(
+    pub fn register_propagator<T: Propagator>(
         &mut self,
-        _propagator_builder: &T,
-        data: &mut D,
+        _propagator: &mut T,
         sequential: bool,
     ) -> Result<(), Error> {
         let propagator = clingo_propagator_t {
-            init: Some(T::unsafe_init),
-            propagate: Some(T::unsafe_propagate),
-            undo: Some(T::unsafe_undo),
-            check: Some(T::unsafe_check),
+            init: Some(T::unsafe_init::<T>),
+            propagate: Some(T::unsafe_propagate::<T>),
+            undo: Some(T::unsafe_undo::<T>),
+            check: Some(T::unsafe_check::<T>),
         };
-        let data_ptr = data as *mut D;
+        let data_ptr = _propagator as *mut T;
         if unsafe {
             clingo_control_register_propagator(
                 self.ctl.as_ptr(),
@@ -4203,7 +4161,7 @@ impl SolveHandle {
 //     ) -> bool;
 
 // TODO
-pub trait GroundProgramObserver<T> {
+pub trait GroundProgramObserver {
     /// Called once in the beginning.
     ///
     /// If the incremental flag is true, there can be multiple calls to @ref clingo_control_solve().
@@ -4211,10 +4169,9 @@ pub trait GroundProgramObserver<T> {
     /// **Parameters:**
     ///
     /// * `incremental` - whether the program is incremental
-    /// * `data` - user data for the callback
     ///
     /// **Returns** whether the call was successful
-    fn init_program(incremental: bool, data: &mut T) -> bool;
+    fn init_program(&mut self, incremental: bool) -> bool;
     #[doc(hidden)]
     unsafe extern "C" fn unsafe_init_program(
         incremental: bool,

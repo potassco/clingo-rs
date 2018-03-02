@@ -8,13 +8,12 @@ pub struct OnStatementData<'a> {
     builder: &'a mut ProgramBuilder,
 }
 
-struct MyAstHandler;
-impl<'a> AstStatementHandler<OnStatementData<'a>> for MyAstHandler {
+impl<'a> AstStatementHandler for OnStatementData<'a> {
     // adds atom enable to all rule bodies
-    fn on_statement(stm: &AstStatement, data: &mut OnStatementData) -> bool {
+    fn on_statement(&mut self, stm: &AstStatement) -> bool {
         // pass through all statements that are not rules
         if stm.statement_type() != ast::StatementType::Rule {
-            data.builder
+            self.builder
                 .add(stm)
                 .expect("Failed to add statement to ProgramBuilder.");
             return true;
@@ -29,14 +28,14 @@ impl<'a> AstStatementHandler<OnStatementData<'a>> for MyAstHandler {
 
         // create atom enable
         let lit = ast::Literal::new(
-            data.atom.location(),
+            self.atom.location(),
             ast::Sign::None,
             ast::LiteralType::Symbolic,
-            &data.atom,
+            &self.atom,
         );
         // add atom enable to the rule body
         let y = ast::BodyLiteral::new(
-            data.atom.location(),
+            self.atom.location(),
             ast::Sign::None,
             ast::BodyLiteralType::Literal,
             &lit,
@@ -51,7 +50,7 @@ impl<'a> AstStatementHandler<OnStatementData<'a>> for MyAstHandler {
         let stm2 = AstStatement::new_rule(stm.location(), &rule);
 
         // add the rewritten statement to the program
-        data.builder
+        self.builder
             .add(&stm2)
             .expect("Failed to add statement to ProgramBuilder.");
         true
@@ -123,7 +122,7 @@ fn main() {
         };
 
         // get the AST of the program
-        parse_program("a :- not b. b :- not a.", &MyAstHandler, &mut data)
+        parse_program("a :- not b. b :- not a.", &mut data)
             .expect("Failed to parse logic program.");
 
         // add the external statement: #external enable.
