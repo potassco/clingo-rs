@@ -250,11 +250,10 @@ fn main() {
 
             // add a logic program to the pigeon part
             // parameters for the pigeon part
-            let parameters = vec!["h", "p"];
 
             ctl.add(
                 "pigeon",
-                parameters,
+                &vec!["h", "p"],
                 "1 { place(P,H) : H = 1..h } 1 :- P = 1..p.",
             ).expect("Failed to add a logic program.");
 

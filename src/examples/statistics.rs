@@ -124,9 +124,7 @@ fn main() {
     }
 
     // add a logic program to the base part
-    let parameters: Vec<&str> = Vec::new();
-    ctl.add("base", parameters, "a :- not b. b :- not a.")
-        .unwrap();
+    ctl.add("base", &[], "a :- not b. b :- not a.").unwrap();
 
     // ground the base part
     let part = Part::new("base", &[]);

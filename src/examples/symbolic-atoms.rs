@@ -11,8 +11,7 @@ fn main() {
     let mut ctl = Control::new(options).expect("Failed creating Control.");
 
     // add a logic program to the base part
-    let parameters: Vec<&str> = Vec::new();
-    ctl.add("base", parameters, "a. {b}. #external c.")
+    ctl.add("base", &[], "a. {b}. #external c.")
         .expect("Failed to add a logic program.");
 
     // ground the base part

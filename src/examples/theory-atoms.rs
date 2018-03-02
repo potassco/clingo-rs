@@ -80,10 +80,9 @@ fn main() {
     let mut ctl = Control::new(options).expect("Failed creating clingo_control.");
 
     // add a logic program to the base part
-    let parameters: Vec<&str> = Vec::new();
     ctl.add(
         "base",
-        parameters,
+        &[],
         "#theory t {\
          term   { + : 1, binary, left };\
          &a/0 : term, any;\

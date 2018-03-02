@@ -26,10 +26,9 @@ fn main() {
     let mut ctl = Control::new(options).expect("Failed creating Control.");
 
     // add a logic program to the base part
-    let parameters: Vec<&str> = Vec::new();
     ctl.add(
         "base",
-        parameters,
+        &[],
         "#const n = 17.\
          1 { p(X); q(X) } 1 :- X = 1..n.\
          :- not n+1 { p(1..n); \

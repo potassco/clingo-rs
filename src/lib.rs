@@ -1550,7 +1550,7 @@ impl Control {
     ///
     /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
     /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if parsing fails
-    pub fn add(&mut self, name_: &str, parameters: Vec<&str>, program_: &str) -> Result<(), Error> {
+    pub fn add(&mut self, name_: &str, parameters: &[&str], program_: &str) -> Result<(), Error> {
         let name = CString::new(name_).unwrap();
         let name_ptr = name.as_ptr();
 
@@ -1562,7 +1562,7 @@ impl Control {
         // create a vector of zero terminated strings
         let l_parameters = parameters
             .into_iter()
-            .map(|arg| CString::new(arg).unwrap())
+            .map(|arg| CString::new(*arg).unwrap())
             .collect::<Vec<CString>>();
 
         // convert the strings to raw pointers

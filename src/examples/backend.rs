@@ -49,8 +49,7 @@ fn main() {
     let mut ctl = Control::new(options).expect("Failed creating clingo_control.");
 
     // add a logic program to the base part
-    let parameters: Vec<&str> = Vec::new();
-    ctl.add("base", parameters, "{a; b; c}.")
+    ctl.add("base", &[], "{a; b; c}.")
         .expect("Failed to add a logic program");
 
     // ground the base part
