@@ -66,3 +66,6 @@ path = "src/examples/propagator.rs"
 name = "ast"
 path = "src/examples/ast.rs"
 
+[[example]]
+name = "inject-terms"
+path = "src/examples/inject-terms.rs"
