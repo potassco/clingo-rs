@@ -5,16 +5,17 @@ use clingo::*;
 
 pub struct OnStatementData<'a> {
     atom: ast::Term,
-    builder: &'a mut ProgramBuilder,
+    builder: Option<ProgramBuilder<'a>>,
 }
 
-struct MyAstHandler;
-impl<'a> AstStatementHandler<OnStatementData<'a>> for MyAstHandler {
+impl<'a> AstStatementHandler for OnStatementData<'a> {
     // adds atom enable to all rule bodies
-    fn on_statement(stm: &AstStatement, data: &mut OnStatementData) -> bool {
+    fn on_statement(&mut self, stm: &AstStatement) -> bool {
         // pass through all statements that are not rules
         if stm.statement_type() != ast::StatementType::Rule {
-            data.builder
+            self.builder
+                .as_mut()
+                .unwrap()
                 .add(stm)
                 .expect("Failed to add statement to ProgramBuilder.");
             return true;
@@ -29,14 +30,14 @@ impl<'a> AstStatementHandler<OnStatementData<'a>> for MyAstHandler {
 
         // create atom enable
         let lit = ast::Literal::new(
-            data.atom.location(),
+            self.atom.location(),
             ast::Sign::None,
             ast::LiteralType::Symbolic,
-            &data.atom,
+            &self.atom,
         );
         // add atom enable to the rule body
         let y = ast::BodyLiteral::new(
-            data.atom.location(),
+            self.atom.location(),
             ast::Sign::None,
             ast::BodyLiteralType::Literal,
             &lit,
@@ -51,7 +52,9 @@ impl<'a> AstStatementHandler<OnStatementData<'a>> for MyAstHandler {
         let stm2 = AstStatement::new_rule(stm.location(), &rule);
 
         // add the rewritten statement to the program
-        data.builder
+        self.builder
+            .as_mut()
+            .unwrap()
             .add(&stm2)
             .expect("Failed to add statement to ProgramBuilder.");
         true
@@ -106,10 +109,7 @@ fn main() {
 
     {
         // get the program builder
-        let builder = ctl.program_builder().unwrap();
-
-        // begin building a program
-        builder.begin().expect("Failed building logic program.");
+        let builder = ctl.program_builder();
 
         // initialize the location
         let location = Location::new(0, 0, 0, 0, "<rewrite>", "<rewrite>");
@@ -123,7 +123,7 @@ fn main() {
         };
 
         // get the AST of the program
-        parse_program("a :- not b. b :- not a.", &MyAstHandler, &mut data)
+        parse_program("a :- not b. b :- not a.", &mut data)
             .expect("Failed to parse logic program.");
 
         // add the external statement: #external enable.
@@ -131,11 +131,15 @@ fn main() {
 
         let stm = AstStatement::new_external(location, ast::StatementType::External, &ext);
         data.builder
+            .as_mut()
+            .unwrap()
             .add(&stm)
             .expect("Failed to add statement to ProgramBuilder.");
 
         // finish building a program
         data.builder
+            .take()
+            .unwrap()
             .end()
             .expect("Failed to finish building a program.");
     }

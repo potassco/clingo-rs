@@ -69,9 +69,8 @@ fn get_arg(sym: &Symbol, offset: usize) -> Result<i32, Error> {
     args[offset as usize].number()
 }
 
-struct MyPropagator;
-impl Propagator<PropagatorT> for MyPropagator {
-    fn init(init: &mut PropagateInit, propagator: &mut PropagatorT) -> bool {
+impl Propagator for PropagatorT {
+    fn init(&mut self, init: &mut PropagateInit) -> bool {
         // stores the (numeric) maximum of the solver literals capturing pigeon placements
         // note that the code below assumes that this literal is not negative
         // which holds for the pigeon problem but not in general
@@ -85,11 +84,10 @@ impl Propagator<PropagatorT> for MyPropagator {
         // for simplicity, the case that additional holes or pigeons to assign are grounded is not
         // handled here
 
-        if !propagator.states.is_empty() {
+        if !self.states.is_empty() {
             // in principle the number of threads can increase between solve calls by changing the
             // configuration this case is not handled (elegantly) here
-            println!("hi propagator.states.is_not_empty");
-            if threads > propagator.states.len() {
+            if threads > self.states.len() {
                 set_error(ErrorType::Runtime, "more threads than states");
             }
             return true;
@@ -97,7 +95,7 @@ impl Propagator<PropagatorT> for MyPropagator {
 
         let s1_holes: Vec<Option<Literal>> = vec![];
         let state1 = Rc::new(RefCell::new(StateT { holes: s1_holes }));
-        propagator.states = vec![state1];
+        self.states = vec![state1];
 
         // the propagator monitors place/2 atoms and dectects conflicting assignments
         // first get the symbolic atoms handle
@@ -119,7 +117,7 @@ impl Propagator<PropagatorT> for MyPropagator {
 
             if pass == 1 {
                 // allocate memory for the assignemnt literal -> hole mapping
-                propagator.pigeons = vec![0; max + 1];;
+                self.pigeons = vec![0; max + 1];;
             }
 
             loop {
@@ -145,7 +143,7 @@ impl Propagator<PropagatorT> for MyPropagator {
                     let h = get_arg(&sym, 1).unwrap();
 
                     // initialize the assignemnt literal -> hole mapping
-                    propagator.pigeons[lit_id] = h;
+                    self.pigeons[lit_id] = h;
 
                     // watch the assignment literal
                     init.add_watch(lit).expect("Failed to add watch.");
@@ -165,23 +163,19 @@ impl Propagator<PropagatorT> for MyPropagator {
             // initially no pigeons are assigned to any holes
             // so the hole -> literal mapping is initialized with zero
             // which is not a valid literal
-            propagator.states[i].borrow_mut().holes = vec![None; holes as usize];
+            self.states[i].borrow_mut().holes = vec![None; holes as usize];
         }
         true
     }
 
-    fn propagate(
-        control: &mut PropagateControl,
-        changes: &[Literal],
-        propagator: &mut PropagatorT,
-    ) -> bool {
+    fn propagate(&mut self, control: &mut PropagateControl, changes: &[Literal]) -> bool {
         // get the thread specific state
-        let mut state = propagator.states[control.thread_id() as usize].borrow_mut();
+        let mut state = self.states[control.thread_id() as usize].borrow_mut();
 
         // apply and check the pigeon assignments done by the solver
         for &lit in changes.iter() {
             // a pointer to the previously assigned literal
-            let idx = propagator.pigeons[lit.get_integer() as usize] as usize;
+            let idx = self.pigeons[lit.get_integer() as usize] as usize;
             let mut prev = state.holes[idx];
 
             // update the placement if no literal was assigned previously
@@ -208,7 +202,6 @@ impl Propagator<PropagatorT> for MyPropagator {
                     }
 
                     // must not happen because the clause above is conflicting by construction
-                    println!("assert!(false) line 226 propagator.rs");
                     assert!(false);
                 }
             };
@@ -216,17 +209,13 @@ impl Propagator<PropagatorT> for MyPropagator {
         true
     }
 
-    fn undo(
-        control: &mut PropagateControl,
-        changes: &[Literal],
-        propagator: &mut PropagatorT,
-    ) -> bool {
+    fn undo(&mut self, control: &mut PropagateControl, changes: &[Literal]) -> bool {
         // get the thread specific state
-        let mut state = propagator.states[control.thread_id() as usize].borrow_mut();
+        let mut state = self.states[control.thread_id() as usize].borrow_mut();
 
         // undo the assignments made in propagate
         for &lit in changes.iter() {
-            let hole = propagator.pigeons[lit.get_integer() as usize] as usize;
+            let hole = self.pigeons[lit.get_integer() as usize] as usize;
 
             if let Some(x) = state.holes[hole] {
                 if x == lit {
@@ -245,10 +234,7 @@ fn main() {
 
     // create a propagator with the functions above
     // using the default implementation for the model check
-    let prop = MyPropagator;
-
-    // user data for the propagator
-    let mut prop_data = PropagatorT {
+    let mut prop = PropagatorT {
         pigeons: vec![],
         states: vec![],
     };
@@ -259,31 +245,29 @@ fn main() {
     match option {
         Ok(mut ctl) => {
             // register the propagator
-            ctl.register_propagator(&prop, &mut prop_data, false)
+            ctl.register_propagator(&mut prop, false)
                 .expect("Failed to register propagator.");
 
             // add a logic program to the pigeon part
             // parameters for the pigeon part
-            let parameters = vec!["h", "p"];
+
             ctl.add(
                 "pigeon",
-                parameters,
+                &vec!["h", "p"],
                 "1 { place(P,H) : H = 1..h } 1 :- P = 1..p.",
             ).expect("Failed to add a logic program.");
 
             // ground the pigeon part
 
             // set the number of holes
-            let arg0 = Symbol::create_number(8);
+            let arg0 = Symbol::create_number(7);
             // set the number of pigeons
-            let arg1 = Symbol::create_number(8);
+            let arg1 = Symbol::create_number(9);
 
-            let mut args = Vec::new();
-            args.push(arg0);
-            args.push(arg1);
+            let args = vec![arg0, arg1];
 
             // the pigeon program part having the number of holes and pigeons as parameters
-            let part = Part::new("pigeon", args.as_slice());
+            let part = Part::new("pigeon", &args);
             let parts = vec![part];
             ctl.ground(&parts)
                 .expect("Failed to ground a logic program.");
@@ -292,7 +276,7 @@ fn main() {
             solve(&mut ctl);
         }
         Err(e) => {
-            println!("{:?}", e);
+            println!("Error: {}", e.cause());
         }
     }
 }

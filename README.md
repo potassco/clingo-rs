@@ -22,6 +22,7 @@ Rust bindings to the [clingo](https://github.com/potassco/clingo) library
     cargo +nightly run --example=symbol 0
     cargo +nightly run --example=symbolic-atoms 0
     cargo +nightly run --example=theory-atoms 0
+    cargo +nightly run --example=inject-terms 0
     cargo +nightly run --example=version
 
 ## Contribution

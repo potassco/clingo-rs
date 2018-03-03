@@ -71,8 +71,7 @@ fn main() {
     // is equivalent to the code above
 
     // add a logic program to the base part
-    let parameters: Vec<&str> = Vec::new();
-    ctl.add("base", parameters, "a :- not b. b :- not a.")
+    ctl.add("base", &[], "a :- not b. b :- not a.")
         .expect("Failed to add a logic program.");
 
     // ground the base part

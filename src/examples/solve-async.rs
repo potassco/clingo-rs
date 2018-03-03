@@ -6,11 +6,13 @@ use rand::distributions::{IndependentSample, Range};
 use std::sync::atomic::{AtomicBool, Ordering};
 use clingo::*;
 
-struct MySEHandler;
-impl SolveEventHandler<AtomicBool> for MySEHandler {
-    fn on_solve_event(type_: SolveEventType, data: &mut AtomicBool, _goon: &mut bool) -> bool {
+struct MySEHandler {
+    atom: AtomicBool,
+}
+impl SolveEventHandler for MySEHandler {
+    fn on_solve_event(&mut self, type_: SolveEventType, _goon: &mut bool) -> bool {
         if type_ == SolveEventType::Finish {
-            data.store(false, Ordering::Relaxed);
+            self.atom.store(false, Ordering::Relaxed);
         }
         true
     }
@@ -24,10 +26,9 @@ fn main() {
     let mut ctl = Control::new(options).expect("Failed creating Control.");
 
     // add a logic program to the base part
-    let parameters: Vec<&str> = Vec::new();
     ctl.add(
         "base",
-        parameters,
+        &[],
         "#const n = 17.\
          1 { p(X); q(X) } 1 :- X = 1..n.\
          :- not n+1 { p(1..n); \
@@ -40,15 +41,14 @@ fn main() {
     ctl.ground(&parts)
         .expect("Failed to ground a logic program.");
 
-    let mut running = AtomicBool::new(true);
+    let mut running = MySEHandler {
+        atom: AtomicBool::new(true),
+    };
 
     // create a solve handle with an attached event handler
-    let handle = ctl.solve_with_event_handler(
-        &(SolveMode::ASYNC | SolveMode::YIELD),
-        &[],
-        &MySEHandler,
-        &mut running,
-    ).expect("Failed to retrieve solve handle.");
+    let handle =
+        ctl.solve_with_event_handler(&(SolveMode::ASYNC | SolveMode::YIELD), &[], &mut running)
+            .expect("Failed to retrieve solve handle.");
 
     // let's approximate pi
     let mut samples = 0.;
@@ -56,7 +56,7 @@ fn main() {
     let between = Range::new(-1f64, 1.);
     let mut rng = rand::thread_rng();
 
-    while running.load(Ordering::Relaxed) {
+    while running.atom.load(Ordering::Relaxed) {
         samples += 1.;
         let x = between.ind_sample(&mut rng);
         let y = between.ind_sample(&mut rng);
