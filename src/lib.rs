@@ -589,7 +589,7 @@ pub trait ExternalFunctionHandler {
                 for s in symbols {
                     v.push(s.clone().0);
                 }
-                symbol_injector((v.as_slice().as_ptr()), v.len(), symbol_callback_data)
+                symbol_injector(v.as_slice().as_ptr(), v.len(), symbol_callback_data)
             }
             Err(e) => false,
         }
@@ -1694,9 +1694,8 @@ impl Control {
             )
         } {
             Ok(SolveHandle {
-                    theref: unsafe { handle.as_mut() }.unwrap(),
-                })
-            
+                theref: unsafe { handle.as_mut() }.unwrap(),
+            })
         } else {
             Err(error())?
         }
@@ -1736,10 +1735,9 @@ impl Control {
                 &mut handle,
             )
         } {
-            
             Ok(SolveHandle {
-                    theref: unsafe { handle.as_mut() }.unwrap(),
-                })
+                theref: unsafe { handle.as_mut() }.unwrap(),
+            })
         } else {
             Err(error())?
         }
@@ -1869,10 +1867,10 @@ impl Control {
     /// # Errors
     ///
     /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
-    pub fn statistics(&mut self) -> Result<&mut Statistics, Error> {
-        let mut stat = std::ptr::null_mut() as *mut clingo_statistics_t;
+    pub fn statistics(&self) -> Result<&Statistics, Error> {
+        let mut stat = std::ptr::null() as *const clingo_statistics_t;
         if unsafe { clingo_control_statistics(self.ctl.as_ptr(), &mut stat) } {
-            match unsafe { (stat as *mut Statistics).as_mut() } {
+            match unsafe { (stat as *mut Statistics).as_ref() } {
                 Some(x) => Ok(x),
                 None => Err(BindingError {
                     msg: "Failed dereferencing pointer to clingo_statistics.",
@@ -1930,7 +1928,7 @@ impl Control {
     /// # Arguments
     ///
     /// * `name` - the name of the constant
-    pub fn get_const(&mut self, name: &str) -> Option<Symbol> {
+    pub fn get_const(&self, name: &str) -> Option<Symbol> {
         let c_str_name = CString::new(name).unwrap();
         let mut symbol = 0 as clingo_symbol_t;
         if unsafe { clingo_control_get_const(self.ctl.as_ptr(), c_str_name.as_ptr(), &mut symbol) }
@@ -1952,7 +1950,7 @@ impl Control {
     /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if constant definition does not exist
     ///
     /// **See:** [`Part::get_const()`](struct.Part.html#method.get_const)
-    pub fn has_const(&mut self, name: &str) -> Result<bool, Error> {
+    pub fn has_const(&self, name: &str) -> Result<bool, Error> {
         let c_str_name = CString::new(name).unwrap();
         let mut exist = false;
         if unsafe { clingo_control_has_const(self.ctl.as_ptr(), c_str_name.as_ptr(), &mut exist) } {
@@ -1966,7 +1964,7 @@ impl Control {
     /// for grounding.
     ///
     /// See the [`SymbolicAtoms`](struct.SymbolicAtoms.html) module for more information.
-    pub fn symbolic_atoms(&mut self) -> Option<&SymbolicAtoms> {
+    pub fn symbolic_atoms(&self) -> Option<&SymbolicAtoms> {
         let mut atoms = std::ptr::null() as *const clingo_symbolic_atoms_t;
         if unsafe { clingo_control_symbolic_atoms(self.ctl.as_ptr(), &mut atoms) } {
             unsafe { (atoms as *const SymbolicAtoms).as_ref() }
@@ -1978,10 +1976,10 @@ impl Control {
     /// Get an object to inspect theory atoms that occur in the grounding.
     ///
     /// See the [`TheoryAtoms`](struct.TheoryAtoms.html) module for more information.
-    pub fn theory_atoms(&mut self) -> Option<&mut TheoryAtoms> {
-        let mut atoms = std::ptr::null_mut() as *mut clingo_theory_atoms_t;
+    pub fn theory_atoms(&self) -> Option<&TheoryAtoms> {
+        let mut atoms = std::ptr::null() as *const clingo_theory_atoms_t;
         if unsafe { clingo_control_theory_atoms(self.ctl.as_ptr(), &mut atoms) } {
-            unsafe { (atoms as *mut TheoryAtoms).as_mut() }
+            unsafe { (atoms as *const TheoryAtoms).as_ref() }
         } else {
             None
         }
@@ -2158,7 +2156,7 @@ impl<'a> ProgramBuilder<'a> {
 
     /// End building a program.
     /// The method consumes the program builder.
-    pub fn end(mut self) -> Option<()> {
+    pub fn end(self) -> Option<()> {
         if unsafe { clingo_program_builder_end(self.theref) } {
             Some(())
         } else {
@@ -2172,9 +2170,9 @@ impl<'a> ProgramBuilder<'a> {
 pub struct Configuration(clingo_configuration_t);
 impl Configuration {
     /// Get the root key of the configuration.
-    pub fn root(&mut self) -> Option<Id> {
+    pub fn root(&self) -> Option<Id> {
         let mut root_key = 0 as clingo_id_t;
-        if unsafe { clingo_configuration_root(&mut self.0, &mut root_key) } {
+        if unsafe { clingo_configuration_root(&self.0, &mut root_key) } {
             Some(Id(root_key))
         } else {
             None
@@ -2183,9 +2181,9 @@ impl Configuration {
 
     /// Get the type of a key.
     /// The type is bitset, an entry can have multiple (but at least one) type.
-    pub fn configuration_type(&mut self, Id(key): Id) -> Option<ConfigurationType> {
+    pub fn configuration_type(&self, Id(key): Id) -> Option<ConfigurationType> {
         let mut ctype = 0 as clingo_configuration_type_bitset_t;
-        if unsafe { clingo_configuration_type(&mut self.0, key, &mut ctype) } {
+        if unsafe { clingo_configuration_type(&self.0, key, &mut ctype) } {
             Some(ConfigurationType(ctype))
         } else {
             None
@@ -2193,11 +2191,11 @@ impl Configuration {
     }
 
     /// Get the description of an entry.
-    pub fn description(&mut self, Id(key): Id) -> Option<&str> {
+    pub fn description(&self, Id(key): Id) -> Option<&str> {
         let mut description_ptr = unsafe { mem::uninitialized() };
         if unsafe {
             clingo_configuration_description(
-                &mut self.0,
+                &self.0,
                 key,
                 &mut description_ptr as *mut *const c_char,
             )
@@ -2215,9 +2213,9 @@ impl Configuration {
     ///
     /// The [`configuration_type()`](struct.Configuration.html#method.configuration_type) type of
     /// the entry must be  [`ConfigurationType::ARRAY`](struct.ConfigurationType.html#associatedconstant.ARRAY).
-    pub fn array_size(&mut self, Id(key): Id) -> Option<usize> {
+    pub fn array_size(&self, Id(key): Id) -> Option<usize> {
         let mut size = 0;
-        if unsafe { clingo_configuration_array_size(&mut self.0, key, &mut size) } {
+        if unsafe { clingo_configuration_array_size(&self.0, key, &mut size) } {
             Some(size)
         } else {
             None
@@ -2238,9 +2236,9 @@ impl Configuration {
     ///
     /// * `key` - the key
     /// * `offset` - the offset in the array
-    pub fn array_at(&mut self, Id(key): Id, offset: usize) -> Option<Id> {
+    pub fn array_at(&self, Id(key): Id, offset: usize) -> Option<Id> {
         let mut nkey = 0 as clingo_id_t;
-        if unsafe { clingo_configuration_array_at(&mut self.0, key, offset, &mut nkey) } {
+        if unsafe { clingo_configuration_array_at(&self.0, key, offset, &mut nkey) } {
             Some(Id(nkey))
         } else {
             None
@@ -2253,9 +2251,9 @@ impl Configuration {
     ///
     /// The [`configuration_type()`](struct.Configuration.html#method.configuration_type) type of
     /// the entry must be [`ConfigurationType::MAP`](struct.ConfigurationType.html#associatedconstant.MAP).
-    pub fn map_size(&mut self, Id(key): Id) -> Option<usize> {
+    pub fn map_size(&self, Id(key): Id) -> Option<usize> {
         let mut size = 0;
-        if unsafe { clingo_configuration_map_size(&mut self.0, key, &mut size) } {
+        if unsafe { clingo_configuration_map_size(&self.0, key, &mut size) } {
             Some(size)
         } else {
             None
@@ -2294,11 +2292,11 @@ impl Configuration {
     ///
     /// * `key` - the key
     /// * `offset` - the offset of the name
-    pub fn map_subkey_name(&mut self, Id(key): Id, offset: usize) -> Option<&str> {
+    pub fn map_subkey_name(&self, Id(key): Id, offset: usize) -> Option<&str> {
         let mut name_ptr = unsafe { mem::uninitialized() };
         if unsafe {
             clingo_configuration_map_subkey_name(
-                &mut self.0,
+                &self.0,
                 key,
                 offset,
                 &mut name_ptr as *mut *const c_char,
@@ -2319,11 +2317,10 @@ impl Configuration {
     /// the entry must be [`ConfigurationType::MAP`](struct.ConfigurationType.html#associatedconstant.MAP).
     ///
     /// **Note:** Multiple levels can be looked up by concatenating keys with a period.
-    pub fn map_at(&mut self, Id(key): Id, name: &str) -> Option<Id> {
+    pub fn map_at(&self, Id(key): Id, name: &str) -> Option<Id> {
         let mut nkey = 0 as clingo_id_t;
         let name_c_str = CString::new(name).unwrap();
-        if unsafe { clingo_configuration_map_at(&mut self.0, key, name_c_str.as_ptr(), &mut nkey) }
-        {
+        if unsafe { clingo_configuration_map_at(&self.0, key, name_c_str.as_ptr(), &mut nkey) } {
             Some(Id(nkey))
         } else {
             None
@@ -2340,9 +2337,9 @@ impl Configuration {
     /// # Arguments
     ///
     /// * `key` - the key
-    pub fn value_is_assigned(&mut self, Id(key): Id) -> Option<bool> {
+    pub fn value_is_assigned(&self, Id(key): Id) -> Option<bool> {
         let mut assigned = false;
-        if unsafe { clingo_configuration_value_is_assigned(&mut self.0, key, &mut assigned) } {
+        if unsafe { clingo_configuration_value_is_assigned(&self.0, key, &mut assigned) } {
             Some(assigned)
         } else {
             None
@@ -2361,11 +2358,11 @@ impl Configuration {
     /// # Arguments
     ///
     /// * `key` - the key
-    pub fn value_get(&mut self, Id(key): Id) -> Option<&str> {
+    pub fn value_get(&self, Id(key): Id) -> Option<&str> {
         let mut size = 0;
-        if unsafe { clingo_configuration_value_get_size(&mut self.0, key, &mut size) } {
+        if unsafe { clingo_configuration_value_get_size(&self.0, key, &mut size) } {
             let mut value_ptr = unsafe { mem::uninitialized() };
-            if unsafe { clingo_configuration_value_get(&mut self.0, key, &mut value_ptr, size) } {
+            if unsafe { clingo_configuration_value_get(&self.0, key, &mut value_ptr, size) } {
                 let cstr = unsafe { CStr::from_ptr(&value_ptr) };
                 Some(cstr.to_str().unwrap())
             } else {
@@ -2646,9 +2643,9 @@ impl Backend {
 pub struct Statistics(clingo_statistics_t);
 impl Statistics {
     /// Get the root key of the statistics.
-    pub fn root(&mut self) -> Option<u64> {
+    pub fn root(&self) -> Option<u64> {
         let mut root_key = 0 as u64;
-        if unsafe { clingo_statistics_root(&mut self.0, &mut root_key) } {
+        if unsafe { clingo_statistics_root(&self.0, &mut root_key) } {
             Some(root_key)
         } else {
             None
@@ -2656,9 +2653,9 @@ impl Statistics {
     }
 
     /// Get the type of a key.
-    pub fn statistics_type(&mut self, key: u64) -> Option<StatisticsType> {
+    pub fn statistics_type(&self, key: u64) -> Option<StatisticsType> {
         let mut stype = 0 as clingo_statistics_type_t;
-        if unsafe { clingo_statistics_type(&mut self.0, key, &mut stype) } {
+        if unsafe { clingo_statistics_type(&self.0, key, &mut stype) } {
             match stype as u32 {
                 clingo_statistics_type_clingo_statistics_type_empty => Some(StatisticsType::Empty),
                 clingo_statistics_type_clingo_statistics_type_value => Some(StatisticsType::Value),
@@ -2677,9 +2674,9 @@ impl Statistics {
     ///
     /// The [statistics type](struct.Statistics.html#method.statistics_type) of the entry must be
     /// [`StatisticsType::Array`](enum.StatisticsType.html#variant.Array).
-    pub fn array_size(&mut self, key: u64) -> Option<usize> {
+    pub fn array_size(&self, key: u64) -> Option<usize> {
         let mut size = 0 as usize;
-        if unsafe { clingo_statistics_array_size(&mut self.0, key, &mut size) } {
+        if unsafe { clingo_statistics_array_size(&self.0, key, &mut size) } {
             Some(size)
         } else {
             None
@@ -2697,9 +2694,9 @@ impl Statistics {
     ///
     /// * `key` - the key
     /// * `offset` - the offset in the array
-    pub fn statistics_array_at(&mut self, key: u64, offset: usize) -> Option<u64> {
+    pub fn statistics_array_at(&self, key: u64, offset: usize) -> Option<u64> {
         let mut subkey = 0 as u64;
-        if unsafe { clingo_statistics_array_at(&mut self.0, key, offset, &mut subkey) } {
+        if unsafe { clingo_statistics_array_at(&self.0, key, offset, &mut subkey) } {
             Some(subkey)
         } else {
             None
@@ -2712,9 +2709,9 @@ impl Statistics {
     ///
     /// The [statistics type](struct.Statistics.html#method.statistics_type) of the entry must
     /// be [`StatisticsType::Map`](enum.StatisticsType.html#variant.Map).
-    pub fn map_size(&mut self, key: u64) -> Option<usize> {
+    pub fn map_size(&self, key: u64) -> Option<usize> {
         let mut size = 0 as usize;
-        if unsafe { clingo_statistics_map_size(&mut self.0, key, &mut size) } {
+        if unsafe { clingo_statistics_map_size(&self.0, key, &mut size) } {
             Some(size)
         } else {
             None
@@ -2732,9 +2729,9 @@ impl Statistics {
     ///
     /// * `key` - the key
     /// * `offset` - the offset of the name
-    pub fn map_subkey_name<'a>(&mut self, key: u64, offset: usize) -> Option<&'a str> {
+    pub fn map_subkey_name<'a>(&self, key: u64, offset: usize) -> Option<&'a str> {
         let mut name = std::ptr::null() as *const c_char;
-        if unsafe { clingo_statistics_map_subkey_name(&mut self.0, key, offset, &mut name) } {
+        if unsafe { clingo_statistics_map_subkey_name(&self.0, key, offset, &mut name) } {
             Some(unsafe { CStr::from_ptr(name) }.to_str().unwrap())
         } else {
             None
@@ -2754,10 +2751,10 @@ impl Statistics {
     ///
     /// * `key` - the key
     /// * `name` - the name to lookup the subkey
-    pub fn map_at(&mut self, key: u64, name: &str) -> Option<u64> {
+    pub fn map_at(&self, key: u64, name: &str) -> Option<u64> {
         let mut subkey = 0 as u64;
         let name_c_str = CString::new(name).unwrap();
-        if unsafe { clingo_statistics_map_at(&mut self.0, key, name_c_str.as_ptr(), &mut subkey) } {
+        if unsafe { clingo_statistics_map_at(&self.0, key, name_c_str.as_ptr(), &mut subkey) } {
             Some(subkey)
         } else {
             None
@@ -2770,9 +2767,9 @@ impl Statistics {
     ///
     /// The [statistics type](struct.Statistics.html#method.statistics_type) of the entry must be
     /// [`StatisticsType::Value`](enum.StatisticsType.html#variant.Value).
-    pub fn value_get(&mut self, key: u64) -> Option<f64> {
+    pub fn value_get(&self, key: u64) -> Option<f64> {
         let mut value = 0.0 as f64;
-        if unsafe { clingo_statistics_value_get(&mut self.0, key, &mut value) } {
+        if unsafe { clingo_statistics_value_get(&self.0, key, &mut value) } {
             Some(value)
         } else {
             None
@@ -3011,9 +3008,9 @@ impl TheoryAtoms {
     ///
     /// * `term` - id of the term
     // TODO ? is this needed in an Rust API
-    pub fn term_type(&mut self, Id(term): Id) -> Option<TheoryTermType> {
+    pub fn term_type(&self, Id(term): Id) -> Option<TheoryTermType> {
         let mut ttype = 0 as clingo_theory_term_type_t;
-        if unsafe { clingo_theory_atoms_term_type(&mut self.0, term, &mut ttype) } {
+        if unsafe { clingo_theory_atoms_term_type(&self.0, term, &mut ttype) } {
             match ttype as u32 {
                 clingo_theory_term_type_clingo_theory_term_type_tuple => {
                     Some(TheoryTermType::Tuple)
@@ -3045,9 +3042,9 @@ impl TheoryAtoms {
     /// # Arguments
     ///
     /// * `term` - id of the term
-    pub fn term_number(&mut self, Id(term): Id) -> Option<i32> {
+    pub fn term_number(&self, Id(term): Id) -> Option<i32> {
         let mut number = 0;
-        if unsafe { clingo_theory_atoms_term_number(&mut self.0, term, &mut number) } {
+        if unsafe { clingo_theory_atoms_term_number(&self.0, term, &mut number) } {
             Some(number)
         } else {
             None
@@ -3064,9 +3061,9 @@ impl TheoryAtoms {
     /// # Arguments
     ///
     /// * `term` id of the term
-    pub fn term_name<'a>(&mut self, Id(term): Id) -> Option<&'a str> {
+    pub fn term_name<'a>(&self, Id(term): Id) -> Option<&'a str> {
         let mut char_ptr = std::ptr::null() as *const c_char;
-        if unsafe { clingo_theory_atoms_term_name(&mut self.0, term, &mut char_ptr) } {
+        if unsafe { clingo_theory_atoms_term_name(&self.0, term, &mut char_ptr) } {
             let c_str = unsafe { CStr::from_ptr(char_ptr) };
             Some(c_str.to_str().unwrap())
         } else {
@@ -3083,10 +3080,10 @@ impl TheoryAtoms {
     /// # Arguments
     ///
     /// * `term` - id of the term
-    pub fn term_arguments(&mut self, Id(term): Id) -> Option<Vec<Id>> {
+    pub fn term_arguments(&self, Id(term): Id) -> Option<Vec<Id>> {
         let mut size = 0;
         let mut c_ptr = unsafe { mem::uninitialized() };
-        if unsafe { clingo_theory_atoms_term_arguments(&mut self.0, term, &mut c_ptr, &mut size) } {
+        if unsafe { clingo_theory_atoms_term_arguments(&self.0, term, &mut c_ptr, &mut size) } {
             let arguments_ref = unsafe { std::slice::from_raw_parts(c_ptr as *const Id, size) };
             Some(arguments_ref.to_owned())
         } else {
@@ -3106,11 +3103,11 @@ impl TheoryAtoms {
     ///
     /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if the size is too small
     /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
-    pub fn term_to_string(&mut self, Id(term): Id) -> Result<&str, Error> {
+    pub fn term_to_string(&self, Id(term): Id) -> Result<&str, Error> {
         let mut size = 0;
-        if unsafe { clingo_theory_atoms_term_to_string_size(&mut self.0, term, &mut size) } {
+        if unsafe { clingo_theory_atoms_term_to_string_size(&self.0, term, &mut size) } {
             let mut c_ptr = unsafe { mem::uninitialized() };
-            if unsafe { clingo_theory_atoms_term_to_string(&mut self.0, term, &mut c_ptr, size) } {
+            if unsafe { clingo_theory_atoms_term_to_string(&self.0, term, &mut c_ptr, size) } {
                 let cstr = unsafe { CStr::from_ptr(&c_ptr) };
                 Ok(cstr.to_str().unwrap())
             } else {
@@ -3126,12 +3123,11 @@ impl TheoryAtoms {
     /// # Arguments
     ///
     /// * `element` - id of the element
-    pub fn element_tuple(&mut self, Id(element): Id) -> Option<Vec<Id>> {
+    pub fn element_tuple(&self, Id(element): Id) -> Option<Vec<Id>> {
         let mut size = 0;
         let mut tuple_ptr = unsafe { mem::uninitialized() };
-        if unsafe {
-            clingo_theory_atoms_element_tuple(&mut self.0, element, &mut tuple_ptr, &mut size)
-        } {
+        if unsafe { clingo_theory_atoms_element_tuple(&self.0, element, &mut tuple_ptr, &mut size) }
+        {
             let tuple_ref = unsafe { std::slice::from_raw_parts(tuple_ptr as *const Id, size) };
             Some(tuple_ref.to_owned())
         } else {
@@ -3144,16 +3140,11 @@ impl TheoryAtoms {
     /// # Arguments
     ///
     /// * `element` - id of the element
-    pub fn element_condition(&mut self, Id(element): Id) -> Option<Vec<Literal>> {
+    pub fn element_condition(&self, Id(element): Id) -> Option<Vec<Literal>> {
         let mut size = 0;
         let mut condition_ptr = unsafe { mem::uninitialized() };
         if unsafe {
-            clingo_theory_atoms_element_condition(
-                &mut self.0,
-                element,
-                &mut condition_ptr,
-                &mut size,
-            )
+            clingo_theory_atoms_element_condition(&self.0, element, &mut condition_ptr, &mut size)
         } {
             let condition_ref =
                 unsafe { std::slice::from_raw_parts(condition_ptr as *const Literal, size) };
@@ -3173,10 +3164,9 @@ impl TheoryAtoms {
     /// # Arguments
     ///
     /// * `element` - id of the element
-    pub fn element_condition_id(&mut self, Id(element): Id) -> Option<Literal> {
+    pub fn element_condition_id(&self, Id(element): Id) -> Option<Literal> {
         let mut condition = unsafe { mem::uninitialized() };
-        if unsafe { clingo_theory_atoms_element_condition_id(&mut self.0, element, &mut condition) }
-        {
+        if unsafe { clingo_theory_atoms_element_condition_id(&self.0, element, &mut condition) } {
             Some(Literal(condition))
         } else {
             None
@@ -3195,13 +3185,12 @@ impl TheoryAtoms {
     ///
     /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if the size is too small
     /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
-    pub fn element_to_string(&mut self, Id(element): Id) -> Result<&str, Error> {
+    pub fn element_to_string(&self, Id(element): Id) -> Result<&str, Error> {
         let mut size = 0;
-        if unsafe { clingo_theory_atoms_element_to_string_size(&mut self.0, element, &mut size) } {
+        if unsafe { clingo_theory_atoms_element_to_string_size(&self.0, element, &mut size) } {
             let mut c_ptr = unsafe { mem::uninitialized() };
-            if unsafe {
-                clingo_theory_atoms_element_to_string(&mut self.0, element, &mut c_ptr, size)
-            } {
+            if unsafe { clingo_theory_atoms_element_to_string(&self.0, element, &mut c_ptr, size) }
+            {
                 let cstr = unsafe { CStr::from_ptr(&c_ptr) };
                 Ok(cstr.to_str().unwrap())
             } else {
@@ -3213,9 +3202,9 @@ impl TheoryAtoms {
     }
 
     /// Get the total number of theory atoms.
-    pub fn size(&mut self) -> Option<usize> {
+    pub fn size(&self) -> Option<usize> {
         let mut size = 0 as usize;
-        if unsafe { clingo_theory_atoms_size(&mut self.0, &mut size) } {
+        if unsafe { clingo_theory_atoms_size(&self.0, &mut size) } {
             Some(size)
         } else {
             None
@@ -3227,9 +3216,9 @@ impl TheoryAtoms {
     /// # Arguments
     ///
     /// * `atom` id of the atom
-    pub fn atom_term(&mut self, Id(atom): Id) -> Option<Id> {
+    pub fn atom_term(&self, Id(atom): Id) -> Option<Id> {
         let mut term = 0 as clingo_id_t;
-        if unsafe { clingo_theory_atoms_atom_term(&mut self.0, atom, &mut term) } {
+        if unsafe { clingo_theory_atoms_atom_term(&self.0, atom, &mut term) } {
             Some(Id(term))
         } else {
             None
@@ -3241,12 +3230,11 @@ impl TheoryAtoms {
     /// # Arguments
     ///
     /// * `atom` - id of the atom
-    pub fn atom_elements(&mut self, Id(atom): Id) -> Option<Vec<Id>> {
+    pub fn atom_elements(&self, Id(atom): Id) -> Option<Vec<Id>> {
         let mut size = 0;
         let mut elements_ptr = unsafe { mem::uninitialized() };
-        if unsafe {
-            clingo_theory_atoms_atom_elements(&mut self.0, atom, &mut elements_ptr, &mut size)
-        } {
+        if unsafe { clingo_theory_atoms_atom_elements(&self.0, atom, &mut elements_ptr, &mut size) }
+        {
             let elements_ref =
                 unsafe { std::slice::from_raw_parts(elements_ptr as *const Id, size) };
             Some(elements_ref.to_owned())
@@ -3260,9 +3248,9 @@ impl TheoryAtoms {
     /// # Arguments
     ///
     /// * `atom` id of the atom
-    pub fn atom_has_guard(&mut self, Id(atom): Id) -> Option<bool> {
+    pub fn atom_has_guard(&self, Id(atom): Id) -> Option<bool> {
         let mut has_guard = false;
-        if unsafe { clingo_theory_atoms_atom_has_guard(&mut self.0, atom, &mut has_guard) } {
+        if unsafe { clingo_theory_atoms_atom_has_guard(&self.0, atom, &mut has_guard) } {
             Some(has_guard)
         } else {
             None
@@ -3274,10 +3262,10 @@ impl TheoryAtoms {
     /// # Arguments
     ///
     /// * `atom` - id of the atom
-    pub fn atom_guard(&mut self, Id(atom): Id) -> Option<(&str, Id)> {
+    pub fn atom_guard(&self, Id(atom): Id) -> Option<(&str, Id)> {
         let mut c_ptr = unsafe { mem::uninitialized() };
         let mut term = 0 as clingo_id_t;
-        if unsafe { clingo_theory_atoms_atom_guard(&mut self.0, atom, &mut c_ptr, &mut term) } {
+        if unsafe { clingo_theory_atoms_atom_guard(&self.0, atom, &mut c_ptr, &mut term) } {
             let cstr = unsafe { CStr::from_ptr(c_ptr) };
             Some((cstr.to_str().unwrap(), Id(term)))
         } else {
@@ -3290,9 +3278,9 @@ impl TheoryAtoms {
     /// # Arguments
     ///
     /// * `atom` id of the atom
-    pub fn atom_literal(&mut self, Id(atom): Id) -> Option<Literal> {
+    pub fn atom_literal(&self, Id(atom): Id) -> Option<Literal> {
         let mut literal = 0 as clingo_literal_t;
-        if unsafe { clingo_theory_atoms_atom_literal(&mut self.0, atom, &mut literal) } {
+        if unsafe { clingo_theory_atoms_atom_literal(&self.0, atom, &mut literal) } {
             Some(Literal(literal))
         } else {
             None
@@ -3311,11 +3299,11 @@ impl TheoryAtoms {
     ///
     /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if the size is too small
     /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
-    pub fn atom_to_string(&mut self, Id(atom): Id) -> Result<&str, Error> {
+    pub fn atom_to_string(&self, Id(atom): Id) -> Result<&str, Error> {
         let mut size = 0;
-        if unsafe { clingo_theory_atoms_atom_to_string_size(&mut self.0, atom, &mut size) } {
+        if unsafe { clingo_theory_atoms_atom_to_string_size(&self.0, atom, &mut size) } {
             let mut c_ptr = unsafe { mem::uninitialized() };
-            if unsafe { clingo_theory_atoms_atom_to_string(&mut self.0, atom, &mut c_ptr, size) } {
+            if unsafe { clingo_theory_atoms_atom_to_string(&self.0, atom, &mut c_ptr, size) } {
                 let cstr = unsafe { CStr::from_ptr(&c_ptr) };
                 Ok(cstr.to_str().unwrap())
             } else {
@@ -3394,7 +3382,7 @@ impl Iterator for UNSAFE_TheoryAtomsIterator {
     }
 }
 impl UNSAFE_TheoryAtomsIterator {
-    pub fn from(cta: &mut TheoryAtoms) -> UNSAFE_TheoryAtomsIterator {
+    pub fn from(cta: &TheoryAtoms) -> UNSAFE_TheoryAtomsIterator {
         UNSAFE_TheoryAtomsIterator {
             count: 0,
             size: cta.size().unwrap(),
@@ -3407,9 +3395,9 @@ impl UNSAFE_TheoryAtomsIterator {
 pub struct Model(clingo_model_t);
 impl Model {
     /// Get the type of the model.
-    pub fn model_type(&mut self) -> Option<ModelType> {
+    pub fn model_type(&self) -> Option<ModelType> {
         let mut mtype = 0 as clingo_model_type_t;
-        if unsafe { clingo_model_type(&mut self.0, &mut mtype) } {
+        if unsafe { clingo_model_type(&self.0, &mut mtype) } {
             match mtype as u32 {
                 clingo_model_type_clingo_model_type_stable_model => Some(ModelType::StableModel),
                 clingo_model_type_clingo_model_type_brave_consequences => {
@@ -3426,9 +3414,9 @@ impl Model {
     }
 
     /// Get the running number of the model.
-    pub fn number(&mut self) -> Option<u64> {
+    pub fn number(&self) -> Option<u64> {
         let mut number = 0;
-        if unsafe { clingo_model_number(&mut self.0, &mut number) } {
+        if unsafe { clingo_model_number(&self.0, &mut number) } {
             Some(number)
         } else {
             None
@@ -3451,18 +3439,13 @@ impl Model {
     ///
     /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
     /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if the size is too small
-    pub fn symbols(&mut self, show: &ShowType) -> Result<Vec<Symbol>, Error> {
+    pub fn symbols(&self, show: &ShowType) -> Result<Vec<Symbol>, Error> {
         let mut size: usize = 0;
-        if unsafe { clingo_model_symbols_size(&mut self.0, show.0, &mut size) } {
+        if unsafe { clingo_model_symbols_size(&self.0, show.0, &mut size) } {
             let symbols = Vec::<Symbol>::with_capacity(size);
             let symbols_ptr = symbols.as_ptr();
             if unsafe {
-                clingo_model_symbols(
-                    &mut self.0,
-                    show.0,
-                    symbols_ptr as *mut clingo_symbol_t,
-                    size,
-                )
+                clingo_model_symbols(&self.0, show.0, symbols_ptr as *mut clingo_symbol_t, size)
             } {
                 let symbols_ref =
                     unsafe { std::slice::from_raw_parts(symbols_ptr as *const Symbol, size) };
@@ -3480,9 +3463,9 @@ impl Model {
     /// # Arguments
     ///
     /// * `atom` - the atom to lookup
-    pub fn contains(&mut self, Symbol(atom): Symbol) -> Option<bool> {
+    pub fn contains(&self, Symbol(atom): Symbol) -> Option<bool> {
         let mut contained = false;
-        if unsafe { clingo_model_contains(&mut self.0, atom, &mut contained) } {
+        if unsafe { clingo_model_contains(&self.0, atom, &mut contained) } {
             Some(contained)
         } else {
             None
@@ -3514,12 +3497,12 @@ impl Model {
     /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if the size is too small
     ///
     /// **See:** [`Model::optimality_proven()`](struct.Model.html#method.optimality_proven)
-    pub fn cost(&mut self) -> Result<Vec<i64>, Error> {
+    pub fn cost(&self) -> Result<Vec<i64>, Error> {
         let mut size: usize = 0;
-        if unsafe { clingo_model_cost_size(&mut self.0, &mut size) } {
+        if unsafe { clingo_model_cost_size(&self.0, &mut size) } {
             let cost = Vec::<i64>::with_capacity(size);
             let cost_ptr = cost.as_ptr();
-            if unsafe { clingo_model_cost(&mut self.0, cost_ptr as *mut i64, size) } {
+            if unsafe { clingo_model_cost(&self.0, cost_ptr as *mut i64, size) } {
                 let cost_ref = unsafe { std::slice::from_raw_parts(cost_ptr as *const i64, size) };
                 Ok(cost_ref.to_owned())
             } else {
@@ -3533,9 +3516,9 @@ impl Model {
     /// Whether the optimality of a model has been proven.
     ///
     /// **See:** [`Model::cost()`](struct.Model.html#method.cost)
-    pub fn optimality_proven(&mut self) -> Option<bool> {
+    pub fn optimality_proven(&self) -> Option<bool> {
         let mut proven = false;
-        if unsafe { clingo_model_optimality_proven(&mut self.0, &mut proven) } {
+        if unsafe { clingo_model_optimality_proven(&self.0, &mut proven) } {
             Some(proven)
         } else {
             None
@@ -3923,10 +3906,10 @@ impl PropagateInit {
     /// * `aspif_literal` - the aspif literal to map
     ///
     /// **Returns** the corresponding solver literal
-    pub fn solver_literal(&mut self, Literal(aspif_literal): Literal) -> Option<Literal> {
+    pub fn solver_literal(&self, Literal(aspif_literal): Literal) -> Option<Literal> {
         let mut solver_literal = 0 as clingo_literal_t;
         if unsafe {
-            clingo_propagate_init_solver_literal(&mut self.0, aspif_literal, &mut solver_literal)
+            clingo_propagate_init_solver_literal(&self.0, aspif_literal, &mut solver_literal)
         } {
             Some(Literal(solver_literal))
         } else {
@@ -3948,20 +3931,20 @@ impl PropagateInit {
     }
 
     /// Get an object to inspect the symbolic atoms.
-    pub fn symbolic_atoms<'a>(&mut self) -> Option<&'a mut SymbolicAtoms> {
-        let mut atoms_ptr = unsafe { std::mem::uninitialized() };
-        if unsafe { clingo_propagate_init_symbolic_atoms(&mut self.0, &mut atoms_ptr) } {
-            unsafe { (atoms_ptr as *mut SymbolicAtoms).as_mut() }
+    pub fn symbolic_atoms<'a>(&self) -> Option<&'a SymbolicAtoms> {
+        let mut atoms_ptr = std::ptr::null() as *const clingo_symbolic_atoms_t;
+        if unsafe { clingo_propagate_init_symbolic_atoms(&self.0, &mut atoms_ptr) } {
+            unsafe { (atoms_ptr as *const SymbolicAtoms).as_ref() }
         } else {
             None
         }
     }
 
     /// Get an object to inspect the theory atoms.
-    pub fn theory_atoms(&mut self) -> Option<&mut TheoryAtoms> {
-        let mut atoms_ptr = unsafe { std::mem::uninitialized() };
-        if unsafe { clingo_propagate_init_theory_atoms(&mut self.0, &mut atoms_ptr) } {
-            unsafe { (atoms_ptr as *mut TheoryAtoms).as_mut() }
+    pub fn theory_atoms(&self) -> Option<&TheoryAtoms> {
+        let mut atoms_ptr =std::ptr::null() as *const clingo_theory_atoms_t;
+        if unsafe { clingo_propagate_init_theory_atoms(&self.0, &mut atoms_ptr) } {
+            unsafe { (atoms_ptr as *const TheoryAtoms).as_ref() }
         } else {
             None
         }
@@ -3969,8 +3952,8 @@ impl PropagateInit {
 
     /// Get the number of threads used in subsequent solving.
     /// **See:** [`PropagateControl::thread_id()`](struct.PropagateControl.html#method.thread_id)
-    pub fn number_of_threads(&mut self) -> usize {
-        (unsafe { clingo_propagate_init_number_of_threads(&mut self.0) } as usize)
+    pub fn number_of_threads(&self) -> usize {
+        (unsafe { clingo_propagate_init_number_of_threads(&self.0) } as usize)
     }
 
     //TODO     /// Configure when to call the check method of the propagator.

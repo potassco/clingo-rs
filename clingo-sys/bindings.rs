@@ -1128,7 +1128,7 @@ extern "C" {
     ///
     /// **Returns** whether the call was successful
     pub fn clingo_theory_atoms_term_type(
-        atoms: *mut clingo_theory_atoms_t,
+        atoms: *const clingo_theory_atoms_t,
         term: clingo_id_t,
         type_: *mut clingo_theory_term_type_t,
     ) -> bool;
@@ -1146,7 +1146,7 @@ extern "C" {
     ///
     /// **Returns** whether the call was successful
     pub fn clingo_theory_atoms_term_number(
-        atoms: *mut clingo_theory_atoms_t,
+        atoms: *const clingo_theory_atoms_t,
         term: clingo_id_t,
         number: *mut ::std::os::raw::c_int,
     ) -> bool;
@@ -1164,7 +1164,7 @@ extern "C" {
     ///
     /// **Returns** whether the call was successful
     pub fn clingo_theory_atoms_term_name(
-        atoms: *mut clingo_theory_atoms_t,
+        atoms: *const clingo_theory_atoms_t,
         term: clingo_id_t,
         name: *mut *const ::std::os::raw::c_char,
     ) -> bool;
@@ -1183,7 +1183,7 @@ extern "C" {
     ///
     /// **Returns** whether the call was successful
     pub fn clingo_theory_atoms_term_arguments(
-        atoms: *mut clingo_theory_atoms_t,
+        atoms: *const clingo_theory_atoms_t,
         term: clingo_id_t,
         arguments: *mut *const clingo_id_t,
         size: *mut usize,
@@ -1201,7 +1201,7 @@ extern "C" {
     /// **Returns** whether the call was successful; might set one of the following error codes:
     /// - ::clingo_error_bad_alloc
     pub fn clingo_theory_atoms_term_to_string_size(
-        atoms: *mut clingo_theory_atoms_t,
+        atoms: *const clingo_theory_atoms_t,
         term: clingo_id_t,
         size: *mut usize,
     ) -> bool;
@@ -1222,7 +1222,7 @@ extern "C" {
     ///
     /// @see clingo_theory_atoms_term_to_string_size()
     pub fn clingo_theory_atoms_term_to_string(
-        atoms: *mut clingo_theory_atoms_t,
+        atoms: *const clingo_theory_atoms_t,
         term: clingo_id_t,
         string: *mut ::std::os::raw::c_char,
         size: usize,
@@ -1240,7 +1240,7 @@ extern "C" {
     ///
     /// **Returns** whether the call was successful
     pub fn clingo_theory_atoms_element_tuple(
-        atoms: *mut clingo_theory_atoms_t,
+        atoms: *const clingo_theory_atoms_t,
         element: clingo_id_t,
         tuple: *mut *const clingo_id_t,
         size: *mut usize,
@@ -1258,7 +1258,7 @@ extern "C" {
     ///
     /// **Returns** whether the call was successful
     pub fn clingo_theory_atoms_element_condition(
-        atoms: *mut clingo_theory_atoms_t,
+        atoms: *const clingo_theory_atoms_t,
         element: clingo_id_t,
         condition: *mut *const clingo_literal_t,
         size: *mut usize,
@@ -1280,7 +1280,7 @@ extern "C" {
     ///
     /// **Returns** whether the call was successful
     pub fn clingo_theory_atoms_element_condition_id(
-        atoms: *mut clingo_theory_atoms_t,
+        atoms: *const clingo_theory_atoms_t,
         element: clingo_id_t,
         condition: *mut clingo_literal_t,
     ) -> bool;
@@ -1297,7 +1297,7 @@ extern "C" {
     /// **Returns** whether the call was successful; might set one of the following error codes:
     /// - ::clingo_error_bad_alloc
     pub fn clingo_theory_atoms_element_to_string_size(
-        atoms: *mut clingo_theory_atoms_t,
+        atoms: *const clingo_theory_atoms_t,
         element: clingo_id_t,
         size: *mut usize,
     ) -> bool;
@@ -1316,7 +1316,7 @@ extern "C" {
     /// - ::clingo_error_runtime if the size is too small
     /// - ::clingo_error_bad_alloc
     pub fn clingo_theory_atoms_element_to_string(
-        atoms: *mut clingo_theory_atoms_t,
+        atoms: *const clingo_theory_atoms_t,
         element: clingo_id_t,
         string: *mut ::std::os::raw::c_char,
         size: usize,
@@ -1331,7 +1331,7 @@ extern "C" {
     /// * `size` - the resulting number
     ///
     /// **Returns** whether the call was successful
-    pub fn clingo_theory_atoms_size(atoms: *mut clingo_theory_atoms_t, size: *mut usize) -> bool;
+    pub fn clingo_theory_atoms_size(atoms: *const clingo_theory_atoms_t, size: *mut usize) -> bool;
 }
 extern "C" {
     /// Get the theory term associated with the theory atom.
@@ -1344,7 +1344,7 @@ extern "C" {
     ///
     /// **Returns** whether the call was successful
     pub fn clingo_theory_atoms_atom_term(
-        atoms: *mut clingo_theory_atoms_t,
+        atoms: *const clingo_theory_atoms_t,
         atom: clingo_id_t,
         term: *mut clingo_id_t,
     ) -> bool;
@@ -1361,7 +1361,7 @@ extern "C" {
     ///
     /// **Returns** whether the call was successful
     pub fn clingo_theory_atoms_atom_elements(
-        atoms: *mut clingo_theory_atoms_t,
+        atoms: *const clingo_theory_atoms_t,
         atom: clingo_id_t,
         elements: *mut *const clingo_id_t,
         size: *mut usize,
@@ -1378,7 +1378,7 @@ extern "C" {
     ///
     /// **Returns** whether the call was successful
     pub fn clingo_theory_atoms_atom_has_guard(
-        atoms: *mut clingo_theory_atoms_t,
+        atoms: *const clingo_theory_atoms_t,
         atom: clingo_id_t,
         has_guard: *mut bool,
     ) -> bool;
@@ -1395,7 +1395,7 @@ extern "C" {
     ///
     /// **Returns** whether the call was successful
     pub fn clingo_theory_atoms_atom_guard(
-        atoms: *mut clingo_theory_atoms_t,
+        atoms: *const clingo_theory_atoms_t,
         atom: clingo_id_t,
         connective: *mut *const ::std::os::raw::c_char,
         term: *mut clingo_id_t,
@@ -1412,7 +1412,7 @@ extern "C" {
     ///
     /// **Returns** whether the call was successful
     pub fn clingo_theory_atoms_atom_literal(
-        atoms: *mut clingo_theory_atoms_t,
+        atoms: *const clingo_theory_atoms_t,
         atom: clingo_id_t,
         literal: *mut clingo_literal_t,
     ) -> bool;
@@ -1429,7 +1429,7 @@ extern "C" {
     /// **Returns** whether the call was successful; might set one of the following error codes:
     /// - ::clingo_error_bad_alloc
     pub fn clingo_theory_atoms_atom_to_string_size(
-        atoms: *mut clingo_theory_atoms_t,
+        atoms: *const clingo_theory_atoms_t,
         atom: clingo_id_t,
         size: *mut usize,
     ) -> bool;
@@ -1448,7 +1448,7 @@ extern "C" {
     /// - ::clingo_error_runtime if the size is too small
     /// - ::clingo_error_bad_alloc
     pub fn clingo_theory_atoms_atom_to_string(
-        atoms: *mut clingo_theory_atoms_t,
+        atoms: *const clingo_theory_atoms_t,
         atom: clingo_id_t,
         string: *mut ::std::os::raw::c_char,
         size: usize,
@@ -1493,7 +1493,7 @@ extern "C" {
     /// * `type` - the type of the model
     ///
     /// **Returns** whether the call was successful
-    pub fn clingo_model_type(model: *mut clingo_model_t, type_: *mut clingo_model_type_t) -> bool;
+    pub fn clingo_model_type(model: *const clingo_model_t, type_: *mut clingo_model_type_t) -> bool;
 }
 extern "C" {
     /// Get the running number of the model.
@@ -1504,7 +1504,7 @@ extern "C" {
     /// * `number` - the number of the model
     ///
     /// **Returns** whether the call was successful
-    pub fn clingo_model_number(model: *mut clingo_model_t, number: *mut u64) -> bool;
+    pub fn clingo_model_number(model: *const clingo_model_t, number: *mut u64) -> bool;
 }
 extern "C" {
     /// Get the number of symbols of the selected types in the model.
@@ -1518,7 +1518,7 @@ extern "C" {
     /// **Returns** whether the call was successful; might set one of the following error codes:
     /// - ::clingo_error_bad_alloc
     pub fn clingo_model_symbols_size(
-        model: *mut clingo_model_t,
+        model: *const clingo_model_t,
         show: clingo_show_type_bitset_t,
         size: *mut usize,
     ) -> bool;
@@ -1543,7 +1543,7 @@ extern "C" {
     ///
     /// @see clingo_model_symbols_size()
     pub fn clingo_model_symbols(
-        model: *mut clingo_model_t,
+        model: *const clingo_model_t,
         show: clingo_show_type_bitset_t,
         symbols: *mut clingo_symbol_t,
         size: usize,
@@ -1560,7 +1560,7 @@ extern "C" {
     ///
     /// **Returns** whether the call was successful
     pub fn clingo_model_contains(
-        model: *mut clingo_model_t,
+        model: *const clingo_model_t,
         atom: clingo_symbol_t,
         contained: *mut bool,
     ) -> bool;
@@ -1576,7 +1576,7 @@ extern "C" {
     ///
     /// **Returns** whether the call was successful
     pub fn clingo_model_is_true(
-        model: *mut clingo_model_t,
+        model: *const clingo_model_t,
         literal: clingo_literal_t,
         result: *mut bool,
     ) -> bool;
@@ -1590,7 +1590,7 @@ extern "C" {
     /// * `size` - the number of costs
     ///
     /// **Returns** whether the call was successful
-    pub fn clingo_model_cost_size(model: *mut clingo_model_t, size: *mut usize) -> bool;
+    pub fn clingo_model_cost_size(model: *const clingo_model_t, size: *mut usize) -> bool;
 }
 extern "C" {
     /// Get the cost vector of a model.
@@ -1607,7 +1607,7 @@ extern "C" {
     ///
     /// @see clingo_model_cost_size()
     /// @see clingo_model_optimality_proven()
-    pub fn clingo_model_cost(model: *mut clingo_model_t, costs: *mut i64, size: usize) -> bool;
+    pub fn clingo_model_cost(model: *const clingo_model_t, costs: *mut i64, size: usize) -> bool;
 }
 extern "C" {
     /// Whether the optimality of a model has been proven.
@@ -1620,7 +1620,7 @@ extern "C" {
     /// **Returns** whether the call was successful
     ///
     /// @see clingo_model_cost()
-    pub fn clingo_model_optimality_proven(model: *mut clingo_model_t, proven: *mut bool) -> bool;
+    pub fn clingo_model_optimality_proven(model: *const clingo_model_t, proven: *mut bool) -> bool;
 }
 extern "C" {
     /// Get the id of the solver thread that found the model.
@@ -1631,7 +1631,7 @@ extern "C" {
     /// * `id` - the resulting thread id
     ///
     /// **Returns** whether the call was successful
-    pub fn clingo_model_thread_id(model: *mut clingo_model_t, id: *mut clingo_id_t) -> bool;
+    pub fn clingo_model_thread_id(model: *const clingo_model_t, id: *mut clingo_id_t) -> bool;
 }
 extern "C" {
     /// Get the associated solve control object of a model.
@@ -1861,7 +1861,7 @@ extern "C" {
     ///
     /// **Returns** whether the call was successful
     pub fn clingo_propagate_init_solver_literal(
-        init: *mut clingo_propagate_init_t,
+        init: *const clingo_propagate_init_t,
         aspif_literal: clingo_literal_t,
         solver_literal: *mut clingo_literal_t,
     ) -> bool;
@@ -1890,7 +1890,7 @@ extern "C" {
     ///
     /// **Returns** whether the call was successful
     pub fn clingo_propagate_init_symbolic_atoms(
-        init: *mut clingo_propagate_init_t,
+        init: *const clingo_propagate_init_t,
         atoms: *mut *const clingo_symbolic_atoms_t,
     ) -> bool;
 }
@@ -1904,8 +1904,8 @@ extern "C" {
     ///
     /// **Returns** whether the call was successful
     pub fn clingo_propagate_init_theory_atoms(
-        init: *mut clingo_propagate_init_t,
-        atoms: *mut *mut clingo_theory_atoms_t,
+        init: *const clingo_propagate_init_t,
+        atoms: *mut *const clingo_theory_atoms_t,
     ) -> bool;
 }
 extern "C" {
@@ -1918,7 +1918,7 @@ extern "C" {
     /// **Returns** the number of threads
     /// @see clingo_propagate_control_thread_id()
     pub fn clingo_propagate_init_number_of_threads(
-        init: *mut clingo_propagate_init_t,
+        init: *const clingo_propagate_init_t,
     ) -> ::std::os::raw::c_int;
 }
 extern "C" {
@@ -1944,7 +1944,7 @@ extern "C" {
     /// **Returns**  bitmask when to call the propagator
     /// @see clingo_propagate_init_set_check_mode()
     pub fn clingo_propagate_init_get_check_mode(
-        init: *mut clingo_propagate_init_t,
+        init: *const clingo_propagate_init_t,
     ) -> clingo_propagator_check_mode_t;
 }
 #[repr(C)]
@@ -2738,7 +2738,7 @@ extern "C" {
     ///
     /// **Returns** whether the call was successful
     pub fn clingo_configuration_root(
-        configuration: *mut clingo_configuration_t,
+        configuration: *const clingo_configuration_t,
         key: *mut clingo_id_t,
     ) -> bool;
 }
@@ -2755,7 +2755,7 @@ extern "C" {
     ///
     /// **Returns** whether the call was successful
     pub fn clingo_configuration_type(
-        configuration: *mut clingo_configuration_t,
+        configuration: *const clingo_configuration_t,
         key: clingo_id_t,
         type_: *mut clingo_configuration_type_bitset_t,
     ) -> bool;
@@ -2771,7 +2771,7 @@ extern "C" {
     ///
     /// **Returns** whether the call was successful
     pub fn clingo_configuration_description(
-        configuration: *mut clingo_configuration_t,
+        configuration: *const clingo_configuration_t,
         key: clingo_id_t,
         description: *mut *const ::std::os::raw::c_char,
     ) -> bool;
@@ -2789,7 +2789,7 @@ extern "C" {
     ///
     /// **Returns** whether the call was successful
     pub fn clingo_configuration_array_size(
-        configuration: *mut clingo_configuration_t,
+        configuration: *const clingo_configuration_t,
         key: clingo_id_t,
         size: *mut usize,
     ) -> bool;
@@ -2809,7 +2809,7 @@ extern "C" {
     ///
     /// **Returns** whether the call was successful
     pub fn clingo_configuration_array_at(
-        configuration: *mut clingo_configuration_t,
+        configuration: *const clingo_configuration_t,
         key: clingo_id_t,
         offset: usize,
         subkey: *mut clingo_id_t,
@@ -2828,7 +2828,7 @@ extern "C" {
     ///
     /// **Returns** whether the call was successful
     pub fn clingo_configuration_map_size(
-        configuration: *mut clingo_configuration_t,
+        configuration: *const clingo_configuration_t,
         key: clingo_id_t,
         size: *mut usize,
     ) -> bool;
@@ -2849,7 +2849,7 @@ extern "C" {
     ///
     /// **Returns** whether the call was successful
     pub fn clingo_configuration_map_has_subkey(
-        configuration: *mut clingo_configuration_t,
+        configuration: *const clingo_configuration_t,
         key: clingo_id_t,
         name: *const ::std::os::raw::c_char,
         result: *mut bool,
@@ -2869,7 +2869,7 @@ extern "C" {
     ///
     /// **Returns** whether the call was successful
     pub fn clingo_configuration_map_subkey_name(
-        configuration: *mut clingo_configuration_t,
+        configuration: *const clingo_configuration_t,
         key: clingo_id_t,
         offset: usize,
         name: *mut *const ::std::os::raw::c_char,
@@ -2891,7 +2891,7 @@ extern "C" {
     ///
     /// **Returns** whether the call was successful
     pub fn clingo_configuration_map_at(
-        configuration: *mut clingo_configuration_t,
+        configuration: *const clingo_configuration_t,
         key: clingo_id_t,
         name: *const ::std::os::raw::c_char,
         subkey: *mut clingo_id_t,
@@ -2910,7 +2910,7 @@ extern "C" {
     ///
     /// **Returns** whether the call was successful
     pub fn clingo_configuration_value_is_assigned(
-        configuration: *mut clingo_configuration_t,
+        configuration: *const clingo_configuration_t,
         key: clingo_id_t,
         assigned: *mut bool,
     ) -> bool;
@@ -2928,7 +2928,7 @@ extern "C" {
     ///
     /// **Returns** whether the call was successful
     pub fn clingo_configuration_value_get_size(
-        configuration: *mut clingo_configuration_t,
+        configuration: *const clingo_configuration_t,
         key: clingo_id_t,
         size: *mut usize,
     ) -> bool;
@@ -2948,7 +2948,7 @@ extern "C" {
     ///
     /// **Returns** whether the call was successful
     pub fn clingo_configuration_value_get(
-        configuration: *mut clingo_configuration_t,
+        configuration: *const clingo_configuration_t,
         key: clingo_id_t,
         value: *mut ::std::os::raw::c_char,
         size: usize,
@@ -2995,7 +2995,7 @@ extern "C" {
     /// * `key` - the root key
     ///
     /// **Returns** whether the call was successful
-    pub fn clingo_statistics_root(statistics: *mut clingo_statistics_t, key: *mut u64) -> bool;
+    pub fn clingo_statistics_root(statistics: *const clingo_statistics_t, key: *mut u64) -> bool;
 }
 extern "C" {
     /// Get the type of a key.
@@ -3008,7 +3008,7 @@ extern "C" {
     ///
     /// **Returns** whether the call was successful
     pub fn clingo_statistics_type(
-        statistics: *mut clingo_statistics_t,
+        statistics: *const clingo_statistics_t,
         key: u64,
         type_: *mut clingo_statistics_type_t,
     ) -> bool;
@@ -3026,7 +3026,7 @@ extern "C" {
     ///
     /// **Returns** whether the call was successful
     pub fn clingo_statistics_array_size(
-        statistics: *mut clingo_statistics_t,
+        statistics: *const clingo_statistics_t,
         key: u64,
         size: *mut usize,
     ) -> bool;
@@ -3045,7 +3045,7 @@ extern "C" {
     ///
     /// **Returns** whether the call was successful
     pub fn clingo_statistics_array_at(
-        statistics: *mut clingo_statistics_t,
+        statistics: *const clingo_statistics_t,
         key: u64,
         offset: usize,
         subkey: *mut u64,
@@ -3064,7 +3064,7 @@ extern "C" {
     ///
     /// **Returns** whether the call was successful
     pub fn clingo_statistics_map_size(
-        statistics: *mut clingo_statistics_t,
+        statistics: *const clingo_statistics_t,
         key: u64,
         size: *mut usize,
     ) -> bool;
@@ -3083,7 +3083,7 @@ extern "C" {
     ///
     /// **Returns** whether the call was successful
     pub fn clingo_statistics_map_subkey_name(
-        statistics: *mut clingo_statistics_t,
+        statistics: *const clingo_statistics_t,
         key: u64,
         offset: usize,
         name: *mut *const ::std::os::raw::c_char,
@@ -3105,7 +3105,7 @@ extern "C" {
     ///
     /// **Returns** whether the call was successful
     pub fn clingo_statistics_map_at(
-        statistics: *mut clingo_statistics_t,
+        statistics: *const clingo_statistics_t,
         key: u64,
         name: *const ::std::os::raw::c_char,
         subkey: *mut u64,
@@ -3124,7 +3124,7 @@ extern "C" {
     ///
     /// **Returns** whether the call was successful
     pub fn clingo_statistics_value_get(
-        statistics: *mut clingo_statistics_t,
+        statistics: *const clingo_statistics_t,
         key: u64,
         value: *mut f64,
     ) -> bool;
@@ -7573,7 +7573,7 @@ extern "C" {
     /// - ::clingo_error_bad_alloc
     pub fn clingo_control_statistics(
         control: *mut clingo_control_t,
-        statistics: *mut *mut clingo_statistics_t,
+        statistics: *mut *const clingo_statistics_t,
     ) -> bool;
 }
 extern "C" {
@@ -7655,7 +7655,7 @@ extern "C" {
     ///
     /// **Returns** whether the call was successful
     pub fn clingo_control_get_const(
-        control: *mut clingo_control_t,
+        control: *const clingo_control_t,
         name: *const ::std::os::raw::c_char,
         symbol: *mut clingo_symbol_t,
     ) -> bool;
@@ -7674,7 +7674,7 @@ extern "C" {
     ///
     /// @see clingo_control_get_const()
     pub fn clingo_control_has_const(
-        control: *mut clingo_control_t,
+        control: *const clingo_control_t,
         name: *const ::std::os::raw::c_char,
         exists: *mut bool,
     ) -> bool;
@@ -7692,7 +7692,7 @@ extern "C" {
     ///
     /// **Returns** whether the call was successful
     pub fn clingo_control_symbolic_atoms(
-        control: *mut clingo_control_t,
+        control: *const clingo_control_t,
         atoms: *mut *const clingo_symbolic_atoms_t,
     ) -> bool;
 }
@@ -7708,8 +7708,8 @@ extern "C" {
     ///
     /// **Returns** whether the call was successful
     pub fn clingo_control_theory_atoms(
-        control: *mut clingo_control_t,
-        atoms: *mut *mut clingo_theory_atoms_t,
+        control: *const clingo_control_t,
+        atoms: *mut *const clingo_theory_atoms_t,
     ) -> bool;
 }
 extern "C" {

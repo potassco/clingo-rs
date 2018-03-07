@@ -3,7 +3,7 @@ extern crate clingo;
 use std::env;
 use clingo::*;
 
-fn print_model(model: &mut Model) {
+fn print_model(model: &Model) {
     // retrieve the symbols in the model
     let atoms = model
         .symbols(&ShowType::SHOWN)
@@ -60,7 +60,7 @@ fn main() {
         });
 
     // solve
-    let handle = ctl.solve(&SolveMode::YIELD, &[])
+    let mut handle = ctl.solve(&SolveMode::YIELD, &[])
         .expect("Failed to retrieve solve handle.");
 
     print_model(handle.model().unwrap());
