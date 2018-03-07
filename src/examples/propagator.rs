@@ -23,7 +23,7 @@ fn print_model(model: &mut Model) {
 
 fn solve(ctl: &mut Control) {
     // get a solve handle
-    let handle = ctl.solve(&SolveMode::YIELD, &[])
+    let mut handle = ctl.solve(&SolveMode::YIELD, &[])
         .expect("Failed to retrieve solve handle.");
 
     // loop over all models

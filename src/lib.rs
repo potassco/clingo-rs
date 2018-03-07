@@ -1680,7 +1680,7 @@ impl Control {
         &mut self,
         mode: &SolveMode,
         assumptions: &[SymbolicLiteral],
-    ) -> Result<&mut SolveHandle, Error> {
+    ) -> Result<SolveHandle, Error> {
         let mut handle = std::ptr::null_mut() as *mut clingo_solve_handle_t;
         if unsafe {
             clingo_control_solve(
@@ -1693,12 +1693,10 @@ impl Control {
                 &mut handle,
             )
         } {
-            match unsafe { (handle as *mut SolveHandle).as_mut() } {
-                Some(x) => Ok(x),
-                None => Err(BindingError {
-                    msg: "Failed dereferencing pointer to clingo_solve_handle.",
-                })?,
-            }
+            Ok(SolveHandle {
+                    theref: unsafe { handle.as_mut() }.unwrap(),
+                })
+            
         } else {
             Err(error())?
         }
@@ -1724,7 +1722,7 @@ impl Control {
         mode: &SolveMode,
         assumptions: &[SymbolicLiteral],
         event_handler: &mut T,
-    ) -> Result<&mut SolveHandle, Error> {
+    ) -> Result<SolveHandle, Error> {
         let mut handle = std::ptr::null_mut() as *mut clingo_solve_handle_t;
         let data = event_handler as *mut T;
         if unsafe {
@@ -1738,12 +1736,10 @@ impl Control {
                 &mut handle,
             )
         } {
-            match unsafe { (handle as *mut SolveHandle).as_mut() } {
-                Some(x) => Ok(x),
-                None => Err(BindingError {
-                    msg: "Failed dereferencing pointer to clingo_solve_handle.",
-                })?,
-            }
+            
+            Ok(SolveHandle {
+                    theref: unsafe { handle.as_mut() }.unwrap(),
+                })
         } else {
             Err(error())?
         }
@@ -4003,9 +3999,11 @@ impl PropagateInit {
 }
 
 /// Search handle to a solve call.
-#[derive(Debug, Copy, Clone)]
-pub struct SolveHandle(clingo_solve_handle_t);
-impl SolveHandle {
+#[derive(Debug)]
+pub struct SolveHandle<'a> {
+    theref: &'a mut clingo_solve_handle_t,
+}
+impl<'a> SolveHandle<'a> {
     /// Get the next solve result.
     ///
     /// Blocks until the result is ready.
@@ -4018,7 +4016,7 @@ impl SolveHandle {
     /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if solving fails
     pub fn get(&mut self) -> Result<SolveResult, Error> {
         let mut result = 0;
-        if unsafe { clingo_solve_handle_get(&mut self.0, &mut result) } {
+        if unsafe { clingo_solve_handle_get(self.theref, &mut result) } {
             Ok(SolveResult(result))
         } else {
             Err(error())?
@@ -4050,7 +4048,7 @@ impl SolveHandle {
     /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if solving fails
     pub fn model(&mut self) -> Result<&mut Model, Error> {
         let mut model = std::ptr::null_mut() as *mut clingo_model_t;
-        if unsafe { clingo_solve_handle_model(&mut self.0, &mut model) } {
+        if unsafe { clingo_solve_handle_model(self.theref, &mut model) } {
             match unsafe { (model as *mut Model).as_mut() } {
                 Some(x) => Ok(x),
                 None => Err(BindingError {
@@ -4074,7 +4072,7 @@ impl SolveHandle {
     /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
     /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if solving fails
     pub fn resume(&mut self) -> Result<(), Error> {
-        if unsafe { clingo_solve_handle_resume(&mut self.0) } {
+        if unsafe { clingo_solve_handle_resume(self.theref) } {
             Ok(())
         } else {
             Err(error())?
@@ -4101,8 +4099,8 @@ impl SolveHandle {
     ///
     /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
     /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if solving fails
-    pub fn close(&mut self) -> Result<(), Error> {
-        if unsafe { clingo_solve_handle_close(&mut self.0) } {
+    pub fn close(self) -> Result<(), Error> {
+        if unsafe { clingo_solve_handle_close(self.theref) } {
             Ok(())
         } else {
             Err(error())?
