@@ -377,7 +377,7 @@ type SolveEventCallback = unsafe extern "C" fn(
     goon: *mut bool,
 ) -> bool;
 pub trait SolveEventHandler {
-    // TODO: check documentation
+    // TODO: check documentation and solve_event
     /// Callback function called during search to notify when the search is finished or a model is ready.
     ///
     /// If a (non-recoverable) clingo API function fails in this callback, it must return false.
@@ -387,22 +387,22 @@ pub trait SolveEventHandler {
     ///
     /// # Arguments
     ///
-    /// * `model` - the current model
+    /// * `etype` - the type of the solve event
     /// * `goon` - can be set to false to stop solving
     ///
     /// **Returns** whether the call was successful
     ///
-    /// @see clingo_control_solve()
-    fn on_solve_event(&mut self, type_: SolveEventType, goon: &mut bool) -> bool;
+    /// **See:** [`Control::solve()`](struct.Control.html#method.solve)
+    fn on_solve_event(&mut self, etype: SolveEventType, goon: &mut bool) -> bool;
     #[doc(hidden)]
     unsafe extern "C" fn unsafe_solve_callback<T: SolveEventHandler>(
-        type_: clingo_solve_event_type_t,
+        etype: clingo_solve_event_type_t,
         event: *mut ::std::os::raw::c_void,
         data: *mut ::std::os::raw::c_void,
         goon: *mut bool,
     ) -> bool {
         // TODO               assert!(!event.is_null());
-        let event_type = match type_ {
+        let event_type = match etype {
             clingo_solve_event_type_clingo_solve_event_type_model => SolveEventType::Model,
             clingo_solve_event_type_clingo_solve_event_type_finish => SolveEventType::Finish,
             _ => panic!("Failed to match clingo_solve_event_type."),
@@ -462,9 +462,11 @@ pub trait Logger {
     /// * `code` - associated warning code
     /// * `message` - warning message
     ///
-    /// @see clingo_control_new()
-    /// @see clingo_parse_term()
-    /// @see clingo_parse_program()
+    /// **See:**
+    ///
+    /// * [`Control::new_with_logger()`](struct.Control.html#method.new_with_logger)
+    /// * [`parse_term_with_logger()`](fn.parse_term_with_logger.html)
+    /// * [`parse_program_with_logger()`](fn.parse_program_with_logger.html)
     fn log(&mut self, code: Warning, message: &str);
     #[doc(hidden)]
     unsafe extern "C" fn unsafe_logging_callback<L: Logger>(
@@ -524,7 +526,7 @@ pub trait ExternalFunctionHandler {
     /// * `arguments` - arguments of the called external function
     ///
     /// **Returns** a vector of symbols
-    /// @see clingo_control_ground()
+    /// **See:** [`Control::ground_with_event_handler()`](struct.Control.html#method.ground_with_event_handler)
     ///
     /// The following example implements the external function `@f()` returning 42.
     /// ```
@@ -1077,21 +1079,17 @@ impl Symbol {
 /// # Arguments
 ///
 /// * `program` - the program in gringo syntax
-/// * `callback` - the callback reporting statements
-/// * `callback_data` - user data for the callback
+/// * `handler` - implementation of [`AstStatementHandler`](trait.AstStatementHandler.html)
 ///
 /// # Errors
 ///
 /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if parsing fails
 /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
-pub fn parse_program<T: AstStatementHandler>(
-    program_: &str,
-    callback_data: &mut T,
-) -> Result<(), Error> {
+pub fn parse_program<T: AstStatementHandler>(program_: &str, handler: &mut T) -> Result<(), Error> {
     let logger = None;
     let logger_data = std::ptr::null_mut();
     let program = CString::new(program_).unwrap();
-    let data = callback_data as *mut T;
+    let data = handler as *mut T;
     if unsafe {
         clingo_parse_program(
             program.as_ptr(),
@@ -1113,10 +1111,8 @@ pub fn parse_program<T: AstStatementHandler>(
 /// # Arguments
 ///
 /// * `program` - the program in gringo syntax
-/// * `callback` - the callback reporting statements
-/// * `callback_data` - user data for the callback
-/// * `logger` - callback to report messages during parsing
-/// * `logger_data` - user data for the logger
+/// * `handler` - implementation of [`AstStatementHandler`](trait.AstStatementHandler.html)
+/// * `logger` - implementation of [`Logger`](trait.Logger.html) to report messages during parsing
 /// * `message_limit` - the maximum number of times the logger is called
 ///
 /// # Errors
@@ -1162,15 +1158,15 @@ pub fn version() -> (i32, i32, i32) {
 
 /// Struct used to specify the program parts that have to be grounded.
 ///
-/// Programs may be structured into parts, which can be grounded independently with ::clingo_control_ground.
+/// Programs may be structured into parts, which can be grounded independently with [`Control::ground()`](struct.Control.html#method.ground).
 /// Program parts are mainly interesting for incremental grounding and multi-shot solving.
 /// For single-shot solving, program parts are not needed.
 ///
-/// **Note:** Parts of a logic program without an explicit <tt>\#program</tt>
+/// **Note:** Parts of a logic program without an explicit `#program`
 /// specification are by default put into a program called `base` - without
 /// arguments.
 ///
-/// @see clingo_control_ground()
+/// **See:** [`Control::ground()`](struct.Control.html#method.ground)
 pub struct Part<'a> {
     name: CString,
     params: &'a [Symbol],
@@ -1237,7 +1233,6 @@ pub trait Propagator {
     /// * `init` - initizialization object
     ///
     /// **Returns** whether the call was successful
-    /// @see ::clingo_propagator_init_callback_t
     fn init(&mut self, _init: &mut PropagateInit) -> bool {
         true
     }
@@ -1299,11 +1294,8 @@ pub trait Propagator {
     ///
     /// * `control` - control object for the target solver
     /// * `changes` - the change set
-    /// * `size` - the size of the change set
-    /// * `data` - user data for the callback
     ///
     /// **Returns** whether the call was successful
-    /// @see ::clingo_propagator_propagate_callback_t
     fn propagate(&mut self, _control: &mut PropagateControl, _changes: &[Literal]) -> bool {
         true
     }
@@ -1340,9 +1332,6 @@ pub trait Propagator {
     ///
     /// * `control` - control object for the target solver
     /// * `changes` - the change set
-    /// * `size` - the size of the change set
-    /// * `data` - user data for the callback
-    /// @see ::clingo_propagator_undo_callback_t
     fn undo(&mut self, _control: &mut PropagateControl, _changes: &[Literal]) -> bool {
         true
     }
@@ -1381,7 +1370,6 @@ pub trait Propagator {
     /// * `data` - user data for the callback
     ///
     /// **Returns** whether the call was successful
-    /// @see ::clingo_propagator_check_callback_t
     fn check(&mut self, _control: &mut PropagateControl) -> bool {
         true
     }
@@ -1417,7 +1405,7 @@ impl Drop for Control {
 impl Control {
     /// Create a new control object.
     ///
-    /// **Note:** Only gringo options (without `--output`) and clasp`s options are supported as
+    /// **Note:** Only gringo options (without `--output`) and clasp's options are supported as
     /// arguments,  except basic options such as `--help`.
     /// Furthermore, a control object is blocked while a search call is active;
     /// you must not call any member function during search.
@@ -1469,7 +1457,7 @@ impl Control {
 
     /// Create a new control object.
     ///
-    /// **Note:** Only gringo options (without `--output`) and clasp`s options are supported as
+    /// **Note:** Only gringo options (without `--output`) and clasp's options are supported as
     /// arguments,
     /// except basic options such as `--help`.
     /// Furthermore, a control object is blocked while a search call is active;
@@ -1628,12 +1616,11 @@ impl Control {
     /// # Arguments
     ///
     /// * `parts` - array of [`Part`](struct.Part.html)s to ground
-    /// * `event_handler` - ExternalFunctionHandler to implement external functions
+    /// * `event_handler` - implementing [`ExternalFunctionHandler`](trait.ExternalFunctionHandler.html) to evaluate external functions
     ///
     /// # Errors
     ///
     /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
-    /// - error code of the ExternalFunctionHandler
     //TODO: the error code set in ExternalFunctionHandler is overwritten
     pub fn ground_with_event_handler<T: ExternalFunctionHandler>(
         &mut self,
@@ -1664,8 +1651,6 @@ impl Control {
 
     /// Solve the currently [`ground()`](struct.Control.html#method.ground) grounded logic program
     /// enumerating its models.
-    ///
-    /// See the [`SolveHandle`](struct.SolveHandle.html) module for more information.
     ///
     /// # Arguments
     ///
@@ -1704,13 +1689,11 @@ impl Control {
     /// Solve the currently [`ground()`](struct.Control.html#method.ground) grounded logic program
     /// enumerating its models.
     ///
-    /// See the [`SolveHandle`](struct.SolveHandle.html) module for more information.
-    ///
     /// # Arguments
     ///
     /// * `mode` - configures the search mode
     /// * `assumptions` - array of assumptions to solve under
-    /// * `event_handler` - the event handler to register
+    /// * `event_handler` - implementation  of the trait [`SolveEventHandler`](trait.SolveEventHandler.html)
     ///
     /// # Errors
     ///
@@ -1743,8 +1726,8 @@ impl Control {
         }
     }
 
-    /// Clean up the domains of clingo`s grounding component using the solving
-    /// component`s top level assignment.
+    /// Clean up the domains of clingo's grounding component using the solving
+    /// component's top level assignment.
     ///
     /// This function removes atoms from domains that are false and marks atoms as
     /// facts that are true.  With multi-shot solving, this can result in smaller
@@ -1814,11 +1797,9 @@ impl Control {
     /// If the sequential flag is set to true, the propagator is called
     /// sequentially when solving with multiple threads.
     ///
-    /// See the [`Propagator`](struct.Propagator) module for more information.
-    ///
     /// # Arguments
     ///
-    /// * `propagator` - the propagator
+    /// * `propagator` - implementing trait [`Propagator`](trait.Propagator.html)
     /// * `sequential` - whether the propagator should be called sequentially
     ///
     /// # Errors
@@ -1826,16 +1807,16 @@ impl Control {
     /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
     pub fn register_propagator<T: Propagator>(
         &mut self,
-        _propagator: &mut T,
+        propagator: &mut T,
         sequential: bool,
     ) -> Result<(), Error> {
+        let data_ptr = propagator as *mut T;
         let propagator = clingo_propagator_t {
             init: Some(T::unsafe_init::<T>),
             propagate: Some(T::unsafe_propagate::<T>),
             undo: Some(T::unsafe_undo::<T>),
             check: Some(T::unsafe_check::<T>),
         };
-        let data_ptr = _propagator as *mut T;
         if unsafe {
             clingo_control_register_propagator(
                 self.ctl.as_ptr(),
@@ -1853,8 +1834,6 @@ impl Control {
     /// Get a statistics object to inspect solver statistics.
     ///
     /// Statistics are updated after a solve call.
-    ///
-    /// See the [`Statistics`](struct.Statistics.html) module for more information.
     ///
     /// **Attention:**
     /// The level of detail of the statistics depends on the stats option
@@ -1889,8 +1868,6 @@ impl Control {
     }
 
     /// Get a configuration object to change the solver configuration.
-    ///
-    /// See the [`Configuration`](struct.Configuration.html) module for more information.
     pub fn configuration(&mut self) -> Option<&mut Configuration> {
         let mut conf = std::ptr::null_mut() as *mut clingo_configuration_t;
         if unsafe { clingo_control_configuration(self.ctl.as_ptr(), &mut conf) } {
@@ -1903,7 +1880,7 @@ impl Control {
     /// Configure how learnt constraints are handled during enumeration.
     ///
     /// If the enumeration assumption is enabled, then all information learnt from
-    /// the solver`s various enumeration modes is removed after a solve call. This
+    /// the solver's various enumeration modes is removed after a solve call. This
     /// includes enumeration of cautious or brave consequences, enumeration of
     /// answer sets with or without projection, or finding optimal models, as well
     /// as clauses added with clingo_solve_control_add_clause().
@@ -1962,8 +1939,6 @@ impl Control {
 
     /// Get an object to inspect symbolic atoms (the relevant Herbrand base) used
     /// for grounding.
-    ///
-    /// See the [`SymbolicAtoms`](struct.SymbolicAtoms.html) module for more information.
     pub fn symbolic_atoms(&self) -> Option<&SymbolicAtoms> {
         let mut atoms = std::ptr::null() as *const clingo_symbolic_atoms_t;
         if unsafe { clingo_control_symbolic_atoms(self.ctl.as_ptr(), &mut atoms) } {
@@ -1974,8 +1949,6 @@ impl Control {
     }
 
     /// Get an object to inspect theory atoms that occur in the grounding.
-    ///
-    /// See the [`TheoryAtoms`](struct.TheoryAtoms.html) module for more information.
     pub fn theory_atoms(&self) -> Option<&TheoryAtoms> {
         let mut atoms = std::ptr::null() as *const clingo_theory_atoms_t;
         if unsafe { clingo_control_theory_atoms(self.ctl.as_ptr(), &mut atoms) } {
@@ -2005,8 +1978,6 @@ impl Control {
 
     /// Get an object to add ground directives to the program.
     ///
-    /// See the [`ProgramBuilder`](struct.ProgramBuilder.html) module for more information.
-    ///
     /// # Errors
     ///
     /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
@@ -2020,8 +1991,6 @@ impl Control {
     }
 
     /// Get an object to add non-ground directives to the program.
-    ///
-    /// See the [`ProgramBuilder`](struct.ProgramBuilder.html) module for more information.
     pub fn program_builder(&mut self) -> Option<ProgramBuilder> {
         let mut builder = std::ptr::null_mut() as *mut clingo_program_builder_t;
         if unsafe { clingo_control_program_builder(self.ctl.as_ptr(), &mut builder) } {
@@ -2780,7 +2749,7 @@ impl Statistics {
 /// Object to inspect symbolic atoms in a program---the relevant Herbrand base
 /// gringo uses to instantiate programs.
 ///
-/// @see clingo_control_symbolic_atoms()
+/// **See:** [`Control::symbolic_atoms()`](struct.Control.html#method.symbolic_atoms)
 #[derive(Debug, Copy, Clone)]
 pub struct SymbolicAtoms(clingo_symbolic_atoms_t);
 impl SymbolicAtoms {
@@ -2885,7 +2854,7 @@ impl SymbolicAtoms {
     /// Check whether an atom is a fact.
     ///
     /// **Note:** This does not determine if an atom is a cautious consequence. The
-    /// grounding or solving component`s simplifications can only detect this in
+    /// grounding or solving component's simplifications can only detect this in
     /// some cases.
     ///
     /// # Arguments
@@ -3037,7 +3006,7 @@ impl TheoryAtoms {
     ///
     /// # Pre-condition
     ///
-    /// The term must be of type [`TermType::Number](enum.TermType.html#variant.Number) .
+    /// The term must be of type [`TermType::Number`](enum.TermType.html#variant.Number) .
     ///
     /// # Arguments
     ///
@@ -3842,19 +3811,19 @@ impl PropagateControl {
     /// # Arguments
     ///
     /// * `clause` - the clause to add
-    /// * `type` - the clause type determining its lifetime
+    /// * `ctype` - the clause type determining its lifetime
     ///
     /// # Errors
     ///
     /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
-    pub fn add_clause(&mut self, clause: &[Literal], type_: ClauseType) -> Result<bool, Error> {
+    pub fn add_clause(&mut self, clause: &[Literal], ctype: ClauseType) -> Result<bool, Error> {
         let mut result = false;
         if unsafe {
             clingo_propagate_control_add_clause(
                 &mut self.0,
                 clause.as_ptr() as *const clingo_literal_t,
                 clause.len(),
-                type_ as clingo_clause_type_t,
+                ctype as clingo_clause_type_t,
                 &mut result,
             )
         } {
@@ -3942,7 +3911,7 @@ impl PropagateInit {
 
     /// Get an object to inspect the theory atoms.
     pub fn theory_atoms(&self) -> Option<&TheoryAtoms> {
-        let mut atoms_ptr =std::ptr::null() as *const clingo_theory_atoms_t;
+        let mut atoms_ptr = std::ptr::null() as *const clingo_theory_atoms_t;
         if unsafe { clingo_propagate_init_theory_atoms(&self.0, &mut atoms_ptr) } {
             unsafe { (atoms_ptr as *const TheoryAtoms).as_ref() }
         } else {
