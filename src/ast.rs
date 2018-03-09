@@ -168,7 +168,14 @@ impl Rule {
 #[derive(Copy, Clone)]
 pub struct Definition(clingo_ast_definition);
 impl Definition {
-    //TODO     pub name: *const ::std::os::raw::c_char,
+    pub fn name(&self) -> &str {
+        if self.0.name.is_null() {
+            ""
+        } else {
+            let c_str = unsafe { CStr::from_ptr(self.0.name) };
+            c_str.to_str().unwrap()
+        }
+    }
     pub fn value(&self) -> Term {
         Term(self.0.value)
     }
@@ -218,15 +225,36 @@ impl Minimize {
 #[derive(Debug, Copy, Clone)]
 pub struct Script(clingo_ast_script);
 impl Script {
-    //TODO     pub type_: clingo_ast_script_type_t,
-    //     pub code: *const ::std::os::raw::c_char,
+    pub fn script_type(&self) -> ScriptType {
+        match self.0.type_ as u32 {
+            clingo_ast_script_type_clingo_ast_script_type_lua => ScriptType::Lua,
+            clingo_ast_script_type_clingo_ast_script_type_python => ScriptType::Python,
+            _ => panic!("Failed to match clingo_ast_script_type."),
+        }
+    }
+    pub fn code(&self) -> &str {
+        if self.0.code.is_null() {
+            ""
+        } else {
+            let c_str = unsafe { CStr::from_ptr(self.0.code) };
+            c_str.to_str().unwrap()
+        }
+    }
 }
 #[derive(Debug, Copy, Clone)]
 pub struct Program(clingo_ast_program);
 impl Program {
-    //TODO     pub name: *const ::std::os::raw::c_char,
-    //     pub parameters: *const clingo_ast_id_t,
-    //     pub size: usize,
+    pub fn name(&self) -> &str {
+        if self.0.name.is_null() {
+            ""
+        } else {
+            let c_str = unsafe { CStr::from_ptr(self.0.name) };
+            c_str.to_str().unwrap()
+        }
+    }
+    pub fn parameters(&self) -> &[Id] {
+        unsafe { std::slice::from_raw_parts(self.0.parameters as *const Id, self.0.size) }
+    }
 }
 #[derive(Copy, Clone)]
 pub struct BodyLiteral(clingo_ast_body_literal_t);
@@ -259,7 +287,29 @@ impl BodyLiteral {
             _ => panic!("Failed to match clingo_ast_sign."),
         }
     }
-    //TODO     pub type_: clingo_ast_body_literal_type_t,
+    pub fn body_literal_type(&self) -> BodyLiteralType {
+        match self.0.type_ as u32 {
+            clingo_ast_body_literal_type_clingo_ast_body_literal_type_aggregate => {
+                BodyLiteralType::Aggregate
+            }
+            clingo_ast_body_literal_type_clingo_ast_body_literal_type_body_aggregate => {
+                BodyLiteralType::BodyAggregate
+            }
+            clingo_ast_body_literal_type_clingo_ast_body_literal_type_conditional => {
+                BodyLiteralType::Conditional
+            }
+            clingo_ast_body_literal_type_clingo_ast_body_literal_type_disjoint => {
+                BodyLiteralType::Disjoint
+            }
+            clingo_ast_body_literal_type_clingo_ast_body_literal_type_literal => {
+                BodyLiteralType::Literal
+            }
+            clingo_ast_body_literal_type_clingo_ast_body_literal_type_theory_atom => {
+                BodyLiteralType::TheoryAtom
+            }
+            _ => panic!("Failed to match clingo_ast_body_literal_type_t."),
+        }
+    }
 }
 #[derive(Copy, Clone)]
 pub struct External(clingo_ast_external_t);
@@ -387,7 +437,15 @@ impl Literal {
             _ => panic!("Failed to match clingo_ast_sign."),
         }
     }
-    //TODO     pub type_: clingo_ast_literal_type_t,
+    pub fn literal_type(&self) -> LiteralType {
+        match self.0.type_ as u32 {
+            clingo_ast_literal_type_clingo_ast_literal_type_boolean => LiteralType::Boolean,
+            clingo_ast_literal_type_clingo_ast_literal_type_symbolic => LiteralType::Symbolic,
+            clingo_ast_literal_type_clingo_ast_literal_type_comparison => LiteralType::Comparison,
+            clingo_ast_literal_type_clingo_ast_literal_type_csp => LiteralType::CSP,
+            _ => panic!("Failed to match clingo_ast_literal_type."),
+        }
+    }
 }
 #[derive(Copy, Clone)]
 pub struct UnaryOperation(clingo_ast_unary_operation_t);
@@ -444,7 +502,14 @@ impl Interval {
 #[derive(Debug, Copy, Clone)]
 pub struct Function(clingo_ast_function);
 impl Function {
-    //TODO     pub fn name(&self) *const ::std::os::raw::c_char,
+    pub fn name(&self) -> &str {
+        if self.0.name.is_null() {
+            ""
+        } else {
+            let c_str = unsafe { CStr::from_ptr(self.0.name) };
+            c_str.to_str().unwrap()
+        }
+    }
     pub fn arguments(&self) -> &[Term] {
         unsafe { std::slice::from_raw_parts(self.0.arguments as *const Term, self.0.size) }
     }
@@ -465,7 +530,9 @@ impl CspProductTerm {
     pub fn coefficient(&self) -> Term {
         Term(self.0.coefficient)
     }
-    //TODO     pub variable: *const clingo_ast_term_t,
+    pub fn variable(&self) -> &Term {
+        unsafe { (self.0.variable as *const Term).as_ref() }.unwrap()
+    }
 }
 #[derive(Debug, Copy, Clone)]
 pub struct CspSumTerm(clingo_ast_csp_sum_term);
@@ -523,7 +590,14 @@ impl Id {
     pub fn location(&self) -> Location {
         Location(self.0.location)
     }
-    //TODO     pub id: *const ::std::os::raw::c_char,
+    pub fn id(&self) -> &str {
+        if self.0.id.is_null() {
+            ""
+        } else {
+            let c_str = unsafe { CStr::from_ptr(self.0.id) };
+            c_str.to_str().unwrap()
+        }
+    }
 }
 #[derive(Copy, Clone)]
 pub struct AggregateGuard(clingo_ast_aggregate_guard);
@@ -573,8 +647,12 @@ impl Aggregate {
             std::slice::from_raw_parts(self.0.elements as *const ConditionalLiteral, self.0.size)
         }
     }
-    //TODO     pub left_guard: *const clingo_ast_aggregate_guard_t,
-    //TODO     pub right_guard: *const clingo_ast_aggregate_guard_t,
+    pub fn left_guard(&self) -> &AggregateGuard {
+        unsafe { (self.0.left_guard as *const AggregateGuard).as_ref() }.unwrap()
+    }
+    pub fn right_guard(&self) -> &AggregateGuard {
+        unsafe { (self.0.right_guard as *const AggregateGuard).as_ref() }.unwrap()
+    }
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -617,8 +695,12 @@ impl BodyAggregate {
             std::slice::from_raw_parts(self.0.elements as *const BodyAggregateElement, self.0.size)
         }
     }
-    //TODO     pub left_guard: *const clingo_ast_aggregate_guard_t,
-    //TODO     pub right_guard: *const clingo_ast_aggregate_guard_t,
+    pub fn left_guard(&self) -> &AggregateGuard {
+        unsafe { (self.0.left_guard as *const AggregateGuard).as_ref() }.unwrap()
+    }
+    pub fn right_guard(&self) -> &AggregateGuard {
+        unsafe { (self.0.right_guard as *const AggregateGuard).as_ref() }.unwrap()
+    }
 }
 #[derive(Copy, Clone)]
 pub struct HeadAggregateElement(clingo_ast_head_aggregate_element);
@@ -658,8 +740,12 @@ impl HeadAggregate {
             std::slice::from_raw_parts(self.0.elements as *const HeadAggregateElement, self.0.size)
         }
     }
-    //TODO     pub left_guard: *const clingo_ast_aggregate_guard_t,
-    //TODO     pub right_guard: *const clingo_ast_aggregate_guard_t,
+    pub fn left_guard(&self) -> &AggregateGuard {
+        unsafe { (self.0.left_guard as *const AggregateGuard).as_ref() }.unwrap()
+    }
+    pub fn right_guard(&self) -> &AggregateGuard {
+        unsafe { (self.0.right_guard as *const AggregateGuard).as_ref() }.unwrap()
+    }
 }
 #[derive(Debug, Copy, Clone)]
 pub struct Disjunction(clingo_ast_disjunction);
@@ -734,7 +820,14 @@ impl TheoryTermArray {
 #[derive(Debug, Copy, Clone)]
 pub struct TheoryFunction(clingo_ast_theory_function);
 impl TheoryFunction {
-    //TODO     pub name: *const ::std::os::raw::c_char,
+    pub fn name(&self) -> &str {
+        if self.0.name.is_null() {
+            ""
+        } else {
+            let c_str = unsafe { CStr::from_ptr(self.0.name) };
+            c_str.to_str().unwrap()
+        }
+    }
     pub fn arguments(&self) -> &[TheoryTerm] {
         unsafe { std::slice::from_raw_parts(self.0.arguments as *const TheoryTerm, self.0.size) }
     }
@@ -742,8 +835,17 @@ impl TheoryFunction {
 #[derive(Copy, Clone)]
 pub struct TheoryUnparsedTermElement(clingo_ast_theory_unparsed_term_element);
 impl TheoryUnparsedTermElement {
-    //TODO     pub operators: *const *const ::std::os::raw::c_char,
-    //NOTTODO     pub size: usize,
+    pub fn operators(&self) -> Vec<&str> {
+        let s1 = unsafe {
+            std::slice::from_raw_parts(
+                self.0.operators as *const ::std::os::raw::c_char,
+                self.0.size,
+            )
+        };
+        s1.iter()
+            .map(|char_ptr| unsafe { CStr::from_ptr(char_ptr) }.to_str().unwrap())
+            .collect::<Vec<&str>>()
+    }
     pub fn term(&self) -> TheoryTerm {
         TheoryTerm(self.0.term)
     }
@@ -775,7 +877,14 @@ impl TheoryAtomElement {
 #[derive(Copy, Clone)]
 pub struct TheoryGuard(clingo_ast_theory_guard);
 impl TheoryGuard {
-    //TODO     pub operator_name: *const ::std::os::raw::c_char,
+    pub fn operator_name(&self) -> &str {
+        if self.0.operator_name.is_null() {
+            ""
+        } else {
+            let c_str = unsafe { CStr::from_ptr(self.0.operator_name) };
+            c_str.to_str().unwrap()
+        }
+    }
     pub fn term(&self) -> TheoryTerm {
         TheoryTerm(self.0.term)
     }
@@ -791,7 +900,9 @@ impl TheoryAtom {
             std::slice::from_raw_parts(self.0.elements as *const TheoryAtomElement, self.0.size)
         }
     }
-    //TODO     pub guard: *const clingo_ast_theory_guard_t,
+    pub fn guard(&self) -> &TheoryGuard {
+        unsafe { (self.0.guard as *const TheoryGuard).as_ref() }.unwrap()
+    }
 }
 #[derive(Debug, Copy, Clone)]
 pub struct TheoryOperatorDefinition(clingo_ast_theory_operator_definition);
@@ -799,8 +910,17 @@ impl TheoryOperatorDefinition {
     pub fn location(&self) -> Location {
         Location(self.0.location)
     }
-    //TODO     pub name: *const ::std::os::raw::c_char,
-    //TODO     pub priority: ::std::os::raw::c_uint,
+    pub fn name(&self) -> &str {
+        if self.0.name.is_null() {
+            ""
+        } else {
+            let c_str = unsafe { CStr::from_ptr(self.0.name) };
+            c_str.to_str().unwrap()
+        }
+    }
+    pub fn priority(&self) -> u32 {
+        self.0.priority
+    }
     pub fn theory_operator_type(&self) -> TheoryOperatorType {
         match self.0.type_ as u32 {
             clingo_ast_theory_operator_type_clingo_ast_theory_operator_type_unary => {
@@ -822,16 +942,48 @@ impl TheoryTermDefinition {
     pub fn location(&self) -> Location {
         Location(self.0.location)
     }
-    //TODO     pub name: *const ::std::os::raw::c_char,
-    //TODO     pub operators: *const clingo_ast_theory_operator_definition_t,
-    //     pub size: usize,
+    pub fn name(&self) -> &str {
+        if self.0.name.is_null() {
+            ""
+        } else {
+            let c_str = unsafe { CStr::from_ptr(self.0.name) };
+            c_str.to_str().unwrap()
+        }
+    }
+    pub fn operators(&self) -> &[TheoryOperatorDefinition] {
+        unsafe {
+            std::slice::from_raw_parts(
+                self.0.operators as *const TheoryOperatorDefinition,
+                self.0.size,
+            )
+        }
+    }
 }
 #[derive(Debug, Copy, Clone)]
 pub struct TheoryGuardDefinition(clingo_ast_theory_guard_definition);
 impl TheoryGuardDefinition {
-    //TODO     pub term: *const ::std::os::raw::c_char,
-    //TODO     pub operators: *const *const ::std::os::raw::c_char,
-    //     pub size: usize,
+    pub fn term(&self) -> &str {
+        if self.0.term.is_null() {
+            ""
+        } else {
+            let c_str = unsafe { CStr::from_ptr(self.0.term) };
+            c_str.to_str().unwrap()
+        }
+    }
+    pub fn operators(&self) -> Vec<&str> {
+        let s1 = unsafe {
+            std::slice::from_raw_parts(
+                self.0.operators as *const ::std::os::raw::c_char,
+                self.0.size,
+            )
+        };
+        s1.iter()
+            .map(|char_ptr| {
+                let c_str = unsafe { CStr::from_ptr(self.0.term) };
+                c_str.to_str().unwrap()
+            })
+            .collect::<Vec<&str>>()
+    }
 }
 #[derive(Debug, Copy, Clone)]
 pub enum TheoryAtomDefinitionType {
@@ -851,16 +1003,57 @@ impl TheoryAtomDefinition {
     pub fn location(&self) -> Location {
         Location(self.0.location)
     }
-    //TODO     pub type_: clingo_ast_theory_atom_definition_type_t,
-    //     pub name: *const ::std::os::raw::c_char,
-    //     pub arity: ::std::os::raw::c_uint,
-    //     pub elements: *const ::std::os::raw::c_char,
-    //     pub guard: *const clingo_ast_theory_guard_definition_t,
+    pub fn definition_type(&self) -> TheoryAtomDefinitionType {
+        match self.0.type_ as u32 {
+            clingo_ast_theory_atom_definition_type_clingo_ast_theory_atom_definition_type_any => {
+                TheoryAtomDefinitionType::Any
+            }
+            clingo_ast_theory_atom_definition_type_clingo_ast_theory_atom_definition_type_body => {
+                TheoryAtomDefinitionType::Body
+            }
+            clingo_ast_theory_atom_definition_type_clingo_ast_theory_atom_definition_type_directive => {
+                TheoryAtomDefinitionType::Directive
+            }
+            clingo_ast_theory_atom_definition_type_clingo_ast_theory_atom_definition_type_head => {
+                TheoryAtomDefinitionType::Head
+            }
+            _ => panic!("Failed to match clingo_ast_theory_atom_definition_type."),
+        }
+    }
+    pub fn name(&self) -> &str {
+        if self.0.name.is_null() {
+            ""
+        } else {
+            let c_str = unsafe { CStr::from_ptr(self.0.name) };
+            c_str.to_str().unwrap()
+        }
+    }
+    pub fn arity(&self) -> u32 {
+        self.0.arity
+    }
+    pub fn elements(&self) -> &str {
+        if self.0.elements.is_null() {
+            ""
+        } else {
+            let c_str = unsafe { CStr::from_ptr(self.0.elements) };
+            c_str.to_str().unwrap()
+        }
+    }
+    pub fn guard(&self) -> &TheoryGuardDefinition {
+        unsafe { (self.0.guard as *const TheoryGuardDefinition).as_ref() }.unwrap()
+    }
 }
 #[derive(Debug, Copy, Clone)]
 pub struct TheoryDefinition(clingo_ast_theory_definition);
 impl TheoryDefinition {
-    //TODO     pub name: *const ::std::os::raw::c_char,
+    pub fn name(&self) -> &str {
+        if self.0.name.is_null() {
+            ""
+        } else {
+            let c_str = unsafe { CStr::from_ptr(self.0.name) };
+            c_str.to_str().unwrap()
+        }
+    }
     pub fn terms(&self) -> &[TheoryTermDefinition] {
         unsafe {
             std::slice::from_raw_parts(
