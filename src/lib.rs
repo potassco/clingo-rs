@@ -682,23 +682,37 @@ impl Location {
         };
         Location(loc)
     }
-    //TODO  /// < the file where the location begins
-    //     pub begin_file: *const ::std::os::raw::c_char,
-    //TODO  /// < the file where the location ends
-    //     pub end_file: *const ::std::os::raw::c_char,
-    /// < the line where the location begins
+    /// the file where the location begins
+    pub fn begin_file(&self) -> &str {
+        if self.0.begin_file.is_null() {
+            ""
+        } else {
+            let c_str = unsafe { CStr::from_ptr(self.0.begin_file) };
+            c_str.to_str().unwrap()
+        }
+    }
+    /// the file where the location ends
+    pub fn end_file(&self) -> &str {
+        if self.0.end_file.is_null() {
+            ""
+        } else {
+            let c_str = unsafe { CStr::from_ptr(self.0.end_file) };
+            c_str.to_str().unwrap()
+        }
+    }
+    /// the line where the location begins
     pub fn begin_line(&self) -> usize {
         self.0.begin_line
     }
-    /// < the line where the location ends
+    /// the line where the location ends
     pub fn end_line(&self) -> usize {
         self.0.end_line
     }
-    /// < the column where the location begins
+    /// the column where the location begins
     pub fn begin_column(&self) -> usize {
         self.0.begin_column
     }
-    /// < the column where the location ends
+    /// the column where the location ends
     pub fn end_column(&self) -> usize {
         self.0.end_column
     }
