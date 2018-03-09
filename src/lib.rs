@@ -774,45 +774,32 @@ impl Signature {
             Err(error())?
         }
     }
-    // TODO
-    //     /// Get the name of a signature.
-    //     ///
-    //     /// **Parameters:**
-    //     ///
-    //     /// * `signature` - the target signature
-    //     ///
-    //     /// **Returns** the name of the signature
-    //     pub fn clingo_signature_name(signature: clingo_signature_t) -> *const ::std::os::raw::c_char;
 
-    // TODO
-    //     /// Get the arity of a signature.
-    //     ///
-    //     /// **Parameters:**
-    //     ///
-    //     /// * `signature` - the target signature
-    //     ///
-    //     /// **Returns** the arity of the signature
-    //     pub fn clingo_signature_arity(signature: clingo_signature_t) -> u32;
+    /// Get the name of a signature.
+    pub fn name(&self) -> &str {
+        let char_ptr: *const c_char = unsafe { clingo_signature_name(self.0) };
+        if char_ptr.is_null() {
+            ""
+        } else {
+            let c_str = unsafe { CStr::from_ptr(char_ptr) };
+            c_str.to_str().unwrap()
+        }
+    }
 
-    // TODO
-    //     /// Whether the signature is positive (is not classically negated).
-    //     ///
-    //     /// **Parameters:**
-    //     ///
-    //     /// * `signature` - the target signature
-    //     ///
-    //     /// **Returns** whether the signature has no sign
-    //     pub fn clingo_signature_is_positive(signature: clingo_signature_t) -> bool;
+    /// Get the arity of a signature.
+    pub fn arity(&self) -> u32 {
+        unsafe { clingo_signature_arity(self.0) }
+    }
 
-    // TODO
-    //     /// Whether the signature is negative (is classically negated).
-    //     ///
-    //     /// **Parameters:**
-    //     ///
-    //     /// * `signature` - the target signature
-    //     ///
-    //     /// **Returns** whether the signature has a sign
-    //     pub fn clingo_signature_is_negative(signature: clingo_signature_t) -> bool;
+    /// Whether the signature is positive (is not classically negated).
+    pub fn is_positive(&self) -> bool {
+        unsafe { clingo_signature_is_positive(self.0) }
+    }
+
+    /// Whether the signature is negative (is classically negated).
+    pub fn is_negative(&self) -> bool {
+        unsafe { clingo_signature_is_negative(self.0) }
+    }
 }
 
 /// Represents a symbol.
