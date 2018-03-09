@@ -3559,157 +3559,143 @@ impl SolveControl {
 /// Decision levels are consecutive numbers starting with zero up to and including the @link clingo_assignment_decision_level() current decision level@endlink.
 #[derive(Debug, Copy, Clone)]
 pub struct Assignment(clingo_assignment_t);
-// impl Assignment {
-//TODO     /// Get the current decision level.
-//     ///
-//     /// **Parameters:**
-//     ///
-//     /// * `assignment` - the target assignment
-//     ///
-//     /// **Returns** the decision level
-//     pub fn clingo_assignment_decision_level(assignment: *mut clingo_assignment_t) -> u32;
+impl Assignment {
+    /// Get the current decision level.
+    pub fn decision_level(&self) -> u32 {
+        unsafe { clingo_assignment_decision_level(&self.0) }
+    }
 
-//TODO     /// Check if the given assignment is conflicting.
-//     ///
-//     /// **Parameters:**
-//     ///
-//     /// * `assignment` - the target assignment
-//     ///
-//     /// **Returns** whether the assignment is conflicting
-//     pub fn clingo_assignment_has_conflict(assignment: *mut clingo_assignment_t) -> bool;
+    /// Check whether the given assignment is conflicting.
+    pub fn has_conflict(&self) -> bool {
+        unsafe { clingo_assignment_has_conflict(&self.0) }
+    }
 
-//TODO     /// Check if the given literal is part of a (partial) assignment.
-//     ///
-//     /// **Parameters:**
-//     ///
-//     /// * `assignment` - the target assignment
-//     /// * `literal` - the literal
-//     ///
-//     /// **Returns** whether the literal is valid
-//     pub fn clingo_assignment_has_literal(
-//         assignment: *mut clingo_assignment_t,
-//         literal: clingo_literal_t,
-//     ) -> bool;
+    /// Check whether the given literal is part of a (partial) assignment.
+    ///
+    /// # Arguments
+    ///
+    /// * `literal` - the literal
+    pub fn has_literal(&self, literal: Literal) -> bool {
+        unsafe { clingo_assignment_has_literal(&self.0, literal.0) }
+    }
 
-//TODO     /// Determine the decision level of a given literal.
-//     ///
-//     /// **Parameters:**
-//     ///
-//     /// * `assignment` - the target assignment
-//     /// * `literal` - the literal
-//     /// * `level` - the resulting level
-//     ///
-//     /// **Returns** whether the call was successful
-//     pub fn clingo_assignment_level(
-//         assignment: *mut clingo_assignment_t,
-//         literal: clingo_literal_t,
-//         level: *mut u32,
-//     ) -> bool;
+    /// Determine the decision level of a given literal.
+    ///
+    /// # Arguments
+    ///
+    /// * `literal` - the literal
+    ///
+    /// **Returns** the decision level of the given literal
+    pub fn level(&self, literal: Literal) -> Option<u32> {
+        let mut level = 0;
+        if unsafe { clingo_assignment_level(&self.0, literal.0, &mut level) } {
+            Some(level)
+        } else {
+            None
+        }
+    }
 
-//TODO     /// Determine the decision literal given a decision level.
-//     ///
-//     /// **Parameters:**
-//     ///
-//     /// * `assignment` - the target assignment
-//     /// * `level` - the level
-//     /// * `literal` - the resulting literal
-//     ///
-//     /// **Returns** whether the call was successful
-//     pub fn clingo_assignment_decision(
-//         assignment: *mut clingo_assignment_t,
-//         level: u32,
-//         literal: *mut clingo_literal_t,
-//     ) -> bool;
+    /// Determine the decision literal given a decision level.
+    ///
+    /// # Arguments
+    ///
+    /// * `level` - the level
+    ///
+    /// **Returns** the decision literal for the given decision level
+    pub fn decision(&self, level: u32) -> Option<Literal> {
+        let mut lit = 0 as clingo_literal_t;
+        if unsafe { clingo_assignment_decision(&self.0, level, &mut lit) } {
+            Some(Literal(lit))
+        } else {
+            None
+        }
+    }
 
-//TODO     /// Check if a literal has a fixed truth value.
-//     ///
-//     /// **Parameters:**
-//     ///
-//     /// * `assignment` - the target assignment
-//     /// * `literal` - the literal
-//     /// * `is_fixed` - whether the literal is fixed
-//     ///
-//     /// **Returns** whether the call was successful
-//     pub fn clingo_assignment_is_fixed(
-//         assignment: *mut clingo_assignment_t,
-//         literal: clingo_literal_t,
-//         is_fixed: *mut bool,
-//     ) -> bool;
+    /// Check if a literal has a fixed truth value.
+    ///
+    /// # Arguments
+    ///
+    /// * `literal` - the literal
+    ///
+    /// **Returns** whether the literal is fixed
+    pub fn is_fixed(&self, literal: Literal) -> Option<bool> {
+        let mut is_fixed = false;
+        if unsafe { clingo_assignment_is_fixed(&self.0, literal.0, &mut is_fixed) } {
+            Some(is_fixed)
+        } else {
+            None
+        }
+    }
 
-//TODO     /// Check if a literal is true.
-//     ///
-//     /// **Parameters:**
-//     ///
-//     /// * `assignment` - the target assignment
-//     /// * `literal` - the literal
-//     /// * `is_true` - whether the literal is true
-//     ///
-//     /// **Returns** whether the call was successful
-//     /// @see clingo_assignment_truth_value()
-//     pub fn clingo_assignment_is_true(
-//         assignment: *mut clingo_assignment_t,
-//         literal: clingo_literal_t,
-//         is_true: *mut bool,
-//     ) -> bool;
+    /// Check if a literal is true.
+    ///
+    /// # Arguments
+    ///
+    /// * `literal` - the literal
+    /// **Returns** whether the literal is true
+    /// @see clingo_assignment_truth_value()
+    pub fn is_true(&self, literal: Literal) -> Option<bool> {
+        let mut is_true = false;
+        if unsafe { clingo_assignment_is_true(&self.0, literal.0, &mut is_true) } {
+            Some(is_true)
+        } else {
+            None
+        }
+    }
 
-//TODO     /// Check if a literal has a fixed truth value.
-//     ///
-//     /// **Parameters:**
-//     ///
-//     /// * `assignment` - the target assignment
-//     /// * `literal` - the literal
-//     /// * `is_false` - whether the literal is false
-//     ///
-//     /// **Returns** whether the call was successful
-//     /// @see clingo_assignment_truth_value()
-//     pub fn clingo_assignment_is_false(
-//         assignment: *mut clingo_assignment_t,
-//         literal: clingo_literal_t,
-//         is_false: *mut bool,
-//     ) -> bool;
+    /// Check if a literal has a fixed truth value.
+    ///
+    /// # Arguments
+    /// * `literal` - the literal
+    ///
+    /// **Returns** whether the literal is false
+    /// @see clingo_assignment_truth_value()
+    pub fn is_false(&self, literal: Literal) -> Option<bool> {
+        let mut is_false = false;
+        if unsafe { clingo_assignment_is_false(&self.0, literal.0, &mut is_false) } {
+            Some(is_false)
+        } else {
+            None
+        }
+    }
 
-//TODO     /// Determine the truth value of a given literal.
-//     ///
-//     /// **Parameters:**
-//     ///
-//     /// * `assignment` - the target assignment
-//     /// * `literal` - the literal
-//     /// * `value` - the resulting truth value
-//     ///
-//     /// **Returns** whether the call was successful
-//     pub fn clingo_assignment_truth_value(
-//         assignment: *mut clingo_assignment_t,
-//         literal: clingo_literal_t,
-//         value: *mut clingo_truth_value_t,
-//     ) -> bool;
+    /// Determine the truth value of a given literal.
+    ///
+    /// # Arguments
+    ///
+    /// * `literal` - the literal
+    /// * `value` - the resulting truth value
+    ///
+    /// **Returns** whether the call was successful
+    pub fn truth_value(&self, literal: Literal) -> Option<TruthValue> {
+        let mut value = 0;
+        if unsafe { clingo_assignment_truth_value(&self.0, literal.0, &mut value) } {
+            match value as u32 {
+                clingo_truth_value_clingo_truth_value_false => Some(TruthValue::False),
+                clingo_truth_value_clingo_truth_value_true => Some(TruthValue::True),
+                clingo_truth_value_clingo_truth_value_free => Some(TruthValue::Free),
+                _ => panic!("Failed to match clingo_truth_value."),
+            }
+        } else {
+            None
+        }
+    }
 
-//TODO     /// The number of assigned literals in the assignment.
-//     /// **Parameters:**
-//     ///
-//     /// * `assignment`- the target
-//     ///
-//     /// **Returns** the number of literals
-//     pub fn clingo_assignment_size(assignment: *mut clingo_assignment_t) -> usize;
+    /// The number of assigned literals in the assignment.
+    pub fn size(&self) -> usize {
+        unsafe { clingo_assignment_size(&self.0) }
+    }
 
-//TODO     /// The maximum size of the assignment (if all literals are assigned).
-//     ///
-//     /// **Parameters:**
-//     ///
-//     /// * `assignment`- the target
-//     ///
-//     /// **Returns** the maximum size
-//     pub fn clingo_assignment_max_size(assignment: *mut clingo_assignment_t) -> usize;
+    /// The maximum size of the assignment (if all literals are assigned).
+    pub fn max_size(&self) -> usize {
+        unsafe { clingo_assignment_max_size(&self.0) }
+    }
 
-//TODO     /// Check if the assignmen is total, i.e. - size == max_size.
-//     ///
-//     /// **Parameters:**
-//     ///
-//     /// * `assignment`- the target
-//     ///
-//     /// **Returns** wheather the assignment is total
-//     pub fn clingo_assignment_is_total(assignment: *mut clingo_assignment_t) -> bool;
-
-// }
+    /// Check if the assignmen is total, i.e. - size == max_size.
+    pub fn is_total(&self) -> bool {
+        unsafe { clingo_assignment_is_total(&self.0) }
+    }
+}
 
 /// This object can be used to add clauses and propagate literals while solving.
 #[derive(Debug, Copy, Clone)]
