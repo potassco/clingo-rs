@@ -3430,20 +3430,19 @@ impl Model {
         }
     }
 
-    //TODO     /// Check if a program literal is true in a model.
-    //     ///
-    //     /// **Parameters:**
-    //     ///
-    //     /// * `model` - the target
-    //     /// * `literal` - the literal to lookup
-    //     /// * `result` - whether the literal is true
-    //     ///
-    //     /// **Returns** whether the call was successful
-    //     pub fn clingo_model_is_true(
-    //         model: *mut clingo_model_t,
-    //         literal: clingo_literal_t,
-    //         result: *mut bool,
-    //     ) -> bool;
+    /// Check whether a program literal is true in a model.
+    ///
+    /// # Arguments
+    ///
+    /// * `literal` - the literal to lookup
+    pub fn is_true(&self, literal: Literal) -> Option<bool> {
+        let mut is_true = false;
+        if unsafe { clingo_model_is_true(&self.0, literal.0, &mut is_true) } {
+            Some(is_true)
+        } else {
+            None
+        }
+    }
 
     //NOTTODO: pub fn clingo_model_cost_size(model: *mut Model, size: *mut size_t) -> u8;
 
@@ -3483,15 +3482,15 @@ impl Model {
         }
     }
 
-    //TODO     /// Get the id of the solver thread that found the model.
-    //     ///
-    //     /// **Parameters:**
-    //     ///
-    //     /// * `model` - the target
-    //     /// * `id` - the resulting thread id
-    //     ///
-    //     /// **Returns** whether the call was successful
-    //     pub fn clingo_model_thread_id(model: *mut clingo_model_t, id: *mut clingo_id_t) -> bool;
+    /// Get the id of the solver thread that found the model.
+    pub fn thread_id(&self) -> Option<Id> {
+        let mut id = 0 as clingo_id_t;
+        if unsafe { clingo_model_thread_id(&self.0, &mut id) } {
+            Some(Id(id))
+        } else {
+            None
+        }
+    }
 
     /// Get the associated solve control object of a model.
     ///
