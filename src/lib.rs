@@ -4033,7 +4033,7 @@ impl<'a> SolveHandle<'a> {
         if unsafe { clingo_solve_handle_cancel(self.theref) } {
             Ok(())
         } else {
-            Err(error()?)
+            Err(error())?
         }
     }
 
