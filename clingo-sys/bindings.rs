@@ -1970,7 +1970,7 @@ extern "C" {
     /// * `assignment` - the target assignment
     ///
     /// **Returns** the decision level
-    pub fn clingo_assignment_decision_level(assignment: *mut clingo_assignment_t) -> u32;
+    pub fn clingo_assignment_decision_level(assignment: *const clingo_assignment_t) -> u32;
 }
 extern "C" {
     /// Check if the given assignment is conflicting.
@@ -1980,7 +1980,7 @@ extern "C" {
     /// * `assignment` - the target assignment
     ///
     /// **Returns** whether the assignment is conflicting
-    pub fn clingo_assignment_has_conflict(assignment: *mut clingo_assignment_t) -> bool;
+    pub fn clingo_assignment_has_conflict(assignment: *const clingo_assignment_t) -> bool;
 }
 extern "C" {
     /// Check if the given literal is part of a (partial) assignment.
@@ -1992,7 +1992,7 @@ extern "C" {
     ///
     /// **Returns** whether the literal is valid
     pub fn clingo_assignment_has_literal(
-        assignment: *mut clingo_assignment_t,
+        assignment: *const clingo_assignment_t,
         literal: clingo_literal_t,
     ) -> bool;
 }
@@ -2007,7 +2007,7 @@ extern "C" {
     ///
     /// **Returns** whether the call was successful
     pub fn clingo_assignment_level(
-        assignment: *mut clingo_assignment_t,
+        assignment: *const clingo_assignment_t,
         literal: clingo_literal_t,
         level: *mut u32,
     ) -> bool;
@@ -2023,7 +2023,7 @@ extern "C" {
     ///
     /// **Returns** whether the call was successful
     pub fn clingo_assignment_decision(
-        assignment: *mut clingo_assignment_t,
+        assignment: *const clingo_assignment_t,
         level: u32,
         literal: *mut clingo_literal_t,
     ) -> bool;
@@ -2039,7 +2039,7 @@ extern "C" {
     ///
     /// **Returns** whether the call was successful
     pub fn clingo_assignment_is_fixed(
-        assignment: *mut clingo_assignment_t,
+        assignment: *const clingo_assignment_t,
         literal: clingo_literal_t,
         is_fixed: *mut bool,
     ) -> bool;
@@ -2056,7 +2056,7 @@ extern "C" {
     /// **Returns** whether the call was successful
     /// @see clingo_assignment_truth_value()
     pub fn clingo_assignment_is_true(
-        assignment: *mut clingo_assignment_t,
+        assignment: *const clingo_assignment_t,
         literal: clingo_literal_t,
         is_true: *mut bool,
     ) -> bool;
@@ -2073,7 +2073,7 @@ extern "C" {
     /// **Returns** whether the call was successful
     /// @see clingo_assignment_truth_value()
     pub fn clingo_assignment_is_false(
-        assignment: *mut clingo_assignment_t,
+        assignment: *const clingo_assignment_t,
         literal: clingo_literal_t,
         is_false: *mut bool,
     ) -> bool;
@@ -2089,14 +2089,14 @@ extern "C" {
     ///
     /// **Returns** whether the call was successful
     pub fn clingo_assignment_truth_value(
-        assignment: *mut clingo_assignment_t,
+        assignment: *const clingo_assignment_t,
         literal: clingo_literal_t,
         value: *mut clingo_truth_value_t,
     ) -> bool;
 }
 extern "C" {
     /// The number of assigned literals in the assignment.
-    pub fn clingo_assignment_size(assignment: *mut clingo_assignment_t) -> usize;
+    pub fn clingo_assignment_size(assignment: *const clingo_assignment_t) -> usize;
 }
 extern "C" {
     /// The maximum size of the assignment (if all literals are assigned).
@@ -2106,7 +2106,7 @@ extern "C" {
     /// * `assignment`- the target
     ///
     /// **Returns** the maximum size
-    pub fn clingo_assignment_max_size(assignment: *mut clingo_assignment_t) -> usize;
+    pub fn clingo_assignment_max_size(assignment: *const clingo_assignment_t) -> usize;
 }
 extern "C" {
     /// Check if the assignmen is total, i.e. - size == max_size.
@@ -2116,7 +2116,7 @@ extern "C" {
     /// * `assignment`- the target
     ///
     /// **Returns** wheather the assignment is total
-    pub fn clingo_assignment_is_total(assignment: *mut clingo_assignment_t) -> bool;
+    pub fn clingo_assignment_is_total(assignment: *const clingo_assignment_t) -> bool;
 }
 pub const clingo_clause_type_clingo_clause_type_learnt: clingo_clause_type = 0;
 pub const clingo_clause_type_clingo_clause_type_static: clingo_clause_type = 1;
@@ -2206,7 +2206,7 @@ extern "C" {
     ///
     /// **Returns** whether the literal is watched
     pub fn clingo_propagate_control_has_watch(
-        control: *mut clingo_propagate_control_t,
+        control: *const clingo_propagate_control_t,
         literal: clingo_literal_t,
     ) -> bool;
 }
