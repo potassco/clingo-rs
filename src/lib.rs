@@ -216,7 +216,7 @@ pub enum PropagatorCheckMode {
     /// call @ref ::clingo_propagator::check() on total assignment
     Total = clingo_propagator_check_mode_clingo_propagator_check_mode_total as isize,
     /// call @ref ::clingo_propagator::check() on propagation fixpoints
-    Fixpoimt = clingo_propagator_check_mode_clingo_propagator_check_mode_fixpoint as isize,
+    Fixpoint = clingo_propagator_check_mode_clingo_propagator_check_mode_fixpoint as isize,
 }
 
 /// Bit flags for entries of the configuration
@@ -377,7 +377,7 @@ type SolveEventCallback = unsafe extern "C" fn(
     goon: *mut bool,
 ) -> bool;
 pub trait SolveEventHandler {
-    // TODO: check documentation
+    // TODO: check documentation and solve_event
     /// Callback function called during search to notify when the search is finished or a model is ready.
     ///
     /// If a (non-recoverable) clingo API function fails in this callback, it must return false.
@@ -387,22 +387,22 @@ pub trait SolveEventHandler {
     ///
     /// # Arguments
     ///
-    /// * `model` - the current model
+    /// * `etype` - the type of the solve event
     /// * `goon` - can be set to false to stop solving
     ///
     /// **Returns** whether the call was successful
     ///
-    /// @see clingo_control_solve()
-    fn on_solve_event(&mut self, type_: SolveEventType, goon: &mut bool) -> bool;
+    /// **See:** [`Control::solve()`](struct.Control.html#method.solve)
+    fn on_solve_event(&mut self, etype: SolveEventType, goon: &mut bool) -> bool;
     #[doc(hidden)]
     unsafe extern "C" fn unsafe_solve_callback<T: SolveEventHandler>(
-        type_: clingo_solve_event_type_t,
+        etype: clingo_solve_event_type_t,
         event: *mut ::std::os::raw::c_void,
         data: *mut ::std::os::raw::c_void,
         goon: *mut bool,
     ) -> bool {
         // TODO               assert!(!event.is_null());
-        let event_type = match type_ {
+        let event_type = match etype {
             clingo_solve_event_type_clingo_solve_event_type_model => SolveEventType::Model,
             clingo_solve_event_type_clingo_solve_event_type_finish => SolveEventType::Finish,
             _ => panic!("Failed to match clingo_solve_event_type."),
@@ -454,17 +454,18 @@ type LoggingCallback = unsafe extern "C" fn(
     data: *mut ::std::os::raw::c_void,
 );
 pub trait Logger {
-    //TODO: check documentation
     /// Callback to intercept warning messages.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
     /// * `code` - associated warning code
     /// * `message` - warning message
     ///
-    /// @see clingo_control_new()
-    /// @see clingo_parse_term()
-    /// @see clingo_parse_program()
+    /// **See:**
+    ///
+    /// * [`Control::new_with_logger()`](struct.Control.html#method.new_with_logger)
+    /// * [`parse_term_with_logger()`](fn.parse_term_with_logger.html)
+    /// * [`parse_program_with_logger()`](fn.parse_program_with_logger.html)
     fn log(&mut self, code: Warning, message: &str);
     #[doc(hidden)]
     unsafe extern "C" fn unsafe_logging_callback<L: Logger>(
@@ -517,14 +518,15 @@ pub trait ExternalFunctionHandler {
     /// If a (non-recoverable) clingo API function fails in this callback, for example, the symbol callback, the callback must return false.
     /// In case of errors not related to clingo, this function can set error ::clingo_error_unknown and return false to stop grounding with an error.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
     /// * `location` - location from which the external function was called
     /// * `name` - name of the called external function
     /// * `arguments` - arguments of the called external function
     ///
     /// **Returns** a vector of symbols
-    /// @see clingo_control_ground()
+    ///
+    /// **See:** [`Control::ground_with_event_handler()`](struct.Control.html#method.ground_with_event_handler)
     ///
     /// The following example implements the external function `@f()` returning 42.
     /// ```
@@ -585,10 +587,8 @@ pub trait ExternalFunctionHandler {
         match event_handler.on_external_function(location, name, arguments) {
             Ok(symbols) => {
                 let symbol_injector = symbol_callback.unwrap();
-                let mut v = vec![];
-                for s in symbols {
-                    v.push(s.clone().0);
-                }
+                let mut v: Vec<clingo_symbol_t> =
+                    symbols.iter().map(|symbol| symbol.clone().0).collect();
                 symbol_injector(v.as_slice().as_ptr(), v.len(), symbol_callback_data)
             }
             Err(e) => false,
@@ -1047,7 +1047,6 @@ impl Symbol {
     /// # Errors
     ///
     /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
-    ///
     pub fn to_string(&self) -> Result<String, Error> {
         let mut size: usize = 0;
         if unsafe { clingo_symbol_to_string_size(self.0, &mut size) } {
@@ -1077,21 +1076,17 @@ impl Symbol {
 /// # Arguments
 ///
 /// * `program` - the program in gringo syntax
-/// * `callback` - the callback reporting statements
-/// * `callback_data` - user data for the callback
+/// * `handler` - implementing the trait [`AstStatementHandler`](trait.AstStatementHandler.html)
 ///
 /// # Errors
 ///
 /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if parsing fails
 /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
-pub fn parse_program<T: AstStatementHandler>(
-    program_: &str,
-    callback_data: &mut T,
-) -> Result<(), Error> {
+pub fn parse_program<T: AstStatementHandler>(program_: &str, handler: &mut T) -> Result<(), Error> {
     let logger = None;
     let logger_data = std::ptr::null_mut();
     let program = CString::new(program_).unwrap();
-    let data = callback_data as *mut T;
+    let data = handler as *mut T;
     if unsafe {
         clingo_parse_program(
             program.as_ptr(),
@@ -1113,10 +1108,8 @@ pub fn parse_program<T: AstStatementHandler>(
 /// # Arguments
 ///
 /// * `program` - the program in gringo syntax
-/// * `callback` - the callback reporting statements
-/// * `callback_data` - user data for the callback
-/// * `logger` - callback to report messages during parsing
-/// * `logger_data` - user data for the logger
+/// * `handler` - implementating the trait [`AstStatementHandler`](trait.AstStatementHandler.html)
+/// * `logger` - implementing the trait [`Logger`](trait.Logger.html) to report messages during parsing
 /// * `message_limit` - the maximum number of times the logger is called
 ///
 /// # Errors
@@ -1162,15 +1155,15 @@ pub fn version() -> (i32, i32, i32) {
 
 /// Struct used to specify the program parts that have to be grounded.
 ///
-/// Programs may be structured into parts, which can be grounded independently with ::clingo_control_ground.
+/// Programs may be structured into parts, which can be grounded independently with [`Control::ground()`](struct.Control.html#method.ground).
 /// Program parts are mainly interesting for incremental grounding and multi-shot solving.
 /// For single-shot solving, program parts are not needed.
 ///
-/// **Note:** Parts of a logic program without an explicit <tt>\#program</tt>
+/// **Note:** Parts of a logic program without an explicit `#program`
 /// specification are by default put into a program called `base` - without
 /// arguments.
 ///
-/// @see clingo_control_ground()
+/// **See:** [`Control::ground()`](struct.Control.html#method.ground)
 pub struct Part<'a> {
     name: CString,
     params: &'a [Symbol],
@@ -1224,7 +1217,6 @@ pub fn set_error(code: ErrorType, message: &str) {
 ///
 /// For all functions exist default implementations and they must not be implemented manually.
 pub trait Propagator {
-    //TODO
     /// This function is called once before each solving step.
     /// It is used to map relevant program literals to solver literals, add watches for solver
     /// literals, and initialize the data structures used during propagation.
@@ -1232,12 +1224,11 @@ pub trait Propagator {
     /// **Note:** This is the last point to access symbolic and theory atoms.
     /// Once the search has started, they are no longer accessible.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
     /// * `init` - initizialization object
     ///
     /// **Returns** whether the call was successful
-    /// @see ::clingo_propagator_init_callback_t
     fn init(&mut self, _init: &mut PropagateInit) -> bool {
         true
     }
@@ -1259,14 +1250,14 @@ pub trait Propagator {
         propagator.init(init)
     }
     //TODO
-    /// Can be used to propagate solver literals given a @link clingo_assignment_t partial assignment@endlink.
+    /// Can be used to propagate solver literals given a [partial assignment](struct.Assignment.html).
     ///
-    /// Called during propagation with a non-empty array of @link clingo_propagate_init_add_watch() watched solver literals@endlink
+    /// Called during propagation with a non-empty array of [watched solver literals](struct.PropagateInit.html#method.add_watch)
     /// that have been assigned to true since the last call to either propagate, undo, (or the start of the search) - the change set.
     /// Only watched solver literals are contained in the change set.
-    /// Each literal in the change set is true w.r.t. the current @link clingo_assignment_t assignment@endlink.
-    /// @ref clingo_propagate_control_add_clause() can be used to add clauses.
-    /// If a clause is unit resulting, it can be propagated using @ref clingo_propagate_control_propagate().
+    /// Each literal in the change set is true w.r.t. the current [assignment](struct.Assignment.html).
+    /// [`PropagateControl::add_clause()`](struct.PropagateControl.html#method.add_clause) can be used to add clauses.
+    /// If a clause is unit resulting, it can be propagated using [`PropagateControl::propagate()`](struct.PropagateControl.html#method.propagate).
     /// If the result of either of the two methods is false, the propagate function must return
     /// immediately.
     ///
@@ -1274,7 +1265,7 @@ pub trait Propagator {
     /// within the callback.
     /// The important point is to return true (true to indicate there was no error) if the result of
     /// either of the methods is false.
-    /// ~~~~~~~~~~~~~~~{.c}
+    /// ```
     /// bool result;
     /// clingo_literal_t clause[] = { ... };
     ///
@@ -1289,21 +1280,18 @@ pub trait Propagator {
     /// ...
     ///
     /// return true;
-    /// ~~~~~~~~~~~~~~~
+    /// ```
     ///
     /// **Note:**
     /// This function can be called from different solving threads.
-    /// Each thread has its own assignment and id, which can be obtained using @ref clingo_propagate_control_thread_id().
+    /// Each thread has its own assignment and id, which can be obtained using [`PropagateControl::thread_id()`](struct.PropagateControl.html#method.thread_id).
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
     /// * `control` - control object for the target solver
     /// * `changes` - the change set
-    /// * `size` - the size of the change set
-    /// * `data` - user data for the callback
     ///
     /// **Returns** whether the call was successful
-    /// @see ::clingo_propagator_propagate_callback_t
     fn propagate(&mut self, _control: &mut PropagateControl, _changes: &[Literal]) -> bool {
         true
     }
@@ -1329,20 +1317,16 @@ pub trait Propagator {
 
         propagator.propagate(control, changes)
     }
-    //TODO: check documentation
     /// Called whenever a solver undoes assignments to watched solver literals.
     ///
     /// This callback is meant to update assignment dependent state in the propagator.
     ///
     /// **Note:** No clauses must be propagated in this callback.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
     /// * `control` - control object for the target solver
     /// * `changes` - the change set
-    /// * `size` - the size of the change set
-    /// * `data` - user data for the callback
-    /// @see ::clingo_propagator_undo_callback_t
     fn undo(&mut self, _control: &mut PropagateControl, _changes: &[Literal]) -> bool {
         true
     }
@@ -1368,20 +1352,17 @@ pub trait Propagator {
 
         propagator.undo(control, changes)
     }
-    //TODO: check documentation
-    /// This function is similar to @ref clingo_propagate_control_propagate() but is only called on total assignments without a change set.
+    /// This function is similar to [`PropagateControl::propagate()`](struct.PropagateControl.html#method.propagate) but is only called on total assignments without a change set.
     ///
-    /// When exactly this function is called, can be configured using the @ref clingo_propagate_init_set_check_mode() function.
+    /// When exactly this function is called, can be configured using the [`PropagateInit::set_check_mode()`](struct.PropagateInit.html#method.set_check_mode) function.
     ///
     /// **Note:** This function is called even if no watches have been added.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
     /// * `control` - control object for the target solver
-    /// * `data` - user data for the callback
     ///
     /// **Returns** whether the call was successful
-    /// @see ::clingo_propagator_check_callback_t
     fn check(&mut self, _control: &mut PropagateControl) -> bool {
         true
     }
@@ -1417,7 +1398,7 @@ impl Drop for Control {
 impl Control {
     /// Create a new control object.
     ///
-    /// **Note:** Only gringo options (without `--output`) and clasp`s options are supported as
+    /// **Note:** Only gringo options (without `--output`) and clasp's options are supported as
     /// arguments,  except basic options such as `--help`.
     /// Furthermore, a control object is blocked while a search call is active;
     /// you must not call any member function during search.
@@ -1437,10 +1418,10 @@ impl Control {
         let logger_data = std::ptr::null_mut();
 
         // create a vector of zero terminated strings
-        let mut args: Vec<CString> = Vec::new();
-        for arg in arguments {
-            args.push(CString::new(arg).unwrap());
-        }
+        let mut args: Vec<CString> = arguments
+            .into_iter()
+            .map(|arg| CString::new(arg).unwrap())
+            .collect();
 
         // convert the strings to raw pointers
         let c_args = args.iter()
@@ -1469,7 +1450,7 @@ impl Control {
 
     /// Create a new control object.
     ///
-    /// **Note:** Only gringo options (without `--output`) and clasp`s options are supported as
+    /// **Note:** Only gringo options (without `--output`) and clasp's options are supported as
     /// arguments,
     /// except basic options such as `--help`.
     /// Furthermore, a control object is blocked while a search call is active;
@@ -1487,15 +1468,14 @@ impl Control {
     /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if argument parsing fails
 
     pub fn new_with_logger<L: Logger>(
-        arguments: std::vec::Vec<String>,
+        arguments: Vec<String>,
         logger: &mut L,
         message_limit: u32,
     ) -> Result<Control, Error> {
-        // create a vector of zero terminated strings
-        let mut args: Vec<CString> = Vec::new();
-        for arg in arguments {
-            args.push(CString::new(arg).unwrap());
-        }
+        let mut args: Vec<CString> = arguments
+            .into_iter()
+            .map(|arg| CString::new(arg).unwrap())
+            .collect();
 
         // convert the strings to raw pointers
         let c_args = args.iter()
@@ -1578,10 +1558,10 @@ impl Control {
         }
     }
 
-    /// Ground the selected parts of the current (non-ground) logic
+    /// Ground the selected [parts](struct.Part.html) of the current (non-ground) logic
     /// program.
     ///
-    /// After grounding, logic programs can be solved with `solve()`.
+    /// After grounding, logic programs can be solved with [`solve()`](struct.Control.html.method.solve).
     ///
     /// **Note:** Parts of a logic program without an explicit `#program`
     /// specification are by default put into a program called `base` - without
@@ -1589,7 +1569,7 @@ impl Control {
     ///
     /// # Arguments
     ///
-    /// * `parts` -  array of [`Part`](struct.Part.html)s to ground
+    /// * `parts` -  array of [parts](struct.Part.html) to ground
     ///
     /// # Errors
     ///
@@ -1616,10 +1596,10 @@ impl Control {
         }
     }
 
-    /// Ground the selected parts of the current (non-ground) logic
+    /// Ground the selected [parts](struct.Part.html) of the current (non-ground) logic
     /// program.
     ///
-    /// After grounding, logic programs can be solved with `solve()`.
+    /// After grounding, logic programs can be solved with [`solve()`](struct.Control.html.method.solve).
     ///
     /// **Note:** Parts of a logic program without an explicit `#program`
     /// specification are by default put into a program called `base` - without
@@ -1627,18 +1607,17 @@ impl Control {
     ///
     /// # Arguments
     ///
-    /// * `parts` - array of [`Part`](struct.Part.html)s to ground
-    /// * `event_handler` - ExternalFunctionHandler to implement external functions
+    /// * `parts` - array of [parts](struct.Part.html) to ground
+    /// * `handler` - implementing the trait [`ExternalFunctionHandler`](trait.ExternalFunctionHandler.html) to evaluate external functions
     ///
     /// # Errors
     ///
     /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
-    /// - error code of the ExternalFunctionHandler
     //TODO: the error code set in ExternalFunctionHandler is overwritten
     pub fn ground_with_event_handler<T: ExternalFunctionHandler>(
         &mut self,
         parts: &[Part],
-        event_handler: &mut T,
+        handler: &mut T,
     ) -> Result<(), Error> {
         let parts_size = parts.len();
         let parts = parts
@@ -1646,7 +1625,7 @@ impl Control {
             .map(|arg| arg.from())
             .collect::<Vec<clingo_part>>();
 
-        let data = event_handler as *mut T;
+        let data = handler as *mut T;
         if unsafe {
             clingo_control_ground(
                 self.ctl.as_ptr(),
@@ -1662,10 +1641,8 @@ impl Control {
         }
     }
 
-    /// Solve the currently [`ground()`](struct.Control.html#method.ground) grounded logic program
+    /// Solve the currently [grounded](struct.Control.html#method.ground) logic program
     /// enumerating its models.
-    ///
-    /// See the [`SolveHandle`](struct.SolveHandle.html) module for more information.
     ///
     /// # Arguments
     ///
@@ -1701,16 +1678,14 @@ impl Control {
         }
     }
 
-    /// Solve the currently [`ground()`](struct.Control.html#method.ground) grounded logic program
+    /// Solve the currently [grounded](struct.Control.html#method.ground) logic program
     /// enumerating its models.
-    ///
-    /// See the [`SolveHandle`](struct.SolveHandle.html) module for more information.
     ///
     /// # Arguments
     ///
     /// * `mode` - configures the search mode
     /// * `assumptions` - array of assumptions to solve under
-    /// * `event_handler` - the event handler to register
+    /// * `handler` - implementing the trait [`SolveEventHandler`](trait.SolveEventHandler.html)
     ///
     /// # Errors
     ///
@@ -1720,10 +1695,10 @@ impl Control {
         &mut self,
         mode: &SolveMode,
         assumptions: &[SymbolicLiteral],
-        event_handler: &mut T,
+        handler: &mut T,
     ) -> Result<SolveHandle, Error> {
         let mut handle = std::ptr::null_mut() as *mut clingo_solve_handle_t;
-        let data = event_handler as *mut T;
+        let data = handler as *mut T;
         if unsafe {
             clingo_control_solve(
                 self.ctl.as_ptr(),
@@ -1743,8 +1718,8 @@ impl Control {
         }
     }
 
-    /// Clean up the domains of clingo`s grounding component using the solving
-    /// component`s top level assignment.
+    /// Clean up the domains of clingo's grounding component using the solving
+    /// component's top level assignment.
     ///
     /// This function removes atoms from domains that are false and marks atoms as
     /// facts that are true.  With multi-shot solving, this can result in smaller
@@ -1768,7 +1743,7 @@ impl Control {
     ///
     /// # Arguments
     ///
-    /// * `atom` atom to assign
+    /// * `atom` - atom to assign
     /// * `value` - the truth value
     ///
     /// # Errors
@@ -1814,11 +1789,9 @@ impl Control {
     /// If the sequential flag is set to true, the propagator is called
     /// sequentially when solving with multiple threads.
     ///
-    /// See the [`Propagator`](struct.Propagator) module for more information.
-    ///
     /// # Arguments
     ///
-    /// * `propagator` - the propagator
+    /// * `propagator` - implementing the trait [`Propagator`](trait.Propagator.html)
     /// * `sequential` - whether the propagator should be called sequentially
     ///
     /// # Errors
@@ -1826,16 +1799,16 @@ impl Control {
     /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
     pub fn register_propagator<T: Propagator>(
         &mut self,
-        _propagator: &mut T,
+        propagator: &mut T,
         sequential: bool,
     ) -> Result<(), Error> {
+        let data_ptr = propagator as *mut T;
         let propagator = clingo_propagator_t {
             init: Some(T::unsafe_init::<T>),
             propagate: Some(T::unsafe_propagate::<T>),
             undo: Some(T::unsafe_undo::<T>),
             check: Some(T::unsafe_check::<T>),
         };
-        let data_ptr = _propagator as *mut T;
         if unsafe {
             clingo_control_register_propagator(
                 self.ctl.as_ptr(),
@@ -1854,12 +1827,10 @@ impl Control {
     ///
     /// Statistics are updated after a solve call.
     ///
-    /// See the [`Statistics`](struct.Statistics.html) module for more information.
-    ///
     /// **Attention:**
     /// The level of detail of the statistics depends on the stats option
-    /// (which can be set using [`Configuration`](struct.Configuration.html) module or passed as an
-    /// option when [`new()`](struct.Control.html#method.new)  creating the control object).
+    /// (which can be set using [`Configuration`](struct.Configuration.html) or passed as an
+    /// option when [creating the control object](struct.Control.html#method.new)).
     /// The default level zero only provides basic statistics,
     /// level one provides extended and accumulated statistics,
     /// and level two provides per-thread statistics.
@@ -1889,8 +1860,6 @@ impl Control {
     }
 
     /// Get a configuration object to change the solver configuration.
-    ///
-    /// See the [`Configuration`](struct.Configuration.html) module for more information.
     pub fn configuration(&mut self) -> Option<&mut Configuration> {
         let mut conf = std::ptr::null_mut() as *mut clingo_configuration_t;
         if unsafe { clingo_control_configuration(self.ctl.as_ptr(), &mut conf) } {
@@ -1903,7 +1872,7 @@ impl Control {
     /// Configure how learnt constraints are handled during enumeration.
     ///
     /// If the enumeration assumption is enabled, then all information learnt from
-    /// the solver`s various enumeration modes is removed after a solve call. This
+    /// the solver's various enumeration modes is removed after a solve call. This
     /// includes enumeration of cautious or brave consequences, enumeration of
     /// answer sets with or without projection, or finding optimal models, as well
     /// as clauses added with clingo_solve_control_add_clause().
@@ -1962,8 +1931,6 @@ impl Control {
 
     /// Get an object to inspect symbolic atoms (the relevant Herbrand base) used
     /// for grounding.
-    ///
-    /// See the [`SymbolicAtoms`](struct.SymbolicAtoms.html) module for more information.
     pub fn symbolic_atoms(&self) -> Option<&SymbolicAtoms> {
         let mut atoms = std::ptr::null() as *const clingo_symbolic_atoms_t;
         if unsafe { clingo_control_symbolic_atoms(self.ctl.as_ptr(), &mut atoms) } {
@@ -1974,8 +1941,6 @@ impl Control {
     }
 
     /// Get an object to inspect theory atoms that occur in the grounding.
-    ///
-    /// See the [`TheoryAtoms`](struct.TheoryAtoms.html) module for more information.
     pub fn theory_atoms(&self) -> Option<&TheoryAtoms> {
         let mut atoms = std::ptr::null() as *const clingo_theory_atoms_t;
         if unsafe { clingo_control_theory_atoms(self.ctl.as_ptr(), &mut atoms) } {
@@ -1988,7 +1953,7 @@ impl Control {
     // TODO
     //     /// Register a program observer with the control object.
     //     ///
-    //     /// **Parameters:**
+    //     /// # Arguments
     //     ///
     //     /// * `control` - the target
     //     /// * `observer` - the observer to register
@@ -2005,8 +1970,6 @@ impl Control {
 
     /// Get an object to add ground directives to the program.
     ///
-    /// See the [`ProgramBuilder`](struct.ProgramBuilder.html) module for more information.
-    ///
     /// # Errors
     ///
     /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
@@ -2020,8 +1983,6 @@ impl Control {
     }
 
     /// Get an object to add non-ground directives to the program.
-    ///
-    /// See the [`ProgramBuilder`](struct.ProgramBuilder.html) module for more information.
     pub fn program_builder(&mut self) -> Option<ProgramBuilder> {
         let mut builder = std::ptr::null_mut() as *mut clingo_program_builder_t;
         if unsafe { clingo_control_program_builder(self.ctl.as_ptr(), &mut builder) } {
@@ -2134,8 +2095,7 @@ pub struct ProgramBuilder<'a> {
 impl<'a> ProgramBuilder<'a> {
     /// Adds a statement to the program.
     ///
-    /// **Attention:** [`begin()`](struct.ProgramBuilder.html#method.begin) must be called before
-    /// adding statements and [`end()`](struct.ProgramBuilder.html#method.end) must be called after
+    /// **Attention:** The [`end()`](struct.ProgramBuilder.html#method.end) must be called after
     /// all statements have been added.
     ///
     /// # Arguments
@@ -2211,8 +2171,7 @@ impl Configuration {
     ///
     /// # Pre-condition
     ///
-    /// The [`configuration_type()`](struct.Configuration.html#method.configuration_type) type of
-    /// the entry must be  [`ConfigurationType::ARRAY`](struct.ConfigurationType.html#associatedconstant.ARRAY).
+    /// The [type](struct.Configuration.html#method.type) of the entry must be  [`ConfigurationType::ARRAY`](struct.ConfigurationType.html#associatedconstant.ARRAY).
     pub fn array_size(&self, Id(key): Id) -> Option<usize> {
         let mut size = 0;
         if unsafe { clingo_configuration_array_size(&self.0, key, &mut size) } {
@@ -2229,8 +2188,7 @@ impl Configuration {
     ///
     /// # Pre-condition
     ///
-    /// The [`configuration_type()`](struct.Configuration.html#method.configuration_type) type of
-    /// the entry must be [`ConfigurationType::ARRAY`](struct.ConfigurationType.html#associatedconstant.ARRAY).
+    /// The [type](struct.Configuration.html#method.type) of the entry must be [`ConfigurationType::ARRAY`](struct.ConfigurationType.html#associatedconstant.ARRAY).
     ///
     /// # Arguments
     ///
@@ -2249,8 +2207,7 @@ impl Configuration {
     ///
     /// # Pre-condition
     ///
-    /// The [`configuration_type()`](struct.Configuration.html#method.configuration_type) type of
-    /// the entry must be [`ConfigurationType::MAP`](struct.ConfigurationType.html#associatedconstant.MAP).
+    /// The [type](struct.Configuration.html#method.type) of the entry must be [`ConfigurationType::MAP`](struct.ConfigurationType.html#associatedconstant.MAP).
     pub fn map_size(&self, Id(key): Id) -> Option<usize> {
         let mut size = 0;
         if unsafe { clingo_configuration_map_size(&self.0, key, &mut size) } {
@@ -2285,8 +2242,7 @@ impl Configuration {
     ///
     /// # Pre-condition
     ///
-    /// The [`configuration_type()`](struct.Configuration.html#method.configuration_type) type of
-    /// the entry must be [`ConfigurationType::MAP`](struct.ConfigurationType.html#associatedconstant.MAP).
+    /// The [type](struct.Configuration.html#method.type) of the entry must be [`ConfigurationType::MAP`](struct.ConfigurationType.html#associatedconstant.MAP).
     ///
     /// # Arguments
     ///
@@ -2313,8 +2269,7 @@ impl Configuration {
     ///
     /// # Pre-condition
     ///
-    /// The [`configuration_type()`](struct.Configuration.html#method.configuration_type) type of
-    /// the entry must be [`ConfigurationType::MAP`](struct.ConfigurationType.html#associatedconstant.MAP).
+    /// The [type](struct.Configuration.html#method.type) of the entry must be [`ConfigurationType::MAP`](struct.ConfigurationType.html#associatedconstant.MAP).
     ///
     /// **Note:** Multiple levels can be looked up by concatenating keys with a period.
     pub fn map_at(&self, Id(key): Id, name: &str) -> Option<Id> {
@@ -2331,8 +2286,7 @@ impl Configuration {
     ///
     /// # Pre-condition
     ///
-    /// The [`configuration_type()`](struct.Configuration.html#method.configuration_type) type of
-    /// the entry must be [`ConfigurationType::VALUE`](struct.ConfigurationType.html#associatedconstant.VALUE).
+    /// The [type](struct.Configuration.html#method.type) of the entry must be [`ConfigurationType::VALUE`](struct.ConfigurationType.html#associatedconstant.VALUE).
     ///
     /// # Arguments
     ///
@@ -2352,8 +2306,7 @@ impl Configuration {
     ///
     /// # Pre-condition
     ///
-    /// The [`configuration_type()`](struct.Configuration.html#method.configuration_type) type of
-    /// the entry must be [`ConfigurationType::VALUE`](struct.ConfigurationType.html#associatedconstant.VALUE).
+    /// The [type](struct.Configuration.html#method.type) of the entry must be [`ConfigurationType::VALUE`](struct.ConfigurationType.html#associatedconstant.VALUE).
     ///
     /// # Arguments
     ///
@@ -2377,8 +2330,7 @@ impl Configuration {
     ///
     /// # Pre-condition
     ///
-    /// The [`configuration_type()`](struct.Configuration.html#method.configuration_type) type of
-    /// the entry must be [`ConfigurationType::VALUE`](struct.ConfigurationType.html#associatedconstant.VALUE).
+    /// The [type](struct.Configuration.html#method.type) of the entry must be [`ConfigurationType::VALUE`](struct.ConfigurationType.html#associatedconstant.VALUE).
     ///
     /// # Arguments
     ///
@@ -2780,7 +2732,7 @@ impl Statistics {
 /// Object to inspect symbolic atoms in a program---the relevant Herbrand base
 /// gringo uses to instantiate programs.
 ///
-/// @see clingo_control_symbolic_atoms()
+/// **See:** [`Control::symbolic_atoms()`](struct.Control.html#method.symbolic_atoms)
 #[derive(Debug, Copy, Clone)]
 pub struct SymbolicAtoms(clingo_symbolic_atoms_t);
 impl SymbolicAtoms {
@@ -2885,7 +2837,7 @@ impl SymbolicAtoms {
     /// Check whether an atom is a fact.
     ///
     /// **Note:** This does not determine if an atom is a cautious consequence. The
-    /// grounding or solving component`s simplifications can only detect this in
+    /// grounding or solving component's simplifications can only detect this in
     /// some cases.
     ///
     /// # Arguments
@@ -3037,7 +2989,7 @@ impl TheoryAtoms {
     ///
     /// # Pre-condition
     ///
-    /// The term must be of type [`TermType::Number](enum.TermType.html#variant.Number) .
+    /// The term must be of type [`TermType::Number`](enum.TermType.html#variant.Number).
     ///
     /// # Arguments
     ///
@@ -3555,12 +3507,12 @@ impl SolveControl {
     /// Add a clause that applies to the current solving step during model
     /// enumeration.
     ///
-    /// **Note:** The [`Propagator`](enum.Propagator.html) module provides a more sophisticated
+    /// **Note:** The [`Propagator`](trait.Propagator.html) trait provides a more sophisticated
     /// interface to add clauses - even on partial assignments.
     ///
     /// # Arguments
     ///
-    /// * `clause` array of literals representing the clause
+    /// * `clause` - array of literals representing the clause
     ///
     /// # Errors
     ///
@@ -3842,19 +3794,19 @@ impl PropagateControl {
     /// # Arguments
     ///
     /// * `clause` - the clause to add
-    /// * `type` - the clause type determining its lifetime
+    /// * `ctype` - the clause type determining its lifetime
     ///
     /// # Errors
     ///
     /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
-    pub fn add_clause(&mut self, clause: &[Literal], type_: ClauseType) -> Result<bool, Error> {
+    pub fn add_clause(&mut self, clause: &[Literal], ctype: ClauseType) -> Result<bool, Error> {
         let mut result = false;
         if unsafe {
             clingo_propagate_control_add_clause(
                 &mut self.0,
                 clause.as_ptr() as *const clingo_literal_t,
                 clause.len(),
-                type_ as clingo_clause_type_t,
+                ctype as clingo_clause_type_t,
                 &mut result,
             )
         } {
@@ -3889,13 +3841,13 @@ impl PropagateControl {
 
 /// Object to initialize a user-defined propagator before each solving step.
 ///
-/// Each @link SymbolicAtoms symbolic@endlink or @link TheoryAtoms theory atom@endlink is uniquely associated with an aspif atom in form of a positive integer (@ref ::clingo_literal_t).
+/// Each [symbolic](struct.SymbolicAtoms.html) or [theory atom](struct.TheoryAtoms.html) is uniquely associated with an aspif atom in form of a positive integer ([`Literal`](struct.Literal.html)).
 /// Aspif literals additionally are signed to represent default negation.
-/// Furthermore, there are non-zero integer solver literals (also represented using @ref ::clingo_literal_t).
+/// Furthermore, there are non-zero integer solver literals (also represented using [`Literal`](struct.Literal.html).
 /// There is a surjective mapping from program atoms to solver literals.
 ///
-/// All methods called during propagation use solver literals whereas clingo_symbolic_atoms_literal() and clingo_theory_atoms_atom_literal() return program literals.
-/// The function clingo_propagate_init_solver_literal() can be used to map program literals or @link clingo_theory_atoms_element_condition_id() condition ids@endlink to solver literals.
+/// All methods called during propagation use solver literals whereas [`SymbolicAtoms::literal()`](struct.SymbolicAtoms.html#method.literal) and [`TheoryAtoms::atom_literal()`](struct.TheoryAtoms.html#method.atom_literal) return program literals.
+/// The function [`PropagateInit::solver_literal()`](struct.PropagateInit.html#method.solver_literal) can be used to map program literals or [condition ids](struct.TheoryAtoms.html#method.element_condition_id) to solver literals.
 #[derive(Debug, Copy, Clone)]
 pub struct PropagateInit(clingo_propagate_init_t);
 impl PropagateInit {
@@ -3942,7 +3894,7 @@ impl PropagateInit {
 
     /// Get an object to inspect the theory atoms.
     pub fn theory_atoms(&self) -> Option<&TheoryAtoms> {
-        let mut atoms_ptr =std::ptr::null() as *const clingo_theory_atoms_t;
+        let mut atoms_ptr = std::ptr::null() as *const clingo_theory_atoms_t;
         if unsafe { clingo_propagate_init_theory_atoms(&self.0, &mut atoms_ptr) } {
             unsafe { (atoms_ptr as *const TheoryAtoms).as_ref() }
         } else {
@@ -4097,7 +4049,7 @@ impl<'a> SolveHandle<'a> {
 //     /// that is (at the moment) not freed until the program is closed.  All strings
 //     /// returned from clingo API functions are internalized and must not be freed.
 //     ///
-//     /// **Parameters:**
+//     /// # Arguments
 //     ///
 //     /// * `string` - the string to internalize
 //     /// * `result` - the internalized string
@@ -4114,7 +4066,7 @@ impl<'a> SolveHandle<'a> {
 //     /// The result of this function is a symbol. The input term can contain
 //     /// unevaluated functions, which are evaluated during parsing.
 //     ///
-//     /// **Parameters:**
+//     /// # Arguments
 //     ///
 //     /// * `string` - the string to parse
 //     /// * `logger` - ouptional logger to report warnings during parsing
@@ -4139,7 +4091,7 @@ pub trait GroundProgramObserver {
     ///
     /// If the incremental flag is true, there can be multiple calls to @ref clingo_control_solve().
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
     /// * `incremental` - whether the program is incremental
     ///
@@ -4157,7 +4109,7 @@ pub trait GroundProgramObserver {
     ///
     /// @see @ref end_step
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
     /// * `data` - user data for the callback
     ///
@@ -4172,7 +4124,7 @@ pub trait GroundProgramObserver {
     ///
     /// @see @ref begin_step
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
     /// * `data` - user data for the callback
     ///
@@ -4183,7 +4135,7 @@ pub trait GroundProgramObserver {
 
     /// Observe rules passed to the solver.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
     /// * `choice` - determines if the head is a choice or a disjunction
     /// * `head` - the head atoms
@@ -4206,7 +4158,7 @@ pub trait GroundProgramObserver {
 
     /// Observe weight rules passed to the solver.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
     /// * `choice` - determines if the head is a choice or a disjunction
     /// * `head` - the head atoms
@@ -4231,7 +4183,7 @@ pub trait GroundProgramObserver {
 
     /// Observe minimize constraints (or weak constraints) passed to the solver.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
     /// * `priority` - the priority of the constraint
     /// * `literals` - the weighted literals whose sum to minimize
@@ -4250,7 +4202,7 @@ pub trait GroundProgramObserver {
 
     /// Observe projection directives passed to the solver.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
     /// * `atoms` - the atoms to project on
     /// * `size` - the number of atoms
@@ -4269,7 +4221,7 @@ pub trait GroundProgramObserver {
     /// \note Facts do not have an associated aspif atom.
     /// The value of the atom is set to zero.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
     /// * `symbol` - the symbolic representation of the atom
     /// * `atom` - the aspif atom (0 for facts)
@@ -4286,7 +4238,7 @@ pub trait GroundProgramObserver {
 
     /// Observe shown terms passed to the solver.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
     /// * `symbol` - the symbolic representation of the term
     /// * `condition` - the literals of the condition
@@ -4305,7 +4257,7 @@ pub trait GroundProgramObserver {
 
     /// Observe shown csp variables passed to the solver.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
     /// * `symbol` - the symbolic representation of the variable
     /// * `value` - the value of the variable
@@ -4326,7 +4278,7 @@ pub trait GroundProgramObserver {
 
     /// Observe external statements passed to the solver.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
     /// * `atom` - the external atom
     /// * `type` - the type of the external statement
@@ -4343,7 +4295,7 @@ pub trait GroundProgramObserver {
 
     /// Observe assumption directives passed to the solver.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
     /// * `literals` - the literals to assume (positive literals are true and negative literals
     /// false for the next solve call)
@@ -4361,7 +4313,7 @@ pub trait GroundProgramObserver {
 
     /// Observe heuristic directives passed to the solver.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
     /// * `atom` - the target atom
     /// * `type` - the type of the heuristic modification
@@ -4386,7 +4338,7 @@ pub trait GroundProgramObserver {
 
     /// Observe edge directives passed to the solver.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
     /// * `node_u` - the start vertex of the edge
     /// * `node_v` - the end vertex of the edge
@@ -4407,7 +4359,7 @@ pub trait GroundProgramObserver {
 
     /// Observe numeric theory terms.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
     /// * `term_id` - the id of the term
     /// * `number` - the value of the term
@@ -4424,7 +4376,7 @@ pub trait GroundProgramObserver {
 
     /// Observe string theory terms.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
     /// * `term_id` - the id of the term
     /// * `name` - the value of the term
@@ -4448,7 +4400,7 @@ pub trait GroundProgramObserver {
     /// - otherwise, it is a function and name_id_or_type refers to the id of the name (in form of a
     /// string term)
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
     /// * `term_id` - the id of the term
     /// * `name_id_or_type` - the name or type of the term
@@ -4469,7 +4421,7 @@ pub trait GroundProgramObserver {
 
     /// Observe theory elements.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
     /// * `element_id` - the id of the element
     /// * `terms` - the term tuple of the element
@@ -4492,7 +4444,7 @@ pub trait GroundProgramObserver {
 
     /// Observe theory atoms without guard.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
     /// * `atom_id_or_zero` - the id of the atom or zero for directives
     /// * `term_id` - the term associated with the atom
@@ -4513,7 +4465,7 @@ pub trait GroundProgramObserver {
 
     /// Observe theory atoms with guard.
     ///
-    /// **Parameters:**
+    /// # Arguments
     ///
     /// * `atom_id_or_zero` - the id of the atom or zero for directives
     /// * `term_id` - the term associated with the atom
