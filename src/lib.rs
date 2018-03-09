@@ -3714,67 +3714,68 @@ impl PropagateControl {
             .unwrap()
     }
 
-    //TODO     /// Adds a new volatile literal to the underlying solver thread.
-    //     ///
-    //     /// @attention The literal is only valid within the current solving step and solver thread.
-    //     /// All volatile literals and clauses involving a volatile literal are deleted after the current search.
-    //     ///
-    //     /// **Parameters:**
-    //     ///
-    //     /// * `control` - the target
-    //     /// * `result` - the (positive) solver literal
-    //     ///
-    //     /// **Returns** whether the call was successful; might set one of the following error codes:
-    //     /// - ::clingo_error_bad_alloc
-    //     /// - ::clingo_error_logic if the assignment is conflicting
-    //     pub fn clingo_propagate_control_add_literal(
-    //         control: *mut clingo_propagate_control_t,
-    //         result: *mut clingo_literal_t,
-    //     ) -> bool;
+    /// Adds a new volatile literal to the underlying solver thread.
+    ///
+    /// **Attention:** The literal is only valid within the current solving step and solver thread.
+    /// All volatile literals and clauses involving a volatile literal are deleted after the current search.
+    ///
+    /// # Arguments
+    ///
+    /// * `result` - the (positive) solver literal
+    ///
+    /// **Errors:**
+    ///
+    /// - ::clingo_error_bad_alloc
+    /// - ::clingo_error_logic if the assignment is conflicting
+    pub fn add_literal(&mut self, result: &mut Literal) -> Result<(), Error> {
+        if unsafe { clingo_propagate_control_add_literal(&mut self.0, &mut result.0) } {
+            Ok(())
+        } else {
+            Err(error())?
+        }
+    }
 
-    //TODO     /// Add a watch for the solver literal in the given phase.
-    //     ///
-    //     /// **Note:** Unlike @ref clingo_propagate_init_add_watch() this does not add a watch to all solver threads but just the current one.
-    //     ///
-    //     /// **Parameters:**
-    //     ///
-    //     /// * `control` - the target
-    //     /// * `literal` - the literal to watch
-    //     ///
-    //     /// **Returns** whether the call was successful; might set one of the following error codes:
-    //     /// - ::clingo_error_bad_alloc
-    //     /// - ::clingo_error_logic if the literal is invalid
-    //     /// @see clingo_propagate_control_remove_watch()
-    //     pub fn clingo_propagate_control_add_watch(
-    //         control: *mut clingo_propagate_control_t,
-    //         literal: clingo_literal_t,
-    //     ) -> bool;
+    /// Add a watch for the solver literal in the given phase.
+    ///
+    /// **Note:** Unlike [`PropagateInit::add_watch()`](struct.PropagateInit.html#method.add_watch) this does not add a watch to all solver threads but just the current one.
+    ///
+    /// # Arguments
+    ///
+    /// * `literal` - the literal to watch
+    ///
+    /// **Errors:**
+    ///
+    /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
+    /// - [`ErrorType::Logic`](enum.ErrorType.html#variant.Logic) if the literal is invalid
+    ///
+    /// **See:** [`PropagateControl::remove_watch()`](struct.PropagateControl.html#method.remove_watch)
+    pub fn add_watch(&mut self, literal: Literal) -> Result<(), Error> {
+        if unsafe { clingo_propagate_control_add_watch(&mut self.0, literal.0) } {
+            Ok(())
+        } else {
+            Err(error())?
+        }
+    }
 
-    //TODO     /// Check whether a literal is watched in the current solver thread.
-    //     ///
-    //     /// **Parameters:**
-    //     ///
-    //     /// * `control` - the target
-    //     /// * `literal` - the literal to check
-    //     ///
-    //     /// **Returns** whether the literal is watched
-    //     pub fn clingo_propagate_control_has_watch(
-    //         control: *mut clingo_propagate_control_t,
-    //         literal: clingo_literal_t,
-    //     ) -> bool;
+    /// Check whether a literal is watched in the current solver thread.
+    ///
+    /// # Arguments
+    ///
+    /// * `literal` - the literal to check
+    pub fn has_watch(&self, literal: Literal) -> bool {
+        unsafe { clingo_propagate_control_has_watch(&self.0, literal.0) }
+    }
 
-    //TODO     /// Removes the watch (if any) for the given solver literal.
-    //     ///
-    //     /// **Note:** Similar to @ref clingo_propagate_init_add_watch() this just removes the watch in the current solver thread.
-    //     ///
-    //     /// **Parameters:**
-    //     ///
-    //     /// * `control` - the target
-    //     /// * `literal` - the literal to remove
-    //     pub fn clingo_propagate_control_remove_watch(
-    //         control: *mut clingo_propagate_control_t,
-    //         literal: clingo_literal_t,
-    //     );
+    /// Removes the watch (if any) for the given solver literal.
+    ///
+    /// **Note:** Similar to [`PropagateInit::add_watch()`](struct.PropagateInit.html#method.add_watch) this just removes the watch in the current solver thread.
+    ///
+    /// # Arguments
+    ///
+    /// * `literal` - the literal to remove
+    pub fn remove_watch(&mut self, literal: Literal) {
+        unsafe { clingo_propagate_control_remove_watch(&mut self.0, literal.0) }
+    }
 
     /// Add the given clause to the solver.
     ///
@@ -3894,34 +3895,47 @@ impl PropagateInit {
     }
 
     /// Get the number of threads used in subsequent solving.
+    ///
     /// **See:** [`PropagateControl::thread_id()`](struct.PropagateControl.html#method.thread_id)
     pub fn number_of_threads(&self) -> usize {
         (unsafe { clingo_propagate_init_number_of_threads(&self.0) } as usize)
     }
 
-    //TODO     /// Configure when to call the check method of the propagator.
-    //     ///
-    //     /// **Parameters:**
-    //     ///
-    //     /// * `init` - the target
-    //     /// *`mode`- bitmask when to call the propagator
-    //     /// @see @ref ::clingo_propagator::check()
-    //     pub fn clingo_propagate_init_set_check_mode(
-    //         init: *mut clingo_propagate_init_t,
-    //         mode: clingo_propagator_check_mode_t,
-    //     );
+    /// Configure when to call the check method of the propagator.
+    ///
+    /// # Arguments
+    ///
+    /// * `mode` - bitmask when to call the propagator
+    ///
+    /// **See:** [`Propagator::check()`](trait.Propagator.html#method.check)
+    pub fn set_check_mode(&mut self, mode: PropagatorCheckMode) {
+        unsafe {
+            clingo_propagate_init_set_check_mode(
+                &mut self.0,
+                mode as clingo_propagator_check_mode_t,
+            )
+        }
+    }
 
-    //TODO     /// Get the current check mode of the propagator.
-    //     ///
-    //     /// **Parameters:**
-    //     ///
-    //     /// * `init`- the target
-    //     ///
-    //     /// **Returns**  bitmask when to call the propagator
-    //     /// @see clingo_propagate_init_set_check_mode()
-    //     pub fn clingo_propagate_init_get_check_mode(
-    //         init: *mut clingo_propagate_init_t,
-    //     ) -> clingo_propagator_check_mode_t;
+    /// Get the current check mode of the propagator.
+    ///
+    /// **Returns**  bitmask when to call the propagator
+    ///
+    /// **See:** [`PropagateInit::set_check_mode()`](trait.PropagateInit.html#method.set_check_mode)
+    pub fn get_check_mode(&self) -> PropagatorCheckMode {
+        match unsafe { clingo_propagate_init_get_check_mode(&self.0) } as u32 {
+            clingo_propagator_check_mode_clingo_propagator_check_mode_fixpoint => {
+                PropagatorCheckMode::Fixpoint
+            }
+            clingo_propagator_check_mode_clingo_propagator_check_mode_total => {
+                PropagatorCheckMode::Total
+            }
+            clingo_propagator_check_mode_clingo_propagator_check_mode_none => {
+                PropagatorCheckMode::None
+            }
+            _ => panic!("Failed to match clingo_propagator_check_mode."),
+        }
+    }
 }
 
 /// Search handle to a solve call.
