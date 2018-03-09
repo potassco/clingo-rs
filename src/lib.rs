@@ -2218,26 +2218,31 @@ impl Configuration {
         }
     }
 
-    //TODO     /// Query whether the map has a key.
-    //     ///
-    //     /// @pre The @link clingo_configuration_type() type@endlink of the entry must be @ref ::clingo_configuration_type_map.
-    //     ///
-    //     /// **Note:** Multiple levels can be looked up by concatenating keys with a period.
-    //     ///
-    //     /// **Parameters:**
-    //     ///
-    //     /// * `configuration` - the target configuration
-    //     /// * `key` - the key
-    //     /// * `name` - the name to lookup the subkey
-    //     /// * `result` - whether the key is in the map
-    //     ///
-    //     /// **Returns** whether the call was successful
-    //     pub fn clingo_configuration_map_has_subkey(
-    //         configuration: *mut clingo_configuration_t,
-    //         key: clingo_id_t,
-    //         name: *const ::std::os::raw::c_char,
-    //         result: *mut bool,
-    //     ) -> bool;
+    /// Query whether the map has a key.
+    ///
+    /// # Pre-condition
+    ///
+    /// The [type](struct.Configuration.html#method.type) of the entry must be [`ConfigurationType::Map`](enum.ConfigurationType.html#variant.Map).
+    ///
+    /// **Note:** Multiple levels can be looked up by concatenating keys with a period.
+    ///
+    /// # Arguments
+    ///
+    /// * `key` - the key
+    /// * `name` - the name to lookup the subkey
+    ///
+    /// **Returns** whether the key is in the map
+    pub fn map_has_subkey(&self, Id(key): Id, name: &str) -> Option<bool> {
+        let mut result = false;
+        let c_str_name = CString::new(name).unwrap();
+        if unsafe {
+            clingo_configuration_map_has_subkey(&self.0, key, c_str_name.as_ptr(), &mut result)
+        } {
+            Some(result)
+        } else {
+            None
+        }
+    }
 
     /// Get the name associated with the offset-th subkey.
     ///
