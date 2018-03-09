@@ -3963,21 +3963,21 @@ impl<'a> SolveHandle<'a> {
         }
     }
 
-    //TODO     /// Wait for the specified amount of time to check if the next result is ready.
-    //     ///
-    //     /// If the time is set to zero, this function can be used to poll if the search is still active.
-    //     /// If the time is negative, the function blocks until the search is finished.
-    //     ///
-    //     /// **Parameters:**
-    //     ///
-    //     /// * `handle` - the target
-    //     /// * `timeout` - the maximum time to wait
-    //     /// * `result` - whether the search has finished
-    //     pub fn clingo_solve_handle_wait(
-    //         handle: *mut clingo_solve_handle_t,
-    //         timeout: f64,
-    //         result: *mut bool,
-    //     );
+    /// Wait for the specified amount of time to check if the next result is ready.
+    ///
+    /// If the time is set to zero, this function can be used to poll if the search is still active.
+    /// If the time is negative, the function blocks until the search is finished.
+    ///
+    /// # Arguments
+    ///
+    /// * `timeout` - the maximum time to wait
+    ///
+    /// **Returns:**  whether the search has finished
+    pub fn wait(&mut self, timeout: f64) -> bool {
+        let mut result = false;
+        unsafe { clingo_solve_handle_wait(self.theref, timeout, &mut result) };
+        result
+    }
 
     /// Get the next model (or zero if there are no more models).
     /// (it is NULL if there are no more models)
@@ -4019,16 +4019,23 @@ impl<'a> SolveHandle<'a> {
         }
     }
 
-    // TODO    /// Stop the running search and block until done.
-    //     ///
-    //     /// **Parameters:**
-    //     ///
-    //     /// * `handle` - the target
-    //     ///
-    //     /// **Returns** whether the call was successful; might set one of the following error codes:
-    //     /// - ::clingo_error_bad_alloc
-    //     /// - ::clingo_error_runtime if solving fails
-    //     pub fn clingo_solve_handle_cancel(handle: *mut clingo_solve_handle_t) -> bool;
+    /// Stop the running search and block until done.
+    ///
+    /// # Arguments
+    ///
+    /// * `handle` - the target
+    ///
+    /// # Errors
+    ///
+    /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
+    /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if solving fails
+    pub fn cancel(&mut self) -> Result<(), Error> {
+        if unsafe { clingo_solve_handle_cancel(self.theref) } {
+            Ok(())
+        } else {
+            Err(error()?)
+        }
+    }
 
     /// Stops the running search and releases the handle.
     ///
