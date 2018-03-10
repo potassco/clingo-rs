@@ -10,7 +10,7 @@ fn print_prefix(depth: u8) {
 }
 
 // recursively print the statistics object
-fn print_statistics(stats: &mut Statistics, key: u64, depth: u8) {
+fn print_statistics(stats: &Statistics, key: u64, depth: u8) {
     // get the type of an entry and switch over its various values
     let statistics_type = stats.statistics_type(key).unwrap();
     match statistics_type {
@@ -84,7 +84,7 @@ fn print_model(model: &mut Model) {
 
 fn solve(ctl: &mut Control) {
     // get a solve handle
-    let handle = ctl.solve(&SolveMode::YIELD, &[])
+    let mut handle = ctl.solve(&SolveMode::YIELD, &[])
         .expect("Failed retrieving solve handle.");
 
     // loop over all models
