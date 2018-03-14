@@ -4097,7 +4097,6 @@ impl<'a> SolveHandle<'a> {
 //         symbol: *mut clingo_symbol_t,
 //     ) -> bool;
 
-// TODO
 pub trait GroundProgramObserver {
     /// Called once in the beginning.
     ///
@@ -4110,39 +4109,53 @@ pub trait GroundProgramObserver {
     /// **Returns** whether the call was successful
     fn init_program(&mut self, incremental: bool) -> bool;
     #[doc(hidden)]
-    unsafe extern "C" fn unsafe_init_program(
+    unsafe extern "C" fn unsafe_init_program<T: GroundProgramObserver>(
         incremental: bool,
         data: *mut ::std::os::raw::c_void,
     ) -> bool {
-        false
+        assert!(!data.is_null());
+        let gpo = (data as *mut T)
+            .as_mut()
+            .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."));
+
+        gpo.init_program(incremental)
     }
 
     /// Marks the beginning of a block of directives passed to the solver.
     ///
-    /// @see @ref end_step
-    ///
-    /// # Arguments
-    ///
-    /// * `data` - user data for the callback
+    /// **See:** [`end_step()`](trait.GroundProgramObserver.html#tymethod.end_step)
     ///
     /// **Returns** whether the call was successful
-    unsafe extern "C" fn begin_step(data: *mut ::std::os::raw::c_void) -> bool {
-        false
+    fn begin_step(&mut self) -> bool;
+    #[doc(hidden)]
+    unsafe extern "C" fn unsafe_begin_step<T: GroundProgramObserver>(
+        data: *mut ::std::os::raw::c_void,
+    ) -> bool {
+        assert!(!data.is_null());
+        let gpo = (data as *mut T)
+            .as_mut()
+            .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."));
+
+        gpo.begin_step()
     }
 
     /// Marks the end of a block of directives passed to the solver.
     ///
     /// This function is called before solving starts.
     ///
-    /// @see @ref begin_step
-    ///
-    /// # Arguments
-    ///
-    /// * `data` - user data for the callback
+    /// **See:** [`begin_step()`](trait.GroundProgramObserver.html#tymethod.begin_step)
     ///
     /// **Returns** whether the call was successful
-    unsafe extern "C" fn end_step(data: *mut ::std::os::raw::c_void) -> bool {
-        false
+    fn end_step(&mut self) -> bool;
+    #[doc(hidden)]
+    unsafe extern "C" fn unsafe_end_step<T: GroundProgramObserver>(
+        data: *mut ::std::os::raw::c_void,
+    ) -> bool {
+        assert!(!data.is_null());
+        let gpo = (data as *mut T)
+            .as_mut()
+            .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."));
+        gpo.end_step()
     }
 
     /// Observe rules passed to the solver.
@@ -4151,13 +4164,12 @@ pub trait GroundProgramObserver {
     ///
     /// * `choice` - determines if the head is a choice or a disjunction
     /// * `head` - the head atoms
-    /// * `head_size` - the number of atoms in the head
     /// * `body` - the body literals
-    /// * `body_size` - the number of literals in the body
-    /// * `data` - user data for the callback
     ///
     /// **Returns** whether the call was successful
-    unsafe extern "C" fn rule(
+    fn rule(&mut self, choice: bool, head: &[Atom], body: &[Literal]) -> bool;
+    #[doc(hidden)]
+    unsafe extern "C" fn unsafe_rule<T: GroundProgramObserver>(
         choice: bool,
         head: *const clingo_atom_t,
         head_size: usize,
@@ -4165,7 +4177,18 @@ pub trait GroundProgramObserver {
         body_size: usize,
         data: *mut ::std::os::raw::c_void,
     ) -> bool {
-        false
+        assert!(!head.is_null());
+        let head = std::slice::from_raw_parts(head as *const Atom, head_size);
+
+        assert!(!body.is_null());
+        let body = std::slice::from_raw_parts(body as *const Literal, body_size);
+
+        assert!(!data.is_null());
+        let gpo = (data as *mut T)
+            .as_mut()
+            .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."));
+
+        gpo.rule(choice, head, body)
     }
 
     /// Observe weight rules passed to the solver.
@@ -4174,14 +4197,19 @@ pub trait GroundProgramObserver {
     ///
     /// * `choice` - determines if the head is a choice or a disjunction
     /// * `head` - the head atoms
-    /// * `head_size` - the number of atoms in the head
     /// * `lower_bound` - the lower bound of the weight rule
     /// * `body` - the weighted body literals
-    /// * `body_size` - the number of weighted literals in the body
-    /// * `data` - user data for the callback
     ///
     /// **Returns** whether the call was successful
-    unsafe extern "C" fn weight_rule(
+    fn weight_rule(
+        &mut self,
+        choice: bool,
+        head: &[Atom],
+        lower_bound: i32,
+        body: &[WeightedLiteral],
+    ) -> bool;
+    #[doc(hidden)]
+    unsafe extern "C" fn unsafe_weight_rule<T: GroundProgramObserver>(
         choice: bool,
         head: *const clingo_atom_t,
         head_size: usize,
@@ -4190,7 +4218,18 @@ pub trait GroundProgramObserver {
         body_size: usize,
         data: *mut ::std::os::raw::c_void,
     ) -> bool {
-        false
+        assert!(!head.is_null());
+        let head = std::slice::from_raw_parts(head as *const Atom, head_size);
+
+        assert!(!body.is_null());
+        let body = std::slice::from_raw_parts(body as *const WeightedLiteral, body_size);
+
+        assert!(!data.is_null());
+        let gpo = (data as *mut T)
+            .as_mut()
+            .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."));
+
+        gpo.weight_rule(choice, head, lower_bound, body)
     }
 
     /// Observe minimize constraints (or weak constraints) passed to the solver.
@@ -4199,17 +4238,25 @@ pub trait GroundProgramObserver {
     ///
     /// * `priority` - the priority of the constraint
     /// * `literals` - the weighted literals whose sum to minimize
-    /// * `size` - the number of weighted literals
-    /// * `data` - user data for the callback
     ///
     /// **Returns** whether the call was successful
-    unsafe extern "C" fn minimize(
+    fn minimize(&mut self, priority: i32, literals: &[WeightedLiteral]) -> bool;
+    #[doc(hidden)]
+    unsafe extern "C" fn unsafe_minimize<T: GroundProgramObserver>(
         priority: clingo_weight_t,
         literals: *const clingo_weighted_literal_t,
         size: usize,
         data: *mut ::std::os::raw::c_void,
     ) -> bool {
-        false
+        assert!(!literals.is_null());
+        let literals = std::slice::from_raw_parts(literals as *const WeightedLiteral, size);
+
+        assert!(!data.is_null());
+        let gpo = (data as *mut T)
+            .as_mut()
+            .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."));
+
+        gpo.minimize(priority, literals)
     }
 
     /// Observe projection directives passed to the solver.
@@ -4217,35 +4264,50 @@ pub trait GroundProgramObserver {
     /// # Arguments
     ///
     /// * `atoms` - the atoms to project on
-    /// * `size` - the number of atoms
-    /// * `data` - user data for the callback
     ///
     /// **Returns** whether the call was successful
-    unsafe extern "C" fn project(
+    fn project(&mut self, atoms: &[Atom]) -> bool;
+    #[doc(hidden)]
+    unsafe extern "C" fn unsafe_project<T: GroundProgramObserver>(
         atoms: *const clingo_atom_t,
         size: usize,
         data: *mut ::std::os::raw::c_void,
     ) -> bool {
-        false
+        assert!(!atoms.is_null());
+        let atoms = std::slice::from_raw_parts(atoms as *const Atom, size);
+
+        assert!(!data.is_null());
+        let gpo = (data as *mut T)
+            .as_mut()
+            .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."));
+
+        gpo.project(atoms)
     }
 
     /// Observe shown atoms passed to the solver.
-    /// \note Facts do not have an associated aspif atom.
+    ///
+    /// **Note:** Facts do not have an associated aspif atom.
     /// The value of the atom is set to zero.
     ///
     /// # Arguments
     ///
     /// * `symbol` - the symbolic representation of the atom
     /// * `atom` - the aspif atom (0 for facts)
-    /// * `data` - user data for the callback
     ///
     /// **Returns** whether the call was successful
-    unsafe extern "C" fn output_atom(
+    fn output_atom(&mut self, symbol: Symbol, atom: Atom) -> bool;
+    #[doc(hidden)]
+    unsafe extern "C" fn unsafe_output_atom<T: GroundProgramObserver>(
         symbol: clingo_symbol_t,
         atom: clingo_atom_t,
         data: *mut ::std::os::raw::c_void,
     ) -> bool {
-        false
+        assert!(!data.is_null());
+        let gpo = (data as *mut T)
+            .as_mut()
+            .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."));
+
+        gpo.output_atom(Symbol(symbol), Atom(atom))
     }
 
     /// Observe shown terms passed to the solver.
@@ -4254,17 +4316,25 @@ pub trait GroundProgramObserver {
     ///
     /// * `symbol` - the symbolic representation of the term
     /// * `condition` - the literals of the condition
-    /// * `size` - the size of the condition
-    /// * `data` - user data for the callback
     ///
     /// **Returns** whether the call was successful
-    unsafe extern "C" fn output_term(
+    fn output_term(&mut self, symbol: Symbol, condition: &[Literal]) -> bool;
+    #[doc(hidden)]
+    unsafe extern "C" fn unsafe_output_term<T: GroundProgramObserver>(
         symbol: clingo_symbol_t,
         condition: *const clingo_literal_t,
         size: usize,
         data: *mut ::std::os::raw::c_void,
     ) -> bool {
-        false
+        assert!(!condition.is_null());
+        let condition = std::slice::from_raw_parts(condition as *const Literal, size);
+
+        assert!(!data.is_null());
+        let gpo = (data as *mut T)
+            .as_mut()
+            .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."));
+
+        gpo.output_term(Symbol(symbol), condition)
     }
 
     /// Observe shown csp variables passed to the solver.
@@ -4274,18 +4344,31 @@ pub trait GroundProgramObserver {
     /// * `symbol` - the symbolic representation of the variable
     /// * `value` - the value of the variable
     /// * `condition` - the literals of the condition
-    /// * `size` - the size of the condition
-    /// * `data` - user data for the callback
     ///
     /// **Returns** whether the call was successful
-    unsafe extern "C" fn output_csp(
+    fn output_csp(
+        &mut self,
+        symbol: Symbol,
+        value: i32,
+        condition: &[Literal],
+    ) -> bool;
+    #[doc(hidden)]
+    unsafe extern "C" fn unsafe_output_csp<T: GroundProgramObserver>(
         symbol: clingo_symbol_t,
         value: ::std::os::raw::c_int,
         condition: *const clingo_literal_t,
         size: usize,
         data: *mut ::std::os::raw::c_void,
     ) -> bool {
-        false
+        assert!(!condition.is_null());
+        let condition = std::slice::from_raw_parts(condition as *const Literal, size);
+
+        assert!(!data.is_null());
+        let gpo = (data as *mut T)
+            .as_mut()
+            .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."));
+
+        gpo.output_csp(Symbol(symbol), value, condition)
     }
 
     /// Observe external statements passed to the solver.
@@ -4294,15 +4377,29 @@ pub trait GroundProgramObserver {
     ///
     /// * `atom` - the external atom
     /// * `type` - the type of the external statement
-    /// * `data` - user data for the callback
     ///
     /// **Returns** whether the call was successful
-    unsafe extern "C" fn external(
+    fn external(&mut self, atom: Atom, type_: ExternalType) -> bool;
+    #[doc(hidden)]
+    unsafe extern "C" fn unsafe_external<T: GroundProgramObserver>(
         atom: clingo_atom_t,
         type_: clingo_external_type_t,
         data: *mut ::std::os::raw::c_void,
     ) -> bool {
-        false
+        let type_ = match type_ as u32 {
+            clingo_external_type_clingo_external_type_false => ExternalType::False,
+            clingo_external_type_clingo_external_type_free => ExternalType::Free,
+            clingo_external_type_clingo_external_type_release => ExternalType::Release,
+            clingo_external_type_clingo_external_type_true => ExternalType::True,
+            _ => panic!("Failed to match clingo_external_type."),
+        };
+
+        assert!(!data.is_null());
+        let gpo = (data as *mut T)
+            .as_mut()
+            .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."));
+
+        gpo.external(Atom(atom), type_)
     }
 
     /// Observe assumption directives passed to the solver.
@@ -4311,16 +4408,24 @@ pub trait GroundProgramObserver {
     ///
     /// * `literals` - the literals to assume (positive literals are true and negative literals
     /// false for the next solve call)
-    /// * `size` - the number of atoms
-    /// * `data` - user data for the callback
     ///
     /// **Returns** whether the call was successful
-    unsafe extern "C" fn assume(
+    fn assume(&mut self, literals: &[Literal]) -> bool;
+    #[doc(hidden)]
+    unsafe extern "C" fn unsafe_assume<T: GroundProgramObserver>(
         literals: *const clingo_literal_t,
         size: usize,
         data: *mut ::std::os::raw::c_void,
     ) -> bool {
-        false
+        assert!(!literals.is_null());
+        let literals = std::slice::from_raw_parts(literals as *const Literal, size);
+
+        assert!(!data.is_null());
+        let gpo = (data as *mut T)
+            .as_mut()
+            .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."));
+
+        gpo.assume(literals)
     }
 
     /// Observe heuristic directives passed to the solver.
@@ -4332,11 +4437,18 @@ pub trait GroundProgramObserver {
     /// * `bias` - the heuristic bias
     /// * `priority` - the heuristic priority
     /// * `condition` - the condition under which to apply the heuristic modification
-    /// * `size` - the number of atoms in the condition
-    /// * `data` - user data for the callback
     ///
     /// **Returns** whether the call was successful
-    unsafe extern "C" fn heuristic(
+    fn heuristic(
+        &mut self,
+        atom: Atom,
+        type_: HeuristicType,
+        bias: i32,
+        priority: u32,
+        condition: &[Literal],
+    ) -> bool;
+    #[doc(hidden)]
+    unsafe extern "C" fn unsafe_heuristic<T: GroundProgramObserver>(
         atom: clingo_atom_t,
         type_: clingo_heuristic_type_t,
         bias: ::std::os::raw::c_int,
@@ -4345,7 +4457,25 @@ pub trait GroundProgramObserver {
         size: usize,
         data: *mut ::std::os::raw::c_void,
     ) -> bool {
-        false
+        let type_ = match type_ as u32 {
+            clingo_heuristic_type_clingo_heuristic_type_factor => HeuristicType::Factor,
+            clingo_heuristic_type_clingo_heuristic_type_false => HeuristicType::False,
+            clingo_heuristic_type_clingo_heuristic_type_init => HeuristicType::Init,
+            clingo_heuristic_type_clingo_heuristic_type_level => HeuristicType::Level,
+            clingo_heuristic_type_clingo_heuristic_type_sign => HeuristicType::Sign,
+            clingo_heuristic_type_clingo_heuristic_type_true => HeuristicType::True,
+            _ => panic!("Failed to match clingo_heuristic_type."),
+        };
+
+        assert!(!condition.is_null());
+        let condition = std::slice::from_raw_parts(condition as *const Literal, size);
+
+        assert!(!data.is_null());
+        let gpo = (data as *mut T)
+            .as_mut()
+            .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."));
+
+        gpo.heuristic(Atom(atom), type_, bias, priority, condition)
     }
 
     /// Observe edge directives passed to the solver.
@@ -4355,18 +4485,31 @@ pub trait GroundProgramObserver {
     /// * `node_u` - the start vertex of the edge
     /// * `node_v` - the end vertex of the edge
     /// * `condition` - the condition under which the edge is part of the graph
-    /// * `size` - the number of atoms in the condition
-    /// * `data` - user data for the callback
     ///
     /// **Returns** whether the call was successful
-    unsafe extern "C" fn acyc_edge(
+    fn acyc_edge(
+        &mut self,
+        node_u: i32,
+        node_v: i32,
+        condition: &[Literal],
+    ) -> bool;
+    #[doc(hidden)]
+    unsafe extern "C" fn unsafe_acyc_edge<T: GroundProgramObserver>(
         node_u: ::std::os::raw::c_int,
         node_v: ::std::os::raw::c_int,
         condition: *const clingo_literal_t,
         size: usize,
         data: *mut ::std::os::raw::c_void,
     ) -> bool {
-        false
+        assert!(!condition.is_null());
+        let condition = std::slice::from_raw_parts(condition as *const Literal, size);
+
+        assert!(!data.is_null());
+        let gpo = (data as *mut T)
+            .as_mut()
+            .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."));
+
+        gpo.acyc_edge(node_u, node_v, condition)
     }
 
     /// Observe numeric theory terms.
@@ -4375,15 +4518,21 @@ pub trait GroundProgramObserver {
     ///
     /// * `term_id` - the id of the term
     /// * `number` - the value of the term
-    /// * `data` - user data for the callback
     ///
     /// **Returns** whether the call was successful
-    unsafe extern "C" fn theory_term_number(
+    fn theory_term_number(&mut self, term_id: Id, number: i32) -> bool;
+    #[doc(hidden)]
+    unsafe extern "C" fn unsafe_theory_term_number<T: GroundProgramObserver>(
         term_id: clingo_id_t,
         number: ::std::os::raw::c_int,
         data: *mut ::std::os::raw::c_void,
     ) -> bool {
-        false
+        assert!(!data.is_null());
+        let gpo = (data as *mut T)
+            .as_mut()
+            .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."));
+
+        gpo.theory_term_number(Id(term_id), number)
     }
 
     /// Observe string theory terms.
@@ -4392,15 +4541,25 @@ pub trait GroundProgramObserver {
     ///
     /// * `term_id` - the id of the term
     /// * `name` - the value of the term
-    /// * `data` - user data for the callback
     ///
     /// **Returns** whether the call was successful
-    unsafe extern "C" fn theory_term_string(
+    fn theory_term_string(&mut self, term_id: Id, name: &str) -> bool;
+    #[doc(hidden)]
+    unsafe extern "C" fn unsafe_theory_term_string<T: GroundProgramObserver>(
         term_id: clingo_id_t,
         name: *const ::std::os::raw::c_char,
         data: *mut ::std::os::raw::c_void,
     ) -> bool {
-        false
+        assert!(!name.is_null());
+        let cstr = unsafe { CStr::from_ptr(name) };
+        let name = cstr.to_str().unwrap();
+
+        assert!(!data.is_null());
+        let gpo = (data as *mut T)
+            .as_mut()
+            .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."));
+
+        gpo.theory_term_string(Id(term_id), name)
     }
 
     /// Observe compound theory terms.
@@ -4417,18 +4576,31 @@ pub trait GroundProgramObserver {
     /// * `term_id` - the id of the term
     /// * `name_id_or_type` - the name or type of the term
     /// * `arguments` - the arguments of the term
-    /// * `size` - the number of arguments
-    /// * `data` - user data for the callback
     ///
     /// **Returns** whether the call was successful
-    unsafe extern "C" fn theory_term_compound(
+    fn theory_term_compound(
+        &mut self,
+        term_id: Id,
+        name_id_or_type: i32,
+        arguments: &[Id],
+    ) -> bool;
+    #[doc(hidden)]
+    unsafe extern "C" fn unsafe_theory_term_compound<T: GroundProgramObserver>(
         term_id: clingo_id_t,
         name_id_or_type: ::std::os::raw::c_int,
         arguments: *const clingo_id_t,
         size: usize,
         data: *mut ::std::os::raw::c_void,
     ) -> bool {
-        false
+        assert!(!arguments.is_null());
+        let arguments = std::slice::from_raw_parts(arguments as *const Id, size);
+
+        assert!(!data.is_null());
+        let gpo = (data as *mut T)
+            .as_mut()
+            .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."));
+
+        gpo.theory_term_compound(Id(term_id), name_id_or_type, arguments)
     }
 
     /// Observe theory elements.
@@ -4437,13 +4609,12 @@ pub trait GroundProgramObserver {
     ///
     /// * `element_id` - the id of the element
     /// * `terms` - the term tuple of the element
-    /// * `terms_size` - the number of terms in the tuple
-    /// * `condition` - the condition of the elemnt
-    /// * `condition_size` - the number of literals in the condition
-    /// * `data` - user data for the callback
+    /// * `condition` - the condition of the element
     ///
     /// **Returns** whether the call was successful
-    unsafe extern "C" fn theory_element(
+    fn theory_element(&mut self, element_id: Id, terms: &[Id], condition: &[Literal]) -> bool;
+    #[doc(hidden)]
+    unsafe extern "C" fn unsafe_theory_element<T: GroundProgramObserver>(
         element_id: clingo_id_t,
         terms: *const clingo_id_t,
         terms_size: usize,
@@ -4451,7 +4622,18 @@ pub trait GroundProgramObserver {
         condition_size: usize,
         data: *mut ::std::os::raw::c_void,
     ) -> bool {
-        false
+        assert!(!terms.is_null());
+        let terms = std::slice::from_raw_parts(terms as *const Id, terms_size);
+
+        assert!(!condition.is_null());
+        let condition = std::slice::from_raw_parts(condition as *const Literal, condition_size);
+
+        assert!(!data.is_null());
+        let gpo = (data as *mut T)
+            .as_mut()
+            .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."));
+
+        gpo.theory_element(Id(element_id), terms, condition)
     }
 
     /// Observe theory atoms without guard.
@@ -4461,18 +4643,26 @@ pub trait GroundProgramObserver {
     /// * `atom_id_or_zero` - the id of the atom or zero for directives
     /// * `term_id` - the term associated with the atom
     /// * `elements` - the elements of the atom
-    /// * `size` - the number of elements
-    /// * `data` - user data for the callback
     ///
     /// **Returns** whether the call was successful
-    unsafe extern "C" fn theory_atom(
+    fn theory_atom(&mut self, atom_id_or_zero: Id, term_id: Id, elements: &[Id]) -> bool;
+    #[doc(hidden)]
+    unsafe extern "C" fn unsafe_theory_atom<T: GroundProgramObserver>(
         atom_id_or_zero: clingo_id_t,
         term_id: clingo_id_t,
         elements: *const clingo_id_t,
         size: usize,
         data: *mut ::std::os::raw::c_void,
     ) -> bool {
-        false
+        assert!(!elements.is_null());
+        let elements = std::slice::from_raw_parts(elements as *const Id, size);
+
+        assert!(!data.is_null());
+        let gpo = (data as *mut T)
+            .as_mut()
+            .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."));
+
+        gpo.theory_atom(Id(atom_id_or_zero), Id(term_id), elements)
     }
 
     /// Observe theory atoms with guard.
@@ -4482,13 +4672,20 @@ pub trait GroundProgramObserver {
     /// * `atom_id_or_zero` - the id of the atom or zero for directives
     /// * `term_id` - the term associated with the atom
     /// * `elements` - the elements of the atom
-    /// * `size` - the number of elements
     /// * `operator_id` - the id of the operator (a string term)
     /// * `right_hand_side_id` - the id of the term on the right hand side of the atom
-    /// * `data` - user data for the callback
     ///
     /// **Returns** whether the call was successful
-    unsafe extern "C" fn theory_atom_with_guard(
+    fn theory_atom_with_guard(
+        &mut self,
+        atom_id_or_zero: Id,
+        term_id: Id,
+        elements: &[Id],
+        operator_id: Id,
+        right_hand_side_id: Id,
+    ) -> bool;
+    #[doc(hidden)]
+    unsafe extern "C" fn unsafe_theory_atom_with_guard<T: GroundProgramObserver>(
         atom_id_or_zero: clingo_id_t,
         term_id: clingo_id_t,
         elements: *const clingo_id_t,
@@ -4497,7 +4694,21 @@ pub trait GroundProgramObserver {
         right_hand_side_id: clingo_id_t,
         data: *mut ::std::os::raw::c_void,
     ) -> bool {
-        false
+        assert!(!elements.is_null());
+        let elements = std::slice::from_raw_parts(elements as *const Id, size);
+
+        assert!(!data.is_null());
+        let gpo = (data as *mut T)
+            .as_mut()
+            .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."));
+
+        gpo.theory_atom_with_guard(
+            Id(atom_id_or_zero),
+            Id(term_id),
+            elements,
+            Id(operator_id),
+            Id(right_hand_side_id),
+        )
     }
 }
 #[cfg(test)]
