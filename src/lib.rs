@@ -661,14 +661,20 @@ impl Location {
     /// Create a new location.
     ///
     /// # Arguments
-    // TODO
+    ///
+    /// - `begin_file` - the file where the location begins
+    /// - `end_file` -  the file where the location ends
+    /// - `begin_line` -  the line where the location begins
+    /// - `end_line` -  the line where the location ends
+    /// - `begin_column` -  the column where the location begins
+    /// - `end_column` -  the column where the location ends
     pub fn new(
+        begin_file_: &str,
+        end_file_: &str,
         begin_line: usize,
         end_line: usize,
         begin_column: usize,
         end_column: usize,
-        begin_file_: &str,
-        end_file_: &str,
     ) -> Location {
         let begin_file = CString::new(begin_file_).unwrap();
         let end_file = CString::new(end_file_).unwrap();

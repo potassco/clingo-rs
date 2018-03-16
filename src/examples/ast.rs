@@ -112,7 +112,7 @@ fn main() {
         let builder = ctl.program_builder();
 
         // initialize the location
-        let location = Location::new(0, 0, 0, 0, "<rewrite>", "<rewrite>");
+        let location = Location::new("<rewrite>", "<rewrite>", 0, 0, 0, 0);
 
         // initilize atom to add
         let atom = ast::Term::new_symbol(location, sym);
