@@ -97,64 +97,59 @@ impl Propagator for PropagatorT {
         let state1 = Rc::new(RefCell::new(StateT { holes: s1_holes }));
         self.states = vec![state1];
 
-        // the propagator monitors place/2 atoms and dectects conflicting assignments
-        // first get the symbolic atoms handle
-        let atoms = init.symbolic_atoms().unwrap();
-
         // create place/2 signature to filter symbolic atoms with
         let sig = Signature::create("place", 2, true).unwrap();
-
-        // get an iterator after the last place/2 atom
-        // (atom order corresponds to grounding order (and is unpredictable))
-        let atoms_ie = atoms.end().unwrap();
 
         // loop over the place/2 atoms in two passes
         // the first pass determines the maximum placement literal
         // the second pass allocates memory for data structures based on the first pass
         for pass in 0..2 {
-            // get an iterator to the first place/2 atom
-            let mut atoms_it = atoms.begin(Some(&sig)).unwrap();
+            let mut watches = vec![];
+            {
+                // the propagator monitors place/2 atoms and dectects conflicting assignments
+                // first get the symbolic atoms handle
+                let atoms = init.symbolic_atoms().unwrap();
 
-            if pass == 1 {
-                // allocate memory for the assignemnt literal -> hole mapping
-                self.pigeons = vec![0; max + 1];;
+                // get an iterator for place/2 atoms
+                // (atom order corresponds to grounding order (and is unpredictable))
+                let mut atoms_iterator = atoms.iter_with_signature(&sig);
+
+                if pass == 1 {
+                    // allocate memory for the assignment literal -> hole mapping
+                    self.pigeons = vec![0; max + 1];;
+                }
+
+                while let Some(item) = atoms_iterator.next() {
+                    // get the solver literal for the placement atom
+                    let lit = init.solver_literal(item.literal().unwrap()).unwrap();
+                    let lit_id = lit.get_integer() as usize;
+
+                    if pass == 0 {
+                        // determine the maximum literal
+                        if lit_id > max {
+                            max = lit_id;
+                        }
+                    } else {
+                        // extract the hole number from the atom
+                        let sym = item.symbol().unwrap();
+                        let h = get_arg(&sym, 1).unwrap();
+
+                        // initialize the assignemnt literal -> hole mapping
+                        self.pigeons[lit_id] = h;
+
+                        // watch the assignment literal
+                        watches.push(lit);
+
+                        // update the total number of holes
+                        if h + 1 > holes {
+                            holes = h + 1;
+                        }
+                    }
+                }
             }
-
-            loop {
-                // stop iteration if the end is reached
-                let equal = atoms.iterator_is_equal_to(atoms_it, atoms_ie).unwrap();
-                if equal {
-                    break;
-                }
-
-                // get the solver literal for the placement atom
-                let lit = init.solver_literal(atoms.literal(atoms_it).unwrap())
-                    .unwrap();
-                let lit_id = lit.get_integer() as usize;
-
-                if pass == 0 {
-                    // determine the maximum literal
-                    if lit_id > max {
-                        max = lit_id;
-                    }
-                } else {
-                    // extract the hole number from the atom
-                    let sym = atoms.symbol(atoms_it).unwrap();
-                    let h = get_arg(&sym, 1).unwrap();
-
-                    // initialize the assignemnt literal -> hole mapping
-                    self.pigeons[lit_id] = h;
-
-                    // watch the assignment literal
-                    init.add_watch(lit).expect("Failed to add watch.");
-
-                    // update the total number of holes
-                    if h + 1 > holes {
-                        holes = h + 1;
-                    }
-                }
-                // advance to the next placement atom
-                atoms_it = atoms.next(atoms_it).unwrap();
+            // watch the assignment literals
+            for lit in watches {
+                init.add_watch(lit).expect("Failed to add watch.");
             }
         }
 

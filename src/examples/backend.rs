@@ -61,17 +61,19 @@ fn main() {
     let atom_strings = ["a", "b", "c"];
 
     // get the ids of atoms a, b, and c
-    let mut atom_ids = Vec::new();
+    let mut atom_ids = vec![];
     {
-        // get symbolic atoms
-        let atoms = ctl.symbolic_atoms().unwrap();
+        // get iterator of the symbolic atoms
+        let mut atoms_iterator = ctl.symbolic_atoms().unwrap().iter();
 
         for atom in &atom_strings {
             let symbol = Symbol::create_id(atom, true).unwrap();
-            let atom_it = atoms.find(symbol).unwrap();
+            let item = atoms_iterator
+                .find(|e| e.symbol().unwrap() == symbol)
+                .unwrap();
 
             // get the atom's id
-            let lit = atoms.literal(atom_it).unwrap();
+            let lit = item.literal().unwrap();
             atom_ids.push(lit);
         }
     }

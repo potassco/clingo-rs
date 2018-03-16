@@ -25,26 +25,18 @@ fn main() {
 
     println!("Symbolic atoms:");
 
-    // get begin and end iterator
-    let mut it_a = atoms.begin(None).unwrap();
-    let ie_a = atoms.end().unwrap();
-
-    loop {
-        if atoms.iterator_is_equal_to(it_a, ie_a).unwrap() {
-            break;
-        }
-        let symbol = atoms.symbol(it_a).unwrap();
+    let mut atoms_iterator = atoms.iter();
+    while let Some(item) = atoms_iterator.next() {
+        let symbol = item.symbol().unwrap();
         print!("  {}", symbol.to_string().unwrap());
 
-        if atoms.is_fact(it_a).unwrap() {
+        if item.is_fact().unwrap() {
             print!(", fact");
         }
 
-        if atoms.is_external(it_a).unwrap() {
+        if item.is_external().unwrap() {
             print!(", external");
         }
         println!();
-
-        it_a = atoms.next(it_a).unwrap();
     }
 }
