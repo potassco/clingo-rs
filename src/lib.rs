@@ -4089,23 +4089,30 @@ impl<'a> SolveHandle<'a> {
     }
 }
 
-//TODO     /// Internalize a string.
-//     ///
-//     /// This functions takes a string as input and returns an equal unique string
-//     /// that is (at the moment) not freed until the program is closed.  All strings
-//     /// returned from clingo API functions are internalized and must not be freed.
-//     ///
-//     /// # Arguments
-//     ///
-//     /// * `string` - the string to internalize
-//     /// * `result` - the internalized string
-//     ///
-//     /// **Returns** whether the call was successful; might set one of the following error codes:
-//     /// - ::clingo_error_bad_alloc
-//     pub fn clingo_add_string(
-//         string: *const ::std::os::raw::c_char,
-//         result: *mut *const ::std::os::raw::c_char,
-//     ) -> bool;
+/// Internalize a string.
+///
+/// This functions takes a string as input and returns an equal unique string
+/// that is (at the moment) not freed until the program is closed.  All strings
+/// returned from clingo API functions are internalized and must not be freed.
+///
+/// # Arguments
+///
+/// * `string` - the string to internalize
+/// * `result` - the internalized string
+///
+/// # Errors
+///
+/// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
+pub fn add_string(string: &str) -> Result<&'static str, Error> {
+    let in_cstr = CString::new(string).unwrap();
+    let mut out_ptr = unsafe { mem::uninitialized() };
+    if unsafe { clingo_add_string(in_cstr.as_ptr(), &mut out_ptr) } {
+        let out_cstr = unsafe { CStr::from_ptr(out_ptr) };
+        Ok(out_cstr.to_str().unwrap())
+    } else {
+        Err(error())?
+    }
+}
 
 //TODO     /// Parse a term in string form.
 //     ///
