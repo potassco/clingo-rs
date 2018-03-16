@@ -245,7 +245,6 @@ fn main() {
 
             // add a logic program to the pigeon part
             // parameters for the pigeon part
-
             ctl.add(
                 "pigeon",
                 &vec!["h", "p"],
@@ -257,7 +256,7 @@ fn main() {
             // set the number of holes
             let arg0 = Symbol::create_number(7);
             // set the number of pigeons
-            let arg1 = Symbol::create_number(9);
+            let arg1 = Symbol::create_number(8);
 
             let args = vec![arg0, arg1];
 
