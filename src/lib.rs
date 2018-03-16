@@ -4114,29 +4114,66 @@ pub fn add_string(string: &str) -> Result<&'static str, Error> {
     }
 }
 
-//TODO     /// Parse a term in string form.
-//     ///
-//     /// The result of this function is a symbol. The input term can contain
-//     /// unevaluated functions, which are evaluated during parsing.
-//     ///
-//     /// # Arguments
-//     ///
-//     /// * `string` - the string to parse
-//     /// * `logger` - ouptional logger to report warnings during parsing
-//     /// * `logger_data` - user data for the logger
-//     /// * `message_limit` - maximum number of times to call the logger
-//     /// * `symbol` - the resulting symbol
-//     ///
-//     /// **Returns** whether the call was successful; might set one of the following error codes:
-//     /// - ::clingo_error_bad_alloc
-//     /// - ::clingo_error_runtime if parsing fails
-//     pub fn clingo_parse_term(
-//         string: *const ::std::os::raw::c_char,
-//         logger: clingo_logger_t,
-//         logger_data: *mut ::std::os::raw::c_void,
-//         message_limit: ::std::os::raw::c_uint,
-//         symbol: *mut clingo_symbol_t,
-//     ) -> bool;
+/// Parse a term in string form.
+///
+/// The result of this function is a symbol. The input term can contain
+/// unevaluated functions, which are evaluated during parsing.
+///
+/// # Arguments
+///
+/// * `string` - the string to parse
+///
+/// # Errors
+///
+/// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
+/// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if parsing fails
+pub fn parse_term(string: &str) -> Result<Symbol, Error> {
+    let c_str = CString::new(string).unwrap();
+    let mut symbol = 0 as clingo_symbol_t;
+    if unsafe { clingo_parse_term(c_str.as_ptr(), None, std::ptr::null_mut(), 0, &mut symbol) } {
+        Ok(Symbol(symbol))
+    } else {
+        Err(error())?
+    }
+}
+
+/// Parse a term in string form.
+///
+/// The result of this function is a symbol. The input term can contain
+/// unevaluated functions, which are evaluated during parsing.
+///
+/// # Arguments
+///
+/// * `string` - the string to parse
+/// * `logger` -  logger to report warnings during parsing
+/// * `message_limit` - maximum number of times to call the logger
+///
+/// # Errors
+///
+/// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
+/// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if parsing fails
+pub fn parse_term_with_logger<L: Logger>(
+    string: &str,
+    logger: &mut L,
+    message_limit: u32,
+) -> Result<Symbol, Error> {
+    let c_str = CString::new(string).unwrap();
+    let data = logger as *mut L;
+    let mut symbol = 0 as clingo_symbol_t;
+    if unsafe {
+        clingo_parse_term(
+            c_str.as_ptr(),
+            Some(L::unsafe_logging_callback::<L> as LoggingCallback),
+            data as *mut ::std::os::raw::c_void,
+            message_limit,
+            &mut symbol,
+        )
+    } {
+        Ok(Symbol(symbol))
+    } else {
+        Err(error())?
+    }
+}
 
 pub trait GroundProgramObserver {
     /// Called once in the beginning.
