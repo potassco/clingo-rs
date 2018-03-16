@@ -2943,19 +2943,28 @@ impl<'a> SymbolicAtomsItem<'a> {
     }
 }
 
+/// Container that stores theory atoms, elements, and terms (see [`Control::theory_atoms()`](struct.Control.html#method.theory_atoms))
+#[derive(Debug, Copy, Clone)]
+pub struct TheoryAtoms(clingo_theory_atoms_t);
+impl TheoryAtoms {
+    /// Get the total number of theory atoms.
+    pub fn size(&self) -> Option<usize> {
+        let mut size = 0 as usize;
+        if unsafe { clingo_theory_atoms_size(&self.0, &mut size) } {
+            Some(size)
         } else {
             None
         }
     }
 
+    ///  Returns an iterator over the theory atoms.
+    pub fn iter(&self) -> TheoryAtomsIterator {
+        TheoryAtomsIterator {
+            count: 0,
+            atoms: &self,
         }
     }
-}
 
-/// Container that stores theory atoms, elements, and terms (see @ref clingo_control_theory_atoms())
-#[derive(Debug, Copy, Clone)]
-pub struct TheoryAtoms(clingo_theory_atoms_t);
-impl TheoryAtoms {
     /// Get the type of the given theory term.
     ///
     /// # Arguments
@@ -3155,16 +3164,6 @@ impl TheoryAtoms {
         }
     }
 
-    /// Get the total number of theory atoms.
-    pub fn size(&self) -> Option<usize> {
-        let mut size = 0 as usize;
-        if unsafe { clingo_theory_atoms_size(&self.0, &mut size) } {
-            Some(size)
-        } else {
-            None
-        }
-    }
-
     /// Get the theory term associated with the theory atom.
     ///
     /// # Arguments
@@ -3269,35 +3268,23 @@ impl TheoryAtoms {
     }
 }
 
+/// Iterator over theory atoms.
+pub struct TheoryAtomsIterator<'a> {
     count: usize,
-    size: usize,
+    atoms: &'a TheoryAtoms,
 }
-
-//TODO: make safe
-pub struct UNSAFE_TheoryAtomsIterator {
-    count: usize,
-    size: usize,
-}
-impl Iterator for UNSAFE_TheoryAtomsIterator {
+impl<'a> Iterator for TheoryAtomsIterator<'a> {
     type Item = Id;
 
     fn next(&mut self) -> Option<Id> {
-        // increment our count. This is why we started at zero.
-        self.count += 1;
-
         // check to see if we've finished counting or not.
-        if self.count < self.size {
-            Some(Id(self.count as u32))
+        if self.count < self.atoms.size().unwrap() {
+            let ret = Id(self.count as clingo_id_t);
+            // increment our count.
+            self.count += 1;
+            Some(ret)
         } else {
             None
-        }
-    }
-}
-impl UNSAFE_TheoryAtomsIterator {
-    pub fn from(cta: &TheoryAtoms) -> UNSAFE_TheoryAtomsIterator {
-        UNSAFE_TheoryAtomsIterator {
-            count: 0,
-            size: cta.size().unwrap(),
         }
     }
 }

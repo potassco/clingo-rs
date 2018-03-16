@@ -50,23 +50,23 @@ fn get_theory_atom_literal(ctl: &mut Control) -> Option<Literal> {
     println!("number of grounded theory atoms: {}", size);
 
     // verify that theory atom b has a guard
-    for atom in UNSAFE_TheoryAtomsIterator::from(atoms) {
+    for atom in atoms.iter() {
         // get the term associated with the theory atom
-        let term = atoms.atom_term(atom as Id).unwrap();
+        let term = atoms.atom_term(atom).unwrap();
 
         // get the name associated with the theory atom
         let name = atoms.term_name(term).unwrap();
 
         if name == "b" {
             // we got theory atom b/1 here
-            let guard = atoms.atom_has_guard(atom as Id).unwrap();
+            let guard = atoms.atom_has_guard(atom).unwrap();
             if guard {
                 println!("theory atom b/1 has a guard: true");
             } else {
                 println!("theory atom b/1 has a guard: false");
             }
             // get the literal associated with the theory atom
-            return Some(atoms.atom_literal(atom as Id).unwrap());
+            return atoms.atom_literal(atom);
         }
     }
     None
