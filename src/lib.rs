@@ -1957,23 +1957,51 @@ impl Control {
         }
     }
 
-    // TODO
-    //     /// Register a program observer with the control object.
-    //     ///
-    //     /// # Arguments
-    //     ///
-    //     /// * `control` - the target
-    //     /// * `observer` - the observer to register
-    //     /// * `replace` - just pass the grounding to the observer but not the solver
-    //     /// * `data` - user data passed to the observer functions
-    //     ///
-    //     /// **Returns** whether the call was successful
-    //     pub fn clingo_control_register_observer(
-    //         control: *mut clingo_control_t,
-    //         observer: *const clingo_ground_program_observer_t,
-    //         replace: bool,
-    //         data: *mut ::std::os::raw::c_void,
-    //     ) -> bool;
+    /// Register a program observer with the control object.
+    ///
+    /// # Arguments
+    ///
+    /// * `observer` - the observer to register
+    /// * `replace` - just pass the grounding to the observer but not the solver
+    ///
+    /// **Returns** whether the call was successful
+    pub fn register_observer<T: GroundProgramObserver>(
+        &mut self,
+        observer: &mut T,
+        replace: bool,
+    ) -> bool {
+        let data = observer as *mut T;
+        let gpo = clingo_ground_program_observer_t {
+            init_program: Some(T::unsafe_init_program::<T>),
+            begin_step: Some(T::unsafe_begin_step::<T>),
+            end_step: Some(T::unsafe_end_step::<T>),
+            rule: Some(T::unsafe_rule::<T>),
+            weight_rule: Some(T::unsafe_weight_rule::<T>),
+            minimize: Some(T::unsafe_minimize::<T>),
+            project: Some(T::unsafe_project::<T>),
+            output_atom: Some(T::unsafe_output_atom::<T>),
+            output_term: Some(T::unsafe_output_term::<T>),
+            output_csp: Some(T::unsafe_output_csp::<T>),
+            external: Some(T::unsafe_external::<T>),
+            assume: Some(T::unsafe_assume::<T>),
+            heuristic: Some(T::unsafe_heuristic::<T>),
+            acyc_edge: Some(T::unsafe_acyc_edge::<T>),
+            theory_term_number: Some(T::unsafe_theory_term_number::<T>),
+            theory_term_string: Some(T::unsafe_theory_term_string::<T>),
+            theory_term_compound: Some(T::unsafe_theory_term_compound::<T>),
+            theory_element: Some(T::unsafe_theory_element::<T>),
+            theory_atom: Some(T::unsafe_theory_atom::<T>),
+            theory_atom_with_guard: Some(T::unsafe_theory_atom_with_guard::<T>),
+        };
+        unsafe {
+            clingo_control_register_observer(
+                self.ctl.as_ptr(),
+                &gpo,
+                replace,
+                data as *mut ::std::os::raw::c_void,
+            )
+        }
+    }
 
     /// Get an object to add ground directives to the program.
     ///
