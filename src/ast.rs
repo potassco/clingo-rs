@@ -979,7 +979,7 @@ impl TheoryGuardDefinition {
         };
         s1.iter()
             .map(|char_ptr| {
-                let c_str = unsafe { CStr::from_ptr(self.0.term) };
+                let c_str = unsafe { CStr::from_ptr(char_ptr) };
                 c_str.to_str().unwrap()
             })
             .collect::<Vec<&str>>()
