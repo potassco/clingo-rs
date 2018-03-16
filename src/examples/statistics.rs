@@ -67,7 +67,7 @@ fn print_statistics(stats: &Statistics, key: u64, depth: u8) {
     }
 }
 
-fn print_model(model: &mut Model) {
+fn print_model(model: &Model) {
     // retrieve the symbols in the model
     let atoms = model
         .symbols(&ShowType::SHOWN)

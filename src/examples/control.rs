@@ -3,7 +3,7 @@ extern crate clingo;
 use std::env;
 use clingo::*;
 
-fn print_model(model: &mut Model) {
+fn print_model(model: &Model) {
     // retrieve the symbols in the model
     let atoms = model
         .symbols(&ShowType::SHOWN)

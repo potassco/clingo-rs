@@ -3,7 +3,7 @@ extern crate clingo;
 use std::env;
 use clingo::*;
 
-fn print_model(model: &mut Model, label: &str, show: &ShowType) {
+fn print_model(model: &Model, label: &str, show: &ShowType) {
     print!("{}:", label);
 
     // retrieve the symbols in the model

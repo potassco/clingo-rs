@@ -211,11 +211,11 @@ pub enum ModelType {
 /// Supported check modes for propagators.
 #[derive(Debug, Copy, Clone)]
 pub enum PropagatorCheckMode {
-    /// do not call @ref ::clingo_propagator::check() at all
+    /// do not call [`Propagator::check()`](trait.Propagator.html#method.check) at all
     None = clingo_propagator_check_mode_clingo_propagator_check_mode_none as isize,
-    /// call @ref ::clingo_propagator::check() on total assignment
+    /// call [`Propagator::check()`](trait.Propagator.html#method.check) on total assignment
     Total = clingo_propagator_check_mode_clingo_propagator_check_mode_total as isize,
-    /// call @ref ::clingo_propagator::check() on propagation fixpoints
+    /// call [`Propagator::check()`](trait.Propagator.html#method.check) on propagation fixpoints
     Fixpoint = clingo_propagator_check_mode_clingo_propagator_check_mode_fixpoint as isize,
 }
 
@@ -377,11 +377,10 @@ type SolveEventCallback = unsafe extern "C" fn(
     goon: *mut bool,
 ) -> bool;
 pub trait SolveEventHandler {
-    // TODO: check documentation and solve_event
     /// Callback function called during search to notify when the search is finished or a model is ready.
     ///
     /// If a (non-recoverable) clingo API function fails in this callback, it must return false.
-    /// In case of errors not related to clingo, set error code ::clingo_error_unknown and return false to stop solving with an error.
+    /// In case of errors not related to clingo, set error code [`ErrorType::Unknown`](enum.ErrorType.html#variant.Unknown) and return false to stop solving with an error.
     ///
     /// **Attention:** If the search is finished, the model is NULL.
     ///
@@ -402,7 +401,7 @@ pub trait SolveEventHandler {
         goon: *mut bool,
     ) -> bool {
         // TODO               assert!(!event.is_null());
-        let event_type = match etype {
+        let etype = match etype {
             clingo_solve_event_type_clingo_solve_event_type_model => SolveEventType::Model,
             clingo_solve_event_type_clingo_solve_event_type_finish => SolveEventType::Finish,
             _ => panic!("Failed to match clingo_solve_event_type."),
@@ -417,7 +416,7 @@ pub trait SolveEventHandler {
         let goon = goon.as_mut()
             .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."));
 
-        event_handler.on_solve_event(event_type, goon)
+        event_handler.on_solve_event(etype, goon)
     }
 }
 
@@ -473,7 +472,7 @@ pub trait Logger {
         message: *const ::std::os::raw::c_char,
         data: *mut ::std::os::raw::c_void,
     ) {
-        let warning = match code as u32 {
+        let code = match code as u32 {
             clingo_warning_clingo_warning_atom_undefined => Warning::AtomUndefined,
             clingo_warning_clingo_warning_file_included => Warning::FileIncluded,
             clingo_warning_clingo_warning_global_variable => Warning::GlobalVariable,
@@ -495,7 +494,7 @@ pub trait Logger {
             .as_mut()
             .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."));
 
-        logger.log(warning, message)
+        logger.log(code, message)
     }
 }
 
@@ -516,7 +515,7 @@ pub trait ExternalFunctionHandler {
     /// The callback can be called multiple times; all symbols passed are injected.
     ///
     /// If a (non-recoverable) clingo API function fails in this callback, for example, the symbol callback, the callback must return false.
-    /// In case of errors not related to clingo, this function can set error ::clingo_error_unknown and return false to stop grounding with an error.
+    /// In case of errors not related to clingo, this function can set error [`ErrorType::Unknown`](enum.ErrorType.html#variant.Unknown) and return false to stop grounding with an error.
     ///
     /// # Arguments
     ///
@@ -563,14 +562,14 @@ pub trait ExternalFunctionHandler {
         symbol_callback: clingo_symbol_callback_t,
         symbol_callback_data: *mut ::std::os::raw::c_void,
     ) -> bool {
+        assert!(!name.is_null());
+        let c_str = CStr::from_ptr(name);
+        let name = c_str.to_str().unwrap();
+
         assert!(!location.is_null());
         let location = (location as *const Location)
             .as_ref()
             .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."));
-
-        assert!(!name.is_null());
-        let c_str = CStr::from_ptr(name);
-        let name = c_str.to_str().unwrap();
 
         if arguments_size > 0 {
             assert!(!arguments.is_null());
@@ -617,7 +616,7 @@ impl Literal {
     pub fn negate(&self) -> Literal {
         Literal(-(self.0))
     }
-    pub fn UNSAFE_from(Atom(atom): Atom) -> Literal {
+    pub fn from(Atom(atom): Atom) -> Literal {
         Literal(atom as clingo_literal_t)
     }
     pub fn get_integer(&self) -> i32 {
@@ -639,7 +638,6 @@ impl Id {
 }
 
 /// A Literal with an associated weight.
-/// @ingroup ProgramInspection
 #[derive(Debug, Copy, Clone)]
 pub struct WeightedLiteral(clingo_weighted_literal);
 impl WeightedLiteral {
@@ -942,7 +940,7 @@ impl Symbol {
     ///
     /// # Errors
     ///
-    /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if symbol is not of type `SymbolType::Number`
+    /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if symbol is not of type [`SymbolType::Number`](enum.SymbolType.html#variant.Number)
     pub fn number(&self) -> Result<i32, Error> {
         let mut number = 0;
         if unsafe { clingo_symbol_number(self.0, &mut number) } {
@@ -956,7 +954,7 @@ impl Symbol {
     ///
     /// # Errors
     ///
-    /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if symbol is not of type `SymbolType::Function`
+    /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if symbol is not of type [`SymbolType::Function`](enum.SymbolType.html#variant.Function)
     pub fn name(&self) -> Result<&str, Error> {
         let mut char_ptr = std::ptr::null() as *const c_char;
         if unsafe { clingo_symbol_name(self.0, &mut char_ptr) } {
@@ -971,7 +969,7 @@ impl Symbol {
     ///
     /// # Errors
     ///
-    /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if symbol is not of type `SymbolType::String`
+    /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if symbol is not of type [`SymbolType::String`](enum.SymbolType.html#variant.String)
     pub fn string(&self) -> Result<&str, Error> {
         let mut char_ptr = std::ptr::null() as *const c_char;
         if unsafe { clingo_symbol_string(self.0, &mut char_ptr) } {
@@ -986,7 +984,7 @@ impl Symbol {
     ///
     /// # Errors
     ///
-    /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if symbol is not of type `SymbolType::Function`
+    /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if symbol is not of type [`SymbolType::Function`](enum.SymbolType.html#variant.Function)
     pub fn is_positive(&self) -> Result<bool, Error> {
         let mut positive = false;
         if unsafe { clingo_symbol_is_positive(self.0, &mut positive) } {
@@ -1000,7 +998,7 @@ impl Symbol {
     ///
     /// # Errors
     ///
-    /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if symbol is not of type `SymbolType::Function`
+    /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if symbol is not of type [`SymbolType::Function`](enum.SymbolType.html#variant.Function)
     pub fn is_negative(&self) -> Result<bool, Error> {
         let mut negative = false;
         if unsafe { clingo_symbol_is_negative(self.0, &mut negative) } {
@@ -1014,7 +1012,7 @@ impl Symbol {
     ///
     /// # Errors
     ///
-    /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if symbol is not of type `SymbolType::Function`
+    /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if symbol is not of type [`SymbolType::Function`](enum.SymbolType.html#variant.Function)
     pub fn arguments(&self) -> Result<Vec<Symbol>, Error> {
         let mut symbol_ptr = std::ptr::null() as *const clingo_symbol_t;
         let mut size: usize = 0;
@@ -1036,7 +1034,6 @@ impl Symbol {
     /// # Errors
     ///
     /// - may failed to match clingo symbol type
-    //TODO maybe unnecesary function in Rust API?
     pub fn symbol_type(&self) -> SymbolType {
         let stype = unsafe { clingo_symbol_type(self.0) };
         match stype as u32 {
@@ -1256,15 +1253,20 @@ pub trait Propagator {
 
         propagator.init(init)
     }
-    //TODO
-    /// Can be used to propagate solver literals given a [partial assignment](struct.Assignment.html).
+    /// Can be used to propagate solver literals given a
+    /// [partial assignment](struct.Assignment.html).
     ///
-    /// Called during propagation with a non-empty array of [watched solver literals](struct.PropagateInit.html#method.add_watch)
-    /// that have been assigned to true since the last call to either propagate, undo, (or the start of the search) - the change set.
+    /// Called during propagation with a non-empty array of
+    /// [watched solver literals](struct.PropagateInit.html#method.add_watch)
+    /// that have been assigned to true since the last call to either propagate, undo, (or the start
+    /// of the search) - the change set.
     /// Only watched solver literals are contained in the change set.
-    /// Each literal in the change set is true w.r.t. the current [assignment](struct.Assignment.html).
-    /// [`PropagateControl::add_clause()`](struct.PropagateControl.html#method.add_clause) can be used to add clauses.
-    /// If a clause is unit resulting, it can be propagated using [`PropagateControl::propagate()`](struct.PropagateControl.html#method.propagate).
+    /// Each literal in the change set is true w.r.t. the current
+    /// [assignment](struct.Assignment.html).
+    /// [`PropagateControl::add_clause()`](struct.PropagateControl.html#method.add_clause) can be
+    /// used to add clauses.
+    /// If a clause is unit resulting, it can be propagated using
+    /// [`PropagateControl::propagate()`](struct.PropagateControl.html#method.propagate).
     /// If the result of either of the two methods is false, the propagate function must return
     /// immediately.
     ///
@@ -1273,25 +1275,32 @@ pub trait Propagator {
     /// The important point is to return true (true to indicate there was no error) if the result of
     /// either of the methods is false.
     /// ```
-    /// bool result;
-    /// clingo_literal_t clause[] = { ... };
-    ///
+    /// let clause: &[ ... ];
     /// // add a clause
-    /// if (!clingo_propagate_control_add_clause(control, clause, clingo_clause_type_learnt, &result) { return false; }
-    /// if (!result) { return true; }
+    /// if let Ok(x) = control.add_clause(clause, ClauseType::Learnt) {
+    ///     if !x {
+    ///         true
+    ///     }
+    /// } else {
+    ///     false
+    /// }
     /// // propagate its consequences
-    /// if (!clingo_propagate_control_propagate(control, &result) { return false; }
-    /// if (!result) { return true; }
-    ///
+    /// if let Ok(x) = control.propagate() {
+    ///     if !x {
+    ///         true
+    ///     }
+    /// } else {
+    ///     false
+    /// }
     /// // add further clauses and propagate them
     /// ...
-    ///
-    /// return true;
+    /// true
     /// ```
     ///
     /// **Note:**
     /// This function can be called from different solving threads.
-    /// Each thread has its own assignment and id, which can be obtained using [`PropagateControl::thread_id()`](struct.PropagateControl.html#method.thread_id).
+    /// Each thread has its own assignment and id, which can be obtained using
+    /// [`PropagateControl::thread_id()`](struct.PropagateControl.html#method.thread_id).
     ///
     /// # Arguments
     ///
@@ -1359,9 +1368,13 @@ pub trait Propagator {
 
         propagator.undo(control, changes)
     }
-    /// This function is similar to [`PropagateControl::propagate()`](struct.PropagateControl.html#method.propagate) but is only called on total assignments without a change set.
+    /// This function is similar to
+    /// [`PropagateControl::propagate()`](struct.PropagateControl.html#method.propagate) but is only
+    /// called on total assignments without a change set.
     ///
-    /// When exactly this function is called, can be configured using the [`PropagateInit::set_check_mode()`](struct.PropagateInit.html#method.set_check_mode) function.
+    /// When exactly this function is called, can be configured using the
+    /// [`PropagateInit::set_check_mode()`](struct.PropagateInit.html#method.set_check_mode)
+    /// function.
     ///
     /// **Note:** This function is called even if no watches have been added.
     ///
@@ -1425,7 +1438,7 @@ impl Control {
         let logger_data = std::ptr::null_mut();
 
         // create a vector of zero terminated strings
-        let mut args: Vec<CString> = arguments
+        let args: Vec<CString> = arguments
             .into_iter()
             .map(|arg| CString::new(arg).unwrap())
             .collect();
@@ -1479,7 +1492,7 @@ impl Control {
         logger: &mut L,
         message_limit: u32,
     ) -> Result<Control, Error> {
-        let mut args: Vec<CString> = arguments
+        let args: Vec<CString> = arguments
             .into_iter()
             .map(|arg| CString::new(arg).unwrap())
             .collect();
@@ -1510,7 +1523,7 @@ impl Control {
         }
     }
 
-    //NOTTODO: pub fn clingo_control_load(control: *mut Control, file: *const c_char) -> bool;
+    //NODO: pub fn clingo_control_load(control: *mut Control, file: *const c_char) -> bool;
 
     /// Extend the logic program with the given non-ground logic program in string form.
     ///
@@ -1529,9 +1542,8 @@ impl Control {
     ///
     /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
     /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if parsing fails
-    pub fn add(&mut self, name_: &str, parameters: &[&str], program_: &str) -> Result<(), Error> {
-        let name = CString::new(name_).unwrap();
-        let name_ptr = name.as_ptr();
+    pub fn add(&mut self, name: &str, parameters: &[&str], program_: &str) -> Result<(), Error> {
+        let name = CString::new(name).unwrap();
 
         let program = CString::new(program_).unwrap();
         let program_ptr = program.as_ptr();
@@ -1553,7 +1565,7 @@ impl Control {
         if unsafe {
             clingo_control_add(
                 self.ctl.as_ptr(),
-                name_ptr,
+                name.as_ptr(),
                 c_parameters.as_ptr(),
                 parameters_size,
                 program_ptr,
@@ -2034,7 +2046,7 @@ impl Control {
         }
     }
 
-    // NOTTODO: pub fn clingo_control_clasp_facade()
+    // NODO: pub fn clingo_control_clasp_facade()
 }
 #[derive(Clone)]
 pub struct AstStatement(clingo_ast_statement_t);
@@ -2340,7 +2352,7 @@ impl Configuration {
         }
     }
 
-    //NOTTODO: clingo_configuration_value_get_size(&mut self.0, key, &mut size)
+    //NODO: clingo_configuration_value_get_size(&mut self.0, key, &mut size)
 
     /// Get the string value of the given entry.
     ///
@@ -2721,7 +2733,7 @@ impl Statistics {
     ///
     /// * `key` - the key
     /// * `offset` - the offset of the name
-    pub fn map_subkey_name<'a>(&self, key: u64, offset: usize) -> Option<&'a str> {
+    pub fn map_subkey_name(&self, key: u64, offset: usize) -> Option<&str> {
         let mut name = std::ptr::null() as *const c_char;
         if unsafe { clingo_statistics_map_subkey_name(&self.0, key, offset, &mut name) } {
             Some(unsafe { CStr::from_ptr(name) }.to_str().unwrap())
@@ -2970,7 +2982,6 @@ impl TheoryAtoms {
     /// # Arguments
     ///
     /// * `term` - id of the term
-    // TODO ? is this needed in an Rust API
     pub fn term_type(&self, Id(term): Id) -> Option<TheoryTermType> {
         let mut ttype = 0 as clingo_theory_term_type_t;
         if unsafe { clingo_theory_atoms_term_type(&self.0, term, &mut ttype) } {
@@ -3054,7 +3065,7 @@ impl TheoryAtoms {
         }
     }
 
-    //NOTTODO: pub fn clingo_theory_atoms_term_to_string_size()
+    //NODO: pub fn clingo_theory_atoms_term_to_string_size()
 
     /// Get the string representation of the given theory term.
     ///
@@ -3136,7 +3147,7 @@ impl TheoryAtoms {
         }
     }
 
-    //NOTTODO: pub fn clingo_theory_atoms_element_to_string_size()
+    //NODO: pub fn clingo_theory_atoms_element_to_string_size()
 
     /// Get the string representation of the given theory element.
     ///
@@ -3188,9 +3199,8 @@ impl TheoryAtoms {
         let mut elements_ptr = unsafe { mem::uninitialized() };
         if unsafe { clingo_theory_atoms_atom_elements(&self.0, atom, &mut elements_ptr, &mut size) }
         {
-            let elements_ref =
-                unsafe { std::slice::from_raw_parts(elements_ptr as *const Id, size) };
-            Some(elements_ref.to_owned())
+            let elements = unsafe { std::slice::from_raw_parts(elements_ptr as *const Id, size) };
+            Some(elements.to_owned())
         } else {
             None
         }
@@ -3240,7 +3250,7 @@ impl TheoryAtoms {
         }
     }
 
-    //NOTTODO: pub fn clingo_theory_atoms_atom_to_string_size()
+    //NODO: pub fn clingo_theory_atoms_atom_to_string_size()
 
     /// Get the string representation of the given theory atom.
     ///
@@ -3322,7 +3332,7 @@ impl Model {
         }
     }
 
-    //NOTTODO: pub fn clingo_model_symbols_size()
+    //NODO: pub fn clingo_model_symbols_size()
 
     /// Get the symbols of the selected types in the model.
     ///
@@ -3385,7 +3395,7 @@ impl Model {
         }
     }
 
-    //NOTTODO: pub fn clingo_model_cost_size(model: *mut Model, size: *mut size_t) -> u8;
+    //NODO: pub fn clingo_model_cost_size(model: *mut Model, size: *mut size_t) -> u8;
 
     /// Get the cost vector of a model.
     ///
@@ -3492,12 +3502,12 @@ impl SolveControl {
 /// Represents a (partial) assignment of a particular solver.
 ///
 /// An assignment assigns truth values to a set of literals.
-/// A literal is assigned to either @link clingo_assignment_truth_value() true or false, or is unassigned@endlink.
-/// Furthermore, each assigned literal is associated with a @link clingo_assignment_level() decision level@endlink.
-/// There is exactly one @link clingo_assignment_decision() decision literal@endlink for each decision level greater than zero.
+/// A literal is assigned to either [true or false, or is unassigned](struct.Assignment.html#method.truth_value).
+/// Furthermore, each assigned literal is associated with a [decision level](struct.Assignment.html#method.level).
+/// There is exactly one [decision literal](struct.Assignment.html#method.decision) for each decision level greater than zero.
 /// Assignments to all other literals on the same level are consequences implied by the current and possibly previous decisions.
 /// Assignments on level zero are immediate consequences of the current program.
-/// Decision levels are consecutive numbers starting with zero up to and including the @link clingo_assignment_decision_level() current decision level@endlink.
+/// Decision levels are consecutive numbers starting with zero up to and including the [current decision level](struct.Assignment.html#method.decision_level).
 #[derive(Debug, Copy, Clone)]
 pub struct Assignment(clingo_assignment_t);
 impl Assignment {
@@ -3573,8 +3583,7 @@ impl Assignment {
     /// # Arguments
     ///
     /// * `literal` - the literal
-    /// **Returns** whether the literal is true
-    /// @see clingo_assignment_truth_value()
+    /// **Returns** whether the literal is true (see [`Assignment::truth_value()`](struct.Assignment.html#method.truth_value))
     pub fn is_true(&self, literal: Literal) -> Option<bool> {
         let mut is_true = false;
         if unsafe { clingo_assignment_is_true(&self.0, literal.0, &mut is_true) } {
@@ -3589,8 +3598,7 @@ impl Assignment {
     /// # Arguments
     /// * `literal` - the literal
     ///
-    /// **Returns** whether the literal is false
-    /// @see clingo_assignment_truth_value()
+    /// **Returns** whether the literal is false (see [`Assignment::truth_value()`](struct.Assignment.html#method.truth_value))
     pub fn is_false(&self, literal: Literal) -> Option<bool> {
         let mut is_false = false;
         if unsafe { clingo_assignment_is_false(&self.0, literal.0, &mut is_false) } {
@@ -3862,7 +3870,7 @@ impl PropagateInit {
     ///
     /// **Returns**  bitmask when to call the propagator
     ///
-    /// **See:** [`PropagateInit::set_check_mode()`](trait.PropagateInit.html#method.set_check_mode)
+    /// **See:** [`PropagateInit::set_check_mode()`](struct.PropagateInit.html#method.set_check_mode)
     pub fn get_check_mode(&self) -> PropagatorCheckMode {
         match unsafe { clingo_propagate_init_get_check_mode(&self.0) } as u32 {
             clingo_propagator_check_mode_clingo_propagator_check_mode_fixpoint => {
@@ -4085,7 +4093,8 @@ pub fn parse_term_with_logger<L: Logger>(
 pub trait GroundProgramObserver {
     /// Called once in the beginning.
     ///
-    /// If the incremental flag is true, there can be multiple calls to @ref clingo_control_solve().
+    /// If the incremental flag is true, there can be multiple calls to
+    /// [`Control::solve()`](struct.Control.html#method.solve).
     ///
     /// # Arguments
     ///
@@ -4331,12 +4340,7 @@ pub trait GroundProgramObserver {
     /// * `condition` - the literals of the condition
     ///
     /// **Returns** whether the call was successful
-    fn output_csp(
-        &mut self,
-        symbol: Symbol,
-        value: i32,
-        condition: &[Literal],
-    ) -> bool;
+    fn output_csp(&mut self, symbol: Symbol, value: i32, condition: &[Literal]) -> bool;
     #[doc(hidden)]
     unsafe extern "C" fn unsafe_output_csp<T: GroundProgramObserver>(
         symbol: clingo_symbol_t,
@@ -4472,12 +4476,7 @@ pub trait GroundProgramObserver {
     /// * `condition` - the condition under which the edge is part of the graph
     ///
     /// **Returns** whether the call was successful
-    fn acyc_edge(
-        &mut self,
-        node_u: i32,
-        node_v: i32,
-        condition: &[Literal],
-    ) -> bool;
+    fn acyc_edge(&mut self, node_u: i32, node_v: i32, condition: &[Literal]) -> bool;
     #[doc(hidden)]
     unsafe extern "C" fn unsafe_acyc_edge<T: GroundProgramObserver>(
         node_u: ::std::os::raw::c_int,
@@ -4536,7 +4535,7 @@ pub trait GroundProgramObserver {
         data: *mut ::std::os::raw::c_void,
     ) -> bool {
         assert!(!name.is_null());
-        let cstr = unsafe { CStr::from_ptr(name) };
+        let cstr = CStr::from_ptr(name);
         let name = cstr.to_str().unwrap();
 
         assert!(!data.is_null());
@@ -4563,12 +4562,8 @@ pub trait GroundProgramObserver {
     /// * `arguments` - the arguments of the term
     ///
     /// **Returns** whether the call was successful
-    fn theory_term_compound(
-        &mut self,
-        term_id: Id,
-        name_id_or_type: i32,
-        arguments: &[Id],
-    ) -> bool;
+    fn theory_term_compound(&mut self, term_id: Id, name_id_or_type: i32, arguments: &[Id])
+        -> bool;
     #[doc(hidden)]
     unsafe extern "C" fn unsafe_theory_term_compound<T: GroundProgramObserver>(
         term_id: clingo_id_t,

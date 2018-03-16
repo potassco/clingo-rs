@@ -61,7 +61,7 @@ impl<'a> AstStatementHandler for OnStatementData<'a> {
     }
 }
 
-fn print_model(model: &mut Model) {
+fn print_model(model: &Model) {
     // retrieve the symbols in the model
     let atoms = model
         .symbols(&ShowType::SHOWN)
