@@ -50,7 +50,7 @@ fn main() {
 
     {
         // get the configuration object and its root key
-        let conf = ctl.configuration().unwrap();
+        let conf = ctl.configuration_mut().unwrap();
         let root_key = conf.root().unwrap();
         let mut sub_key;
 

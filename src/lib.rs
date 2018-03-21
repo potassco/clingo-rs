@@ -1879,10 +1879,20 @@ impl Control {
     }
 
     /// Get a configuration object to change the solver configuration.
-    pub fn configuration(&mut self) -> Option<&mut Configuration> {
+    pub fn configuration_mut(&mut self) -> Option<&mut Configuration> {
         let mut conf = std::ptr::null_mut() as *mut clingo_configuration_t;
         if unsafe { clingo_control_configuration(self.ctl.as_ptr(), &mut conf) } {
             unsafe { (conf as *mut Configuration).as_mut() }
+        } else {
+            None
+        }
+    }
+
+    /// Get a configuration object to change the solver configuration.
+    pub fn configuration(&self) -> Option<&Configuration> {
+        let mut conf = std::ptr::null_mut() as *mut clingo_configuration_t;
+        if unsafe { clingo_control_configuration(self.ctl.as_ptr(), &mut conf) } {
+            unsafe { (conf as *const Configuration).as_ref() }
         } else {
             None
         }
@@ -3935,7 +3945,28 @@ impl<'a> SolveHandle<'a> {
     ///
     /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
     /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if solving fails
-    pub fn model(&mut self) -> Result<&mut Model, Error> {
+    pub fn model(&self) -> Result<&Model, Error> {
+        let mut model = std::ptr::null_mut() as *mut clingo_model_t;
+        if unsafe { clingo_solve_handle_model(self.theref, &mut model) } {
+            match unsafe { (model as *const Model).as_ref() } {
+                Some(x) => Ok(x),
+                None => Err(BindingError {
+                    msg: "Failed dereferencing pointer to clingo_model.",
+                })?,
+            }
+        } else {
+            Err(error())?
+        }
+    }
+
+    /// Get the next model (or zero if there are no more models).
+    /// (it is NULL if there are no more models)
+    ///
+    /// # Errors
+    ///
+    /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
+    /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if solving fails
+    pub fn model_mut(&mut self) -> Result<&mut Model, Error> {
         let mut model = std::ptr::null_mut() as *mut clingo_model_t;
         if unsafe { clingo_solve_handle_model(self.theref, &mut model) } {
             match unsafe { (model as *mut Model).as_mut() } {
@@ -3948,7 +3979,6 @@ impl<'a> SolveHandle<'a> {
             Err(error())?
         }
     }
-
     /// Discards the last model and starts the search for the next one.
     ///
     /// If the search has been started asynchronously, this function continues the search in the
