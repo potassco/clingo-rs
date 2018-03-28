@@ -60,7 +60,7 @@ fn main() {
         });
 
     // solve
-    let mut handle = ctl.solve(&SolveMode::YIELD, &[])
+    let handle = ctl.solve(&SolveMode::YIELD, &[])
         .expect("Failed to retrieve solve handle.");
 
     print_model(handle.model().unwrap());

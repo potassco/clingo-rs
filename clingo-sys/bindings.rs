@@ -1783,7 +1783,7 @@ extern "C" {
     /// - ::clingo_error_bad_alloc
     /// - ::clingo_error_runtime if solving fails
     pub fn clingo_solve_handle_model(
-        handle: *mut clingo_solve_handle_t,
+        handle: *const clingo_solve_handle_t,
         model: *mut *mut clingo_model_t,
     ) -> bool;
 }
@@ -2155,7 +2155,7 @@ extern "C" {
     ///
     /// **Returns** the assignment
     pub fn clingo_propagate_control_assignment(
-        control: *mut clingo_propagate_control_t,
+        control: *const clingo_propagate_control_t,
     ) -> *mut clingo_assignment_t;
 }
 extern "C" {
