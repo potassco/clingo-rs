@@ -25,14 +25,14 @@ impl ExternalFunctionHandler for MyEFH {
         _location: &Location,
         name: &str,
         arguments: &[Symbol],
-    ) -> Result<Vec<Symbol>, Error> {
+    ) -> Result<Vec<Symbol>, ClingoError> {
         if name == "c" && arguments.len() == 0 {
             Ok(vec![Symbol::create_number(42), Symbol::create_number(43)])
         } else {
             Err(ClingoError {
-                type_: ErrorType::Runtime,
+                error_type: ErrorType::Runtime,
                 msg: "function not found",
-            })?
+            })
         }
     }
 }
@@ -52,11 +52,11 @@ fn main() {
     let mut efh = MyEFH;
 
     // ground the base part
-    let part = Part::new("base", &[]);
+    let part = Part::new("base", &[]).unwrap();
     let parts = vec![part];
     ctl.ground_with_event_handler(&parts, &mut efh)
         .unwrap_or_else(|e| {
-            panic!("Failed to ground a logic program. {}", e.cause());
+            panic!("Failed to ground a logic program. {:?}", e);
         });
 
     // solve

@@ -62,7 +62,7 @@ struct PropagatorT {
 }
 
 // returns the offset'th numeric argument of the function symbol sym
-fn get_arg(sym: &Symbol, offset: usize) -> Result<i32, Error> {
+fn get_arg(sym: &Symbol, offset: usize) -> Result<i32, ClingoError> {
     // get the arguments of the function symbol
     let args = sym.arguments().unwrap();
     // get the requested numeric argument
@@ -88,7 +88,7 @@ impl Propagator for PropagatorT {
             // in principle the number of threads can increase between solve calls by changing the
             // configuration this case is not handled (elegantly) here
             if threads > self.states.len() {
-                set_error(ErrorType::Runtime, "more threads than states");
+                set_error(ErrorType::Runtime, "more threads than states").unwrap();
             }
             return true;
         }
@@ -98,7 +98,7 @@ impl Propagator for PropagatorT {
         self.states = vec![state1];
 
         // create place/2 signature to filter symbolic atoms with
-        let sig = Signature::create("place", 2, true).unwrap();
+        let sig = Signature::new("place", 2, true).unwrap();
 
         // loop over the place/2 atoms in two passes
         // the first pass determines the maximum placement literal
@@ -261,7 +261,7 @@ fn main() {
             let args = vec![arg0, arg1];
 
             // the pigeon program part having the number of holes and pigeons as parameters
-            let part = Part::new("pigeon", &args);
+            let part = Part::new("pigeon", &args).unwrap();
             let parts = vec![part];
             ctl.ground(&parts)
                 .expect("Failed to ground a logic program.");

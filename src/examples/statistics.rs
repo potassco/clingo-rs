@@ -127,7 +127,7 @@ fn main() {
     ctl.add("base", &[], "a :- not b. b :- not a.").unwrap();
 
     // ground the base part
-    let part = Part::new("base", &[]);
+    let part = Part::new("base", &[]).unwrap();
     let parts = vec![part];
     ctl.ground(&parts).unwrap();
 

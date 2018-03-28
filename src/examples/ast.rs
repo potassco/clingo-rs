@@ -109,10 +109,10 @@ fn main() {
 
     {
         // get the program builder
-        let builder = ctl.program_builder();
+        let builder = ctl.program_builder().ok();
 
         // initialize the location
-        let location = Location::new("<rewrite>", "<rewrite>", 0, 0, 0, 0);
+        let location = Location::new("<rewrite>", "<rewrite>", 0, 0, 0, 0).unwrap();
 
         // initilize atom to add
         let atom = ast::Term::new_symbol(location, sym);
@@ -145,7 +145,7 @@ fn main() {
     }
 
     // ground the base part
-    let part = Part::new("base", &[]);
+    let part = Part::new("base", &[]).unwrap();
     let parts = vec![part];
     ctl.ground(&parts)
         .expect("Failed to ground a logic program.");

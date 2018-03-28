@@ -143,7 +143,7 @@ impl HeadLiteral {
             clingo_ast_head_literal_type_clingo_ast_head_literal_type_theory_atom => {
                 HeadLiteralType::TheoryAtom
             }
-            _ => panic!("Failed to match clingo_ast_head_literal_type."),
+            x => panic!("Failed to match clingo_ast_head_literal_type: {}.", x),
         }
     }
 }
@@ -229,7 +229,7 @@ impl Script {
         match self.0.type_ as u32 {
             clingo_ast_script_type_clingo_ast_script_type_lua => ScriptType::Lua,
             clingo_ast_script_type_clingo_ast_script_type_python => ScriptType::Python,
-            _ => panic!("Failed to match clingo_ast_script_type."),
+            x => panic!("Failed to match clingo_ast_script_type: {}.", x),
         }
     }
     pub fn code(&self) -> &str {
@@ -284,7 +284,7 @@ impl BodyLiteral {
             clingo_ast_sign_clingo_ast_sign_double_negation => Sign::DoubleNegation,
             clingo_ast_sign_clingo_ast_sign_negation => Sign::Negation,
             clingo_ast_sign_clingo_ast_sign_none => Sign::None,
-            _ => panic!("Failed to match clingo_ast_sign."),
+            x => panic!("Failed to match clingo_ast_sign: {}.", x),
         }
     }
     pub fn body_literal_type(&self) -> BodyLiteralType {
@@ -307,7 +307,7 @@ impl BodyLiteral {
             clingo_ast_body_literal_type_clingo_ast_body_literal_type_theory_atom => {
                 BodyLiteralType::TheoryAtom
             }
-            _ => panic!("Failed to match clingo_ast_body_literal_type_t."),
+            x => panic!("Failed to match clingo_ast_body_literal_type: {}.", x),
         }
     }
 }
@@ -400,7 +400,7 @@ impl Term {
                 TermType::ExternalFunction
             }
             clingo_ast_term_type_clingo_ast_term_type_pool => TermType::Pool,
-            _ => panic!("Failed to match clingo_ast_term_type."),
+            x => panic!("Failed to match clingo_ast_term_type: {}.", x),
         }
     }
 }
@@ -434,7 +434,7 @@ impl Literal {
             clingo_ast_sign_clingo_ast_sign_double_negation => Sign::DoubleNegation,
             clingo_ast_sign_clingo_ast_sign_negation => Sign::Negation,
             clingo_ast_sign_clingo_ast_sign_none => Sign::None,
-            _ => panic!("Failed to match clingo_ast_sign."),
+            x => panic!("Failed to match clingo_ast_sign: {}.", x),
         }
     }
     pub fn literal_type(&self) -> LiteralType {
@@ -443,7 +443,7 @@ impl Literal {
             clingo_ast_literal_type_clingo_ast_literal_type_symbolic => LiteralType::Symbolic,
             clingo_ast_literal_type_clingo_ast_literal_type_comparison => LiteralType::Comparison,
             clingo_ast_literal_type_clingo_ast_literal_type_csp => LiteralType::CSP,
-            _ => panic!("Failed to match clingo_ast_literal_type."),
+            x => panic!("Failed to match clingo_ast_literal_type: {}.", x),
         }
     }
 }
@@ -455,7 +455,7 @@ impl UnaryOperation {
             clingo_ast_unary_operator_clingo_ast_unary_operator_minus => UnaryOperator::Minus,
             clingo_ast_unary_operator_clingo_ast_unary_operator_negation => UnaryOperator::Negation,
             clingo_ast_unary_operator_clingo_ast_unary_operator_absolute => UnaryOperator::Absolute,
-            _ => panic!("Failed to match clingo_ast_unary_operator."),
+            x => panic!("Failed to match clingo_ast_unary_operator: {}.", x),
         }
     }
     pub fn argument(&self) -> Term {
@@ -479,7 +479,7 @@ impl BinaryOperation {
                 BinaryOperator::Division
             }
             clingo_ast_binary_operator_clingo_ast_binary_operator_modulo => BinaryOperator::Modulo,
-            _ => panic!("Failed to match clingo_ast_binary_operator."),
+            x => panic!("Failed to match clingo_ast_binary_operator: {}.", x),
         }
     }
     pub fn left(&self) -> Term {
@@ -567,7 +567,7 @@ impl CspGuard {
             clingo_ast_comparison_operator_clingo_ast_comparison_operator_equal => {
                 ComparisonOperator::Equal
             }
-            _ => panic!("Failed to match clingo_ast_comparison_operator."),
+            x => panic!("Failed to match clingo_ast_comparison_operator: {}.", x),
         }
     }
     pub fn term(&self) -> CspSumTerm {
@@ -622,7 +622,7 @@ impl AggregateGuard {
             clingo_ast_comparison_operator_clingo_ast_comparison_operator_equal => {
                 ComparisonOperator::Equal
             }
-            _ => panic!("Failed to match clingo_ast_comparison_operator."),
+            x => panic!("Failed to match clingo_ast_comparison_operator: {}.", x),
         }
     }
     pub fn term(&self) -> Term {
@@ -687,7 +687,7 @@ impl BodyAggregate {
             clingo_ast_aggregate_function_clingo_ast_aggregate_function_max => {
                 AggregateFunction::Max
             }
-            _ => panic!("Failed to match clingo_ast_theory_term_type."),
+            x => panic!("Failed to match clingo_ast_theory_term_type: {}.", x),
         }
     }
     pub fn elements(&self) -> &[BodyAggregateElement] {
@@ -732,7 +732,7 @@ impl HeadAggregate {
             clingo_ast_aggregate_function_clingo_ast_aggregate_function_max => {
                 AggregateFunction::Max
             }
-            _ => panic!("Failed to match clingo_ast_theory_term_type."),
+            x => panic!("Failed to match clingo_ast_theory_term_type: {}.", x),
         }
     }
     pub fn elements(&self) -> &[HeadAggregateElement] {
@@ -806,7 +806,7 @@ impl TheoryTerm {
             clingo_ast_theory_term_type_clingo_ast_theory_term_type_unparsed_term => {
                 TheoryTermType::UnparsedTerm
             }
-            _ => panic!("Failed to match clingo_ast_theory_term_type."),
+            x => panic!("Failed to match clingo_ast_theory_term_type: {}.", x),
         }
     }
 }
@@ -932,7 +932,7 @@ impl TheoryOperatorDefinition {
             clingo_ast_theory_operator_type_clingo_ast_theory_operator_type_binary_right => {
                 TheoryOperatorType::BinaryRight
             }
-            _ => panic!("Failed to match clingo_ast_theory_operator_type_t."),
+            x => panic!("Failed to match clingo_ast_theory_operator_type: {}.", x),
         }
     }
 }
@@ -1017,7 +1017,10 @@ impl TheoryAtomDefinition {
             clingo_ast_theory_atom_definition_type_clingo_ast_theory_atom_definition_type_head => {
                 TheoryAtomDefinitionType::Head
             }
-            _ => panic!("Failed to match clingo_ast_theory_atom_definition_type."),
+            x => panic!(
+                "Failed to match clingo_ast_theory_atom_definition_type: {}.",
+                x
+            ),
         }
     }
     pub fn name(&self) -> &str {
