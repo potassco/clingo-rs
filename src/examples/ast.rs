@@ -10,7 +10,7 @@ pub struct OnStatementData<'a> {
 
 impl<'a> AstStatementHandler for OnStatementData<'a> {
     // adds atom enable to all rule bodies
-    fn on_statement(&mut self, stm: &AstStatement) -> bool {
+    fn on_statement<T>(&mut self, stm: &AstStatement<T>) -> bool {
         // pass through all statements that are not rules
         if stm.statement_type() != ast::StatementType::Rule {
             self.builder
@@ -22,42 +22,45 @@ impl<'a> AstStatementHandler for OnStatementData<'a> {
         }
 
         // copy the current rule body
-        let body = unsafe { stm.rule() }.body();
-        let mut extended_body = std::vec::Vec::with_capacity(body.len() + 1);
-        for e in body {
-            extended_body.push(e.clone());
+        if let Some(rule) = stm.rule() {
+            let body = rule.body();
+            let mut extended_body = std::vec::Vec::with_capacity(body.len() + 1);
+            for e in body {
+                extended_body.push(e.clone());
+            }
+
+            // create atom enable
+            let lit = ast::Literal::new(
+                self.atom.location(),
+                ast::Sign::None,
+                ast::LiteralType::Symbolic,
+                &self.atom,
+            );
+            // add atom enable to the rule body
+            let y = ast::BodyLiteral::new(
+                self.atom.location(),
+                ast::Sign::None,
+                ast::BodyLiteralType::Literal,
+                &lit,
+            );
+            extended_body.push(y);
+
+            // initialize the rule
+            let head = rule.head();
+            let rule = ast::Rule::new(head, &extended_body);
+
+            // initialize the statement
+            let stm2 = rule.ast_statement(stm.location());
+
+            // add the rewritten statement to the program
+            self.builder
+                .as_mut()
+                .unwrap()
+                .add(&stm2)
+                .expect("Failed to add statement to ProgramBuilder.");
+            return true;
         }
-
-        // create atom enable
-        let lit = ast::Literal::new(
-            self.atom.location(),
-            ast::Sign::None,
-            ast::LiteralType::Symbolic,
-            &self.atom,
-        );
-        // add atom enable to the rule body
-        let y = ast::BodyLiteral::new(
-            self.atom.location(),
-            ast::Sign::None,
-            ast::BodyLiteralType::Literal,
-            &lit,
-        );
-        extended_body.push(y);
-
-        // initialize the rule
-        let head = unsafe { stm.rule() }.head();
-        let rule = ast::Rule::new(head, &extended_body);
-
-        // initialize the statement
-        let stm2 = AstStatement::new_rule(stm.location(), &rule);
-
-        // add the rewritten statement to the program
-        self.builder
-            .as_mut()
-            .unwrap()
-            .add(&stm2)
-            .expect("Failed to add statement to ProgramBuilder.");
-        true
+        false
     }
 }
 
@@ -129,7 +132,7 @@ fn main() {
         // add the external statement: #external enable.
         let ext = ast::External::new(atom, &[]);
 
-        let stm = AstStatement::new_external(location, ast::StatementType::External, &ext);
+        let stm = ext.ast_statement(location);
         data.builder
             .as_mut()
             .unwrap()

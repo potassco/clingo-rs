@@ -164,6 +164,22 @@ impl Rule {
     pub fn body(&self) -> &[BodyLiteral] {
         unsafe { std::slice::from_raw_parts(self.0.body as *const BodyLiteral, self.0.size) }
     }
+
+    /// create an AstStatement for the rule
+    pub fn ast_statement<'a>(&'a self, Location(loc): Location) -> AstStatement<'a, ast::Rule> {
+        let _bg_union_2 = clingo_ast_statement__bindgen_ty_1 {
+            rule: &self.0 as *const clingo_ast_rule,
+        };
+        let stm = clingo_ast_statement_t {
+            location: loc,
+            type_: ast::StatementType::Rule as clingo_ast_statement_type_t,
+            __bindgen_anon_1: _bg_union_2,
+        };
+        AstStatement {
+            data: stm,
+            phantom: PhantomData,
+        }
+    }
 }
 #[derive(Copy, Clone)]
 pub struct Definition(clingo_ast_definition);
@@ -327,6 +343,21 @@ impl External {
     }
     pub fn body(&self) -> &[BodyLiteral] {
         unsafe { std::slice::from_raw_parts(self.0.body as *const BodyLiteral, self.0.size) }
+    }
+    /// create an AstStatement for the external
+    pub fn ast_statement<'a>(&'a self, Location(loc): Location) -> AstStatement<'a, ast::External> {
+        let _bg_union_2 = clingo_ast_statement__bindgen_ty_1 {
+            external: &self.0 as *const clingo_ast_external,
+        };
+        let stm = clingo_ast_statement_t {
+            location: loc,
+            type_: StatementType::External as clingo_ast_statement_type_t,
+            __bindgen_anon_1: _bg_union_2,
+        };
+        AstStatement {
+            data: stm,
+            phantom: PhantomData,
+        }
     }
 }
 #[derive(Copy, Clone)]

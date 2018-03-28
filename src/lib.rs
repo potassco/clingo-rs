@@ -8,6 +8,7 @@ extern crate libc;
 
 use std::mem;
 use std::ptr::Unique;
+use std::marker::PhantomData;
 use std::cmp::Ordering;
 use std::hash::{Hash, Hasher};
 use std::ffi::CStr;
@@ -429,13 +430,13 @@ pub trait AstStatementHandler {
     /// Callback function called on an AstStatement while traversing the Ast.
     ///
     /// **Returns** whether the call was successful
-    fn on_statement(&mut self, arg1: &AstStatement) -> bool;
+    fn on_statement<T>(&mut self, arg1: &AstStatement<T>) -> bool;
     #[doc(hidden)]
     unsafe extern "C" fn unsafe_ast_callback<T: AstStatementHandler>(
         stm: *const clingo_ast_statement_t,
         data: *mut ::std::os::raw::c_void,
     ) -> bool {
-        if let Some(stm) = (stm as *const AstStatement).as_ref() {
+        if let Some(stm) = (stm as *const AstStatement<T>).as_ref() {
             if let Some(data) = (data as *mut T).as_mut() {
                 return data.on_statement(stm);
             } else {
@@ -1101,7 +1102,7 @@ impl Symbol {
     /// # Errors
     ///
     /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
-    /// - [`Utf8Error`](https://doc.rust-lang.org/std/str/struct.Utf8Error.html)   
+    /// - [`Utf8Error`](https://doc.rust-lang.org/std/str/struct.Utf8Error.html)
     pub fn to_string(&self) -> Result<String, Error> {
         let mut size: usize = 0;
         if unsafe { clingo_symbol_to_string_size(self.0, &mut size) } {
@@ -1890,7 +1891,11 @@ impl Control {
     /// # Errors
     ///
     /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
-    pub fn assign_external(&mut self, symbol: &Symbol, value: TruthValue) -> Result<(), ClingoError> {
+    pub fn assign_external(
+        &mut self,
+        symbol: &Symbol,
+        value: TruthValue,
+    ) -> Result<(), ClingoError> {
         if unsafe {
             clingo_control_assign_external(
                 self.ctl.as_ptr(),
@@ -2187,46 +2192,21 @@ impl Control {
 
     // NODO: pub fn clingo_control_clasp_facade()
 }
+/// Representation of a program statement.
 #[derive(Clone)]
-pub struct AstStatement(clingo_ast_statement_t);
-impl AstStatement {
-    pub fn new_external(
-        Location(location): Location,
-        type_: ast::StatementType,
-        ext: &ast::External,
-    ) -> AstStatement {
-        let external: *const ast::External = ext;
-        let _bg_union_2 = clingo_ast_statement__bindgen_ty_1 {
-            external: external as *const clingo_ast_external,
-        };
-        let stm = clingo_ast_statement_t {
-            location: location,
-            type_: type_ as clingo_ast_statement_type_t,
-            __bindgen_anon_1: _bg_union_2,
-        };
-        AstStatement(stm)
-    }
-
-    pub fn new_rule(Location(location): Location, rule_: &ast::Rule) -> AstStatement {
-        let rule: *const ast::Rule = rule_;
-
-        let _bg_union_2 = clingo_ast_statement__bindgen_ty_1 {
-            rule: rule as *const clingo_ast_rule,
-        };
-        let stm = clingo_ast_statement_t {
-            location: location,
-            type_: ast::StatementType::Rule as clingo_ast_statement_type_t,
-            __bindgen_anon_1: _bg_union_2,
-        };
-        AstStatement(stm)
-    }
-
+pub struct AstStatement<'a, T: 'a> {
+    data: clingo_ast_statement_t,
+    phantom: PhantomData<&'a T>,
+}
+impl<'a, T> AstStatement<'a, T> {
+    /// get the location of the statement
     pub fn location(&self) -> Location {
-        Location(self.0.location)
+        Location(self.data.location)
     }
 
+    /// get the type of the statement
     pub fn statement_type(&self) -> ast::StatementType {
-        let AstStatement(ref stm) = *self;
+        let stm = &self.data;
         match stm.type_ as u32 {
             clingo_ast_statement_type_clingo_ast_statement_type_rule => ast::StatementType::Rule,
             clingo_ast_statement_type_clingo_ast_statement_type_const => ast::StatementType::Const,
@@ -2265,12 +2245,20 @@ impl AstStatement {
         }
     }
 
-    pub unsafe fn rule(&self) -> &ast::Rule {
-        let AstStatement(ref stm) = *self;
-        let ast_rule_ptr = stm.__bindgen_anon_1.rule as *const clingo_ast_rule_t;
-        (ast_rule_ptr as *const ast::Rule)
-            .as_ref()
-            .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."))
+    /// get a reference to the rule if the statement is a rule
+    pub fn rule(&self) -> Option<&ast::Rule> {
+        match self.statement_type() {
+            ast::StatementType::Rule => {
+                let stm = &self.data;
+                let ast_rule_ptr = unsafe { stm.__bindgen_anon_1.rule as *const clingo_ast_rule_t };
+                Some(unsafe {
+                    (ast_rule_ptr as *const ast::Rule)
+                        .as_ref()
+                        .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."))
+                })
+            }
+            _ => None,
+        }
     }
 }
 
@@ -2292,8 +2280,8 @@ impl<'a> ProgramBuilder<'a> {
     ///
     /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) for statements of invalid form
     /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
-    pub fn add(&mut self, stm: &AstStatement) -> Result<(), ClingoError> {
-        if unsafe { clingo_program_builder_add(self.theref, &stm.0) } {
+    pub fn add<T>(&mut self, stm: &AstStatement<T>) -> Result<(), ClingoError> {
+        if unsafe { clingo_program_builder_add(self.theref, &stm.data) } {
             Ok(())
         } else {
             Err(error())
@@ -2511,11 +2499,11 @@ impl Configuration {
     /// # Arguments
     ///
     /// * `key` - the key
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - [`BindingError`](struct.BindingError.html)
-    /// - [`Utf8Error`](https://doc.rust-lang.org/std/str/struct.Utf8Error.html)   
+    /// - [`Utf8Error`](https://doc.rust-lang.org/std/str/struct.Utf8Error.html)
     pub fn value_get(&self, Id(key): Id) -> Result<&str, Error> {
         let mut size = 0;
         if unsafe { clingo_configuration_value_get_size(&self.0, key, &mut size) } {
@@ -2577,7 +2565,12 @@ impl Backend {
     /// # Errors
     ///
     /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
-    pub fn rule(&mut self, choice: bool, head: &[Atom], body: &[Literal]) -> Result<(), ClingoError> {
+    pub fn rule(
+        &mut self,
+        choice: bool,
+        head: &[Atom],
+        body: &[Literal],
+    ) -> Result<(), ClingoError> {
         if unsafe {
             clingo_backend_rule(
                 &mut self.0,
@@ -2641,7 +2634,11 @@ impl Backend {
     /// # Errors
     ///
     /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
-    pub fn minimize(&mut self, priority: i32, literals: &[WeightedLiteral]) -> Result<(), ClingoError> {
+    pub fn minimize(
+        &mut self,
+        priority: i32,
+        literals: &[WeightedLiteral],
+    ) -> Result<(), ClingoError> {
         if unsafe {
             clingo_backend_minimize(
                 &mut self.0,
@@ -3122,7 +3119,7 @@ impl<'a> SymbolicAtom<'a> {
 }
 
 /// Container that stores theory atoms, elements, and terms of a program.
-/// 
+///
 /// **See:** [`Control::theory_atoms()`](struct.Control.html#method.theory_atoms)
 #[derive(Debug, Copy, Clone)]
 pub struct TheoryAtoms(clingo_theory_atoms_t);
@@ -3867,7 +3864,7 @@ impl PropagateControl {
     /// * `result` - the (positive) solver literal
     ///
     /// **Errors:**
-   ///
+    ///
     /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
     /// - [`ErrorType::Logic`](enum.ErrorType.html#variant.Logic) if the assignment is conflicting
     pub fn add_literal(&mut self, result: &mut Literal) -> Result<(), ClingoError> {
@@ -3934,7 +3931,11 @@ impl PropagateControl {
     /// # Errors
     ///
     /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
-    pub fn add_clause(&mut self, clause: &[Literal], ctype: ClauseType) -> Result<bool, ClingoError> {
+    pub fn add_clause(
+        &mut self,
+        clause: &[Literal],
+        ctype: ClauseType,
+    ) -> Result<bool, ClingoError> {
         let mut result = false;
         if unsafe {
             clingo_propagate_control_add_clause(
