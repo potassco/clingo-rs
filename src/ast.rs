@@ -165,8 +165,8 @@ impl Rule {
         unsafe { std::slice::from_raw_parts(self.0.body as *const BodyLiteral, self.0.size) }
     }
 
-    /// create an AstStatement for the rule
-    pub fn ast_statement<'a>(&'a self, Location(loc): Location) -> AstStatement<'a, ast::Rule> {
+    /// Create a statement for the rule.
+    pub fn ast_statement(&self, Location(loc): Location) -> AstStatement<ast::Rule> {
         let _bg_union_2 = clingo_ast_statement__bindgen_ty_1 {
             rule: &self.0 as *const clingo_ast_rule,
         };
@@ -184,12 +184,12 @@ impl Rule {
 #[derive(Copy, Clone)]
 pub struct Definition(clingo_ast_definition);
 impl Definition {
-    pub fn name(&self) -> &str {
+    pub fn name(&self) -> Result<&str, Utf8Error> {
         if self.0.name.is_null() {
-            ""
+            Ok("")
         } else {
             let c_str = unsafe { CStr::from_ptr(self.0.name) };
-            c_str.to_str().unwrap()
+            c_str.to_str()
         }
     }
     pub fn value(&self) -> Term {
@@ -248,24 +248,24 @@ impl Script {
             x => panic!("Failed to match clingo_ast_script_type: {}.", x),
         }
     }
-    pub fn code(&self) -> &str {
+    pub fn code(&self) -> Result<&str, Utf8Error> {
         if self.0.code.is_null() {
-            ""
+            Ok("")
         } else {
             let c_str = unsafe { CStr::from_ptr(self.0.code) };
-            c_str.to_str().unwrap()
+            c_str.to_str()
         }
     }
 }
 #[derive(Debug, Copy, Clone)]
 pub struct Program(clingo_ast_program);
 impl Program {
-    pub fn name(&self) -> &str {
+    pub fn name(&self) -> Result<&str, Utf8Error> {
         if self.0.name.is_null() {
-            ""
+            Ok("")
         } else {
             let c_str = unsafe { CStr::from_ptr(self.0.name) };
-            c_str.to_str().unwrap()
+            c_str.to_str()
         }
     }
     pub fn parameters(&self) -> &[Id] {
@@ -344,7 +344,7 @@ impl External {
     pub fn body(&self) -> &[BodyLiteral] {
         unsafe { std::slice::from_raw_parts(self.0.body as *const BodyLiteral, self.0.size) }
     }
-    /// create an AstStatement for the external
+    /// Create a statement for the external.
     pub fn ast_statement<'a>(&'a self, Location(loc): Location) -> AstStatement<'a, ast::External> {
         let _bg_union_2 = clingo_ast_statement__bindgen_ty_1 {
             external: &self.0 as *const clingo_ast_external,
@@ -533,12 +533,12 @@ impl Interval {
 #[derive(Debug, Copy, Clone)]
 pub struct Function(clingo_ast_function);
 impl Function {
-    pub fn name(&self) -> &str {
+    pub fn name(&self) -> Result<&str, Utf8Error> {
         if self.0.name.is_null() {
-            ""
+            Ok("")
         } else {
             let c_str = unsafe { CStr::from_ptr(self.0.name) };
-            c_str.to_str().unwrap()
+            c_str.to_str()
         }
     }
     pub fn arguments(&self) -> &[Term] {
@@ -561,8 +561,13 @@ impl CspProductTerm {
     pub fn coefficient(&self) -> Term {
         Term(self.0.coefficient)
     }
-    pub fn variable(&self) -> &Term {
-        unsafe { (self.0.variable as *const Term).as_ref() }.unwrap()
+    pub fn variable(&self) -> Result<&Term, WrapperError> {
+        match unsafe { (self.0.variable as *const Term).as_ref() } {
+            Some(x) => Ok(x),
+            None => Err(WrapperError {
+                msg: "tried casting a null pointer to &Term.",
+            }),
+        }
     }
 }
 #[derive(Debug, Copy, Clone)]
@@ -621,12 +626,12 @@ impl Id {
     pub fn location(&self) -> Location {
         Location(self.0.location)
     }
-    pub fn id(&self) -> &str {
+    pub fn id(&self) -> Result<&str, Utf8Error> {
         if self.0.id.is_null() {
-            ""
+            Ok("")
         } else {
             let c_str = unsafe { CStr::from_ptr(self.0.id) };
-            c_str.to_str().unwrap()
+            c_str.to_str()
         }
     }
 }
@@ -678,11 +683,21 @@ impl Aggregate {
             std::slice::from_raw_parts(self.0.elements as *const ConditionalLiteral, self.0.size)
         }
     }
-    pub fn left_guard(&self) -> &AggregateGuard {
-        unsafe { (self.0.left_guard as *const AggregateGuard).as_ref() }.unwrap()
+    pub fn left_guard(&self) -> Result<&AggregateGuard, WrapperError> {
+        match unsafe { (self.0.left_guard as *const AggregateGuard).as_ref() } {
+            Some(x) => Ok(x),
+            None => Err(WrapperError {
+                msg: "tried casting a null pointer to &AggregateGuard.",
+            }),
+        }
     }
-    pub fn right_guard(&self) -> &AggregateGuard {
-        unsafe { (self.0.right_guard as *const AggregateGuard).as_ref() }.unwrap()
+    pub fn right_guard(&self) -> Result<&AggregateGuard, WrapperError> {
+        match unsafe { (self.0.right_guard as *const AggregateGuard).as_ref() } {
+            Some(x) => Ok(x),
+            None => Err(WrapperError {
+                msg: "tried casting a null pointer to &AggregateGuard.",
+            }),
+        }
     }
 }
 
@@ -726,11 +741,21 @@ impl BodyAggregate {
             std::slice::from_raw_parts(self.0.elements as *const BodyAggregateElement, self.0.size)
         }
     }
-    pub fn left_guard(&self) -> &AggregateGuard {
-        unsafe { (self.0.left_guard as *const AggregateGuard).as_ref() }.unwrap()
+    pub fn left_guard(&self) -> Result<&AggregateGuard, WrapperError> {
+        match unsafe { (self.0.left_guard as *const AggregateGuard).as_ref() } {
+            Some(x) => Ok(x),
+            None => Err(WrapperError {
+                msg: "tried casting a null pointer to &AggregateGuard.",
+            }),
+        }
     }
-    pub fn right_guard(&self) -> &AggregateGuard {
-        unsafe { (self.0.right_guard as *const AggregateGuard).as_ref() }.unwrap()
+    pub fn right_guard(&self) -> Result<&AggregateGuard, WrapperError> {
+        match unsafe { (self.0.right_guard as *const AggregateGuard).as_ref() } {
+            Some(x) => Ok(x),
+            None => Err(WrapperError {
+                msg: "tried casting a null pointer to &AggregateGuard.",
+            }),
+        }
     }
 }
 #[derive(Copy, Clone)]
@@ -771,11 +796,21 @@ impl HeadAggregate {
             std::slice::from_raw_parts(self.0.elements as *const HeadAggregateElement, self.0.size)
         }
     }
-    pub fn left_guard(&self) -> &AggregateGuard {
-        unsafe { (self.0.left_guard as *const AggregateGuard).as_ref() }.unwrap()
+    pub fn left_guard(&self) -> Result<&AggregateGuard, WrapperError> {
+        match unsafe { (self.0.left_guard as *const AggregateGuard).as_ref() } {
+            Some(x) => Ok(x),
+            None => Err(WrapperError {
+                msg: "tried casting a null pointer to &AggregateGuard.",
+            }),
+        }
     }
-    pub fn right_guard(&self) -> &AggregateGuard {
-        unsafe { (self.0.right_guard as *const AggregateGuard).as_ref() }.unwrap()
+    pub fn right_guard(&self) -> Result<&AggregateGuard, WrapperError> {
+        match unsafe { (self.0.right_guard as *const AggregateGuard).as_ref() } {
+            Some(x) => Ok(x),
+            None => Err(WrapperError {
+                msg: "tried casting a null pointer to &AggregateGuard.",
+            }),
+        }
     }
 }
 #[derive(Debug, Copy, Clone)]
@@ -851,12 +886,12 @@ impl TheoryTermArray {
 #[derive(Debug, Copy, Clone)]
 pub struct TheoryFunction(clingo_ast_theory_function);
 impl TheoryFunction {
-    pub fn name(&self) -> &str {
+    pub fn name(&self) -> Result<&str, Utf8Error> {
         if self.0.name.is_null() {
-            ""
+            Ok("")
         } else {
             let c_str = unsafe { CStr::from_ptr(self.0.name) };
-            c_str.to_str().unwrap()
+            c_str.to_str()
         }
     }
     pub fn arguments(&self) -> &[TheoryTerm] {
@@ -866,16 +901,18 @@ impl TheoryFunction {
 #[derive(Copy, Clone)]
 pub struct TheoryUnparsedTermElement(clingo_ast_theory_unparsed_term_element);
 impl TheoryUnparsedTermElement {
-    pub fn operators(&self) -> Vec<&str> {
+    pub fn operators(&self) -> Result<Vec<&str>, Utf8Error> {
         let s1 = unsafe {
             std::slice::from_raw_parts(
                 self.0.operators as *const ::std::os::raw::c_char,
                 self.0.size,
             )
         };
-        s1.iter()
-            .map(|char_ptr| unsafe { CStr::from_ptr(char_ptr) }.to_str().unwrap())
-            .collect::<Vec<&str>>()
+        let mut akku = vec![];
+        for char_ptr in s1.iter() {
+            akku.push(unsafe { CStr::from_ptr(char_ptr) }.to_str()?);
+        }
+        Ok(akku)
     }
     pub fn term(&self) -> TheoryTerm {
         TheoryTerm(self.0.term)
@@ -908,12 +945,12 @@ impl TheoryAtomElement {
 #[derive(Copy, Clone)]
 pub struct TheoryGuard(clingo_ast_theory_guard);
 impl TheoryGuard {
-    pub fn operator_name(&self) -> &str {
+    pub fn operator_name(&self) -> Result<&str, Utf8Error> {
         if self.0.operator_name.is_null() {
-            ""
+            Ok("")
         } else {
             let c_str = unsafe { CStr::from_ptr(self.0.operator_name) };
-            c_str.to_str().unwrap()
+            c_str.to_str()
         }
     }
     pub fn term(&self) -> TheoryTerm {
@@ -931,8 +968,13 @@ impl TheoryAtom {
             std::slice::from_raw_parts(self.0.elements as *const TheoryAtomElement, self.0.size)
         }
     }
-    pub fn guard(&self) -> &TheoryGuard {
-        unsafe { (self.0.guard as *const TheoryGuard).as_ref() }.unwrap()
+    pub fn guard(&self) -> Result<&TheoryGuard, WrapperError> {
+        match unsafe { (self.0.guard as *const TheoryGuard).as_ref() } {
+            Some(x) => Ok(x),
+            None => Err(WrapperError {
+                msg: "tried casting a null pointer to &TheoryGuard.",
+            }),
+        }
     }
 }
 #[derive(Debug, Copy, Clone)]
@@ -941,12 +983,12 @@ impl TheoryOperatorDefinition {
     pub fn location(&self) -> Location {
         Location(self.0.location)
     }
-    pub fn name(&self) -> &str {
+    pub fn name(&self) -> Result<&str, Utf8Error> {
         if self.0.name.is_null() {
-            ""
+            Ok("")
         } else {
             let c_str = unsafe { CStr::from_ptr(self.0.name) };
-            c_str.to_str().unwrap()
+            c_str.to_str()
         }
     }
     pub fn priority(&self) -> u32 {
@@ -973,12 +1015,12 @@ impl TheoryTermDefinition {
     pub fn location(&self) -> Location {
         Location(self.0.location)
     }
-    pub fn name(&self) -> &str {
+    pub fn name(&self) -> Result<&str, Utf8Error> {
         if self.0.name.is_null() {
-            ""
+            Ok("")
         } else {
             let c_str = unsafe { CStr::from_ptr(self.0.name) };
-            c_str.to_str().unwrap()
+            c_str.to_str()
         }
     }
     pub fn operators(&self) -> &[TheoryOperatorDefinition] {
@@ -993,27 +1035,26 @@ impl TheoryTermDefinition {
 #[derive(Debug, Copy, Clone)]
 pub struct TheoryGuardDefinition(clingo_ast_theory_guard_definition);
 impl TheoryGuardDefinition {
-    pub fn term(&self) -> &str {
+    pub fn term(&self) -> Result<&str, Utf8Error> {
         if self.0.term.is_null() {
-            ""
+            Ok("")
         } else {
             let c_str = unsafe { CStr::from_ptr(self.0.term) };
-            c_str.to_str().unwrap()
+            c_str.to_str()
         }
     }
-    pub fn operators(&self) -> Vec<&str> {
+    pub fn operators(&self) -> Result<Vec<&str>, Utf8Error> {
         let s1 = unsafe {
             std::slice::from_raw_parts(
                 self.0.operators as *const ::std::os::raw::c_char,
                 self.0.size,
             )
         };
-        s1.iter()
-            .map(|char_ptr| {
-                let c_str = unsafe { CStr::from_ptr(char_ptr) };
-                c_str.to_str().unwrap()
-            })
-            .collect::<Vec<&str>>()
+        let mut akku = vec![];
+        for char_ptr in s1.iter() {
+            akku.push(unsafe { CStr::from_ptr(char_ptr) }.to_str()?);
+        }
+        Ok(akku)
     }
 }
 #[derive(Debug, Copy, Clone)]
@@ -1054,38 +1095,43 @@ impl TheoryAtomDefinition {
             ),
         }
     }
-    pub fn name(&self) -> &str {
+    pub fn name(&self) -> Result<&str, Utf8Error> {
         if self.0.name.is_null() {
-            ""
+            Ok("")
         } else {
             let c_str = unsafe { CStr::from_ptr(self.0.name) };
-            c_str.to_str().unwrap()
+            c_str.to_str()
         }
     }
     pub fn arity(&self) -> u32 {
         self.0.arity
     }
-    pub fn elements(&self) -> &str {
+    pub fn elements(&self) -> Result<&str, Utf8Error> {
         if self.0.elements.is_null() {
-            ""
+            Ok("")
         } else {
             let c_str = unsafe { CStr::from_ptr(self.0.elements) };
-            c_str.to_str().unwrap()
+            c_str.to_str()
         }
     }
-    pub fn guard(&self) -> &TheoryGuardDefinition {
-        unsafe { (self.0.guard as *const TheoryGuardDefinition).as_ref() }.unwrap()
+    pub fn guard(&self) -> Result<&TheoryGuardDefinition, WrapperError> {
+        match unsafe { (self.0.guard as *const TheoryGuardDefinition).as_ref() } {
+            Some(x) => Ok(x),
+            None => Err(WrapperError {
+                msg: "tried casting a null pointer to &TheoryGuardDefinition.",
+            }),
+        }
     }
 }
 #[derive(Debug, Copy, Clone)]
 pub struct TheoryDefinition(clingo_ast_theory_definition);
 impl TheoryDefinition {
-    pub fn name(&self) -> &str {
+    pub fn name(&self) -> Result<&str, Utf8Error> {
         if self.0.name.is_null() {
-            ""
+            Ok("")
         } else {
             let c_str = unsafe { CStr::from_ptr(self.0.name) };
-            c_str.to_str().unwrap()
+            c_str.to_str()
         }
     }
     pub fn terms(&self) -> &[TheoryTermDefinition] {

@@ -19,7 +19,7 @@ use libc::c_char;
 use clingo_sys::*;
 pub use failure::Error;
 
-/// Functions and data structures to work with program ASTs
+/// Functions and data structures to work with program ASTs.
 pub mod ast;
 
 /// Error from the clingo library.
@@ -34,10 +34,10 @@ pub struct ClingoError {
     pub msg: &'static str,
 }
 
-/// Error discovered in the bindings like null pointers or failed calls to C functions
+/// Error in the rust wrapper, like null pointers or failed calls to C functions.
 #[derive(Debug, Fail)]
-#[fail(display = "Error discovered in the bindings: {}", msg)]
-pub struct BindingError {
+#[fail(display = "Error in the wrapper: {}", msg)]
+pub struct WrapperError {
     msg: &'static str,
 }
 
@@ -85,7 +85,7 @@ pub enum TruthValue {
 /// The values of this enumeration determine if a clause is subject to one of the above deletion strategies.
 #[derive(Debug, Copy, Clone)]
 pub enum ClauseType {
-    ///  clause is subject to the solvers deletion policy
+    /// clause is subject to the solvers deletion policy
     Learnt = clingo_clause_type_clingo_clause_type_learnt as isize,
     /// clause is not subject to the solvers deletion policy
     Static = clingo_clause_type_clingo_clause_type_static as isize,
@@ -730,7 +730,7 @@ impl Location {
             Ok("")
         } else {
             let c_str = unsafe { CStr::from_ptr(self.0.begin_file) };
-            Ok(c_str.to_str()?)
+            c_str.to_str()
         }
     }
     /// the file where the location ends
@@ -739,7 +739,7 @@ impl Location {
             Ok("")
         } else {
             let c_str = unsafe { CStr::from_ptr(self.0.end_file) };
-            Ok(c_str.to_str()?)
+            c_str.to_str()
         }
     }
     /// the line where the location begins
@@ -828,7 +828,7 @@ impl Signature {
             Ok("")
         } else {
             let c_str = unsafe { CStr::from_ptr(char_ptr) };
-            Ok(c_str.to_str()?)
+            c_str.to_str()
         }
     }
 
@@ -1239,7 +1239,7 @@ impl<'a> Part<'a> {
     /// - [`NulError`](https://doc.rust-lang.org/std/ffi/struct.NulError.html) - if `name` contains a nul byte
     /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
     /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if argument parsing fails
-    /// - [`BindingError`](struct.BindingError.html)
+    /// - [`WrapperError`](struct.WrapperError.html)
     pub fn new(name: &str, params: &'a [Symbol]) -> Result<Part<'a>, Error> {
         Ok(Part {
             name: CString::new(name)?,
@@ -1291,7 +1291,7 @@ pub fn set_error(code: ErrorType, message: &str) -> Result<(), NulError> {
     Ok(())
 }
 
-pub fn set_internal_error(code: ErrorType, message: &'static str) {
+fn set_internal_error(code: ErrorType, message: &'static str) {
     // unwrap won't panic, because the function only used internally on valid UTF-8 strings
     let message = CString::new(message).unwrap();
     unsafe { clingo_set_error(code as clingo_error_t, message.as_ptr()) }
@@ -1539,7 +1539,7 @@ impl Control {
     /// - [`NulError`](https://doc.rust-lang.org/std/ffi/struct.NulError.html) - if an argument contains a nul byte
     /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
     /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if argument parsing fails
-    /// - [`BindingError`](struct.BindingError.html)
+    /// - [`WrapperError`](struct.WrapperError.html)
     pub fn new(arguments: std::vec::Vec<String>) -> Result<Control, Error> {
         let logger = None;
         let logger_data = std::ptr::null_mut();
@@ -1569,7 +1569,7 @@ impl Control {
         } {
             match Unique::new(ctl_ptr) {
                 Some(ctl) => Ok(Control { ctl: ctl }),
-                None => Err(BindingError {
+                None => Err(WrapperError {
                     msg: "tried creating Unique from a null pointer.",
                 })?,
             }
@@ -1628,7 +1628,7 @@ impl Control {
         } {
             match Unique::new(ctl_ptr) {
                 Some(ctl) => Ok(Control { ctl: ctl }),
-                None => Err(BindingError {
+                None => Err(WrapperError {
                     msg: "tried creating Unique from a null pointer.",
                 })?,
             }
@@ -1787,7 +1787,7 @@ impl Control {
     ///
     /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
     /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if solving could not be started
-    /// - [`BindingError`](struct.BindingError.html)
+    /// - [`WrapperError`](struct.WrapperError.html)
     pub fn solve(
         &mut self,
         mode: &SolveMode,
@@ -1807,7 +1807,7 @@ impl Control {
         } {
             match unsafe { handle.as_mut() } {
                 Some(handle_ref) => Ok(SolveHandle { theref: handle_ref }),
-                None => Err(BindingError {
+                None => Err(WrapperError {
                     msg: "tried casting a null pointer to &mut clingo_solve_handle.",
                 })?,
             }
@@ -1827,7 +1827,7 @@ impl Control {
     ///
     /// # Errors
     ///
-    /// - [`BindingError`](struct.BindingError.html)
+    /// - [`WrapperError`](struct.WrapperError.html)
     /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
     /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if solving could not be started
     pub fn solve_with_event_handler<T: SolveEventHandler>(
@@ -1851,7 +1851,7 @@ impl Control {
         } {
             match unsafe { handle.as_mut() } {
                 Some(handle_ref) => Ok(SolveHandle { theref: handle_ref }),
-                None => Err(BindingError {
+                None => Err(WrapperError {
                     msg: "tried casting a null pointer to &mut clingo_solve_handle.",
                 })?,
             }
@@ -1989,8 +1989,8 @@ impl Control {
         if unsafe { clingo_control_statistics(self.ctl.as_ptr(), &mut stat) } {
             match unsafe { (stat as *mut Statistics).as_ref() } {
                 Some(x) => Ok(x),
-                None => Err(BindingError {
-                    msg: "Failed dereferencing pointer to clingo_statistics.",
+                None => Err(WrapperError {
+                    msg: "tried casting a null pointer to &Statistics.",
                 })?,
             }
         } else {
@@ -2165,7 +2165,7 @@ impl Control {
     }
 
     /// Get an object to add non-ground directives to the program.
-    pub fn program_builder(&mut self) -> Result<ProgramBuilder, BindingError> {
+    pub fn program_builder(&mut self) -> Result<ProgramBuilder, WrapperError> {
         let mut builder = std::ptr::null_mut() as *mut clingo_program_builder_t;
         if unsafe { clingo_control_program_builder(self.ctl.as_ptr(), &mut builder) } {
             // begin building the program
@@ -2174,17 +2174,17 @@ impl Control {
                     Some(builder_ref) => Ok(ProgramBuilder {
                         theref: builder_ref,
                     }),
-                    None => Err(BindingError {
+                    None => Err(WrapperError {
                         msg: "tried casting a null pointer to &mut clingo_program_builder.",
                     }),
                 }
             } else {
-                Err(BindingError {
+                Err(WrapperError {
                     msg: "clingo_program_builder_begin() failed.",
                 })
             }
         } else {
-            Err(BindingError {
+            Err(WrapperError {
                 msg: "clingo_control_program_builder() failed.",
             })
         }
@@ -2199,15 +2199,14 @@ pub struct AstStatement<'a, T: 'a> {
     phantom: PhantomData<&'a T>,
 }
 impl<'a, T> AstStatement<'a, T> {
-    /// get the location of the statement
+    /// Get the location of the statement.
     pub fn location(&self) -> Location {
         Location(self.data.location)
     }
 
-    /// get the type of the statement
+    /// Get the type of the statement.
     pub fn statement_type(&self) -> ast::StatementType {
-        let stm = &self.data;
-        match stm.type_ as u32 {
+        match self.data.type_ as u32 {
             clingo_ast_statement_type_clingo_ast_statement_type_rule => ast::StatementType::Rule,
             clingo_ast_statement_type_clingo_ast_statement_type_const => ast::StatementType::Const,
             clingo_ast_statement_type_clingo_ast_statement_type_show_signature => {
@@ -2245,12 +2244,12 @@ impl<'a, T> AstStatement<'a, T> {
         }
     }
 
-    /// get a reference to the rule if the statement is a rule
+    /// Get a reference to the rule if the statement is a rule.
     pub fn rule(&self) -> Option<&ast::Rule> {
         match self.statement_type() {
             ast::StatementType::Rule => {
-                let stm = &self.data;
-                let ast_rule_ptr = unsafe { stm.__bindgen_anon_1.rule as *const clingo_ast_rule_t };
+                let ast_rule_ptr =
+                    unsafe { self.data.__bindgen_anon_1.rule as *const clingo_ast_rule_t };
                 Some(unsafe {
                     (ast_rule_ptr as *const ast::Rule)
                         .as_ref()
@@ -2325,7 +2324,7 @@ impl Configuration {
     }
 
     /// Get the description of an entry.
-    pub fn description(&self, Id(key): Id) -> Result<&str, BindingError> {
+    pub fn description(&self, Id(key): Id) -> Result<&str, WrapperError> {
         let mut description_ptr = unsafe { mem::uninitialized() };
         if unsafe {
             clingo_configuration_description(
@@ -2338,7 +2337,7 @@ impl Configuration {
             // all descriptions should be valid UTF-8 strings
             Ok(cstr.to_str().unwrap())
         } else {
-            Err(BindingError {
+            Err(WrapperError {
                 msg: "clingo_configuration_description() failed.",
             })
         }
@@ -2433,7 +2432,7 @@ impl Configuration {
     ///
     /// * `key` - the key
     /// * `offset` - the offset of the name
-    pub fn map_subkey_name(&self, Id(key): Id, offset: usize) -> Result<&str, BindingError> {
+    pub fn map_subkey_name(&self, Id(key): Id, offset: usize) -> Result<&str, WrapperError> {
         let mut name_ptr = unsafe { mem::uninitialized() };
         if unsafe {
             clingo_configuration_map_subkey_name(
@@ -2447,7 +2446,7 @@ impl Configuration {
             // all configuration keys should be valid UTF-8 strings
             Ok(cstr.to_str().unwrap())
         } else {
-            Err(BindingError {
+            Err(WrapperError {
                 msg: "clingo_configuration_map_subkey_name() failed.",
             })
         }
@@ -2502,7 +2501,7 @@ impl Configuration {
     ///
     /// # Errors
     ///
-    /// - [`BindingError`](struct.BindingError.html)
+    /// - [`WrapperError`](struct.WrapperError.html)
     /// - [`Utf8Error`](https://doc.rust-lang.org/std/str/struct.Utf8Error.html)
     pub fn value_get(&self, Id(key): Id) -> Result<&str, Error> {
         let mut size = 0;
@@ -2512,12 +2511,12 @@ impl Configuration {
                 let cstr = unsafe { CStr::from_ptr(&value_ptr) };
                 Ok(cstr.to_str()?)
             } else {
-                Err(BindingError {
+                Err(WrapperError {
                     msg: "clingo_configuration_value_get() failed.",
                 })?
             }
         } else {
-            Err(BindingError {
+            Err(WrapperError {
                 msg: "clingo_configuration_value_get_size() failed.",
             })?
         }
@@ -2537,13 +2536,13 @@ impl Configuration {
     /// # Errors
     ///
     /// - [`NulError`](https://doc.rust-lang.org/std/ffi/struct.NulError.html) - if `value` contains a nul byte
-    /// - [`BindingError`](struct.BindingError.html)
+    /// - [`WrapperError`](struct.WrapperError.html)
     pub fn value_set(&mut self, Id(key): Id, value: &str) -> Result<(), Error> {
         let value = CString::new(value)?;
         if unsafe { clingo_configuration_value_set(&mut self.0, key, value.as_ptr()) } {
             Ok(())
         } else {
-            Err(BindingError {
+            Err(WrapperError {
                 msg: "clingo_configuration_value_set() failed.",
             })?
         }
@@ -2899,7 +2898,7 @@ impl Statistics {
         if unsafe { clingo_statistics_map_subkey_name(&self.0, key, offset, &mut name) } {
             Ok(unsafe { CStr::from_ptr(name) }.to_str()?)
         } else {
-            Err(BindingError {
+            Err(WrapperError {
                 msg: "clingo_statistics_map_subkey_name() failed.",
             })?
         }
@@ -3125,12 +3124,12 @@ impl<'a> SymbolicAtom<'a> {
 pub struct TheoryAtoms(clingo_theory_atoms_t);
 impl TheoryAtoms {
     /// Get the total number of theory atoms.
-    pub fn size(&self) -> Result<usize, BindingError> {
+    pub fn size(&self) -> Result<usize, WrapperError> {
         let mut size = 0 as usize;
         if unsafe { clingo_theory_atoms_size(&self.0, &mut size) } {
             Ok(size)
         } else {
-            Err(BindingError {
+            Err(WrapperError {
                 msg: "clingo_theory_atoms_size() failed.",
             })
         }
@@ -3209,7 +3208,7 @@ impl TheoryAtoms {
             let c_str = unsafe { CStr::from_ptr(char_ptr) };
             Ok(c_str.to_str()?)
         } else {
-            Err(BindingError {
+            Err(WrapperError {
                 msg: "clingo_theory_atoms_term_name() failed.",
             })?
         }
@@ -3402,7 +3401,7 @@ impl TheoryAtoms {
             let cstr = unsafe { CStr::from_ptr(c_ptr) };
             Ok((cstr.to_str()?, Id(term)))
         } else {
-            Err(BindingError {
+            Err(WrapperError {
                 msg: "clingo_theory_atoms_atom_guard() failed.",
             })?
         }
@@ -3831,24 +3830,24 @@ impl PropagateControl {
     }
 
     /// Get the assignment associated with the underlying solver.
-    pub fn assignment(&self) -> Result<&Assignment, BindingError> {
+    pub fn assignment(&self) -> Result<&Assignment, WrapperError> {
         match unsafe {
             (clingo_propagate_control_assignment(&self.0) as *const Assignment).as_ref()
         } {
             Some(stm) => Ok(stm),
-            None => Err(BindingError {
+            None => Err(WrapperError {
                 msg: "tried casting a null pointer to &Assignment.",
             }),
         }
     }
 
     /// Get the assignment associated with the underlying solver.
-    pub fn assignment_mut(&mut self) -> Result<&mut Assignment, BindingError> {
+    pub fn assignment_mut(&mut self) -> Result<&mut Assignment, WrapperError> {
         match unsafe {
             (clingo_propagate_control_assignment(&mut self.0) as *mut Assignment).as_mut()
         } {
             Some(stm) => Ok(stm),
-            None => Err(BindingError {
+            None => Err(WrapperError {
                 msg: "tried casting a null pointer to &mut Assignment.",
             }),
         }
@@ -4135,7 +4134,7 @@ impl<'a> SolveHandle<'a> {
         if unsafe { clingo_solve_handle_model(self.theref, &mut model) } {
             match unsafe { (model as *const Model).as_ref() } {
                 Some(x) => Ok(x),
-                None => Err(BindingError {
+                None => Err(WrapperError {
                     msg: "tried casting a null pointer to &Model.",
                 })?,
             }
@@ -4156,7 +4155,7 @@ impl<'a> SolveHandle<'a> {
         if unsafe { clingo_solve_handle_model(self.theref, &mut model) } {
             match unsafe { (model as *mut Model).as_mut() } {
                 Some(x) => Ok(x),
-                None => Err(BindingError {
+                None => Err(WrapperError {
                     msg: "tried casting a null pointer to &mut Model.",
                 })?,
             }
