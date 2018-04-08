@@ -322,7 +322,7 @@ type AstCallback =
     unsafe extern "C" fn(arg1: *const clingo_ast_statement_t, arg2: *mut ::std::os::raw::c_void)
         -> bool;
 pub trait AstStatementHandler {
-    /// Callback function called on an AstStatement while traversing the Ast.
+    /// Callback function called on an ast statement while traversing the ast.
     ///
     /// **Returns** whether the call was successful
     fn on_statement<T>(&mut self, arg1: &AstStatement<T>) -> bool;
@@ -709,6 +709,22 @@ impl Signature {
             Ok(Signature(signature))
         } else {
             Err(error())?
+        }
+    }
+
+    /// Create a statement for the signature.
+    pub fn ast_statement(&self, Location(loc): Location) -> AstStatement<Signature> {
+        let _bg_union_2 = clingo_ast_statement__bindgen_ty_1 {
+            project_signature: self.0 as clingo_signature_t,
+        };
+        let stm = clingo_ast_statement_t {
+            location: loc,
+            type_: ast::StatementType::ProjectAtomSignature as clingo_ast_statement_type_t,
+            __bindgen_anon_1: _bg_union_2,
+        };
+        AstStatement {
+            data: stm,
+            phantom: PhantomData,
         }
     }
 
@@ -2087,6 +2103,7 @@ impl Control {
 
     // NODO: pub fn clingo_control_clasp_facade()
 }
+
 /// Representation of a program statement.
 #[derive(Clone)]
 pub struct AstStatement<'a, T: 'a> {
@@ -2140,18 +2157,52 @@ impl<'a, T> AstStatement<'a, T> {
     }
 
     /// Get a reference to the rule if the statement is a rule.
-    pub fn rule(&self) -> Option<&ast::Rule> {
+    pub fn rule(&self) -> Result<&ast::Rule, WrapperError> {
         match self.statement_type() {
             ast::StatementType::Rule => {
-                let ast_rule_ptr =
-                    unsafe { self.data.__bindgen_anon_1.rule as *const clingo_ast_rule_t };
-                Some(unsafe {
-                    (ast_rule_ptr as *const ast::Rule)
-                        .as_ref()
-                        .unwrap_or_else(|| panic!("Tried dereferencing a null pointer."))
-                })
+                let rule = unsafe { self.data.__bindgen_anon_1.rule as *const clingo_ast_rule_t };
+                match unsafe { (rule as *const ast::Rule).as_ref() } {
+                    Some(reference) => Ok(reference),
+                    None => Err(WrapperError {
+                        msg: "tried casting a null pointer to &ast::Rule.",
+                    }),
+                }
             }
-            _ => None,
+            _ => Err(WrapperError {
+                msg: "Wrong StatementType,",
+            }),
+        }
+    }
+
+    /// Get a reference to the external if the [statement type](#method.statement_type) is [`External`](ast/enum.StatementType.html#variant.External).
+    pub fn external(&self) -> Result<&ast::External, WrapperError> {
+        match self.statement_type() {
+            ast::StatementType::External => {
+                let external =
+                    unsafe { self.data.__bindgen_anon_1.external as *const clingo_ast_external_t };
+                match unsafe { (external as *const ast::External).as_ref() } {
+                    Some(reference) => Ok(reference),
+                    None => Err(WrapperError {
+                        msg: "tried casting a null pointer to &ast::External.",
+                    }),
+                }
+            }
+            _ => Err(WrapperError {
+                msg: "Wrong StatementType,",
+            }),
+        }
+    }
+
+    /// Get project signature if the [statement type](#method.statement_type) is [`ProjectAtomSignature`](ast/enum.StatementType.html#variant.ProjectAtomSignature).
+    pub fn project_signature(&self) -> Result<Signature, WrapperError> {
+        match self.statement_type() {
+            ast::StatementType::ProjectAtomSignature => {
+                let project_signature = unsafe { self.data.__bindgen_anon_1.project_signature };
+                Ok(Signature(project_signature))
+            }
+            _ => Err(WrapperError {
+                msg: "Wrong StatementType,",
+            }),
         }
     }
 }

@@ -164,7 +164,6 @@ impl Rule {
     pub fn body(&self) -> &[BodyLiteral] {
         unsafe { std::slice::from_raw_parts(self.0.body as *const BodyLiteral, self.0.size) }
     }
-
     /// Create a statement for the rule.
     pub fn ast_statement(&self, Location(loc): Location) -> AstStatement<ast::Rule> {
         let _bg_union_2 = clingo_ast_statement__bindgen_ty_1 {
@@ -345,7 +344,7 @@ impl External {
         unsafe { std::slice::from_raw_parts(self.0.body as *const BodyLiteral, self.0.size) }
     }
     /// Create a statement for the external.
-    pub fn ast_statement<'a>(&'a self, Location(loc): Location) -> AstStatement<'a, ast::External> {
+    pub fn ast_statement(&self, Location(loc): Location) -> AstStatement<ast::External> {
         let _bg_union_2 = clingo_ast_statement__bindgen_ty_1 {
             external: &self.0 as *const clingo_ast_external,
         };
