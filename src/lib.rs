@@ -46,15 +46,15 @@ pub struct WrapperError {
 /// Enumeration of clingo error types for [`ClingoError`](struct.ClingoError.html).
 #[derive(Debug, Copy, Clone)]
 pub enum ErrorType {
-    /// successful API calls
+    /// Successful API calls
     Success = clingo_error_clingo_error_success as isize,
-    /// errors only detectable at runtime like invalid input
+    /// Errors only detectable at runtime like invalid input
     Runtime = clingo_error_clingo_error_runtime as isize,
-    /// wrong usage of the clingo API
+    /// Wrong usage of the clingo API
     Logic = clingo_error_clingo_error_logic as isize,
-    /// memory could not be allocated
+    /// Memory could not be allocated
     BadAlloc = clingo_error_clingo_error_bad_alloc as isize,
-    /// errors unrelated to clingo
+    /// Errors unrelated to clingo
     Unknown = clingo_error_clingo_error_unknown as isize,
 }
 impl From<i32> for ErrorType {
@@ -73,11 +73,11 @@ impl From<i32> for ErrorType {
 /// Represents three-valued truth values.
 #[derive(Debug, Copy, Clone)]
 pub enum TruthValue {
-    // no truth value
+    // No truth value
     Free = clingo_truth_value_clingo_truth_value_free as isize,
-    //     true
+    //     True
     True = clingo_truth_value_clingo_truth_value_true as isize,
-    //     false
+    //     False
     False = clingo_truth_value_clingo_truth_value_false as isize,
 }
 
@@ -87,13 +87,13 @@ pub enum TruthValue {
 /// The values of this enumeration determine if a clause is subject to one of the above deletion strategies.
 #[derive(Debug, Copy, Clone)]
 pub enum ClauseType {
-    /// clause is subject to the solvers deletion policy
+    /// The clause is subject to the solvers deletion policy
     Learnt = clingo_clause_type_clingo_clause_type_learnt as isize,
-    /// clause is not subject to the solvers deletion policy
+    /// The clause is not subject to the solvers deletion policy
     Static = clingo_clause_type_clingo_clause_type_static as isize,
-    /// like `Learnt` but the clause is deleted after a solving step
+    /// Like `Learnt` but the clause is deleted after a solving step
     Volatile = clingo_clause_type_clingo_clause_type_volatile as isize,
-    /// like `Static` but the clause is deleted after a solving step
+    /// Like `Static` but the clause is deleted after a solving step
     VolatileStatic = clingo_clause_type_clingo_clause_type_volatile_static as isize,
 }
 
@@ -109,94 +109,94 @@ pub enum SolveEventType {
 /// Enumeration for entries of the statistics.
 #[derive(Debug, Copy, Clone)]
 pub enum StatisticsType {
-    /// the entry is invalid (has neither of the types below)
+    /// The entry is invalid (has neither of the types below)
     Empty = clingo_statistics_type_clingo_statistics_type_empty as isize,
-    /// the entry is a (string) value
+    /// The entry is a (string) value
     Value = clingo_statistics_type_clingo_statistics_type_value as isize,
-    /// the entry is an array
+    /// The entry is an array
     Array = clingo_statistics_type_clingo_statistics_type_array as isize,
-    /// the entry is a map
+    /// The entry is a map
     Map = clingo_statistics_type_clingo_statistics_type_map as isize,
 }
 
 /// Enumeration of available symbol types.
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum SymbolType {
-    /// the `#inf` symbol
+    /// The `#inf` symbol
     Infimum = clingo_symbol_type_clingo_symbol_type_infimum as isize,
-    /// a numeric symbol, e.g., `1`
+    /// A numeric symbol, e.g., `1`
     Number = clingo_symbol_type_clingo_symbol_type_number as isize,
-    /// a string symbol, e.g., `"a"`
+    /// A string symbol, e.g., `"a"`
     String = clingo_symbol_type_clingo_symbol_type_string as isize,
-    /// a numeric symbol, e.g., `c`, `(1, "a")`, or `f(1,"a")`
+    /// A numeric symbol, e.g., `c`, `(1, "a")`, or `f(1,"a")`
     Function = clingo_symbol_type_clingo_symbol_type_function as isize,
-    /// the `#sup` symbol
+    /// The `#sup` symbol
     Supremum = clingo_symbol_type_clingo_symbol_type_supremum as isize,
 }
 
 /// Enumeration of warning codes.
 #[derive(Debug, Copy, Clone)]
 pub enum Warning {
-    /// undefined arithmetic operation or weight of aggregate
+    /// Undefined arithmetic operation or weight of aggregate
     OperationUndefined = clingo_warning_clingo_warning_operation_undefined as isize,
-    /// to report multiple errors; a corresponding runtime error is raised later
+    /// To report multiple errors; a corresponding runtime error is raised later
     RuntimeError = clingo_warning_clingo_warning_runtime_error as isize,
-    /// undefined atom in program
+    /// An undefined atom in program
     AtomUndefined = clingo_warning_clingo_warning_atom_undefined as isize,
-    /// same file included multiple times
+    /// The Same file included multiple times
     FileIncluded = clingo_warning_clingo_warning_file_included as isize,
     /// CSP variable with unbounded domain
     VariableUnbound = clingo_warning_clingo_warning_variable_unbounded as isize,
-    /// global variable in tuple of aggregate element
+    /// A global variable in tuple of aggregate element
     GlobalVariable = clingo_warning_clingo_warning_global_variable as isize,
-    /// other kinds of warnings
+    /// Other kinds of warnings
     Other = clingo_warning_clingo_warning_other as isize,
 }
 
 /// Enumeration of different external statements.
 #[derive(Debug, Copy, Clone)]
 pub enum ExternalType {
-    /// allow an external to be assigned freely
+    /// Allow an external to be assigned freely
     Free = clingo_external_type_clingo_external_type_free as isize,
-    /// assign an external to true
+    /// Assign an external to true
     True = clingo_external_type_clingo_external_type_true as isize,
-    /// assign an external to false
+    /// Assign an external to false
     False = clingo_external_type_clingo_external_type_false as isize,
-    /// no longer treat an atom as external
+    /// No longer treat an atom as external
     Release = clingo_external_type_clingo_external_type_release as isize,
 }
 
 /// Enumeration of different heuristic modifiers.
 #[derive(Debug, Copy, Clone)]
 pub enum HeuristicType {
-    /// set the level of an atom
+    /// Set the level of an atom
     Level = clingo_heuristic_type_clingo_heuristic_type_level as isize,
-    /// configure which sign to chose for an atom
+    /// Configure which sign to chose for an atom
     Sign = clingo_heuristic_type_clingo_heuristic_type_sign as isize,
-    /// modify VSIDS factor of an atom
+    /// Modify VSIDS factor of an atom
     Factor = clingo_heuristic_type_clingo_heuristic_type_factor as isize,
-    /// modify the initial VSIDS score of an atom
+    /// Modify the initial VSIDS score of an atom
     Init = clingo_heuristic_type_clingo_heuristic_type_init as isize,
-    /// set the level of an atom and choose a positive sign
+    /// Set the level of an atom and choose a positive sign
     True = clingo_heuristic_type_clingo_heuristic_type_true as isize,
-    /// set the level of an atom and choose a negative sign
+    /// Set the level of an atom and choose a negative sign
     False = clingo_heuristic_type_clingo_heuristic_type_false as isize,
 }
 
 /// Enumeration of theory term types.
 #[derive(Debug, Copy, Clone)]
 pub enum TheoryTermType {
-    /// a tuple term, e.g., `(1,2,3)`
+    /// A tuple term, e.g., `(1,2,3)`
     Tuple = clingo_theory_term_type_clingo_theory_term_type_tuple as isize,
-    /// a list term, e.g., `[1,2,3]`
+    /// A list term, e.g., `[1,2,3]`
     List = clingo_theory_term_type_clingo_theory_term_type_list as isize,
-    /// a set term, e.g., `{1,2,3}`
+    /// A set term, e.g., `{1,2,3}`
     Set = clingo_theory_term_type_clingo_theory_term_type_set as isize,
-    /// a function term, e.g., `f(1,2,3)`
+    /// A function term, e.g., `f(1,2,3)`
     Function = clingo_theory_term_type_clingo_theory_term_type_function as isize,
-    /// a number term, e.g., `42`
+    /// A number term, e.g., `42`
     Number = clingo_theory_term_type_clingo_theory_term_type_number as isize,
-    /// a symbol term, e.g., `c`
+    /// A symbol term, e.g., `c`
     Symbol = clingo_theory_term_type_clingo_theory_term_type_symbol as isize,
 }
 
@@ -214,11 +214,11 @@ pub enum ModelType {
 /// Supported check modes for propagators.
 #[derive(Debug, Copy, Clone)]
 pub enum PropagatorCheckMode {
-    /// do not call [`Propagator::check()`](trait.Propagator.html#method.check) at all
+    /// Do not call [`Propagator::check()`](trait.Propagator.html#method.check) at all
     None = clingo_propagator_check_mode_clingo_propagator_check_mode_none as isize,
-    /// call [`Propagator::check()`](trait.Propagator.html#method.check) on total assignment
+    /// Call [`Propagator::check()`](trait.Propagator.html#method.check) on total assignment
     Total = clingo_propagator_check_mode_clingo_propagator_check_mode_total as isize,
-    /// call [`Propagator::check()`](trait.Propagator.html#method.check) on propagation fixpoints
+    /// Call [`Propagator::check()`](trait.Propagator.html#method.check) on propagation fixpoints
     Fixpoint = clingo_propagator_check_mode_clingo_propagator_check_mode_fixpoint as isize,
 }
 
@@ -3417,7 +3417,7 @@ impl<'a> Iterator for TheoryAtomsIterator<'a> {
     }
 }
 
-/// A model.
+/// Represents a model.
 #[derive(Debug, Copy, Clone)]
 pub struct Model(clingo_model_t);
 impl Model {
