@@ -330,16 +330,16 @@ impl BodyLiteral {
 #[derive(Copy, Clone)]
 pub struct External(clingo_ast_external_t);
 impl External {
-    pub fn new(Term(term): Term, body: &[BodyLiteral]) -> External {
+    pub fn new(Atom(atom): Atom, body: &[BodyLiteral]) -> External {
         let ext = clingo_ast_external {
-            atom: term,
+            atom: atom,
             body: body.as_ptr() as *const clingo_ast_body_literal_t,
             size: body.len(),
         };
         External(ext)
     }
-    pub fn atom(&self) -> Term {
-        Term(self.0.atom)
+    pub fn atom(&self) -> Atom {
+        Atom(self.0.atom)
     }
     pub fn body(&self) -> &[BodyLiteral] {
         unsafe { std::slice::from_raw_parts(self.0.body as *const BodyLiteral, self.0.size) }
@@ -402,6 +402,23 @@ impl Project {
         unsafe { std::slice::from_raw_parts(self.0.body as *const BodyLiteral, self.0.size) }
     }
 }
+
+#[derive(Copy, Clone)]
+pub struct Atom(clingo_ast_term_t);
+impl Atom {
+    pub fn from_symbol(Location(location): Location, Symbol(symbol): Symbol) -> Atom {
+        let _bg_union_1 = clingo_ast_term__bindgen_ty_1 { symbol: symbol };
+        let term = clingo_ast_term_t {
+            location: location,
+            type_: TermType::Symbol as clingo_ast_term_type_t,
+            __bindgen_anon_1: _bg_union_1,
+        };
+        Atom(term)
+    }
+    pub fn location(&self) -> Location {
+        Location(self.0.location)
+    }
+}
 #[derive(Copy, Clone)]
 pub struct Term(clingo_ast_term_t);
 impl Term {
@@ -409,10 +426,28 @@ impl Term {
         let _bg_union_1 = clingo_ast_term__bindgen_ty_1 { symbol: symbol };
         let term = clingo_ast_term_t {
             location: location,
-            type_: clingo_ast_term_type_clingo_ast_term_type_symbol as clingo_ast_term_type_t,
+            type_: TermType::Symbol as clingo_ast_term_type_t,
             __bindgen_anon_1: _bg_union_1,
         };
         Term(term)
+    }
+
+    /// Create a variable term
+    ///
+    /// # Errors
+    ///
+    /// - [`NulError`](https://doc.rust-lang.org/std/ffi/struct.NulError.html) - if `string` contains a nul byte
+    pub fn new_variable(Location(location): Location, string: &str) -> Result<Term, NulError> {
+        let cstr = CString::new(string)?;
+        let _bg_union_1 = clingo_ast_term__bindgen_ty_1 {
+            variable: cstr.as_ptr(),
+        };
+        let term = clingo_ast_term_t {
+            location: location,
+            type_: TermType::Variable as clingo_ast_term_type_t,
+            __bindgen_anon_1: _bg_union_1,
+        };
+        Ok(Term(term))
     }
 
     pub fn location(&self) -> Location {
@@ -438,19 +473,13 @@ impl Term {
 #[derive(Copy, Clone)]
 pub struct Literal(clingo_ast_literal_t);
 impl Literal {
-    pub fn new(
-        Location(location): Location,
-        sign: Sign,
-        type_: LiteralType,
-        sym: &Term,
-    ) -> Literal {
-        let symbol: *const Term = sym;
+    pub fn from_atom(Location(location): Location, sign: Sign, Atom(atom): &Atom) -> Literal {
         let _bg_union_2 = clingo_ast_literal__bindgen_ty_1 {
-            symbol: symbol as *const clingo_sys::clingo_ast_term,
+            symbol: atom as *const clingo_sys::clingo_ast_term,
         };
         let lit = clingo_ast_literal_t {
             location: location,
-            type_: type_ as clingo_ast_literal_type_t,
+            type_: LiteralType::Symbolic as clingo_ast_literal_type_t,
             sign: sign as clingo_ast_sign_t,
             __bindgen_anon_1: _bg_union_2,
         };

@@ -4,7 +4,7 @@ use std::env;
 use clingo::*;
 
 pub struct OnStatementData<'a> {
-    atom: ast::Term,
+    atom: ast::Atom,
     builder: Option<ProgramBuilder<'a>>,
 }
 
@@ -22,7 +22,7 @@ impl<'a> AstStatementHandler for OnStatementData<'a> {
         }
 
         // copy the current rule body
-        if let Some(rule) = stm.rule() {
+        if let Ok(rule) = stm.rule() {
             let body = rule.body();
             let mut extended_body = std::vec::Vec::with_capacity(body.len() + 1);
             for e in body {
@@ -30,12 +30,7 @@ impl<'a> AstStatementHandler for OnStatementData<'a> {
             }
 
             // create atom enable
-            let lit = ast::Literal::new(
-                self.atom.location(),
-                ast::Sign::None,
-                ast::LiteralType::Symbolic,
-                &self.atom,
-            );
+            let lit = ast::Literal::from_atom(self.atom.location(), ast::Sign::None, &self.atom);
             // add atom enable to the rule body
             let y = ast::BodyLiteral::new(
                 self.atom.location(),
@@ -118,7 +113,7 @@ fn main() {
         let location = Location::new("<rewrite>", "<rewrite>", 0, 0, 0, 0).unwrap();
 
         // initilize atom to add
-        let atom = ast::Term::new_symbol(location, sym);
+        let atom = ast::Atom::from_symbol(location, sym);
 
         let mut data = OnStatementData {
             atom: atom,
