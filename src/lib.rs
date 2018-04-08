@@ -1,5 +1,7 @@
 #![feature(ptr_internals)]
 #![allow(non_upper_case_globals)]
+#[macro_use]
+extern crate bitflags;
 extern crate clingo_sys;
 extern crate failure;
 #[macro_use]
@@ -220,157 +222,50 @@ pub enum PropagatorCheckMode {
     Fixpoint = clingo_propagator_check_mode_clingo_propagator_check_mode_fixpoint as isize,
 }
 
-/// Bit flags for entries of the configuration
-#[derive(Debug, Copy, Clone)]
-pub struct ConfigurationType(clingo_configuration_type);
-impl ConfigurationType {
-    pub const VALUE: ConfigurationType =
-        ConfigurationType(clingo_configuration_type_clingo_configuration_type_value);
-    pub const ARRAY: ConfigurationType =
-        ConfigurationType(clingo_configuration_type_clingo_configuration_type_array);
-    pub const MAP: ConfigurationType =
-        ConfigurationType(clingo_configuration_type_clingo_configuration_type_map);
-}
-impl ::std::ops::BitOr<ConfigurationType> for ConfigurationType {
-    type Output = Self;
-    #[inline]
-    fn bitor(self, other: Self) -> Self {
-        ConfigurationType(self.0 | other.0)
+bitflags! {
+    /// Bitset describing the entries of the configuration.
+    pub struct ConfigurationType: u32 {
+        const VALUE =
+            clingo_configuration_type_clingo_configuration_type_value;
+        const ARRAY =
+            clingo_configuration_type_clingo_configuration_type_array;
+        const MAP =
+            clingo_configuration_type_clingo_configuration_type_map;
     }
 }
-impl ::std::ops::BitOrAssign for ConfigurationType {
-    #[inline]
-    fn bitor_assign(&mut self, rhs: ConfigurationType) {
-        self.0 |= rhs.0;
+bitflags! {
+    /// Bitset describing solve modes.
+    pub struct SolveMode: u32 {
+        const ASYNC = clingo_solve_mode_clingo_solve_mode_async;
+        const YIELD = clingo_solve_mode_clingo_solve_mode_yield;
     }
 }
-impl ::std::ops::BitAnd<ConfigurationType> for ConfigurationType {
-    type Output = Self;
-    #[inline]
-    fn bitand(self, other: Self) -> Self {
-        ConfigurationType(self.0 & other.0)
+bitflags! {
+    /// Bitset describing symbols in models.
+    pub struct ShowType: u32 {
+        const CSP  = clingo_show_type_clingo_show_type_csp;
+        const SHOWN = clingo_show_type_clingo_show_type_shown;
+        const ATOMS = clingo_show_type_clingo_show_type_atoms;
+        const TERMS = clingo_show_type_clingo_show_type_terms;
+        const EXTRA = clingo_show_type_clingo_show_type_extra;
+        const ALL = clingo_show_type_clingo_show_type_all;
+        const COMPLEMENT = clingo_show_type_clingo_show_type_complement;
     }
 }
-impl ::std::ops::BitAndAssign for ConfigurationType {
-    #[inline]
-    fn bitand_assign(&mut self, rhs: ConfigurationType) {
-        self.0 &= rhs.0;
+bitflags! {
+    /// Bitset that describes the result of a solve call.
+    pub struct SolveResult: u32 {
+        /// The problem is satisfiable.
+        const SATISFIABLE = clingo_solve_result_clingo_solve_result_satisfiable;
+        /// The problem is unsatisfiable.
+        const UNSATISFIABLE =
+            clingo_solve_result_clingo_solve_result_unsatisfiable;
+        /// The search space was exhausted.
+        const EXHAUSTED = clingo_solve_result_clingo_solve_result_exhausted;
+        /// The search was interupted.
+        const INTERRUPTED = clingo_solve_result_clingo_solve_result_interrupted;
     }
 }
-
-/// Bit flags of solve modes.
-#[derive(Debug, Copy, Clone)]
-pub struct SolveMode(clingo_solve_mode);
-impl SolveMode {
-    pub const ASYNC: SolveMode = SolveMode(clingo_solve_mode_clingo_solve_mode_async);
-    pub const YIELD: SolveMode = SolveMode(clingo_solve_mode_clingo_solve_mode_yield);
-}
-impl ::std::ops::BitOr<SolveMode> for SolveMode {
-    type Output = Self;
-    #[inline]
-    fn bitor(self, other: Self) -> Self {
-        SolveMode(self.0 | other.0)
-    }
-}
-impl ::std::ops::BitOrAssign for SolveMode {
-    #[inline]
-    fn bitor_assign(&mut self, rhs: SolveMode) {
-        self.0 |= rhs.0;
-    }
-}
-impl ::std::ops::BitAnd<SolveMode> for SolveMode {
-    type Output = Self;
-    #[inline]
-    fn bitand(self, other: Self) -> Self {
-        SolveMode(self.0 & other.0)
-    }
-}
-impl ::std::ops::BitAndAssign for SolveMode {
-    #[inline]
-    fn bitand_assign(&mut self, rhs: SolveMode) {
-        self.0 &= rhs.0;
-    }
-}
-
-/// Bit flags to select symbols in models.
-#[derive(Debug, Copy, Clone)]
-pub struct ShowType(clingo_show_type);
-impl ShowType {
-    pub const CSP: ShowType = ShowType(clingo_show_type_clingo_show_type_csp);
-    pub const SHOWN: ShowType = ShowType(clingo_show_type_clingo_show_type_shown);
-    pub const ATOMS: ShowType = ShowType(clingo_show_type_clingo_show_type_atoms);
-    pub const TERMS: ShowType = ShowType(clingo_show_type_clingo_show_type_terms);
-    pub const EXTRA: ShowType = ShowType(clingo_show_type_clingo_show_type_extra);
-    pub const ALL: ShowType = ShowType(clingo_show_type_clingo_show_type_all);
-    pub const COMPLEMENT: ShowType = ShowType(clingo_show_type_clingo_show_type_complement);
-}
-impl ::std::ops::BitOr<ShowType> for ShowType {
-    type Output = Self;
-    #[inline]
-    fn bitor(self, other: Self) -> Self {
-        ShowType(self.0 | other.0)
-    }
-}
-impl ::std::ops::BitOrAssign for ShowType {
-    #[inline]
-    fn bitor_assign(&mut self, rhs: ShowType) {
-        self.0 |= rhs.0;
-    }
-}
-impl ::std::ops::BitAnd<ShowType> for ShowType {
-    type Output = Self;
-    #[inline]
-    fn bitand(self, other: Self) -> Self {
-        ShowType(self.0 & other.0)
-    }
-}
-impl ::std::ops::BitAndAssign for ShowType {
-    #[inline]
-    fn bitand_assign(&mut self, rhs: ShowType) {
-        self.0 &= rhs.0;
-    }
-}
-
-/// Bit flags for solve call results
-#[derive(Debug, Copy, Clone)]
-pub struct SolveResult(clingo_solve_result);
-impl SolveResult {
-    pub const SATISFIABLE: SolveResult =
-        SolveResult(clingo_solve_result_clingo_solve_result_satisfiable);
-    pub const UNSATISFIABLE: SolveResult =
-        SolveResult(clingo_solve_result_clingo_solve_result_unsatisfiable);
-    pub const EXHAUSTED: SolveResult =
-        SolveResult(clingo_solve_result_clingo_solve_result_exhausted);
-    pub const INTERRUPTED: SolveResult =
-        SolveResult(clingo_solve_result_clingo_solve_result_interrupted);
-}
-impl ::std::ops::BitOr<SolveResult> for SolveResult {
-    type Output = Self;
-    #[inline]
-    fn bitor(self, other: Self) -> Self {
-        SolveResult(self.0 | other.0)
-    }
-}
-impl ::std::ops::BitOrAssign for SolveResult {
-    #[inline]
-    fn bitor_assign(&mut self, rhs: SolveResult) {
-        self.0 |= rhs.0;
-    }
-}
-impl ::std::ops::BitAnd<SolveResult> for SolveResult {
-    type Output = Self;
-    #[inline]
-    fn bitand(self, other: Self) -> Self {
-        SolveResult(self.0 & other.0)
-    }
-}
-impl ::std::ops::BitAndAssign for SolveResult {
-    #[inline]
-    fn bitand_assign(&mut self, rhs: SolveResult) {
-        self.0 &= rhs.0;
-    }
-}
-
 type SolveEventCallback = unsafe extern "C" fn(
     type_: clingo_solve_event_type_t,
     event: *mut ::std::os::raw::c_void,
@@ -1797,7 +1692,7 @@ impl Control {
         if unsafe {
             clingo_control_solve(
                 self.ctl.as_ptr(),
-                mode.0,
+                mode.bits(),
                 assumptions.as_ptr() as *const clingo_symbolic_literal_t,
                 assumptions.len(),
                 None,
@@ -1841,7 +1736,7 @@ impl Control {
         if unsafe {
             clingo_control_solve(
                 self.ctl.as_ptr(),
-                mode.0,
+                mode.bits(),
                 assumptions.as_ptr() as *const clingo_symbolic_literal_t,
                 assumptions.len(),
                 Some(T::unsafe_solve_callback::<T> as SolveEventCallback),
@@ -2313,11 +2208,11 @@ impl Configuration {
     }
 
     /// Get the type of a key.
-    /// The type is bitset, an entry can have multiple (but at least one) type.
+    /// The type is a bitset, an entry can have multiple (but at least one) type.
     pub fn configuration_type(&self, Id(key): Id) -> Option<ConfigurationType> {
         let mut ctype = 0 as clingo_configuration_type_bitset_t;
         if unsafe { clingo_configuration_type(&self.0, key, &mut ctype) } {
-            Some(ConfigurationType(ctype))
+            ConfigurationType::from_bits(ctype)
         } else {
             None
         }
@@ -3522,11 +3417,16 @@ impl Model {
     /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if the size is too small
     pub fn symbols(&self, show: &ShowType) -> Result<Vec<Symbol>, ClingoError> {
         let mut size: usize = 0;
-        if unsafe { clingo_model_symbols_size(&self.0, show.0, &mut size) } {
+        if unsafe { clingo_model_symbols_size(&self.0, show.bits(), &mut size) } {
             let symbols = Vec::<Symbol>::with_capacity(size);
             let symbols_ptr = symbols.as_ptr();
             if unsafe {
-                clingo_model_symbols(&self.0, show.0, symbols_ptr as *mut clingo_symbol_t, size)
+                clingo_model_symbols(
+                    &self.0,
+                    show.bits(),
+                    symbols_ptr as *mut clingo_symbol_t,
+                    size,
+                )
             } {
                 let symbols_ref =
                     unsafe { std::slice::from_raw_parts(symbols_ptr as *const Symbol, size) };
@@ -4100,7 +4000,11 @@ impl<'a> SolveHandle<'a> {
     pub fn get(&mut self) -> Result<SolveResult, ClingoError> {
         let mut result = 0;
         if unsafe { clingo_solve_handle_get(self.theref, &mut result) } {
-            Ok(SolveResult(result))
+            if let Some(res) = SolveResult::from_bits(result) {
+                Ok(res)
+            } else {
+                panic!("Unknown bitflag in clingo_solve_result: {}.", result);
+            }
         } else {
             Err(error())
         }
@@ -4968,6 +4872,7 @@ pub trait GroundProgramObserver {
         }
     }
 }
+
 #[cfg(test)]
 mod tests {
     use super::*;
