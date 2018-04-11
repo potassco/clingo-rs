@@ -1,12 +1,12 @@
 [package]
 name = "clingo"
-version = "0.3.0"
+version = "0.3.1"
 authors = ["sthiele <sthiele78@gmail.com>"]
 description = "Rust idiomatic bindings to the clingo library"
 categories = ["api-bindings"]
 license = "MIT"
 repository = "https://github.com/sthiele/clingo-rs"
-documentation = "https://docs.rs/clingo-rs"
+documentation = "https://docs.rs/clingo"
 
 [dependencies]
 clingo-sys = "0.3.0"
