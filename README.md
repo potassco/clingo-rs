@@ -1,5 +1,6 @@
 # clingo-rs
-Rust bindings to the [clingo](https://github.com/potassco/clingo) library
+Rust bindings to the [clingo](https://github.com/potassco/clingo) library.
+Clingo version 5.2.2.
 
 ## Requirements
 

@@ -472,7 +472,7 @@ impl Term {
 #[derive(Copy, Clone)]
 pub struct Literal(clingo_ast_literal_t);
 impl Literal {
-    pub fn from_atom(Location(location): Location, sign: Sign, Atom(atom): &Atom) -> Literal {
+    pub fn from_atom(Location(location): Location, sign: Sign, &Atom(ref atom): &Atom) -> Literal {
         let _bg_union_2 = clingo_ast_literal__bindgen_ty_1 {
             symbol: atom as *const clingo_sys::clingo_ast_term,
         };
