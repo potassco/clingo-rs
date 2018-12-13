@@ -23,7 +23,8 @@ fn print_model(model: &Model) {
 
 fn solve(ctl: &mut Control) {
     // get a solve handle
-    let mut handle = ctl.solve(&SolveMode::YIELD, &[])
+    let mut handle = ctl
+        .solve(&SolveMode::YIELD, &[])
         .expect("Failed to retrieve solve handle.");
 
     // loop over all models
@@ -31,16 +32,14 @@ fn solve(ctl: &mut Control) {
         handle.resume().expect("Failed resume on solve handle.");
         match handle.model() {
             // print the model
-            Ok(model) => print_model(model),
+            Ok(Some(model)) => print_model(model),
             // stop if there are no more models
-            Err(_) => break,
+            Ok(None) => break,
+            Err(e) => panic!("Error: {}", e.as_fail()),
         }
     }
 
     // close the solve handle
-    handle
-        .get()
-        .expect("Failed to get result from solve handle.");
     handle.close().expect("Failed to close solve handle.");
 }
 
@@ -249,7 +248,8 @@ fn main() {
                 "pigeon",
                 &vec!["h", "p"],
                 "1 { place(P,H) : H = 1..h } 1 :- P = 1..p.",
-            ).expect("Failed to add a logic program.");
+            )
+            .expect("Failed to add a logic program.");
 
             // ground the pigeon part
 
@@ -270,7 +270,7 @@ fn main() {
             solve(&mut ctl);
         }
         Err(e) => {
-            println!("Error: {}", e.cause());
+            panic!("Error: {}", e.as_fail());
         }
     }
 }

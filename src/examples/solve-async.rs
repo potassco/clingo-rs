@@ -33,7 +33,8 @@ fn main() {
          1 { p(X); q(X) } 1 :- X = 1..n.\
          :- not n+1 { p(1..n); \
          q(1..n) }.",
-    ).expect("Failed to add a logic program.");
+    )
+    .expect("Failed to add a logic program.");
 
     // ground the base part
     let part = Part::new("base", &[]).unwrap();
@@ -46,9 +47,9 @@ fn main() {
     };
 
     // create a solve handle with an attached event handler
-    let mut handle =
-        ctl.solve_with_event_handler(&(SolveMode::ASYNC | SolveMode::YIELD), &[], &mut running)
-            .expect("Failed to retrieve solve handle.");
+    let mut handle = ctl
+        .solve_with_event_handler(&(SolveMode::ASYNC | SolveMode::YIELD), &[], &mut running)
+        .expect("Failed to retrieve solve handle.");
 
     // let's approximate pi
     let mut samples = 0.;

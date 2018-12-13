@@ -30,6 +30,7 @@ fn main() {
     gcc::Build::new()
         .cpp(true)
         .flag("-std=c++11")
+        .flag("-O3")
         .warnings(false)
         .define("NDEBUG", Some("1"))
         .file("clingo/clasp/libpotassco/src/application.cpp")

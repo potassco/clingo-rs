@@ -84,7 +84,8 @@ fn print_model(model: &Model) {
 
 fn solve(ctl: &mut Control) {
     // get a solve handle
-    let mut handle = ctl.solve(&SolveMode::YIELD, &[])
+    let mut handle = ctl
+        .solve(&SolveMode::YIELD, &[])
         .expect("Failed retrieving solve handle.");
 
     // loop over all models
@@ -92,9 +93,10 @@ fn solve(ctl: &mut Control) {
         handle.resume().expect("Failed resume on solve handle.");
         match handle.model() {
             // print the model
-            Ok(model) => print_model(model),
+            Ok(Some(model)) => print_model(model),
             // stop if there are no more models
-            Err(_) => break,
+            Ok(None) => break,
+            Err(e) => panic!("Error: {}", e.as_fail()),
         }
     }
 

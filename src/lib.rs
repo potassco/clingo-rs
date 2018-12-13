@@ -318,9 +318,10 @@ pub trait SolveEventHandler {
     }
 }
 
-type AstCallback =
-    unsafe extern "C" fn(arg1: *const clingo_ast_statement_t, arg2: *mut ::std::os::raw::c_void)
-        -> bool;
+type AstCallback = unsafe extern "C" fn(
+    arg1: *const clingo_ast_statement_t,
+    arg2: *mut ::std::os::raw::c_void,
+) -> bool;
 pub trait AstStatementHandler {
     /// Callback function called on an ast statement while traversing the ast.
     ///
@@ -439,7 +440,7 @@ pub trait ExternalFunctionHandler {
     /// **See:** [`Control::ground_with_event_handler()`](struct.Control.html#method.ground_with_event_handler)
     ///
     /// The following example implements the external function `@f()` returning 42.
-    /// ```
+    /// ```ignore
     /// fn on_external_function(
     ///     &mut self,
     ///     _location: &Location,
@@ -488,9 +489,8 @@ pub trait ExternalFunctionHandler {
                         match event_handler.on_external_function(location, name, arguments) {
                             Ok(symbols) => {
                                 if let Some(symbol_injector) = symbol_callback {
-                                    let mut v: Vec<
-                                        clingo_symbol_t,
-                                    > = symbols.iter().map(|symbol| symbol.clone().0).collect();
+                                    let v: Vec<clingo_symbol_t> =
+                                        symbols.iter().map(|symbol| symbol.clone().0).collect();
                                     return symbol_injector(
                                         v.as_slice().as_ptr(),
                                         v.len(),
@@ -896,6 +896,16 @@ impl Symbol {
         }
     }
 
+    //     pub fn term(&self, Location(location): Location) -> ast::Term {
+    //         let _bg_union_1 = clingo_ast_term__bindgen_ty_1 { symbol: self.0 };
+    //         let term = clingo_ast_term_t {
+    //             location: location,
+    //             type_: ast::TermType::Symbol as clingo_ast_term_type_t,
+    //             __bindgen_anon_1: _bg_union_1,
+    //         };
+    //         ast::Term(term)
+    //     }
+
     /// Get the number of a symbol.
     ///
     /// # Errors
@@ -1020,7 +1030,10 @@ impl Symbol {
             let a1 = vec![1; size];
             let cstring = unsafe { CString::from_vec_unchecked(a1) };
             if unsafe { clingo_symbol_to_string(self.0, cstring.as_ptr() as *mut c_char, size) } {
-                Ok(cstring.into_string()?)
+                match cstring.into_string() {
+                    Ok(string) => Ok(string.trim_matches(char::from(0)).to_string()),
+                    Err(e) => Err(e)?,
+                }
             } else {
                 Err(error())?
             }
@@ -1272,8 +1285,8 @@ pub trait Propagator {
     /// within the callback.
     /// The important point is to return true (true to indicate there was no error) if the result of
     /// either of the methods is false.
-    /// ```
-    /// let clause: &[ ... ];
+    /// ```ignore
+    /// let clause= &[ ... ];
     /// // add a clause
     /// if let Ok(x) = control.add_clause(clause, ClauseType::Learnt) {
     ///     if !x {
@@ -1462,7 +1475,8 @@ impl Control {
         }
 
         // convert the strings to raw pointers
-        let c_args = args.iter()
+        let c_args = args
+            .iter()
             .map(|arg| arg.as_ptr())
             .collect::<Vec<*const c_char>>();
 
@@ -1520,7 +1534,8 @@ impl Control {
         }
 
         // convert the strings to raw pointers
-        let c_args = args.iter()
+        let c_args = args
+            .iter()
             .map(|arg| arg.as_ptr())
             .collect::<Vec<*const c_char>>();
 
@@ -4077,29 +4092,22 @@ impl<'a> SolveHandle<'a> {
         result
     }
 
-    /// Get the next model (or zero if there are no more models).
-    /// (it is NULL if there are no more models)
+    /// Get the next model or None if there are no more models.
     ///
     /// # Errors
     ///
     /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
     /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if solving fails
-    pub fn model(&self) -> Result<&Model, Error> {
+    pub fn model(&self) -> Result<Option<&Model>, Error> {
         let mut model = std::ptr::null_mut() as *mut clingo_model_t;
         if unsafe { clingo_solve_handle_model(self.theref, &mut model) } {
-            match unsafe { (model as *const Model).as_ref() } {
-                Some(x) => Ok(x),
-                None => Err(WrapperError {
-                    msg: "tried casting a null pointer to &Model.",
-                })?,
-            }
+            Ok(unsafe { (model as *const Model).as_ref() })
         } else {
             Err(error())?
         }
     }
 
-    /// Get the next model (or zero if there are no more models).
-    /// (it is NULL if there are no more models)
+    /// Get the next model or None if there are no more models.
     ///
     /// # Errors
     ///
@@ -4138,10 +4146,6 @@ impl<'a> SolveHandle<'a> {
     }
 
     /// Stop the running search and block until done.
-    ///
-    /// # Arguments
-    ///
-    /// * `handle` - the target
     ///
     /// # Errors
     ///

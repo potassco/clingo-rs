@@ -60,10 +60,11 @@ fn main() {
         });
 
     // solve
-    let handle = ctl.solve(&SolveMode::YIELD, &[])
+    let handle = ctl
+        .solve(&SolveMode::YIELD, &[])
         .expect("Failed to retrieve solve handle.");
 
-    print_model(handle.model().unwrap());
+    print_model(handle.model().unwrap().unwrap());
 
     handle.close().expect("Failed to close solve handle.");
 }
