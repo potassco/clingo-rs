@@ -1,7 +1,5 @@
-extern crate clingo;
-
-use std::env;
 use clingo::*;
+use std::env;
 
 fn print_model(model: &Model, label: &str, show: &ShowType) {
     print!("{}:", label);

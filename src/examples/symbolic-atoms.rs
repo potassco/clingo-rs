@@ -1,7 +1,5 @@
-extern crate clingo;
-
-use std::env;
 use clingo::*;
+use std::env;
 
 fn main() {
     // collect clingo options from the command line

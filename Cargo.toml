@@ -7,6 +7,7 @@ categories = ["api-bindings"]
 license = "MIT"
 repository = "https://github.com/sthiele/clingo-rs"
 documentation = "https://docs.rs/clingo"
+edition = "2018"
 
 [dependencies]
 clingo-sys = "0.3.0"

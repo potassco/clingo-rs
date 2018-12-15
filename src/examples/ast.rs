@@ -1,7 +1,5 @@
-extern crate clingo;
-
-use std::env;
 use clingo::*;
+use std::env;
 
 pub struct OnStatementData<'a> {
     atom: ast::Atom,

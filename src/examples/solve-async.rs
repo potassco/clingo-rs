@@ -1,10 +1,7 @@
-extern crate clingo;
-extern crate rand;
-
-use std::env;
-use rand::distributions::{IndependentSample, Range};
-use std::sync::atomic::{AtomicBool, Ordering};
 use clingo::*;
+use rand::distributions::{IndependentSample, Range};
+use std::env;
+use std::sync::atomic::{AtomicBool, Ordering};
 
 struct MySEHandler {
     atom: AtomicBool,

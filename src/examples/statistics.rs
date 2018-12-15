@@ -1,7 +1,5 @@
-extern crate clingo;
-
-use std::env;
 use clingo::*;
+use std::env;
 
 fn print_prefix(depth: u8) {
     for _ in 0..depth {

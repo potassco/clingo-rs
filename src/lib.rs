@@ -1,25 +1,20 @@
 #![feature(ptr_internals)]
 #![allow(non_upper_case_globals)]
-#[macro_use]
-extern crate bitflags;
-extern crate clingo_sys;
-extern crate failure;
-#[macro_use]
-extern crate failure_derive;
-extern crate libc;
-
-use std::mem;
 use std::ptr::Unique;
-use std::marker::PhantomData;
+use bitflags::bitflags;
+use clingo_sys::*;
+use libc::c_char;
 use std::cmp::Ordering;
-use std::hash::{Hash, Hasher};
 use std::ffi::CStr;
 use std::ffi::CString;
 use std::ffi::NulError;
+use std::hash::{Hash, Hasher};
+use std::marker::PhantomData;
+use std::mem;
 use std::str::Utf8Error;
-use libc::c_char;
-use clingo_sys::*;
-pub use failure::Error;
+
+use failure::*;
+// pub use failure::Error;
 
 /// Functions and data structures to work with program ASTs.
 pub mod ast;

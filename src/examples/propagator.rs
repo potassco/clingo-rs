@@ -1,10 +1,8 @@
-extern crate clingo;
-
-use std::env;
-use std::vec::Vec;
-use std::cell::RefCell;
-use std::rc::Rc;
 use clingo::*;
+use std::cell::RefCell;
+use std::env;
+use std::rc::Rc;
+use std::vec::Vec;
 
 fn print_model(model: &Model) {
     // retrieve the symbols in the model

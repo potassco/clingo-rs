@@ -1,4 +1,4 @@
-use ::*;
+use crate::*;
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum StatementType {
