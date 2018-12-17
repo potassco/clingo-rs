@@ -1,4 +1,4 @@
-extern crate gcc;
+extern crate cc;
 
 use std::path::Path;
 use std::process::Command;
@@ -27,7 +27,7 @@ fn main() {
     }
 
     // libpotassco
-    gcc::Build::new()
+    cc::Build::new()
         .cpp(true)
         .flag("-std=c++11")
         .flag("-O3")
@@ -49,7 +49,7 @@ fn main() {
         .compile("libpotassco.a");
 
     // libclasp
-    gcc::Build::new()
+    cc::Build::new()
         .cpp(true)
         .flag("-std=c++11")
         .warnings(false)
@@ -90,7 +90,7 @@ fn main() {
         .compile("libclasp.a");
 
     // libgringo
-    gcc::Build::new()
+    cc::Build::new()
         .cpp(true)
         .flag("-std=c++11")
         .warnings(false)
@@ -130,7 +130,7 @@ fn main() {
         .compile("libgringo.a");
 
     // libclingo
-    gcc::Build::new()
+    cc::Build::new()
         .cpp(true)
         .flag("-std=c++11")
         .warnings(false)
@@ -153,7 +153,7 @@ fn main() {
         .compile("libclingo.a");
 
     // libreify
-    gcc::Build::new()
+    cc::Build::new()
         .cpp(true)
         .flag("-std=c++11")
         .warnings(false)
