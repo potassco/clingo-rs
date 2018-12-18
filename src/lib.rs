@@ -1,6 +1,5 @@
-#![feature(ptr_internals)]
 #![allow(non_upper_case_globals)]
-use std::ptr::Unique;
+use std::ptr::NonNull;
 use bitflags::bitflags;
 use clingo_sys::*;
 use libc::c_char;
@@ -1431,7 +1430,7 @@ pub trait Propagator {
 /// Control object holding grounding and solving state.
 #[derive(Debug)]
 pub struct Control {
-    ctl: Unique<clingo_control_t>,
+    ctl: NonNull<clingo_control_t>,
 }
 impl Drop for Control {
     fn drop(&mut self) {
@@ -1487,10 +1486,10 @@ impl Control {
                 &mut ctl_ptr,
             )
         } {
-            match Unique::new(ctl_ptr) {
+            match NonNull::new(ctl_ptr) {
                 Some(ctl) => Ok(Control { ctl: ctl }),
                 None => Err(WrapperError {
-                    msg: "tried creating Unique from a null pointer.",
+                    msg: "tried creating NonNull from a null pointer.",
                 })?,
             }
         } else {
@@ -1547,10 +1546,10 @@ impl Control {
                 &mut ctl_ptr,
             )
         } {
-            match Unique::new(ctl_ptr) {
+            match NonNull::new(ctl_ptr) {
                 Some(ctl) => Ok(Control { ctl: ctl }),
                 None => Err(WrapperError {
-                    msg: "tried creating Unique from a null pointer.",
+                    msg: "tried creating NonNull from a null pointer.",
                 })?,
             }
         } else {
