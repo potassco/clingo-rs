@@ -1,5 +1,4 @@
 #![allow(non_upper_case_globals)]
-use std::ptr::NonNull;
 use bitflags::bitflags;
 use clingo_sys::*;
 use libc::c_char;
@@ -10,6 +9,7 @@ use std::ffi::NulError;
 use std::hash::{Hash, Hasher};
 use std::marker::PhantomData;
 use std::mem;
+use std::ptr::NonNull;
 use std::str::Utf8Error;
 
 use failure::*;
@@ -484,7 +484,7 @@ pub trait ExternalFunctionHandler {
                             Ok(symbols) => {
                                 if let Some(symbol_injector) = symbol_callback {
                                     let v: Vec<clingo_symbol_t> =
-                                        symbols.iter().map(|symbol| symbol.clone().0).collect();
+                                        symbols.iter().map(|symbol| (*symbol).0).collect();
                                     return symbol_injector(
                                         v.as_slice().as_ptr(),
                                         v.len(),
@@ -604,10 +604,10 @@ impl Location {
         let begin_file = CString::new(begin_file)?;
         let end_file = CString::new(end_file)?;
         let loc = clingo_location {
-            begin_line: begin_line,
-            end_line: end_line,
-            begin_column: begin_column,
-            end_column: end_column,
+            begin_line,
+            end_line,
+            begin_column,
+            end_column,
             begin_file: begin_file.as_ptr(),
             end_file: end_file.as_ptr(),
         };
@@ -1161,7 +1161,7 @@ impl<'a> Part<'a> {
     pub fn new(name: &str, params: &'a [Symbol]) -> Result<Part<'a>, Error> {
         Ok(Part {
             name: CString::new(name)?,
-            params: params,
+            params,
         })
     }
 
@@ -1487,7 +1487,7 @@ impl Control {
             )
         } {
             match NonNull::new(ctl_ptr) {
-                Some(ctl) => Ok(Control { ctl: ctl }),
+                Some(ctl) => Ok(Control { ctl }),
                 None => Err(WrapperError {
                     msg: "tried creating NonNull from a null pointer.",
                 })?,
@@ -1547,7 +1547,7 @@ impl Control {
             )
         } {
             match NonNull::new(ctl_ptr) {
-                Some(ctl) => Ok(Control { ctl: ctl }),
+                Some(ctl) => Ok(Control { ctl }),
                 None => Err(WrapperError {
                     msg: "tried creating NonNull from a null pointer.",
                 })?,
@@ -2926,7 +2926,7 @@ impl SymbolicAtoms {
         }
         SymbolicAtomsIterator {
             cur: begin,
-            end: end,
+            end,
             atoms: &self.0,
         }
     }
@@ -3802,10 +3802,9 @@ impl PropagateControl {
     }
 
     /// Get the assignment associated with the underlying solver.
-    pub fn assignment_mut(&mut self) -> Result<&mut Assignment, WrapperError> {
-        match unsafe {
-            (clingo_propagate_control_assignment(&mut self.0) as *mut Assignment).as_mut()
-        } {
+    pub fn assignment_mut(&self) -> Result<&mut Assignment, WrapperError> {
+        match unsafe { (clingo_propagate_control_assignment(&self.0) as *mut Assignment).as_mut() }
+        {
             Some(stm) => Ok(stm),
             None => Err(WrapperError {
                 msg: "tried casting a null pointer to &mut Assignment.",
