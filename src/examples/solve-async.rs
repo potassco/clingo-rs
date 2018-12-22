@@ -1,5 +1,6 @@
 use clingo::*;
-use rand::distributions::{IndependentSample, Range};
+use rand::distributions::Distribution;
+use rand::distributions::Uniform;
 use std::env;
 use std::sync::atomic::{AtomicBool, Ordering};
 
@@ -51,13 +52,12 @@ fn main() {
     // let's approximate pi
     let mut samples = 0.;
     let mut in_circle = 0.;
-    let between = Range::new(-1f64, 1.);
     let mut rng = rand::thread_rng();
-
+    let between = Uniform::new_inclusive(-1f64, 1.);
     while running.atom.load(Ordering::Relaxed) {
         samples += 1.;
-        let x = between.ind_sample(&mut rng);
-        let y = between.ind_sample(&mut rng);
+        let x = between.sample(&mut rng);
+        let y = between.sample(&mut rng);
         if x * x + y * y <= 1. {
             in_circle += 1.;
         }

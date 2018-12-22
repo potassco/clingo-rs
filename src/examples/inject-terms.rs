@@ -58,7 +58,7 @@ fn main() {
         });
 
     // solve
-    let handle = ctl
+    let mut handle = ctl
         .solve(&SolveMode::YIELD, &[])
         .expect("Failed to retrieve solve handle.");
 

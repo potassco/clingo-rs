@@ -96,6 +96,8 @@ pub enum ClauseType {
 pub enum SolveEventType {
     /// Issued if a model is found.
     Model = clingo_solve_event_type_clingo_solve_event_type_model as isize,
+    /// Issued when the statistics can be updated.
+    Statistics = clingo_solve_event_type_clingo_solve_event_type_statistics as isize,
     /// Issued if the search has completed.
     Finish = clingo_solve_event_type_clingo_solve_event_type_finish as isize,
 }
@@ -105,7 +107,7 @@ pub enum SolveEventType {
 pub enum StatisticsType {
     /// The entry is invalid (has neither of the types below)
     Empty = clingo_statistics_type_clingo_statistics_type_empty as isize,
-    /// The entry is a (string) value
+    /// The entry is a (double) value
     Value = clingo_statistics_type_clingo_statistics_type_value as isize,
     /// The entry is an array
     Array = clingo_statistics_type_clingo_statistics_type_array as isize,
@@ -241,7 +243,6 @@ bitflags! {
         const SHOWN = clingo_show_type_clingo_show_type_shown;
         const ATOMS = clingo_show_type_clingo_show_type_atoms;
         const TERMS = clingo_show_type_clingo_show_type_terms;
-        const EXTRA = clingo_show_type_clingo_show_type_extra;
         const ALL = clingo_show_type_clingo_show_type_all;
         const COMPLEMENT = clingo_show_type_clingo_show_type_complement;
     }
@@ -515,20 +516,6 @@ pub trait ExternalFunctionHandler {
             }
         }
         false
-    }
-}
-
-/// Represents a symbolic literal.
-#[derive(Debug, Copy, Clone)]
-pub struct SymbolicLiteral(clingo_symbolic_literal_t);
-impl SymbolicLiteral {
-    /// Get the associated symbol (must be a function)
-    pub fn symbol(&self) -> Symbol {
-        Symbol(self.0.symbol)
-    }
-    /// Whether the literal has a sign
-    pub fn positive(&self) -> bool {
-        self.0.positive
     }
 }
 
@@ -1711,14 +1698,14 @@ impl Control {
     pub fn solve(
         &mut self,
         mode: &SolveMode,
-        assumptions: &[SymbolicLiteral],
+        assumptions: &[Literal],
     ) -> Result<SolveHandle, Error> {
         let mut handle = std::ptr::null_mut() as *mut clingo_solve_handle_t;
         if unsafe {
             clingo_control_solve(
                 self.ctl.as_ptr(),
                 mode.bits(),
-                assumptions.as_ptr() as *const clingo_symbolic_literal_t,
+                assumptions.as_ptr() as *const clingo_literal_t,
                 assumptions.len(),
                 None,
                 std::ptr::null_mut() as *mut ::std::os::raw::c_void,
@@ -1753,7 +1740,7 @@ impl Control {
     pub fn solve_with_event_handler<T: SolveEventHandler>(
         &mut self,
         mode: &SolveMode,
-        assumptions: &[SymbolicLiteral],
+        assumptions: &[Literal],
         handler: &mut T,
     ) -> Result<SolveHandle, Error> {
         let mut handle = std::ptr::null_mut() as *mut clingo_solve_handle_t;
@@ -1762,7 +1749,7 @@ impl Control {
             clingo_control_solve(
                 self.ctl.as_ptr(),
                 mode.bits(),
-                assumptions.as_ptr() as *const clingo_symbolic_literal_t,
+                assumptions.as_ptr() as *const clingo_literal_t,
                 assumptions.len(),
                 Some(T::unsafe_solve_callback::<T> as SolveEventCallback),
                 data as *mut ::std::os::raw::c_void,
@@ -1801,11 +1788,14 @@ impl Control {
 
     /// Assign a truth value to an external atom.
     ///
+    /// If a negative literal is passed, the corresponding atom is assigned the
+    /// inverted truth value.
+    ///
     /// If the atom does not exist or is not external, this is a noop.
     ///
     /// # Arguments
     ///
-    /// * `atom` - atom to assign
+    /// * `literal` - literal to assign
     /// * `value` - the truth value
     ///
     /// # Errors
@@ -1813,13 +1803,13 @@ impl Control {
     /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
     pub fn assign_external(
         &mut self,
-        symbol: &Symbol,
+        literal: &Literal,
         value: TruthValue,
     ) -> Result<(), ClingoError> {
         if unsafe {
             clingo_control_assign_external(
                 self.ctl.as_ptr(),
-                symbol.0,
+                literal.0,
                 value as clingo_truth_value_t,
             )
         } {
@@ -1831,19 +1821,21 @@ impl Control {
 
     /// Release an external atom.
     ///
+    /// If a negative literal is passed, the corresponding atom is released.
+    ///
     /// After this call, an external atom is no longer external and subject to
     /// program simplifications.  If the atom does not exist or is not external,
     /// this is a noop.
     ///
     /// # Arguments
     ///
-    /// * `atom` - atom to release
+    /// * `literal` - literal to release
     ///
     /// # Errors
     ///
     /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
-    pub fn release_external(&mut self, Symbol(atom): Symbol) -> Result<(), ClingoError> {
-        if unsafe { clingo_control_release_external(self.ctl.as_ptr(), atom) } {
+    pub fn release_external(&mut self, Literal(literal): Literal) -> Result<(), ClingoError> {
+        if unsafe { clingo_control_release_external(self.ctl.as_ptr(), literal) } {
             Ok(())
         } else {
             Err(error())
@@ -2006,7 +1998,7 @@ impl Control {
     /// Get an object to inspect symbolic atoms (the relevant Herbrand base) used
     /// for grounding.
     pub fn symbolic_atoms(&self) -> Option<&SymbolicAtoms> {
-        let mut atoms = std::ptr::null() as *const clingo_symbolic_atoms_t;
+        let mut atoms = std::ptr::null_mut() as *mut clingo_symbolic_atoms_t;
         if unsafe { clingo_control_symbolic_atoms(self.ctl.as_ptr(), &mut atoms) } {
             unsafe { (atoms as *const SymbolicAtoms).as_ref() }
         } else {
@@ -2016,7 +2008,7 @@ impl Control {
 
     /// Get an object to inspect theory atoms that occur in the grounding.
     pub fn theory_atoms(&self) -> Option<&TheoryAtoms> {
-        let mut atoms = std::ptr::null() as *const clingo_theory_atoms_t;
+        let mut atoms = std::ptr::null_mut() as *mut clingo_theory_atoms_t;
         if unsafe { clingo_control_theory_atoms(self.ctl.as_ptr(), &mut atoms) } {
             unsafe { (atoms as *const TheoryAtoms).as_ref() }
         } else {
@@ -2075,12 +2067,27 @@ impl Control {
     /// # Errors
     ///
     /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
-    pub fn backend(&mut self) -> Option<&mut Backend> {
+    pub fn backend(&mut self) -> Result<Backend, WrapperError> {
         let mut backend = std::ptr::null_mut();
         if unsafe { clingo_control_backend(self.ctl.as_ptr(), &mut backend) } {
-            unsafe { (backend as *mut Backend).as_mut() }
+            if unsafe { clingo_backend_begin(backend) } {
+                match unsafe { backend.as_mut() } {
+                    Some(backend_ref) => Ok(Backend {
+                        theref: backend_ref,
+                    }),
+                    None => Err(WrapperError {
+                        msg: "tried casting a null pointer to &mut clingo_backend.",
+                    }),
+                }
+            } else {
+                Err(WrapperError {
+                    msg: "clingo_backend_begin() failed.",
+                })
+            }
         } else {
-            None
+            Err(WrapperError {
+                msg: "clingo_control_backend() failed.",
+            })
         }
     }
 
@@ -2253,7 +2260,7 @@ impl<'a> ProgramBuilder<'a> {
     }
 }
 
-/// Handle for to the solver configuration.
+/// Handle for the solver configuration.
 #[derive(Debug, Copy, Clone)]
 pub struct Configuration(clingo_configuration_t);
 impl Configuration {
@@ -2505,9 +2512,12 @@ impl Configuration {
 }
 
 /// Handle to the backend to add directives in aspif format.
-#[derive(Debug, Copy, Clone)]
-pub struct Backend(clingo_backend_t);
-impl Backend {
+// #[derive(Debug, Copy, Clone)]
+pub struct Backend<'a> {
+    theref: &'a mut clingo_backend_t,
+}
+
+impl<'a> Backend<'a> {
     /// Add a rule to the program.
     ///
     /// # Arguments
@@ -2527,7 +2537,7 @@ impl Backend {
     ) -> Result<(), ClingoError> {
         if unsafe {
             clingo_backend_rule(
-                &mut self.0,
+                self.theref,
                 choice,
                 head.as_ptr() as *const clingo_atom_t,
                 head.len(),
@@ -2563,7 +2573,7 @@ impl Backend {
     ) -> Result<(), ClingoError> {
         if unsafe {
             clingo_backend_weight_rule(
-                &mut self.0,
+                self.theref,
                 choice,
                 head.as_ptr() as *const clingo_atom_t,
                 head.len(),
@@ -2595,7 +2605,7 @@ impl Backend {
     ) -> Result<(), ClingoError> {
         if unsafe {
             clingo_backend_minimize(
-                &mut self.0,
+                self.theref,
                 priority,
                 literals.as_ptr() as *const clingo_weighted_literal_t,
                 literals.len(),
@@ -2619,7 +2629,7 @@ impl Backend {
     pub fn project(&mut self, atoms: &[Atom]) -> Result<(), ClingoError> {
         if unsafe {
             clingo_backend_project(
-                &mut self.0,
+                self.theref,
                 atoms.as_ptr() as *const clingo_atom_t,
                 atoms.len(),
             )
@@ -2641,7 +2651,7 @@ impl Backend {
     ///
     /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
     pub fn external(&mut self, atom: &Atom, type_: ExternalType) -> Result<(), ClingoError> {
-        if unsafe { clingo_backend_external(&mut self.0, atom.0, type_ as clingo_external_type_t) }
+        if unsafe { clingo_backend_external(self.theref, atom.0, type_ as clingo_external_type_t) }
         {
             Ok(())
         } else {
@@ -2663,7 +2673,7 @@ impl Backend {
         let size = literals.len();
         if unsafe {
             clingo_backend_assume(
-                &mut self.0,
+                self.theref,
                 literals.as_ptr() as *const clingo_literal_t,
                 size,
             )
@@ -2698,7 +2708,7 @@ impl Backend {
         let size = condition.len();
         if unsafe {
             clingo_backend_heuristic(
-                &mut self.0,
+                self.theref,
                 atom.0,
                 type_ as clingo_heuristic_type_t,
                 bias,
@@ -2733,7 +2743,7 @@ impl Backend {
         let size = condition.len();
         if unsafe {
             clingo_backend_acyc_edge(
-                &mut self.0,
+                self.theref,
                 node_u,
                 node_v,
                 condition.as_ptr() as *const clingo_literal_t,
@@ -2747,12 +2757,28 @@ impl Backend {
     }
 
     /// Get a fresh atom to be used in aspif directives.
-    pub fn add_atom(&mut self) -> Option<Atom> {
-        let mut atom = 0 as clingo_atom_t;
-        if unsafe { clingo_backend_add_atom(&mut self.0, &mut atom) } {
-            Some(Atom(atom))
-        } else {
-            None
+    /// # Arguments
+    ///
+    /// * `symbol` - optional symbol to associate the atom with
+    pub fn add_atom(&mut self, symbol: Option<Symbol>) -> Option<Atom> {
+        match symbol {
+            Some(Symbol(mut symbol)) => {
+                let mut atom = 0 as clingo_atom_t;
+                if unsafe { clingo_backend_add_atom(self.theref, &mut symbol, &mut atom) } {
+                    Some(Atom(atom))
+                } else {
+                    None
+                }
+            }
+            None => {
+                let mut atom = 0 as clingo_atom_t;
+                let null = std::ptr::null_mut();
+                if unsafe { clingo_backend_add_atom(self.theref, null, &mut atom) } {
+                    Some(Atom(atom))
+                } else {
+                    None
+                }
+            }
         }
     }
 }
@@ -2887,7 +2913,10 @@ impl Statistics {
     /// # Pre-condition
     ///
     /// The [statistics type](struct.Statistics.html#method.statistics_type) of the entry must be
-    /// [`StatisticsType::Value`](enum.StatisticsType.html#variant.Value).
+    /// [`StatisticsType::Value`](enum.StatisticsType.html#variant.Value).   ///
+    /// # Arguments
+    ///
+    /// * `key` - the key
     pub fn value_get(&self, key: u64) -> Option<f64> {
         let mut value = 0.0 as f64;
         if unsafe { clingo_statistics_value_get(&self.0, key, &mut value) } {
@@ -3622,7 +3651,7 @@ impl SolveControl {
 
     /// Get an object to inspect the symbolic atoms.
     pub fn symbolic_atoms(&mut self) -> Option<&SymbolicAtoms> {
-        let mut atoms = std::ptr::null_mut() as *const clingo_symbolic_atoms_t;
+        let mut atoms = std::ptr::null_mut() as *mut clingo_symbolic_atoms_t;
         if unsafe { clingo_solve_control_symbolic_atoms(&mut self.0, &mut atoms) } {
             unsafe { (atoms as *const SymbolicAtoms).as_ref() }
         } else {
@@ -3978,7 +4007,7 @@ impl PropagateInit {
 
     /// Get an object to inspect the symbolic atoms.
     pub fn symbolic_atoms(&self) -> Option<&SymbolicAtoms> {
-        let mut atoms_ptr = std::ptr::null() as *const clingo_symbolic_atoms_t;
+        let mut atoms_ptr = std::ptr::null_mut() as *mut clingo_symbolic_atoms_t;
         if unsafe { clingo_propagate_init_symbolic_atoms(&self.0, &mut atoms_ptr) } {
             unsafe { (atoms_ptr as *const SymbolicAtoms).as_ref() }
         } else {
@@ -3988,7 +4017,7 @@ impl PropagateInit {
 
     /// Get an object to inspect the theory atoms.
     pub fn theory_atoms(&self) -> Option<&TheoryAtoms> {
-        let mut atoms_ptr = std::ptr::null() as *const clingo_theory_atoms_t;
+        let mut atoms_ptr = std::ptr::null_mut() as *mut clingo_theory_atoms_t;
         if unsafe { clingo_propagate_init_theory_atoms(&self.0, &mut atoms_ptr) } {
             unsafe { (atoms_ptr as *const TheoryAtoms).as_ref() }
         } else {
@@ -4091,8 +4120,8 @@ impl<'a> SolveHandle<'a> {
     ///
     /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
     /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if solving fails
-    pub fn model(&self) -> Result<Option<&Model>, Error> {
-        let mut model = std::ptr::null_mut() as *mut clingo_model_t;
+    pub fn model(&mut self) -> Result<Option<&Model>, Error> {
+        let mut model = std::ptr::null_mut() as *const clingo_model_t;
         if unsafe { clingo_solve_handle_model(self.theref, &mut model) } {
             Ok(unsafe { (model as *const Model).as_ref() })
         } else {
@@ -4107,7 +4136,7 @@ impl<'a> SolveHandle<'a> {
     /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
     /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if solving fails
     pub fn model_mut(&mut self) -> Result<&mut Model, Error> {
-        let mut model = std::ptr::null_mut() as *mut clingo_model_t;
+        let mut model = std::ptr::null_mut() as *const clingo_model_t;
         if unsafe { clingo_solve_handle_model(self.theref, &mut model) } {
             match unsafe { (model as *mut Model).as_mut() } {
                 Some(x) => Ok(x),
@@ -4928,8 +4957,8 @@ mod tests {
     fn version_test() {
         let (ma, mi, re) = version();
         assert!(ma == 5);
-        assert!(mi == 2);
-        assert!(re == 2);
+        assert!(mi == 3);
+        assert!(re == 0);
     }
     #[test]
     fn parse_program_test() {

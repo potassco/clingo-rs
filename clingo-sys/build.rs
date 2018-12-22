@@ -1,6 +1,8 @@
 extern crate cc;
-
+extern crate bindgen;
+use std::env;
 use std::path::Path;
+use std::path::PathBuf;
 use std::process::Command;
 
 
@@ -9,12 +11,12 @@ fn main() {
     if !Path::new("clingo").exists() {
 
         Command::new("git")
-            .args(&["clone", "https://github.com/potassco/clingo.git"])
+            .args(&["clone", "https://github.com/sthiele/clingo.git"])
             .status()
             .unwrap();
 
         Command::new("git")
-            .args(&["checkout", "tags/v5.2.2"])
+            .args(&["checkout", "mod_v5.3.0"])
             .current_dir("./clingo")
             .status()
             .unwrap();
@@ -25,11 +27,27 @@ fn main() {
             .status()
             .unwrap();
     }
+    
+    // The bindgen::Builder is the main entry point
+    // to bindgen, and lets you build up options for
+    // the resulting bindings.
+    let bindings = bindgen::Builder::default()
+        .header("clingo/libclingo/clingo.h")
+//         .bitfield_enum("clingo_show_type")
+        .generate()
+        .expect("Unable to generate bindings");
+
+    // Write the bindings to the $OUT_DIR/bindings.rs file.
+    let out_path = PathBuf::from(env::var("OUT_DIR").unwrap());
+    bindings
+        .write_to_file(out_path.join("bindings.rs"))
+        .expect("Couldn't write bindings!");
+    
 
     // libpotassco
     cc::Build::new()
         .cpp(true)
-        .flag("-std=c++11")
+        .flag("-std=c++14")
         .flag("-O3")
         .warnings(false)
         .define("NDEBUG", Some("1"))
@@ -51,7 +69,7 @@ fn main() {
     // libclasp
     cc::Build::new()
         .cpp(true)
-        .flag("-std=c++11")
+        .flag("-std=c++14")
         .warnings(false)
         .define("NDEBUG", Some("1"))
         .define("WITH_THREADS", Some("0"))
@@ -92,7 +110,7 @@ fn main() {
     // libgringo
     cc::Build::new()
         .cpp(true)
-        .flag("-std=c++11")
+        .flag("-std=c++14")
         .warnings(false)
         .define("NDEBUG", Some("1"))
         .file("clingo/libgringo/src/backend.cc")
@@ -132,7 +150,7 @@ fn main() {
     // libclingo
     cc::Build::new()
         .cpp(true)
-        .flag("-std=c++11")
+        .flag("-std=c++14")
         .warnings(false)
         .define("NDEBUG", Some("1"))
         .define("WITH_THREADS", Some("0"))
@@ -155,7 +173,7 @@ fn main() {
     // libreify
     cc::Build::new()
         .cpp(true)
-        .flag("-std=c++11")
+        .flag("-std=c++14")
         .warnings(false)
         .define("NDEBUG", Some("1"))
         .file("clingo/libreify/src/program.cc")

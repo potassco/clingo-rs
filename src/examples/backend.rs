@@ -80,10 +80,10 @@ fn main() {
 
     {
         // get the backend
-        let backend = ctl.backend().unwrap();
+        let mut backend = ctl.backend().unwrap();
 
         // add an additional atom (called d below)
-        let atom_d = backend.add_atom().unwrap();
+        let atom_d = backend.add_atom(None).unwrap();
 
         // add rule: d :- a, b.
         let head = vec![atom_d];

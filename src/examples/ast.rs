@@ -148,19 +148,25 @@ fn main() {
     ctl.ground(&parts)
         .expect("Failed to ground a logic program.");
 
+    // get the program literal corresponding to the external atom
+    let atoms = ctl.symbolic_atoms().unwrap();
+    let mut atm_it = atoms.iter();
+    let item = atm_it.find(|e| e.symbol() == Some(sym)).unwrap();
+    let atm = item.literal().unwrap();
+
     // solve with external enable = false
     println!("Solving with enable = false...");
     solve(&mut ctl);
 
     // solve with external enable = true
     println!("Solving with enable = true...");
-    ctl.assign_external(&sym, TruthValue::True)
+    ctl.assign_external(&atm, TruthValue::True)
         .expect("Failed to assign #external enable true.");
     solve(&mut ctl);
 
     // solve with external enable = false
     println!("Solving with enable = false...");
-    ctl.assign_external(&sym, TruthValue::False)
+    ctl.assign_external(&atm, TruthValue::False)
         .expect("Failed to assign #external enable false.");
     solve(&mut ctl);
 }

@@ -17,6 +17,7 @@ pub enum StatementType {
         clingo_ast_statement_type_clingo_ast_statement_type_project_atom_signature as isize,
     TheoryDefinition =
         clingo_ast_statement_type_clingo_ast_statement_type_theory_definition as isize,
+    Defined = clingo_ast_statement_type_clingo_ast_statement_type_defined as isize,
 }
 #[derive(Debug, Copy, Clone)]
 pub enum Sign {
@@ -68,6 +69,7 @@ pub enum BinaryOperator {
     Multiplication = clingo_ast_binary_operator_clingo_ast_binary_operator_multiplication as isize,
     Division = clingo_ast_binary_operator_clingo_ast_binary_operator_division as isize,
     Modulo = clingo_ast_binary_operator_clingo_ast_binary_operator_modulo as isize,
+    Power = clingo_ast_binary_operator_clingo_ast_binary_operator_power as isize,
 }
 #[derive(Debug, Copy, Clone)]
 pub enum TermType {
@@ -221,6 +223,15 @@ impl ShowTerm {
         self.0.csp
     }
 }
+
+#[derive(Copy, Clone)]
+pub struct Defined(clingo_ast_defined);
+impl Defined {
+    pub fn signature(&self) -> Signature {
+        Signature(self.0.signature)
+    }
+}
+
 #[derive(Copy, Clone)]
 pub struct Minimize(clingo_ast_minimize);
 impl Minimize {

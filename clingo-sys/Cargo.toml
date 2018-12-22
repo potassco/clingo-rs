@@ -1,6 +1,6 @@
 [package]
 name = "clingo-sys"
-version = "0.3.0"
+version = "0.4.0"
 authors = ["sthiele <sthiele78@gmail.com>"]
 description = "External FFI bindings to the C API of the clingo library"
 categories = ["external-ffi-bindings"]
@@ -15,7 +15,8 @@ name = "clingo_sys"
 path = "lib.rs"
 
 [dependencies]
-libc = "0.2.20"
+libc = "0.2"
 
 [build-dependencies]
 cc = "1.0"
+bindgen = "0.45.0"
