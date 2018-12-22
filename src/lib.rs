@@ -4928,8 +4928,8 @@ mod tests {
     fn version_test() {
         let (ma, mi, re) = version();
         assert!(ma == 5);
-        assert!(mi == 2);
-        assert!(re == 2);
+        assert!(mi == 3);
+        assert!(re == 0);
     }
     #[test]
     fn parse_program_test() {

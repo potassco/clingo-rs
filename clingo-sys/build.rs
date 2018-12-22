@@ -1,5 +1,5 @@
 extern crate cc;
-
+extern crate bindgen;
 use std::path::Path;
 use std::process::Command;
 
@@ -14,7 +14,7 @@ fn main() {
             .unwrap();
 
         Command::new("git")
-            .args(&["checkout", "tags/v5.2.2"])
+            .args(&["checkout", "tags/v5.3.0"])
             .current_dir("./clingo")
             .status()
             .unwrap();
@@ -29,7 +29,7 @@ fn main() {
     // libpotassco
     cc::Build::new()
         .cpp(true)
-        .flag("-std=c++11")
+        .flag("-std=c++14")
         .flag("-O3")
         .warnings(false)
         .define("NDEBUG", Some("1"))
@@ -51,7 +51,7 @@ fn main() {
     // libclasp
     cc::Build::new()
         .cpp(true)
-        .flag("-std=c++11")
+        .flag("-std=c++14")
         .warnings(false)
         .define("NDEBUG", Some("1"))
         .define("WITH_THREADS", Some("0"))
@@ -92,7 +92,7 @@ fn main() {
     // libgringo
     cc::Build::new()
         .cpp(true)
-        .flag("-std=c++11")
+        .flag("-std=c++14")
         .warnings(false)
         .define("NDEBUG", Some("1"))
         .file("clingo/libgringo/src/backend.cc")
@@ -132,7 +132,7 @@ fn main() {
     // libclingo
     cc::Build::new()
         .cpp(true)
-        .flag("-std=c++11")
+        .flag("-std=c++14")
         .warnings(false)
         .define("NDEBUG", Some("1"))
         .define("WITH_THREADS", Some("0"))
@@ -155,7 +155,7 @@ fn main() {
     // libreify
     cc::Build::new()
         .cpp(true)
-        .flag("-std=c++11")
+        .flag("-std=c++14")
         .warnings(false)
         .define("NDEBUG", Some("1"))
         .file("clingo/libreify/src/program.cc")
