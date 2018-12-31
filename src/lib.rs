@@ -1881,6 +1881,19 @@ impl Control {
         }
     }
 
+    // TODO
+    // //! Check if the solver has determined that the internal program representation is conflicting.
+    // //!
+    // //! If this function returns true, solve calls will return immediately with an unsatisfiable solve result.
+    // //! Note that conflicts first have to be detected, e.g. -
+    // //! initial unit propagation results in an empty clause,
+    // //! or later if an empty clause is resolved during solving.
+    // //! Hence, the function might return false even if the problem is unsatisfiable.
+    // //!
+    // //! @param[in] control the target
+    // //! @return whether the program representation is conflicting
+    // CLINGO_VISIBILITY_DEFAULT bool clingo_control_is_conflicting(clingo_control_t *control);
+
     /// Get a statistics object to inspect solver statistics.
     ///
     /// Statistics are updated after a solve call.
@@ -2518,6 +2531,15 @@ pub struct Backend<'a> {
 }
 
 impl<'a> Backend<'a> {
+    //TODO
+    // //! Finalize the backend after using it.
+    // //!
+    // //! @param[in] backend the target backend
+    // //! @return whether the call was successful; might set one of the following error codes:
+    // //! - ::clingo_error_bad_alloc
+    // //! - ::clingo_error_runtime
+    // CLINGO_VISIBILITY_DEFAULT bool clingo_backend_end(clingo_backend_t *backend);
+
     /// Add a rule to the program.
     ///
     /// # Arguments
@@ -2847,6 +2869,16 @@ impl Statistics {
             None
         }
     }
+    // TODO
+    // //! Create the subkey at the end of an array entry.
+    // //!
+    // //! @pre The @link clingo_statistics_type() type@endlink of the entry must be @ref ::clingo_statistics_type_array.
+    // //! @param[in] statistics the target statistics
+    // //! @param[in] key the key
+    // //! @param[in] type the type of the new subkey
+    // //! @param[out] subkey the resulting subkey
+    // //! @return whether the call was successful
+    // CLINGO_VISIBILITY_DEFAULT bool clingo_statistics_array_push(clingo_statistics_t *statistics, uint64_t key, clingo_statistics_type_t type, uint64_t *subkey);
 
     /// Get the number of subkeys of a map entry.
     ///
@@ -2862,6 +2894,17 @@ impl Statistics {
             None
         }
     }
+
+    // TODO
+    // //! Test if the given map contains a specific subkey.
+    // //!
+    // //! @pre The @link clingo_statistics_type() type@endlink of the entry must be @ref ::clingo_statistics_type_map.
+    // //! @param[in] statistics the target statistics
+    // //! @param[in] key the key
+    // //! @param[in] name name of the subkey
+    // //! @param[out] result true if the map has a subkey with the given name
+    // //! @return whether the call was successful
+    // CLINGO_VISIBILITY_DEFAULT bool clingo_statistics_map_has_subkey(clingo_statistics_t const *statistics, uint64_t key, char const *name, bool* result);
 
     /// Get the name associated with the offset-th subkey.
     ///
@@ -2908,6 +2951,18 @@ impl Statistics {
         None
     }
 
+    // TODO
+    // //! Add a subkey with the given name.
+    // //!
+    // //! @pre The @link clingo_statistics_type() type@endlink of the entry must be @ref ::clingo_statistics_type_map.
+    // //! @param[in] statistics the target statistics
+    // //! @param[in] key the key
+    // //! @param[in] name the name of the new subkey
+    // //! @param[in] type the type of the new subkey
+    // //! @param[out] subkey the index of the resulting subkey
+    // //! @return whether the call was successful
+    // CLINGO_VISIBILITY_DEFAULT bool clingo_statistics_map_add_subkey(clingo_statistics_t *statistics, uint64_t key, char const *name, clingo_statistics_type_t type, uint64_t *subkey);
+
     /// Get the value of the given entry.
     ///
     /// # Pre-condition
@@ -2925,6 +2980,16 @@ impl Statistics {
             None
         }
     }
+
+    // TODO
+    // //! Set the value of the given entry.
+    // //!
+    // //! @pre The @link clingo_statistics_type() type@endlink of the entry must be @ref ::clingo_statistics_type_value.
+    // //! @param[in] statistics the target statistics
+    // //! @param[in] key the key
+    // //! @param[out] value the new value
+    // //! @return whether the call was successful
+    // CLINGO_VISIBILITY_DEFAULT bool clingo_statistics_value_set(clingo_statistics_t *statistics, uint64_t key, double value);
 }
 /// Container that stores symbolic atoms in a program -- the relevant Herbrand base
 /// gringo uses to instantiate programs.
@@ -3604,6 +3669,8 @@ impl Model {
         }
     }
 
+    //TODO    bool clingo_model_extend(clingo_model_t *model, clingo_symbol_t const *symbols, size_t size);
+
     /// Get the associated solve control object of a model.
     ///
     /// This object allows for adding clauses during model enumeration.
@@ -4005,6 +4072,15 @@ impl PropagateInit {
         }
     }
 
+    //TODO
+    // //! Add a watch for the solver literal in the given phase to the given solver thread.
+    // //!
+    // //! @param[in] init the target
+    // //! @param[in] solver_literal the solver literal
+    // //! @param[in] thread_id the id of the solver thread
+    // //! @return whether the call was successful
+    // CLINGO_VISIBILITY_DEFAULT bool clingo_propagate_init_add_watch_to_thread(clingo_propagate_init_t *init, clingo_literal_t solver_literal, uint32_t thread_id);
+
     /// Get an object to inspect the symbolic atoms.
     pub fn symbolic_atoms(&self) -> Option<&SymbolicAtoms> {
         let mut atoms_ptr = std::ptr::null_mut() as *mut clingo_symbolic_atoms_t;
@@ -4067,6 +4143,13 @@ impl PropagateInit {
             x => panic!("Failed to match clingo_propagator_check_mode: {}.", x),
         }
     }
+
+    // TODO
+    // //! Get the top level assignment solver.
+    // //!
+    // //! @param[in] init the target
+    // //! @return the assignment
+    // CLINGO_VISIBILITY_DEFAULT clingo_assignment_t *clingo_propagate_init_assignment(clingo_propagate_init_t *init);
 }
 
 /// Search handle to a solve call.
