@@ -2,4 +2,16 @@ language: rust
 rust:
   - stable
 cache: cargo
+matrix:
+  include:
+    - os: linux
+      compiler: gcc
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+      env:
+        - CXX=g++-5
 before_script: (rustup component add rustfmt || true)
