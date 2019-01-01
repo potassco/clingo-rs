@@ -34,6 +34,7 @@ fn main() {
     let bindings = bindgen::Builder::default()
         .header("clingo/libclingo/clingo.h")
 //         .bitfield_enum("clingo_show_type")
+        .blacklist_type("max_align_t") // https://github.com/rust-lang/rust-bindgen/issues/550
         .generate()
         .expect("Unable to generate bindings");
 
