@@ -1,6 +1,6 @@
 [package]
 name = "clingo"
-version = "0.3.1"
+version = "0.4.0"
 authors = ["sthiele <sthiele78@gmail.com>"]
 description = "Rust idiomatic bindings to the clingo library"
 categories = ["api-bindings"]
