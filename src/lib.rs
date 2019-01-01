@@ -294,6 +294,7 @@ pub trait SolveEventHandler {
         // assert!(!event.is_null());
         let etype = match etype {
             clingo_solve_event_type_clingo_solve_event_type_model => SolveEventType::Model,
+            clingo_solve_event_type_clingo_solve_event_type_statistics => SolveEventType::Statistics,
             clingo_solve_event_type_clingo_solve_event_type_finish => SolveEventType::Finish,
             x => panic!("Failed to match clingo_solve_event_type: {}.", x),
         };
