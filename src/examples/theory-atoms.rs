@@ -104,7 +104,7 @@ fn main() {
     // the backend accepts any aspif literal)
     if let Some(lit) = get_theory_atom_literal(&mut ctl) {
         // get the backend
-        let backend = ctl.backend().unwrap();
+        let mut backend = ctl.backend().unwrap();
         // add the assumption
         backend.assume(&[lit]).expect("Failed to add assumption.");
     }
