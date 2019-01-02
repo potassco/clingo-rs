@@ -2275,7 +2275,7 @@ impl<'a> ProgramBuilder<'a> {
 }
 
 /// Handle for the solver configuration.
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug)]
 pub struct Configuration(clingo_configuration_t);
 impl Configuration {
     /// Get the root key of the configuration.
@@ -2807,7 +2807,7 @@ impl<'a> Backend<'a> {
 }
 
 /// Handle for to the solver statistics.
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug)]
 pub struct Statistics(clingo_statistics_t);
 impl Statistics {
     /// Get the root key of the statistics.
@@ -2996,7 +2996,7 @@ impl Statistics {
 /// gringo uses to instantiate programs.
 ///
 /// **See:** [`Control::symbolic_atoms()`](struct.Control.html#method.symbolic_atoms)
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug)]
 pub struct SymbolicAtoms(clingo_symbolic_atoms_t);
 impl SymbolicAtoms {
     /// Get the number of different atoms occurring in a logic program.
@@ -3170,7 +3170,7 @@ impl<'a> SymbolicAtom<'a> {
 /// Container that stores theory atoms, elements, and terms of a program.
 ///
 /// **See:** [`Control::theory_atoms()`](struct.Control.html#method.theory_atoms)
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug)]
 pub struct TheoryAtoms(clingo_theory_atoms_t);
 impl TheoryAtoms {
     /// Get the total number of theory atoms.
@@ -3522,7 +3522,7 @@ impl<'a> Iterator for TheoryAtomsIterator<'a> {
 }
 
 /// Represents a model.
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug)]
 pub struct Model(clingo_model_t);
 impl Model {
     /// Get the type of the model.
@@ -3686,7 +3686,7 @@ impl Model {
 }
 
 /// Object to add clauses during search.
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug)]
 pub struct SolveControl(clingo_solve_control_t);
 impl SolveControl {
     /// Add a clause that applies to the current solving step during model
@@ -3737,7 +3737,7 @@ impl SolveControl {
 /// Assignments to all other literals on the same level are consequences implied by the current and possibly previous decisions.
 /// Assignments on level zero are immediate consequences of the current program.
 /// Decision levels are consecutive numbers starting with zero up to and including the [current decision level](struct.Assignment.html#method.decision_level).
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug)]
 pub struct Assignment(clingo_assignment_t);
 impl Assignment {
     /// Get the current decision level.
@@ -3876,7 +3876,7 @@ impl Assignment {
 }
 
 /// This object can be used to add clauses and propagate literals while solving.
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug)]
 pub struct PropagateControl(clingo_propagate_control_t);
 impl PropagateControl {
     /// Get the id of the underlying solver thread.
@@ -4039,7 +4039,7 @@ impl PropagateControl {
 ///
 /// All methods called during propagation use solver literals whereas [`SymbolicAtoms::literal()`](struct.SymbolicAtoms.html#method.literal) and [`TheoryAtoms::atom_literal()`](struct.TheoryAtoms.html#method.atom_literal) return program literals.
 /// The function [`PropagateInit::solver_literal()`](struct.PropagateInit.html#method.solver_literal) can be used to map program literals or [condition ids](struct.TheoryAtoms.html#method.element_condition_id) to solver literals.
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug)]
 pub struct PropagateInit(clingo_propagate_init_t);
 impl PropagateInit {
     /// Map the given program literal or condition id to its solver literal.
@@ -5050,35 +5050,5 @@ mod tests {
         assert!(42 == sym.number().unwrap());
         sym = Symbol::create_infimum();
         assert!(SymbolType::Infimum == sym.symbol_type());
-    }
-
-    #[test]
-    fn model_clone() {
-        // create a control object and pass command line arguments
-        let mut ctl = Control::new(vec![]).expect("Failed creating clingo_control.");
-
-        // add a logic program to the base part
-        ctl.add("base", &[], "1 {a; b} 1. #show c : b. #show a/0.")
-            .expect("Failed to add a logic program.");
-
-        // ground the base part
-        let part = Part::new("base", &[]).unwrap();
-        let parts = vec![part];
-        ctl.ground(&parts)
-            .expect("Failed to ground a logic program.");
-
-        // get a solve handle
-        let mut handle = ctl
-            .solve(&SolveMode::YIELD, &[])
-            .expect("Failed retrieving solve handle.");
-
-        handle.resume().expect("Failed resume on solve handle.");
-        if let Ok(Some(model)) = handle.model() {
-            println!("1:{:?}", model);
-            println!("number : {}", model.number().unwrap());
-            let model2 = model.clone();
-            println!("2:{:?}", model2);
-            println!("number : {}", model2.number().unwrap());
-        }
     }
 }
