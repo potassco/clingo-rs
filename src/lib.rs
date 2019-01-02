@@ -5051,4 +5051,34 @@ mod tests {
         sym = Symbol::create_infimum();
         assert!(SymbolType::Infimum == sym.symbol_type());
     }
+
+    #[test]
+    fn model_clone() {
+        // create a control object and pass command line arguments
+        let mut ctl = Control::new(vec![]).expect("Failed creating clingo_control.");
+
+        // add a logic program to the base part
+        ctl.add("base", &[], "1 {a; b} 1. #show c : b. #show a/0.")
+            .expect("Failed to add a logic program.");
+
+        // ground the base part
+        let part = Part::new("base", &[]).unwrap();
+        let parts = vec![part];
+        ctl.ground(&parts)
+            .expect("Failed to ground a logic program.");
+
+        // get a solve handle
+        let mut handle = ctl
+            .solve(&SolveMode::YIELD, &[])
+            .expect("Failed retrieving solve handle.");
+
+        handle.resume().expect("Failed resume on solve handle.");
+        if let Ok(Some(model)) = handle.model() {
+            println!("1:{:?}", model);
+            println!("number : {}", model.number().unwrap());
+            let model2 = model.clone();
+            println!("2:{:?}", model2);
+            println!("number : {}", model2.number().unwrap());
+        }
+    }
 }
