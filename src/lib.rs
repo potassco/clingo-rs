@@ -5157,4 +5157,26 @@ mod tests {
         sym = Symbol::create_infimum();
         assert!(SymbolType::Infimum == sym.symbol_type());
     }
+    #[test]
+    fn signature_test() {
+        let a = Signature::new("a", 2, false).unwrap();
+        let b = Signature::new("a", 2, false).unwrap();
+        let c = Signature::new("a", 2, true).unwrap();
+        assert_eq!(a.name(), Ok("a"));
+        assert_eq!(a.arity(), 2);
+        assert!(a.is_negative());
+        assert!(!a.is_positive());
+        assert_eq!(b,a);
+        assert_ne!(c,a);
+        assert!(c < a);
+        assert!(c <= a);
+        assert!(a <= b);        
+        assert!(!(a <= c));
+        assert!(a > c);
+        assert!(a >= c);
+        assert!(a >= b);
+        assert!(!(c >= a));
+//         assert!(c.hash() != a.hash());
+//         assert!(b.hash() == a.hash());
+    }
 }
