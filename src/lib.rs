@@ -294,7 +294,9 @@ pub trait SolveEventHandler {
         // assert!(!event.is_null());
         let etype = match etype {
             clingo_solve_event_type_clingo_solve_event_type_model => SolveEventType::Model,
-            clingo_solve_event_type_clingo_solve_event_type_statistics => SolveEventType::Statistics,
+            clingo_solve_event_type_clingo_solve_event_type_statistics => {
+                SolveEventType::Statistics
+            }
             clingo_solve_event_type_clingo_solve_event_type_finish => SolveEventType::Finish,
             x => panic!("Failed to match clingo_solve_event_type: {}.", x),
         };
@@ -1882,18 +1884,16 @@ impl Control {
         }
     }
 
-    // TODO
-    // //! Check if the solver has determined that the internal program representation is conflicting.
-    // //!
-    // //! If this function returns true, solve calls will return immediately with an unsatisfiable solve result.
-    // //! Note that conflicts first have to be detected, e.g. -
-    // //! initial unit propagation results in an empty clause,
-    // //! or later if an empty clause is resolved during solving.
-    // //! Hence, the function might return false even if the problem is unsatisfiable.
-    // //!
-    // //! @param[in] control the target
-    // //! @return whether the program representation is conflicting
-    // CLINGO_VISIBILITY_DEFAULT bool clingo_control_is_conflicting(clingo_control_t *control);
+    /// Check if the solver has determined that the internal program representation is conflicting.
+    ///
+    /// If this function returns true, solve calls will return immediately with an unsatisfiable solve result.
+    /// Note that conflicts first have to be detected, e.g. -
+    /// initial unit propagation results in an empty clause,
+    /// or later if an empty clause is resolved during solving.
+    /// Hence, the function might return false even if the problem is unsatisfiable.
+    pub fn clingo_control_is_conflicting(&self) -> bool {
+        unsafe { clingo_control_is_conflicting(self.ctl.as_ptr()) }
+    }
 
     /// Get a statistics object to inspect solver statistics.
     ///
@@ -2526,21 +2526,20 @@ impl Configuration {
 }
 
 /// Handle to the backend to add directives in aspif format.
-// #[derive(Debug, Copy, Clone)]
+#[derive(Debug)]
 pub struct Backend<'a> {
     theref: &'a mut clingo_backend_t,
 }
-
+impl<'a> Drop for Backend<'a> {
+    /// Finalize the backend after using it.
+    fn drop(&mut self) {
+        // println!("drop Backend");
+        if !unsafe { clingo_backend_end(self.theref) } {
+            panic!("Failed to finalize Backend!");
+        }
+    }
+}
 impl<'a> Backend<'a> {
-    //TODO
-    // //! Finalize the backend after using it.
-    // //!
-    // //! @param[in] backend the target backend
-    // //! @return whether the call was successful; might set one of the following error codes:
-    // //! - ::clingo_error_bad_alloc
-    // //! - ::clingo_error_runtime
-    // CLINGO_VISIBILITY_DEFAULT bool clingo_backend_end(clingo_backend_t *backend);
-
     /// Add a rule to the program.
     ///
     /// # Arguments
@@ -2712,7 +2711,7 @@ impl<'a> Backend<'a> {
     /// # Arguments
     ///
     /// * `atom` - the target atom
-    /// * `type` - the type of the heuristic modification
+    /// * `htype` - the type of the heuristic modification
     /// * `bias` - the heuristic bias
     /// * `priority` - the heuristic priority
     /// * `condition` - the condition under which to apply the heuristic modification
@@ -2723,7 +2722,7 @@ impl<'a> Backend<'a> {
     pub fn heuristic(
         &mut self,
         atom: &Atom,
-        type_: HeuristicType,
+        htype: HeuristicType,
         bias: i32,
         priority: u32,
         condition: &[Literal],
@@ -2733,7 +2732,7 @@ impl<'a> Backend<'a> {
             clingo_backend_heuristic(
                 self.theref,
                 atom.0,
-                type_ as clingo_heuristic_type_t,
+                htype as clingo_heuristic_type_t,
                 bias,
                 priority,
                 condition.as_ptr() as *const clingo_literal_t,
@@ -2821,6 +2820,10 @@ impl Statistics {
     }
 
     /// Get the type of a key.
+    ///
+    /// # Arguments
+    ///
+    /// * `key` - the key
     pub fn statistics_type(&self, key: u64) -> Option<StatisticsType> {
         let mut stype = 0 as clingo_statistics_type_t;
         if unsafe { clingo_statistics_type(&self.0, key, &mut stype) } {
@@ -2842,6 +2845,10 @@ impl Statistics {
     ///
     /// The [statistics type](struct.Statistics.html#method.statistics_type) of the entry must be
     /// [`StatisticsType::Array`](enum.StatisticsType.html#variant.Array).
+    ///
+    /// # Arguments
+    ///
+    /// * `key` - the key
     pub fn array_size(&self, key: u64) -> Option<usize> {
         let mut size = 0 as usize;
         if unsafe { clingo_statistics_array_size(&self.0, key, &mut size) } {
@@ -2870,16 +2877,33 @@ impl Statistics {
             None
         }
     }
-    // TODO
-    // //! Create the subkey at the end of an array entry.
-    // //!
-    // //! @pre The @link clingo_statistics_type() type@endlink of the entry must be @ref ::clingo_statistics_type_array.
-    // //! @param[in] statistics the target statistics
-    // //! @param[in] key the key
-    // //! @param[in] type the type of the new subkey
-    // //! @param[out] subkey the resulting subkey
-    // //! @return whether the call was successful
-    // CLINGO_VISIBILITY_DEFAULT bool clingo_statistics_array_push(clingo_statistics_t *statistics, uint64_t key, clingo_statistics_type_t type, uint64_t *subkey);
+
+    /// Create the subkey at the end of an array entry.
+    ///
+    /// #Pre-condition
+    ///
+    /// The [statistics type](struct.Statistics.html#method.statistics_type) of the entry must
+    /// be [`StatisticsType::Array`](enum.StatisticsType.html#variant.Array)
+    ///
+    /// # Arguments
+    ///
+    /// * `key` - the key
+    /// * `stype` -  the type of the new subkey
+    pub fn array_push(&mut self, key: u64, stype: StatisticsType) -> Option<u64> {
+        let mut subkey = 0 as u64;
+        if unsafe {
+            clingo_statistics_array_push(
+                &mut self.0,
+                key,
+                stype as clingo_statistics_type_t,
+                &mut subkey,
+            )
+        } {
+            Some(subkey)
+        } else {
+            None
+        }
+    }
 
     /// Get the number of subkeys of a map entry.
     ///
@@ -2887,6 +2911,10 @@ impl Statistics {
     ///
     /// The [statistics type](struct.Statistics.html#method.statistics_type) of the entry must
     /// be [`StatisticsType::Map`](enum.StatisticsType.html#variant.Map).
+    ///
+    /// # Arguments
+    ///
+    /// * `key` - the key
     pub fn map_size(&self, key: u64) -> Option<usize> {
         let mut size = 0 as usize;
         if unsafe { clingo_statistics_map_size(&self.0, key, &mut size) } {
@@ -2896,16 +2924,30 @@ impl Statistics {
         }
     }
 
-    // TODO
-    // //! Test if the given map contains a specific subkey.
-    // //!
-    // //! @pre The @link clingo_statistics_type() type@endlink of the entry must be @ref ::clingo_statistics_type_map.
-    // //! @param[in] statistics the target statistics
-    // //! @param[in] key the key
-    // //! @param[in] name name of the subkey
-    // //! @param[out] result true if the map has a subkey with the given name
-    // //! @return whether the call was successful
-    // CLINGO_VISIBILITY_DEFAULT bool clingo_statistics_map_has_subkey(clingo_statistics_t const *statistics, uint64_t key, char const *name, bool* result);
+    /// Test if the given map contains a specific subkey.
+    ///
+    /// # Pre-condition
+    ///
+    /// The [statistics type](struct.Statistics.html#method.statistics_type) of the entry must
+    /// be [`StatisticsType::Map`](enum.StatisticsType.html#variant.Map).
+    ///
+    /// # Arguments
+    ///
+    /// * `key` - the key
+    /// * `name` - name of the subkey
+    pub fn map_has_subkey(&self, key: u64, name: &str) -> Option<bool> {
+        let mut result = false;
+        if let Ok(name) = CString::new(name) {
+            if unsafe { clingo_statistics_map_has_subkey(&self.0, key, name.as_ptr(), &mut result) }
+            {
+                Some(result)
+            } else {
+                None
+            }
+        } else {
+            Some(false)
+        }
+    }
 
     /// Get the name associated with the offset-th subkey.
     ///
@@ -2952,24 +2994,45 @@ impl Statistics {
         None
     }
 
-    // TODO
-    // //! Add a subkey with the given name.
-    // //!
-    // //! @pre The @link clingo_statistics_type() type@endlink of the entry must be @ref ::clingo_statistics_type_map.
-    // //! @param[in] statistics the target statistics
-    // //! @param[in] key the key
-    // //! @param[in] name the name of the new subkey
-    // //! @param[in] type the type of the new subkey
-    // //! @param[out] subkey the index of the resulting subkey
-    // //! @return whether the call was successful
-    // CLINGO_VISIBILITY_DEFAULT bool clingo_statistics_map_add_subkey(clingo_statistics_t *statistics, uint64_t key, char const *name, clingo_statistics_type_t type, uint64_t *subkey);
+    /// Add a subkey with the given name.
+    ///
+    /// # Pre-condition
+    ///
+    /// The [statistics type](struct.Statistics.html#method.statistics_type) of the entry must be
+    /// [`StatisticsType::Map`](enum.StatisticsType.html#variant.Map).
+    ///
+    /// # Arguments
+    ///
+    /// * `key` - the key
+    /// * `name` - the name to lookup the subkey
+    /// * `stype` - the type of the new subkey
+    ///
+    /// **Returns** the index of the resulting subkey
+    pub fn map_add_subkey(&mut self, key: u64, name: &str, stype: StatisticsType) -> Option<u64> {
+        let mut subkey = 0 as u64;
+        if let Ok(name) = CString::new(name) {
+            if unsafe {
+                clingo_statistics_map_add_subkey(
+                    &mut self.0,
+                    key,
+                    name.as_ptr(),
+                    stype as clingo_statistics_type_t,
+                    &mut subkey,
+                )
+            } {
+                return Some(subkey);
+            }
+        }
+        None
+    }
 
     /// Get the value of the given entry.
     ///
     /// # Pre-condition
     ///
     /// The [statistics type](struct.Statistics.html#method.statistics_type) of the entry must be
-    /// [`StatisticsType::Value`](enum.StatisticsType.html#variant.Value).   ///
+    /// [`StatisticsType::Value`](enum.StatisticsType.html#variant.Value).
+    ///
     /// # Arguments
     ///
     /// * `key` - the key
@@ -2982,15 +3045,22 @@ impl Statistics {
         }
     }
 
-    // TODO
-    // //! Set the value of the given entry.
-    // //!
-    // //! @pre The @link clingo_statistics_type() type@endlink of the entry must be @ref ::clingo_statistics_type_value.
-    // //! @param[in] statistics the target statistics
-    // //! @param[in] key the key
-    // //! @param[out] value the new value
-    // //! @return whether the call was successful
-    // CLINGO_VISIBILITY_DEFAULT bool clingo_statistics_value_set(clingo_statistics_t *statistics, uint64_t key, double value);
+    /// Set the value of the given entry.
+    ///
+    /// # Pre-condition
+    ///
+    /// The [statistics type](struct.Statistics.html#method.statistics_type) of the entry must be
+    /// [`StatisticsType::Value`](enum.StatisticsType.html#variant.Value).
+    ///
+    /// # Arguments
+    ///
+    /// * `key` - the key
+    /// * `value` - the new value
+    ///
+    /// **Returns** whether the call was successful
+    pub fn value_set(&mut self, key: u64, value: f64) -> bool {
+        unsafe { clingo_statistics_value_set(&mut self.0, key, value) }
+    }
 }
 /// Container that stores symbolic atoms in a program -- the relevant Herbrand base
 /// gringo uses to instantiate programs.
@@ -3670,7 +3740,26 @@ impl Model {
         }
     }
 
-    //TODO    bool clingo_model_extend(clingo_model_t *model, clingo_symbol_t const *symbols, size_t size);
+    /// Add symbols to the model."]
+    ///
+    /// These symbols will appear in clingo\'s output, which means that this
+    /// function is only meaningful if there is an underlying clingo application."]
+    /// Only models passed to the ::clingo_solve_event_callback_t are extendable."]
+    ///
+    /// # Arguments
+    ///
+    /// * `symbols` - the symbols to add
+    ///
+    /// **Returns** whether the call was successful
+    pub fn extend(&mut self, symbols: &[Symbol]) -> bool {
+        unsafe {
+            clingo_model_extend(
+                &mut self.0,
+                symbols.as_ptr() as *const clingo_symbol_t,
+                symbols.len(),
+            )
+        }
+    }
 
     /// Get the associated solve control object of a model.
     ///
@@ -4073,14 +4162,25 @@ impl PropagateInit {
         }
     }
 
-    //TODO
-    // //! Add a watch for the solver literal in the given phase to the given solver thread.
-    // //!
-    // //! @param[in] init the target
-    // //! @param[in] solver_literal the solver literal
-    // //! @param[in] thread_id the id of the solver thread
-    // //! @return whether the call was successful
-    // CLINGO_VISIBILITY_DEFAULT bool clingo_propagate_init_add_watch_to_thread(clingo_propagate_init_t *init, clingo_literal_t solver_literal, uint32_t thread_id);
+    /// Add a watch for the solver literal in the given phase to the given solver thread.
+    ///
+    /// # Arguments
+    ///
+    /// * `solver_literal` - the solver literal
+    /// * `thread_id` - the id of the solver thread
+    pub fn add_watch_to_thread(
+        &mut self,
+        Literal(solver_literal): Literal,
+        thread_id: u32,
+    ) -> Option<()> {
+        if unsafe {
+            clingo_propagate_init_add_watch_to_thread(&mut self.0, solver_literal, thread_id)
+        } {
+            Some(())
+        } else {
+            None
+        }
+    }
 
     /// Get an object to inspect the symbolic atoms.
     pub fn symbolic_atoms(&self) -> Option<&SymbolicAtoms> {
@@ -4145,12 +4245,18 @@ impl PropagateInit {
         }
     }
 
-    // TODO
-    // //! Get the top level assignment solver.
-    // //!
-    // //! @param[in] init the target
-    // //! @return the assignment
-    // CLINGO_VISIBILITY_DEFAULT clingo_assignment_t *clingo_propagate_init_assignment(clingo_propagate_init_t *init);
+    /// Get the top level assignment solver.
+    ///
+    /// **Returns** the assignment
+    pub fn assignment(&mut self) -> Result<&mut Assignment, WrapperError> {
+        match unsafe { (clingo_propagate_init_assignment(&mut self.0) as *mut Assignment).as_mut() }
+        {
+            Some(stm) => Ok(stm),
+            None => Err(WrapperError {
+                msg: "tried casting a null pointer to &mut Assignment.",
+            }),
+        }
+    }
 }
 
 /// Search handle to a solve call.
