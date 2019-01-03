@@ -1,7 +1,7 @@
 use clingo::*;
 use std::env;
 
-fn print_model(model: &Model, label: &str, show: &ShowType) {
+fn print_model(model: &Model, label: &str, show: ShowType) {
     print!("{}:", label);
 
     // retrieve the symbols in the model
@@ -19,7 +19,7 @@ fn print_model(model: &Model, label: &str, show: &ShowType) {
 fn solve(ctl: &mut Control) {
     // get a solve handle
     let mut handle = ctl
-        .solve(&SolveMode::YIELD, &[])
+        .solve(SolveMode::YIELD, &[])
         .expect("Failed retrieving solve handle.");
 
     // loop over all models
@@ -41,10 +41,10 @@ fn solve(ctl: &mut Control) {
 
                 println!("{}: {}", type_string, number);
 
-                print_model(model, "  shown", &ShowType::SHOWN);
-                print_model(model, "  atoms", &ShowType::ATOMS);
-                print_model(model, "  terms", &ShowType::TERMS);
-                print_model(model, " ~atoms", &(ShowType::COMPLEMENT | ShowType::ATOMS));
+                print_model(model, "  shown", ShowType::SHOWN);
+                print_model(model, "  atoms", ShowType::ATOMS);
+                print_model(model, "  terms", ShowType::TERMS);
+                print_model(model, " ~atoms", ShowType::COMPLEMENT | ShowType::ATOMS);
             }
             Ok(None) => {
                 // stop if there are no more models

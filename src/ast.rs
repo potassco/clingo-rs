@@ -154,7 +154,7 @@ pub struct Rule(clingo_ast_rule_t);
 impl Rule {
     pub fn new(HeadLiteral(head): HeadLiteral, body: &[BodyLiteral]) -> Rule {
         let rule = clingo_ast_rule {
-            head: head,
+            head,
             body: body.as_ptr() as *const clingo_ast_body_literal_t,
             size: body.len(),
         };
@@ -227,7 +227,7 @@ impl ShowTerm {
 #[derive(Copy, Clone)]
 pub struct Defined(clingo_ast_defined);
 impl Defined {
-    pub fn signature(&self) -> Signature {
+    pub fn signature(self) -> Signature {
         Signature(self.0.signature)
     }
 }
@@ -295,7 +295,7 @@ impl BodyLiteral {
             literal: (lit_ref as *const Literal) as *const clingo_ast_literal,
         };
         BodyLiteral(clingo_ast_body_literal_t {
-            location: location,
+            location,
             sign: sign as clingo_ast_sign_t,
             type_: type_ as clingo_ast_body_literal_type_t,
             __bindgen_anon_1: _bg_union_2,
@@ -342,7 +342,7 @@ pub struct External(clingo_ast_external_t);
 impl External {
     pub fn new(Atom(atom): Atom, body: &[BodyLiteral]) -> External {
         let ext = clingo_ast_external {
-            atom: atom,
+            atom,
             body: body.as_ptr() as *const clingo_ast_body_literal_t,
             size: body.len(),
         };
@@ -417,9 +417,9 @@ impl Project {
 pub struct Atom(clingo_ast_term_t);
 impl Atom {
     pub fn from_symbol(Location(location): Location, Symbol(symbol): Symbol) -> Atom {
-        let _bg_union_1 = clingo_ast_term__bindgen_ty_1 { symbol: symbol };
+        let _bg_union_1 = clingo_ast_term__bindgen_ty_1 { symbol };
         let term = clingo_ast_term_t {
-            location: location,
+            location,
             type_: TermType::Symbol as clingo_ast_term_type_t,
             __bindgen_anon_1: _bg_union_1,
         };
@@ -433,9 +433,9 @@ impl Atom {
 pub struct Term(clingo_ast_term_t);
 impl Term {
     pub fn new_symbol(Location(location): Location, Symbol(symbol): Symbol) -> Term {
-        let _bg_union_1 = clingo_ast_term__bindgen_ty_1 { symbol: symbol };
+        let _bg_union_1 = clingo_ast_term__bindgen_ty_1 { symbol };
         let term = clingo_ast_term_t {
-            location: location,
+            location,
             type_: TermType::Symbol as clingo_ast_term_type_t,
             __bindgen_anon_1: _bg_union_1,
         };
@@ -453,7 +453,7 @@ impl Term {
             variable: cstr.as_ptr(),
         };
         let term = clingo_ast_term_t {
-            location: location,
+            location,
             type_: TermType::Variable as clingo_ast_term_type_t,
             __bindgen_anon_1: _bg_union_1,
         };
@@ -488,7 +488,7 @@ impl Literal {
             symbol: atom as *const clingo_sys::clingo_ast_term,
         };
         let lit = clingo_ast_literal_t {
-            location: location,
+            location,
             type_: LiteralType::Symbolic as clingo_ast_literal_type_t,
             sign: sign as clingo_ast_sign_t,
             __bindgen_anon_1: _bg_union_2,

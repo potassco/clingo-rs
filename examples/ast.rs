@@ -60,7 +60,7 @@ impl<'a> AstStatementHandler for OnStatementData<'a> {
 fn print_model(model: &Model) {
     // retrieve the symbols in the model
     let atoms = model
-        .symbols(&ShowType::SHOWN)
+        .symbols(ShowType::SHOWN)
         .expect("Failed to retrieve symbols in the model.");
 
     print!("Model:");
@@ -75,7 +75,7 @@ fn print_model(model: &Model) {
 fn solve(ctl: &mut Control) {
     // get a solve handle
     let mut handle = ctl
-        .solve(&SolveMode::YIELD, &[])
+        .solve(SolveMode::YIELD, &[])
         .expect("Failed retrieving solve handle.");
 
     // loop over all models
@@ -160,13 +160,13 @@ fn main() {
 
     // solve with external enable = true
     println!("Solving with enable = true...");
-    ctl.assign_external(&atm, TruthValue::True)
+    ctl.assign_external(atm, TruthValue::True)
         .expect("Failed to assign #external enable true.");
     solve(&mut ctl);
 
     // solve with external enable = false
     println!("Solving with enable = false...");
-    ctl.assign_external(&atm, TruthValue::False)
+    ctl.assign_external(atm, TruthValue::False)
         .expect("Failed to assign #external enable false.");
     solve(&mut ctl);
 }

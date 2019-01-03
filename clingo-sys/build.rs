@@ -28,12 +28,8 @@ fn main() {
             .unwrap();
     }
     
-    // The bindgen::Builder is the main entry point
-    // to bindgen, and lets you build up options for
-    // the resulting bindings.
     let bindings = bindgen::Builder::default()
         .header("clingo/libclingo/clingo.h")
-//         .bitfield_enum("clingo_show_type")
         .no_copy("clingo_solve_control")
         .no_copy("clingo_model")
         .no_copy("clingo_solve_handle")

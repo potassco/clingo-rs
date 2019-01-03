@@ -13,7 +13,6 @@ use std::ptr::NonNull;
 use std::str::Utf8Error;
 
 use failure::*;
-// pub use failure::Error;
 
 /// Functions and data structures to work with program ASTs.
 pub mod ast;
@@ -219,36 +218,47 @@ pub enum PropagatorCheckMode {
 }
 
 bitflags! {
-    /// Bitset describing the entries of the configuration.
+    /// Bit flags describing the entries of a configuration.
     pub struct ConfigurationType: u32 {
+        /// The entry is a (string) value.
         const VALUE =
             clingo_configuration_type_clingo_configuration_type_value;
+        /// The entry is an array.
         const ARRAY =
             clingo_configuration_type_clingo_configuration_type_array;
+        /// The entry is a map.
         const MAP =
             clingo_configuration_type_clingo_configuration_type_map;
     }
 }
 bitflags! {
-    /// Bitset describing solve modes.
+    /// Bit flags describing solve modes.
     pub struct SolveMode: u32 {
+        /// Enable non-blocking search.
         const ASYNC = clingo_solve_mode_clingo_solve_mode_async;
+        /// Yield models in calls to clingo_solve_handle_model.
         const YIELD = clingo_solve_mode_clingo_solve_mode_yield;
     }
 }
 bitflags! {
-    /// Bitset describing symbols in models.
+    /// Bit flags to select symbols in models.
     pub struct ShowType: u32 {
+        /// Select CSP assignments.
         const CSP  = clingo_show_type_clingo_show_type_csp;
+        /// Select shown atoms and terms.
         const SHOWN = clingo_show_type_clingo_show_type_shown;
+        /// Select all atoms.
         const ATOMS = clingo_show_type_clingo_show_type_atoms;
+        /// Select all terms.
         const TERMS = clingo_show_type_clingo_show_type_terms;
+        /// Select everything.
         const ALL = clingo_show_type_clingo_show_type_all;
+        /// Select false instead of true atoms (Atoms) or terms (Terms)."
         const COMPLEMENT = clingo_show_type_clingo_show_type_complement;
     }
 }
 bitflags! {
-    /// Bitset that describes the result of a solve call.
+    /// Bit flags that describes the result of a solve call.
     pub struct SolveResult: u32 {
         /// The problem is satisfiable.
         const SATISFIABLE = clingo_solve_result_clingo_solve_result_satisfiable;
@@ -529,13 +539,13 @@ pub trait ExternalFunctionHandler {
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Literal(clingo_literal_t);
 impl Literal {
-    pub fn negate(&self) -> Literal {
+    pub fn negate(self) -> Literal {
         Literal(-(self.0))
     }
     pub fn from(Atom(atom): Atom) -> Literal {
         Literal(atom as clingo_literal_t)
     }
-    pub fn get_integer(&self) -> i32 {
+    pub fn get_integer(self) -> i32 {
         self.0
     }
 }
@@ -548,7 +558,7 @@ pub struct Atom(clingo_atom_t);
 #[derive(Debug, Copy, Clone)]
 pub struct Id(clingo_id_t);
 impl Id {
-    pub fn get_integer(&self) -> u32 {
+    pub fn get_integer(self) -> u32 {
         self.0
     }
 }
@@ -557,10 +567,10 @@ impl Id {
 #[derive(Debug, Copy, Clone)]
 pub struct WeightedLiteral(clingo_weighted_literal);
 impl WeightedLiteral {
-    pub fn literal(&self) -> Literal {
+    pub fn literal(self) -> Literal {
         Literal(self.0.literal)
     }
-    pub fn weight(&self) -> i32 {
+    pub fn weight(self) -> i32 {
         self.0.weight
     }
 }
@@ -731,17 +741,17 @@ impl Signature {
     }
 
     /// Get the arity of a signature.
-    pub fn arity(&self) -> u32 {
+    pub fn arity(self) -> u32 {
         unsafe { clingo_signature_arity(self.0) }
     }
 
     /// Whether the signature is positive (is not classically negated).
-    pub fn is_positive(&self) -> bool {
+    pub fn is_positive(self) -> bool {
         unsafe { clingo_signature_is_positive(self.0) }
     }
 
     /// Whether the signature is negative (is classically negated).
-    pub fn is_negative(&self) -> bool {
+    pub fn is_negative(self) -> bool {
         unsafe { clingo_signature_is_negative(self.0) }
     }
 }
@@ -898,7 +908,7 @@ impl Symbol {
     /// # Errors
     ///
     /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if symbol is not of type [`SymbolType::Number`](enum.SymbolType.html#variant.Number)
-    pub fn number(&self) -> Result<i32, ClingoError> {
+    pub fn number(self) -> Result<i32, ClingoError> {
         let mut number = 0;
         if unsafe { clingo_symbol_number(self.0, &mut number) } {
             Ok(number)
@@ -944,7 +954,7 @@ impl Symbol {
     /// # Errors
     ///
     /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if symbol is not of type [`SymbolType::Function`](enum.SymbolType.html#variant.Function)
-    pub fn is_positive(&self) -> Result<bool, ClingoError> {
+    pub fn is_positive(self) -> Result<bool, ClingoError> {
         let mut positive = false;
         if unsafe { clingo_symbol_is_positive(self.0, &mut positive) } {
             Ok(positive)
@@ -958,7 +968,7 @@ impl Symbol {
     /// # Errors
     ///
     /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if symbol is not of type [`SymbolType::Function`](enum.SymbolType.html#variant.Function)
-    pub fn is_negative(&self) -> Result<bool, ClingoError> {
+    pub fn is_negative(self) -> Result<bool, ClingoError> {
         let mut negative = false;
         if unsafe { clingo_symbol_is_negative(self.0, &mut negative) } {
             Ok(negative)
@@ -972,7 +982,7 @@ impl Symbol {
     /// # Errors
     ///
     /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if symbol is not of type [`SymbolType::Function`](enum.SymbolType.html#variant.Function)
-    pub fn arguments(&self) -> Result<Vec<Symbol>, ClingoError> {
+    pub fn arguments(self) -> Result<Vec<Symbol>, ClingoError> {
         let mut symbol_ptr = std::ptr::null() as *const clingo_symbol_t;
         let mut size: usize = 0;
         if unsafe { clingo_symbol_arguments(self.0, &mut symbol_ptr, &mut size) } {
@@ -993,7 +1003,7 @@ impl Symbol {
     /// # Errors
     ///
     /// - may failed to match clingo symbol type
-    pub fn symbol_type(&self) -> SymbolType {
+    pub fn symbol_type(self) -> SymbolType {
         let stype = unsafe { clingo_symbol_type(self.0) };
         match stype as u32 {
             clingo_symbol_type_clingo_symbol_type_infimum => SymbolType::Infimum,
@@ -1011,7 +1021,7 @@ impl Symbol {
     ///
     /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
     /// - [`Utf8Error`](https://doc.rust-lang.org/std/str/struct.Utf8Error.html)
-    pub fn to_string(&self) -> Result<String, Error> {
+    pub fn to_string(self) -> Result<String, Error> {
         let mut size: usize = 0;
         if unsafe { clingo_symbol_to_string_size(self.0, &mut size) } {
             let a1 = vec![1; size];
@@ -1703,7 +1713,7 @@ impl Control {
     /// - [`WrapperError`](struct.WrapperError.html)
     pub fn solve(
         &mut self,
-        mode: &SolveMode,
+        mode: SolveMode,
         assumptions: &[Literal],
     ) -> Result<SolveHandle, Error> {
         let mut handle = std::ptr::null_mut() as *mut clingo_solve_handle_t;
@@ -1745,7 +1755,7 @@ impl Control {
     /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if solving could not be started
     pub fn solve_with_event_handler<T: SolveEventHandler>(
         &mut self,
-        mode: &SolveMode,
+        mode: SolveMode,
         assumptions: &[Literal],
         handler: &mut T,
     ) -> Result<SolveHandle, Error> {
@@ -1809,7 +1819,7 @@ impl Control {
     /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
     pub fn assign_external(
         &mut self,
-        literal: &Literal,
+        literal: Literal,
         value: TruthValue,
     ) -> Result<(), ClingoError> {
         if unsafe {
@@ -2675,7 +2685,7 @@ impl<'a> Backend<'a> {
     /// # Errors
     ///
     /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
-    pub fn external(&mut self, atom: &Atom, type_: ExternalType) -> Result<(), ClingoError> {
+    pub fn external(&mut self, atom: Atom, type_: ExternalType) -> Result<(), ClingoError> {
         if unsafe { clingo_backend_external(self.theref, atom.0, type_ as clingo_external_type_t) }
         {
             Ok(())
@@ -2724,7 +2734,7 @@ impl<'a> Backend<'a> {
     /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
     pub fn heuristic(
         &mut self,
-        atom: &Atom,
+        atom: Atom,
         htype: HeuristicType,
         bias: i32,
         priority: u32,
@@ -3114,7 +3124,7 @@ impl SymbolicAtoms {
         }
         SymbolicAtomsIterator {
             cur: begin,
-            end: end,
+            end,
             atoms: &self.0,
         }
     }
@@ -3643,7 +3653,7 @@ impl Model {
     ///
     /// - [`ErrorType::BadAlloc`](enum.ErrorType.html#variant.BadAlloc)
     /// - [`ErrorType::Runtime`](enum.ErrorType.html#variant.Runtime) if the size is too small
-    pub fn symbols(&self, show: &ShowType) -> Result<Vec<Symbol>, ClingoError> {
+    pub fn symbols(&self, show: ShowType) -> Result<Vec<Symbol>, ClingoError> {
         let mut size: usize = 0;
         if unsafe { clingo_model_symbols_size(&self.0, show.bits(), &mut size) } {
             let symbols = Vec::<Symbol>::with_capacity(size);
@@ -3767,9 +3777,9 @@ impl Model {
     /// Get the associated solve control object of a model.
     ///
     /// This object allows for adding clauses during model enumeration.
-    pub fn context(&mut self) -> Option<&mut SolveControl> {
+    pub fn context(&self) -> Option<&mut SolveControl> {
         let mut control = unsafe { mem::uninitialized() };
-        if unsafe { clingo_model_context(&mut self.0, &mut control) } {
+        if unsafe { clingo_model_context(&self.0, &mut control) } {
             unsafe { (control as *mut SolveControl).as_mut() }
         } else {
             None

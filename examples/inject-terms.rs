@@ -4,7 +4,7 @@ use std::env;
 fn print_model(model: &Model) {
     // retrieve the symbols in the model
     let atoms = model
-        .symbols(&ShowType::SHOWN)
+        .symbols(ShowType::SHOWN)
         .expect("Failed to retrieve symbols in the model.");
 
     print!("Model:");
@@ -59,7 +59,7 @@ fn main() {
 
     // solve
     let mut handle = ctl
-        .solve(&SolveMode::YIELD, &[])
+        .solve(SolveMode::YIELD, &[])
         .expect("Failed to retrieve solve handle.");
 
     print_model(handle.model().unwrap().unwrap());

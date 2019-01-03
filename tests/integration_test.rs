@@ -87,6 +87,6 @@ fn symbol_test() {
     assert!(!(a == b));
     assert!(a != b);
     assert!(!(a != a));
-    //     assert!(a.hash() == a.hash());
-    //     assert!(a.hash() != b.hash());
+    // assert!(a.hash() == a.hash());
+    // assert!(a.hash() != b.hash());
 }

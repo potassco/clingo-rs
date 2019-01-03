@@ -46,7 +46,7 @@ fn main() {
 
     // create a solve handle with an attached event handler
     let mut handle = ctl
-        .solve_with_event_handler(&(SolveMode::ASYNC | SolveMode::YIELD), &[], &mut running)
+        .solve_with_event_handler(SolveMode::ASYNC | SolveMode::YIELD, &[], &mut running)
         .expect("Failed to retrieve solve handle.");
 
     // let's approximate pi
