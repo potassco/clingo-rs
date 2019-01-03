@@ -232,9 +232,7 @@ fn main() {
     };
 
     // create a control object and pass command line arguments
-    let option = Control::new(options);
-
-    match option {
+    match Control::new(options) {
         Ok(mut ctl) => {
             // register the propagator
             ctl.register_propagator(&mut prop, false)

@@ -10,7 +10,7 @@ struct MySEHandler {
 impl SolveEventHandler for MySEHandler {
     fn on_solve_event(&mut self, type_: SolveEventType, _goon: &mut bool) -> bool {
         if type_ == SolveEventType::Finish {
-            self.atom.store(false, Ordering::Relaxed);
+            self.atom.store(false, Ordering::SeqCst);
         }
         true
     }
@@ -54,7 +54,7 @@ fn main() {
     let mut in_circle = 0.;
     let mut rng = rand::thread_rng();
     let between = Uniform::new_inclusive(-1f64, 1.);
-    while running.atom.load(Ordering::Relaxed) {
+    while running.atom.load(Ordering::SeqCst) {
         samples += 1.;
         let x = between.sample(&mut rng);
         let y = between.sample(&mut rng);

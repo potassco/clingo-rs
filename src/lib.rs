@@ -354,6 +354,7 @@ type LoggingCallback = unsafe extern "C" fn(
     message: *const ::std::os::raw::c_char,
     data: *mut ::std::os::raw::c_void,
 );
+/// An instance of this trait has to be registered with a solver to implement a custom logging.
 pub trait Logger {
     /// Callback to intercept warning messages.
     ///
@@ -367,7 +368,9 @@ pub trait Logger {
     /// * [`Control::new_with_logger()`](struct.Control.html#method.new_with_logger)
     /// * [`parse_term_with_logger()`](fn.parse_term_with_logger.html)
     /// * [`parse_program_with_logger()`](fn.parse_program_with_logger.html)
-    fn log(&mut self, code: Warning, message: &str);
+    fn log(&mut self, code: Warning, message: &str) {
+        print!("warn {:?}: {}", code, message);
+    }
     #[doc(hidden)]
     unsafe extern "C" fn unsafe_logging_callback<L: Logger>(
         code: clingo_warning_t,
