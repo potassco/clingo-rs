@@ -5143,43 +5143,8 @@ pub trait GroundProgramObserver {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    #[test]
-    fn version_test() {
-        let (ma, mi, re) = version();
-        assert!(ma == 5);
-        assert!(mi == 3);
-        assert!(re == 0);
-    }
-    #[test]
-    fn parse_program_test() {
-        let mut sym = Symbol::create_number(42);
-        assert!(42 == sym.number().unwrap());
-        sym = Symbol::create_infimum();
-        assert!(SymbolType::Infimum == sym.symbol_type());
-    }
-    #[test]
-    fn signature_test() {
-        let a = Signature::new("a", 2, false).unwrap();
-        let b = Signature::new("a", 2, false).unwrap();
-        let c = Signature::new("a", 2, true).unwrap();
-        assert_eq!(a.name(), Ok("a"));
-        assert_eq!(a.arity(), 2);
-        assert!(a.is_negative());
-        assert!(!a.is_positive());
-        assert_eq!(b,a);
-        assert_ne!(c,a);
-        assert!(c < a);
-        assert!(c <= a);
-        assert!(a <= b);        
-        assert!(!(a <= c));
-        assert!(a > c);
-        assert!(a >= c);
-        assert!(a >= b);
-        assert!(!(c >= a));
-//         assert!(c.hash() != a.hash());
-//         assert!(b.hash() == a.hash());
-    }
-}
+// #[cfg(test)]
+// mod tests {
+//     use super::*;
+//
+// }
