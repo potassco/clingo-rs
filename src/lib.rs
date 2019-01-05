@@ -575,7 +575,7 @@ impl WeightedLiteral {
     }
 }
 
-/// Represents a source code location marking its beginnig and end.
+/// Represents a source code location marking its beginning and end.
 ///
 /// **Note:** Not all locations refer to physical files.
 /// By convention, such locations use a name put in angular brackets as filename.
