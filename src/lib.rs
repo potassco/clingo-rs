@@ -1213,7 +1213,7 @@ pub fn set_error(code: ErrorType, message: &str) -> Result<(), NulError> {
 }
 
 fn set_internal_error(code: ErrorType, message: &'static str) {
-    // unwrap won't panic, because the function only used internally on valid UTF-8 strings
+    // unwrap won't panic, because the function is only used internally on valid UTF-8 strings
     let message = CString::new(message).unwrap();
     unsafe { clingo_set_error(code as clingo_error_t, message.as_ptr()) }
 }
