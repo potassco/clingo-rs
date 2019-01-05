@@ -14,4 +14,10 @@ matrix:
             - g++-5
       env:
         - CXX=g++-5
-before_script: (rustup component add rustfmt || true)
+    - os: osx
+      env:
+        - CXX=clang++
+        - CXXFLAGS="-O3 -DNDEBUG -stdlib=libc++ "
+before_script: 
+  - (rustup component add rustfmt || true)
+  - test "$TRAVIS_OS_NAME" != osx || export MACOSX_DEPLOYMENT_TARGET=10.7
