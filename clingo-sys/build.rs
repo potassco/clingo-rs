@@ -1,15 +1,8 @@
-extern crate cc;
-extern crate bindgen;
-use std::env;
 use std::path::Path;
-use std::path::PathBuf;
 use std::process::Command;
 
-
 fn main() {
-
     if !Path::new("clingo").exists() {
-
         Command::new("git")
             .args(&["clone", "https://github.com/sthiele/clingo.git"])
             .status()
@@ -27,33 +20,33 @@ fn main() {
             .status()
             .unwrap();
     }
-    
-    let bindings = bindgen::Builder::default()
-        .header("clingo/libclingo/clingo.h")
-        .no_copy("clingo_solve_control")
-        .no_copy("clingo_model")
-        .no_copy("clingo_solve_handle")
-        .no_copy("clingo_program_builder")
-        .no_copy("clingo_control")
-        .no_copy("clingo_options")
-        .no_copy("clingo_symbolic_atoms")
-        .no_copy("clingo_theory_atoms")
-        .no_copy("clingo_assignment")
-        .no_copy("clingo_propagate_init")
-        .no_copy("clingo_propagate_control")
-        .no_copy("clingo_backend")
-        .no_copy("clingo_configuration")
-        .no_copy("clingo_statistic")
-        .blacklist_type("max_align_t") // https://github.com/rust-lang/rust-bindgen/issues/550
-        .generate()
-        .expect("Unable to generate bindings");
 
-    // Write the bindings to the $OUT_DIR/bindings.rs file.
-    let out_path = PathBuf::from(env::var("OUT_DIR").unwrap());
-    bindings
-        .write_to_file(out_path.join("bindings.rs"))
-        .expect("Couldn't write bindings!");
-    
+//     if !Path::new("bindings.rs").exists() {
+//         let bindings = bindgen::Builder::default()
+//             .header("clingo/libclingo/clingo.h")
+//             .no_copy("clingo_solve_control")
+//             .no_copy("clingo_model")
+//             .no_copy("clingo_solve_handle")
+//             .no_copy("clingo_program_builder")
+//             .no_copy("clingo_control")
+//             .no_copy("clingo_options")
+//             .no_copy("clingo_symbolic_atoms")
+//             .no_copy("clingo_theory_atoms")
+//             .no_copy("clingo_assignment")
+//             .no_copy("clingo_propagate_init")
+//             .no_copy("clingo_propagate_control")
+//             .no_copy("clingo_backend")
+//             .no_copy("clingo_configuration")
+//             .no_copy("clingo_statistic")
+//             .blacklist_type("max_align_t") // https://github.com/rust-lang/rust-bindgen/issues/550
+//             .generate()
+//             .expect("Unable to generate bindings");
+// 
+//         // Write the bindings to the bindings.rs file.
+//         bindings
+//             .write_to_file("bindings.rs")
+//             .expect("Couldn't write bindings!");
+//     }
 
     // libpotassco
     cc::Build::new()
@@ -80,6 +73,7 @@ fn main() {
     // libclasp
     cc::Build::new()
         .cpp(true)
+        .flag("-O3")
         .flag("-std=c++14")
         .warnings(false)
         .define("NDEBUG", Some("1"))
@@ -121,6 +115,7 @@ fn main() {
     // libgringo
     cc::Build::new()
         .cpp(true)
+        .flag("-O3")
         .flag("-std=c++14")
         .warnings(false)
         .define("NDEBUG", Some("1"))
@@ -161,6 +156,7 @@ fn main() {
     // libclingo
     cc::Build::new()
         .cpp(true)
+        .flag("-O3")
         .flag("-std=c++14")
         .warnings(false)
         .define("NDEBUG", Some("1"))
@@ -184,6 +180,7 @@ fn main() {
     // libreify
     cc::Build::new()
         .cpp(true)
+        .flag("-O3")
         .flag("-std=c++14")
         .warnings(false)
         .define("NDEBUG", Some("1"))
@@ -193,15 +190,11 @@ fn main() {
         .include("clingo/clasp/libpotassco")
         .compile("libreify.a");
 
-
     println!("cargo:rustc-link-lib=static=potassco");
     println!("cargo:rustc-link-lib=static=clasp");
     println!("cargo:rustc-link-lib=static=gringo");
     println!("cargo:rustc-link-lib=static=clingo");
-    //     println!("cargo:rustc-link-lib=static=lp");
-    //     println!("cargo:rustc-link-lib=static=reify");
 
     //     println!("cargo:rustc-link-lib=python3.6m");
     //     -DWITH_PYTHON=1 -I/usr/include/python3.6m
-
 }
