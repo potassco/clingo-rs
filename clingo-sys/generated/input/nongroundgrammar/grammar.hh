@@ -1,8 +1,8 @@
-// A Bison parser, made by GNU Bison 3.0.4.
+// A Bison parser, made by GNU Bison 3.2.
 
 // Skeleton interface for Bison LALR(1) parsers in C++
 
-// Copyright (C) 2002-2015 Free Software Foundation, Inc.
+// Copyright (C) 2002-2015, 2018 Free Software Foundation, Inc.
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -30,17 +30,21 @@
 // This special exception was added by the Free Software Foundation in
 // version 2.2 of Bison.
 
+
 /**
- ** \file /home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.hh
+ ** \file /home/sthiele/Projects/clingo/mybuild/libgringo/src/input/nongroundgrammar/grammar.hh
  ** Define the Gringo::Input::NonGroundGrammar::parser class.
  */
 
 // C++ LALR(1) parser skeleton written by Akim Demaille.
 
-#ifndef YY_GRINGONONGROUNDGRAMMAR_HOME_KAMINSKI_GIT_CLINGO_BUILD_DEBUG_LIBGRINGO_SRC_INPUT_NONGROUNDGRAMMAR_GRAMMAR_HH_INCLUDED
-# define YY_GRINGONONGROUNDGRAMMAR_HOME_KAMINSKI_GIT_CLINGO_BUILD_DEBUG_LIBGRINGO_SRC_INPUT_NONGROUNDGRAMMAR_GRAMMAR_HH_INCLUDED
+// Undocumented macros, especially those whose name start with YY_,
+// are private implementation details.  Do not rely on them.
+
+#ifndef YY_GRINGONONGROUNDGRAMMAR_HOME_STHIELE_PROJECTS_CLINGO_MYBUILD_LIBGRINGO_SRC_INPUT_NONGROUNDGRAMMAR_GRAMMAR_HH_INCLUDED
+# define YY_GRINGONONGROUNDGRAMMAR_HOME_STHIELE_PROJECTS_CLINGO_MYBUILD_LIBGRINGO_SRC_INPUT_NONGROUNDGRAMMAR_GRAMMAR_HH_INCLUDED
 // //                    "%code requires" blocks.
-#line 46 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:377
+#line 46 "/home/sthiele/Projects/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:403
 
     #include "gringo/input/programbuilder.hh"
     #include "potassco/basic_types.h"
@@ -52,7 +56,7 @@
     };
 
 
-#line 56 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.hh" // lalr1.cc:377
+#line 60 "/home/sthiele/Projects/clingo/mybuild/libgringo/src/input/nongroundgrammar/grammar.hh" // lalr1.cc:403
 
 
 # include <cstdlib> // std::abort
@@ -60,7 +64,21 @@
 # include <stdexcept>
 # include <string>
 # include <vector>
-# include "stack.hh"
+
+// Support move semantics when possible.
+#if defined __cplusplus && 201103L <= __cplusplus
+# define YY_MOVE           std::move
+# define YY_MOVE_OR_COPY   move
+# define YY_MOVE_REF(Type) Type&&
+# define YY_RVREF(Type)    Type&&
+# define YY_COPY(Type)     Type
+#else
+# define YY_MOVE
+# define YY_MOVE_OR_COPY   copy
+# define YY_MOVE_REF(Type) Type&
+# define YY_RVREF(Type)    const Type&
+# define YY_COPY(Type)     const Type&
+#endif
 
 
 
@@ -82,15 +100,6 @@
 # define YY_ATTRIBUTE_UNUSED YY_ATTRIBUTE ((__unused__))
 #endif
 
-#if !defined _Noreturn \
-     && (!defined __STDC_VERSION__ || __STDC_VERSION__ < 201112)
-# if defined _MSC_VER && 1200 <= _MSC_VER
-#  define _Noreturn __declspec (noreturn)
-# else
-#  define _Noreturn YY_ATTRIBUTE ((__noreturn__))
-# endif
-#endif
-
 /* Suppress unused-variable warnings by "using" E.  */
 #if ! defined lint || defined __GNUC__
 # define YYUSE(E) ((void) (E))
@@ -98,7 +107,7 @@
 # define YYUSE(E) /* empty */
 #endif
 
-#if defined __GNUC__ && 407 <= __GNUC__ * 100 + __GNUC_MINOR__
+#if defined __GNUC__ && ! defined __ICC && 407 <= __GNUC__ * 100 + __GNUC_MINOR__
 /* Suppress an incorrect diagnostic about yylval being uninitialized.  */
 # define YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN \
     _Pragma ("GCC diagnostic push") \
@@ -117,14 +126,145 @@
 # define YY_INITIAL_VALUE(Value) /* Nothing. */
 #endif
 
+# ifndef YY_NULLPTR
+#  if defined __cplusplus
+#   if 201103L <= __cplusplus
+#    define YY_NULLPTR nullptr
+#   else
+#    define YY_NULLPTR 0
+#   endif
+#  else
+#   define YY_NULLPTR ((void*)0)
+#  endif
+# endif
+
 /* Debug traces.  */
 #ifndef YYDEBUG
 # define YYDEBUG 0
 #endif
 
-#line 28 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:377
+#line 28 "/home/sthiele/Projects/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:403
 namespace Gringo { namespace Input { namespace NonGroundGrammar {
-#line 128 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.hh" // lalr1.cc:377
+#line 149 "/home/sthiele/Projects/clingo/mybuild/libgringo/src/input/nongroundgrammar/grammar.hh" // lalr1.cc:403
+
+  /// A stack with random access from its top.
+  template <typename T, typename S = std::vector<T> >
+  class stack
+  {
+  public:
+    // Hide our reversed order.
+    typedef typename S::reverse_iterator iterator;
+    typedef typename S::const_reverse_iterator const_iterator;
+    typedef typename S::size_type size_type;
+
+    stack (size_type n = 200)
+      : seq_ (n)
+    {}
+
+    /// Random access.
+    ///
+    /// Index 0 returns the topmost element.
+    T&
+    operator[] (size_type i)
+    {
+      return seq_[size () - 1 - i];
+    }
+
+    /// Random access.
+    ///
+    /// Index 0 returns the topmost element.
+    T&
+    operator[] (int i)
+    {
+      return operator[] (size_type (i));
+    }
+
+    /// Random access.
+    ///
+    /// Index 0 returns the topmost element.
+    const T&
+    operator[] (size_type i) const
+    {
+      return seq_[size () - 1 - i];
+    }
+
+    /// Random access.
+    ///
+    /// Index 0 returns the topmost element.
+    const T&
+    operator[] (int i) const
+    {
+      return operator[] (size_type (i));
+    }
+
+    /// Steal the contents of \a t.
+    ///
+    /// Close to move-semantics.
+    void
+    push (YY_MOVE_REF (T) t)
+    {
+      seq_.push_back (T ());
+      operator[](0).move (t);
+    }
+
+    void
+    pop (int n = 1)
+    {
+      for (; 0 < n; --n)
+        seq_.pop_back ();
+    }
+
+    void
+    clear ()
+    {
+      seq_.clear ();
+    }
+
+    size_type
+    size () const
+    {
+      return seq_.size ();
+    }
+
+    const_iterator
+    begin () const
+    {
+      return seq_.rbegin ();
+    }
+
+    const_iterator
+    end () const
+    {
+      return seq_.rend ();
+    }
+
+  private:
+    stack (const stack&);
+    stack& operator= (const stack&);
+    /// The wrapped container.
+    S seq_;
+  };
+
+  /// Present a slice of the top of a stack.
+  template <typename T, typename S = stack<T> >
+  class slice
+  {
+  public:
+    slice (const S& stack, int range)
+      : stack_ (stack)
+      , range_ (range)
+    {}
+
+    const T&
+    operator[] (int i) const
+    {
+      return stack_[range_ - i];
+    }
+
+  private:
+    const S& stack_;
+    int range_;
+  };
 
 
 
@@ -138,7 +278,7 @@ namespace Gringo { namespace Input { namespace NonGroundGrammar {
     /// Symbol semantic values.
     union semantic_type
     {
-    #line 108 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:377
+    #line 108 "/home/sthiele/Projects/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:403
 
     IdVecUid idlist;
     CSPLitUid csplit;
@@ -208,7 +348,7 @@ namespace Gringo { namespace Input { namespace NonGroundGrammar {
     TheoryDefVecUid theoryDefs;
     TheoryAtomType theoryAtomType;
 
-#line 212 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.hh" // lalr1.cc:377
+#line 352 "/home/sthiele/Projects/clingo/mybuild/libgringo/src/input/nongroundgrammar/grammar.hh" // lalr1.cc:403
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -254,70 +394,71 @@ namespace Gringo { namespace Input { namespace NonGroundGrammar {
         DOT = 280,
         DOTS = 281,
         EXTERNAL = 282,
-        FALSE = 283,
-        FORGET = 284,
-        GEQ = 285,
-        GT = 286,
-        IF = 287,
-        INCLUDE = 288,
-        INFIMUM = 289,
-        LBRACE = 290,
-        LBRACK = 291,
-        LEQ = 292,
-        LPAREN = 293,
-        LT = 294,
-        MAX = 295,
-        MAXIMIZE = 296,
-        MIN = 297,
-        MINIMIZE = 298,
-        MOD = 299,
-        MUL = 300,
-        NEQ = 301,
-        POW = 302,
-        QUESTION = 303,
-        RBRACE = 304,
-        RBRACK = 305,
-        RPAREN = 306,
-        SEM = 307,
-        SHOW = 308,
-        EDGE = 309,
-        PROJECT = 310,
-        HEURISTIC = 311,
-        SHOWSIG = 312,
-        SLASH = 313,
-        SUB = 314,
-        SUM = 315,
-        SUMP = 316,
-        SUPREMUM = 317,
-        TRUE = 318,
-        BLOCK = 319,
-        UBNOT = 320,
-        UMINUS = 321,
-        VBAR = 322,
-        VOLATILE = 323,
-        WIF = 324,
-        XOR = 325,
-        PARSE_LP = 326,
-        PARSE_DEF = 327,
-        ANY = 328,
-        UNARY = 329,
-        BINARY = 330,
-        LEFT = 331,
-        RIGHT = 332,
-        HEAD = 333,
-        BODY = 334,
-        DIRECTIVE = 335,
-        THEORY = 336,
-        SYNC = 337,
-        NUMBER = 338,
-        ANONYMOUS = 339,
-        IDENTIFIER = 340,
-        PYTHON = 341,
-        LUA = 342,
-        STRING = 343,
-        VARIABLE = 344,
-        THEORY_OP = 345,
-        NOT = 346
+        DEFINED = 283,
+        FALSE = 284,
+        FORGET = 285,
+        GEQ = 286,
+        GT = 287,
+        IF = 288,
+        INCLUDE = 289,
+        INFIMUM = 290,
+        LBRACE = 291,
+        LBRACK = 292,
+        LEQ = 293,
+        LPAREN = 294,
+        LT = 295,
+        MAX = 296,
+        MAXIMIZE = 297,
+        MIN = 298,
+        MINIMIZE = 299,
+        MOD = 300,
+        MUL = 301,
+        NEQ = 302,
+        POW = 303,
+        QUESTION = 304,
+        RBRACE = 305,
+        RBRACK = 306,
+        RPAREN = 307,
+        SEM = 308,
+        SHOW = 309,
+        EDGE = 310,
+        PROJECT = 311,
+        HEURISTIC = 312,
+        SHOWSIG = 313,
+        SLASH = 314,
+        SUB = 315,
+        SUM = 316,
+        SUMP = 317,
+        SUPREMUM = 318,
+        TRUE = 319,
+        BLOCK = 320,
+        UBNOT = 321,
+        UMINUS = 322,
+        VBAR = 323,
+        VOLATILE = 324,
+        WIF = 325,
+        XOR = 326,
+        PARSE_LP = 327,
+        PARSE_DEF = 328,
+        ANY = 329,
+        UNARY = 330,
+        BINARY = 331,
+        LEFT = 332,
+        RIGHT = 333,
+        HEAD = 334,
+        BODY = 335,
+        DIRECTIVE = 336,
+        THEORY = 337,
+        SYNC = 338,
+        NUMBER = 339,
+        ANONYMOUS = 340,
+        IDENTIFIER = 341,
+        PYTHON = 342,
+        LUA = 343,
+        STRING = 344,
+        VARIABLE = 345,
+        THEORY_OP = 346,
+        NOT = 347
       };
     };
 
@@ -336,7 +477,7 @@ namespace Gringo { namespace Input { namespace NonGroundGrammar {
     /// A complete symbol.
     ///
     /// Expects its Base type to provide access to the symbol type
-    /// via type_get().
+    /// via type_get ().
     ///
     /// Provide access to semantic value and location.
     template <typename Base>
@@ -348,17 +489,18 @@ namespace Gringo { namespace Input { namespace NonGroundGrammar {
       /// Default constructor.
       basic_symbol ();
 
-      /// Copy constructor.
-      basic_symbol (const basic_symbol& other);
+      /// Move or copy constructor.
+      basic_symbol (YY_RVREF (basic_symbol) other);
+
 
       /// Constructor for valueless symbols.
       basic_symbol (typename Base::kind_type t,
-                    const location_type& l);
+                    YY_MOVE_REF (location_type) l);
 
       /// Constructor for symbols with semantic value.
       basic_symbol (typename Base::kind_type t,
-                    const semantic_type& v,
-                    const location_type& l);
+                    YY_RVREF (semantic_type) v,
+                    YY_RVREF (location_type) l);
 
       /// Destroy the symbol.
       ~basic_symbol ();
@@ -379,8 +521,10 @@ namespace Gringo { namespace Input { namespace NonGroundGrammar {
       location_type location;
 
     private:
+#if defined __cplusplus && __cplusplus < 201103L
       /// Assignment operator.
       basic_symbol& operator= (const basic_symbol& other);
+#endif
     };
 
     /// Type access provider for token (enum) based symbols.
@@ -420,10 +564,13 @@ namespace Gringo { namespace Input { namespace NonGroundGrammar {
     /// "External" symbols: returned by the scanner.
     typedef basic_symbol<by_type> symbol_type;
 
-
     /// Build a parser object.
     parser (Gringo::Input::NonGroundParser *lexer_yyarg);
     virtual ~parser ();
+
+    /// Parse.  An alias for parse ().
+    /// \returns  0 iff parsing succeeded.
+    int operator() ();
 
     /// Parse.
     /// \returns  0 iff parsing succeeded.
@@ -450,6 +597,8 @@ namespace Gringo { namespace Input { namespace NonGroundGrammar {
 
     /// Report a syntax error.
     void error (const syntax_error& err);
+
+
 
   private:
     /// This class is not copyable.
@@ -478,8 +627,8 @@ namespace Gringo { namespace Input { namespace NonGroundGrammar {
     /// \param yyvalue   the value to check
     static bool yy_table_value_is_error_ (int yyvalue);
 
-    static const short int yypact_ninf_;
-    static const short int yytable_ninf_;
+    static const short yypact_ninf_;
+    static const short yytable_ninf_;
 
     /// Convert a scanner token number \a t to a symbol number.
     static token_number_type yytranslate_ (int t);
@@ -487,25 +636,25 @@ namespace Gringo { namespace Input { namespace NonGroundGrammar {
     // Tables.
   // YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
   // STATE-NUM.
-  static const short int yypact_[];
+  static const short yypact_[];
 
   // YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
   // Performed when YYTABLE does not specify something else to do.  Zero
   // means the default is an error.
-  static const unsigned short int yydefact_[];
+  static const unsigned short yydefact_[];
 
   // YYPGOTO[NTERM-NUM].
-  static const short int yypgoto_[];
+  static const short yypgoto_[];
 
   // YYDEFGOTO[NTERM-NUM].
-  static const short int yydefgoto_[];
+  static const short yydefgoto_[];
 
   // YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
   // positive, shift that token.  If negative, reduce the rule whose
   // number is the opposite.  If YYTABLE_NINF, syntax error.
-  static const short int yytable_[];
+  static const short yytable_[];
 
-  static const short int yycheck_[];
+  static const short yycheck_[];
 
   // YYSTOS[STATE-NUM] -- The (internal number of the) accessing
   // symbol of state STATE-NUM.
@@ -526,7 +675,7 @@ namespace Gringo { namespace Input { namespace NonGroundGrammar {
     static const char* const yytname_[];
 #if YYDEBUG
   // YYRLINE[YYN] -- Source line where rule number YYN was defined.
-  static const unsigned short int yyrline_[];
+  static const unsigned short yyrline_[];
     /// Report on the debug stream that the rule \a r is going to be reduced.
     virtual void yy_reduce_print_ (int r);
     /// Print the state stack on the debug stream.
@@ -591,10 +740,15 @@ namespace Gringo { namespace Input { namespace NonGroundGrammar {
       typedef basic_symbol<by_state> super_type;
       /// Construct an empty symbol.
       stack_symbol_type ();
+      /// Move or copy construction.
+      stack_symbol_type (YY_RVREF (stack_symbol_type) that);
       /// Steal the contents from \a sym to build this.
-      stack_symbol_type (state_type s, symbol_type& sym);
-      /// Assignment, needed by push_back.
-      stack_symbol_type& operator= (const stack_symbol_type& that);
+      stack_symbol_type (state_type s, YY_MOVE_REF (symbol_type) sym);
+#if defined __cplusplus && __cplusplus < 201103L
+      /// Assignment, needed by push_back by some old implementations.
+      /// Moves the contents of that.
+      stack_symbol_type& operator= (stack_symbol_type& that);
+#endif
     };
 
     /// Stack type.
@@ -606,31 +760,31 @@ namespace Gringo { namespace Input { namespace NonGroundGrammar {
     /// Push a new state on the stack.
     /// \param m    a debug message to display
     ///             if null, no trace is output.
-    /// \param s    the symbol
+    /// \param sym  the symbol
     /// \warning the contents of \a s.value is stolen.
-    void yypush_ (const char* m, stack_symbol_type& s);
+    void yypush_ (const char* m, YY_MOVE_REF (stack_symbol_type) sym);
 
     /// Push a new look ahead token on the state on the stack.
     /// \param m    a debug message to display
     ///             if null, no trace is output.
     /// \param s    the state
     /// \param sym  the symbol (for its value and location).
-    /// \warning the contents of \a s.value is stolen.
-    void yypush_ (const char* m, state_type s, symbol_type& sym);
+    /// \warning the contents of \a sym.value is stolen.
+    void yypush_ (const char* m, state_type s, YY_MOVE_REF (symbol_type) sym);
 
-    /// Pop \a n symbols the three stacks.
-    void yypop_ (unsigned int n = 1);
+    /// Pop \a n symbols from the stack.
+    void yypop_ (int n = 1);
 
     /// Constants.
     enum
     {
       yyeof_ = 0,
-      yylast_ = 2044,     ///< Last index in yytable_.
+      yylast_ = 2080,     ///< Last index in yytable_.
       yynnts_ = 84,  ///< Number of nonterminal symbols.
       yyfinal_ = 8, ///< Termination state number.
       yyterror_ = 1,
       yyerrcode_ = 256,
-      yyntokens_ = 92  ///< Number of tokens.
+      yyntokens_ = 93  ///< Number of tokens.
     };
 
 
@@ -639,11 +793,11 @@ namespace Gringo { namespace Input { namespace NonGroundGrammar {
   };
 
 
-#line 28 "/home/kaminski/git/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:377
+#line 28 "/home/sthiele/Projects/clingo/libgringo/src/input/nongroundgrammar.yy" // lalr1.cc:403
 } } } // Gringo::Input::NonGroundGrammar
-#line 645 "/home/kaminski/git/clingo/build/debug/libgringo/src/input/nongroundgrammar/grammar.hh" // lalr1.cc:377
+#line 799 "/home/sthiele/Projects/clingo/mybuild/libgringo/src/input/nongroundgrammar/grammar.hh" // lalr1.cc:403
 
 
 
 
-#endif // !YY_GRINGONONGROUNDGRAMMAR_HOME_KAMINSKI_GIT_CLINGO_BUILD_DEBUG_LIBGRINGO_SRC_INPUT_NONGROUNDGRAMMAR_GRAMMAR_HH_INCLUDED
+#endif // !YY_GRINGONONGROUNDGRAMMAR_HOME_STHIELE_PROJECTS_CLINGO_MYBUILD_LIBGRINGO_SRC_INPUT_NONGROUNDGRAMMAR_GRAMMAR_HH_INCLUDED

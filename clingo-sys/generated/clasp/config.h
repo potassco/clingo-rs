@@ -30,10 +30,10 @@
 #endif
 
 //! Library version.
-#define CLASP_VERSION      "3.3.0"
+#define CLASP_VERSION      "3.3.4"
 #define CLASP_VERSION_MAJOR 3
 #define CLASP_VERSION_MINOR 3
-#define CLASP_VERSION_PATCH 0
+#define CLASP_VERSION_PATCH 4
 #define CLASP_LEGAL         "Copyright (C) Benjamin Kaufmann"
 
 //! Single or multi-threaded version of clasp.
