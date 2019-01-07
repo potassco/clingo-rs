@@ -600,12 +600,10 @@ impl CspProductTerm {
     pub fn coefficient(&self) -> Term {
         Term(self.0.coefficient)
     }
-    pub fn variable(&self) -> Result<&Term, WrapperError> {
+    pub fn variable(&self) -> Result<&Term, ClingoError> {
         match unsafe { (self.0.variable as *const Term).as_ref() } {
             Some(x) => Ok(x),
-            None => Err(WrapperError {
-                msg: "tried casting a null pointer to &Term.",
-            }),
+            None => Err(ClingoError::new("tried casting a null pointer to &Term.")),
         }
     }
 }
@@ -722,20 +720,20 @@ impl Aggregate {
             std::slice::from_raw_parts(self.0.elements as *const ConditionalLiteral, self.0.size)
         }
     }
-    pub fn left_guard(&self) -> Result<&AggregateGuard, WrapperError> {
+    pub fn left_guard(&self) -> Result<&AggregateGuard, ClingoError> {
         match unsafe { (self.0.left_guard as *const AggregateGuard).as_ref() } {
             Some(x) => Ok(x),
-            None => Err(WrapperError {
-                msg: "tried casting a null pointer to &AggregateGuard.",
-            }),
+            None => Err(ClingoError::new(
+                "tried casting a null pointer to &AggregateGuard.",
+            )),
         }
     }
-    pub fn right_guard(&self) -> Result<&AggregateGuard, WrapperError> {
+    pub fn right_guard(&self) -> Result<&AggregateGuard, ClingoError> {
         match unsafe { (self.0.right_guard as *const AggregateGuard).as_ref() } {
             Some(x) => Ok(x),
-            None => Err(WrapperError {
-                msg: "tried casting a null pointer to &AggregateGuard.",
-            }),
+            None => Err(ClingoError::new(
+                "tried casting a null pointer to &AggregateGuard.",
+            )),
         }
     }
 }
@@ -780,20 +778,20 @@ impl BodyAggregate {
             std::slice::from_raw_parts(self.0.elements as *const BodyAggregateElement, self.0.size)
         }
     }
-    pub fn left_guard(&self) -> Result<&AggregateGuard, WrapperError> {
+    pub fn left_guard(&self) -> Result<&AggregateGuard, ClingoError> {
         match unsafe { (self.0.left_guard as *const AggregateGuard).as_ref() } {
             Some(x) => Ok(x),
-            None => Err(WrapperError {
-                msg: "tried casting a null pointer to &AggregateGuard.",
-            }),
+            None => Err(ClingoError::new(
+                "tried casting a null pointer to &AggregateGuard.",
+            )),
         }
     }
-    pub fn right_guard(&self) -> Result<&AggregateGuard, WrapperError> {
+    pub fn right_guard(&self) -> Result<&AggregateGuard, ClingoError> {
         match unsafe { (self.0.right_guard as *const AggregateGuard).as_ref() } {
             Some(x) => Ok(x),
-            None => Err(WrapperError {
-                msg: "tried casting a null pointer to &AggregateGuard.",
-            }),
+            None => Err(ClingoError::new(
+                "tried casting a null pointer to &AggregateGuard.",
+            )),
         }
     }
 }
@@ -835,20 +833,20 @@ impl HeadAggregate {
             std::slice::from_raw_parts(self.0.elements as *const HeadAggregateElement, self.0.size)
         }
     }
-    pub fn left_guard(&self) -> Result<&AggregateGuard, WrapperError> {
+    pub fn left_guard(&self) -> Result<&AggregateGuard, ClingoError> {
         match unsafe { (self.0.left_guard as *const AggregateGuard).as_ref() } {
             Some(x) => Ok(x),
-            None => Err(WrapperError {
-                msg: "tried casting a null pointer to &AggregateGuard.",
-            }),
+            None => Err(ClingoError::new(
+                "tried casting a null pointer to &AggregateGuard.",
+            )),
         }
     }
-    pub fn right_guard(&self) -> Result<&AggregateGuard, WrapperError> {
+    pub fn right_guard(&self) -> Result<&AggregateGuard, ClingoError> {
         match unsafe { (self.0.right_guard as *const AggregateGuard).as_ref() } {
             Some(x) => Ok(x),
-            None => Err(WrapperError {
-                msg: "tried casting a null pointer to &AggregateGuard.",
-            }),
+            None => Err(ClingoError::new(
+                "tried casting a null pointer to &AggregateGuard.",
+            )),
         }
     }
 }
@@ -1007,12 +1005,12 @@ impl TheoryAtom {
             std::slice::from_raw_parts(self.0.elements as *const TheoryAtomElement, self.0.size)
         }
     }
-    pub fn guard(&self) -> Result<&TheoryGuard, WrapperError> {
+    pub fn guard(&self) -> Result<&TheoryGuard, ClingoError> {
         match unsafe { (self.0.guard as *const TheoryGuard).as_ref() } {
             Some(x) => Ok(x),
-            None => Err(WrapperError {
-                msg: "tried casting a null pointer to &TheoryGuard.",
-            }),
+            None => Err(ClingoError::new(
+                "tried casting a null pointer to &TheoryGuard.",
+            )),
         }
     }
 }
@@ -1153,12 +1151,12 @@ impl TheoryAtomDefinition {
             c_str.to_str()
         }
     }
-    pub fn guard(&self) -> Result<&TheoryGuardDefinition, WrapperError> {
+    pub fn guard(&self) -> Result<&TheoryGuardDefinition, ClingoError> {
         match unsafe { (self.0.guard as *const TheoryGuardDefinition).as_ref() } {
             Some(x) => Ok(x),
-            None => Err(WrapperError {
-                msg: "tried casting a null pointer to &TheoryGuardDefinition.",
-            }),
+            None => Err(ClingoError::new(
+                "tried casting a null pointer to &TheoryGuardDefinition.",
+            )),
         }
     }
 }

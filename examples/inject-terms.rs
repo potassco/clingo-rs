@@ -1,4 +1,5 @@
 use clingo::*;
+use failure::{Error, Fail};
 use std::env;
 
 fn print_model(model: &Model) {
@@ -17,20 +18,26 @@ fn print_model(model: &Model) {
 }
 
 struct MyEFH;
+
+#[derive(Debug, Fail)]
+#[fail(display = "MyError: {}", msg)]
+pub struct MyError {
+    msg: &'static str,
+}
+
 impl ExternalFunctionHandler for MyEFH {
     fn on_external_function(
         &mut self,
         _location: &Location,
         name: &str,
         arguments: &[Symbol],
-    ) -> Result<Vec<Symbol>, ClingoError> {
+    ) -> Result<Vec<Symbol>, Error> {
         if name == "c" && arguments.len() == 0 {
             Ok(vec![Symbol::create_number(42), Symbol::create_number(43)])
         } else {
-            Err(ClingoError {
-                error_type: ErrorType::Runtime,
+            Err(MyError {
                 msg: "function not found",
-            })
+            })?
         }
     }
 }

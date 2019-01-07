@@ -30,7 +30,7 @@ fn solve(ctl: &mut Control) {
             Ok(Some(model)) => print_model(model),
             // stop if there are no more models
             Ok(None) => break,
-            Err(e) => panic!("Error: {}", e.as_fail()),
+            Err(e) => panic!("Error: {}", e),
         }
     }
 
@@ -64,7 +64,7 @@ fn main() {
     let mut atom_ids = vec![];
     {
         // get iterator of the symbolic atoms
-        let mut atoms_iterator = ctl.symbolic_atoms().unwrap().iter();
+        let mut atoms_iterator = ctl.symbolic_atoms().unwrap().iter().unwrap();
 
         for atom in &atom_strings {
             let symbol = Symbol::create_id(atom, true).unwrap();
