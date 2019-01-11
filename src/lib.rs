@@ -1,7 +1,6 @@
 #![allow(non_upper_case_globals)]
 use bitflags::bitflags;
 use clingo_sys::*;
-use libc::c_char;
 use std::cmp::Ordering;
 use std::ffi::CStr;
 use std::ffi::CString;
@@ -9,6 +8,8 @@ use std::ffi::NulError;
 use std::hash::{Hash, Hasher};
 use std::marker::PhantomData;
 use std::mem;
+use std::os::raw::c_char;
+use std::os::raw::c_void;
 use std::ptr::NonNull;
 use std::str::Utf8Error;
 
@@ -349,8 +350,8 @@ bitflags! {
 }
 type SolveEventCallback = unsafe extern "C" fn(
     type_: clingo_solve_event_type_t,
-    event: *mut ::std::os::raw::c_void,
-    data: *mut ::std::os::raw::c_void,
+    event: *mut c_void,
+    data: *mut c_void,
     goon: *mut bool,
 ) -> bool;
 pub trait SolveEventHandler {
@@ -370,8 +371,8 @@ pub trait SolveEventHandler {
     #[doc(hidden)]
     unsafe extern "C" fn unsafe_solve_callback<T: SolveEventHandler>(
         etype: clingo_solve_event_type_t,
-        event: *mut ::std::os::raw::c_void,
-        data: *mut ::std::os::raw::c_void,
+        event: *mut c_void,
+        data: *mut c_void,
         goon: *mut bool,
     ) -> bool {
         // assert!(!event.is_null());
@@ -382,9 +383,9 @@ pub trait SolveEventHandler {
             }
             clingo_solve_event_type_clingo_solve_event_type_finish => SolveEventType::Finish,
             x => {
-    // from the libclingo docs:
-    // If a (non-recoverable) clingo API function fails in this callback, it must return false.
-    // In case of errors not related to clingo, set error code ErrorType::Unknown and return false to stop solving with an error.
+                // from the libclingo docs:
+                // If a (non-recoverable) clingo API function fails in this callback, it must return false.
+                // In case of errors not related to clingo, set error code ErrorType::Unknown and return false to stop solving with an error.
                 eprintln!("Failed to match clingo_solve_event_type: {}.", x);
                 set_internal_error(
                     ErrorType::Runtime,
@@ -409,10 +410,8 @@ pub trait SolveEventHandler {
     }
 }
 
-type AstCallback = unsafe extern "C" fn(
-    arg1: *const clingo_ast_statement_t,
-    arg2: *mut ::std::os::raw::c_void,
-) -> bool;
+type AstCallback =
+    unsafe extern "C" fn(arg1: *const clingo_ast_statement_t, arg2: *mut c_void) -> bool;
 pub trait AstStatementHandler {
     /// Callback function called on an ast statement while traversing the ast.
     ///
@@ -421,7 +420,7 @@ pub trait AstStatementHandler {
     #[doc(hidden)]
     unsafe extern "C" fn unsafe_ast_callback<T: AstStatementHandler>(
         stm: *const clingo_ast_statement_t,
-        data: *mut ::std::os::raw::c_void,
+        data: *mut c_void,
     ) -> bool {
         if let Some(stm) = (stm as *const AstStatement<T>).as_ref() {
             if let Some(data) = (data as *mut T).as_mut() {
@@ -442,11 +441,8 @@ pub trait AstStatementHandler {
     }
 }
 
-type LoggingCallback = unsafe extern "C" fn(
-    code: clingo_warning_t,
-    message: *const ::std::os::raw::c_char,
-    data: *mut ::std::os::raw::c_void,
-);
+type LoggingCallback =
+    unsafe extern "C" fn(code: clingo_warning_t, message: *const c_char, data: *mut c_void);
 /// An instance of this trait has to be registered with a solver to implement a custom logging.
 pub trait Logger {
     /// Callback to intercept warning messages.
@@ -465,67 +461,59 @@ pub trait Logger {
         print!("warn {:?}: {}", code, message);
     }
     #[doc(hidden)]
-    unsafe extern "C" fn unsafe_logging_callback<L: Logger>(
+    extern "C" fn unsafe_logging_callback<L: Logger>(
         code: clingo_warning_t,
-        message: *const ::std::os::raw::c_char,
-        data: *mut ::std::os::raw::c_void,
+        message: *const c_char,
+        logger: *mut c_void,
     ) {
-        let code = match code as u32 {
-            clingo_warning_clingo_warning_atom_undefined => Warning::AtomUndefined,
-            clingo_warning_clingo_warning_file_included => Warning::FileIncluded,
-            clingo_warning_clingo_warning_global_variable => Warning::GlobalVariable,
-            clingo_warning_clingo_warning_operation_undefined => Warning::OperationUndefined,
-            clingo_warning_clingo_warning_other => Warning::Other,
-            clingo_warning_clingo_warning_runtime_error => Warning::RuntimeError,
-            clingo_warning_clingo_warning_variable_unbounded => Warning::VariableUnbound,
-            x => {
-                eprintln!(
-                    "unsafe_logging_callback(): Failed to match clingo_warning: {}.",
-                    x
-                );
-                set_internal_error(
-                    ErrorType::Runtime,
-                    "unsafe_logging_callback(): Failed to match clingo_warning.",
-                );
-                return;
-            }
-        };
-
-        // assert!(!message.is_null());
-        let c_str = CStr::from_ptr(message);
-        match c_str.to_str() {
-            Ok(message) => {
-                if let Some(logger) = (data as *mut L).as_mut() {
-                    logger.log(code, message);
-                } else {
-                    set_internal_error(
-                        ErrorType::Runtime,
-                        "unsafe_logging_callback() tried casting a null pointer to &mut Logger.",
-                    );
-                }
-            }
-            Err(e) => {
-                eprintln!(
-                    "unsafe_logging_callback() message with invalid UTF-8 data:{}",
-                    e
-                );
-                set_internal_error(
-                    ErrorType::Runtime,
-                    "unsafe_logging_callback() message with invalid UTF-8 data.",
-                );
-            }
+        // check for null pointers
+        if message.is_null() | logger.is_null() {
+            set_internal_error(
+                ErrorType::Runtime,
+                "unsafe_logging_callback() got a null pointer.",
+            );
+            return;
         }
+        let message = unsafe { CStr::from_ptr(message) };
+        let logger = unsafe { &mut *(logger as *mut L) };
+
+        if let Err(e) = logger.try_logging_callback(code, message) {
+            eprintln!("Error in unsafe_logging_callback(): {}.", e);
+            set_internal_error(ErrorType::Runtime, "Error in unsafe_ground_callback().");
+        }
+    }
+    #[doc(hidden)]
+    fn try_logging_callback(
+        &mut self,
+        code: clingo_warning_t,
+        message: &CStr,
+    ) -> Result<(), Error> {
+        let code = try_from(code)?;
+        let message = message.to_str()?;
+        Ok(self.log(code, message))
+    }
+}
+fn try_from(code: i32) -> Result<Warning, Error> {
+    match code as u32 {
+        clingo_warning_clingo_warning_atom_undefined => Ok(Warning::AtomUndefined),
+        clingo_warning_clingo_warning_file_included => Ok(Warning::FileIncluded),
+        clingo_warning_clingo_warning_global_variable => Ok(Warning::GlobalVariable),
+        clingo_warning_clingo_warning_operation_undefined => Ok(Warning::OperationUndefined),
+        clingo_warning_clingo_warning_other => Ok(Warning::Other),
+        clingo_warning_clingo_warning_runtime_error => Ok(Warning::RuntimeError),
+        clingo_warning_clingo_warning_variable_unbounded => Ok(Warning::VariableUnbound),
+        x => Err(ClingoError::new("Failed to match clingo_warning."))?,
     }
 }
 
 type GroundCallback = unsafe extern "C" fn(
     location: *const clingo_location_t,
-    name: *const ::std::os::raw::c_char,
+    name: *const c_char,
     arguments: *const clingo_symbol_t,
     arguments_size: usize,
-    data: *mut ::std::os::raw::c_void,
+    data: *mut c_void,
     symbol_callback: clingo_symbol_callback_t,
-    symbol_callback_data: *mut ::std::os::raw::c_void,
+    symbol_callback_data: *mut c_void,
 ) -> bool;
 pub trait ExternalFunctionHandler {
     /// Callback function to implement external functions.
@@ -567,69 +555,81 @@ pub trait ExternalFunctionHandler {
         arguments: &[Symbol],
     ) -> Result<Vec<Symbol>, Error>;
     #[doc(hidden)]
-    unsafe extern "C" fn unsafe_ground_callback<T: ExternalFunctionHandler>(
+    extern "C" fn unsafe_ground_callback<T: ExternalFunctionHandler>(
         location: *const clingo_location_t,
-        name: *const ::std::os::raw::c_char,
+        name: *const c_char,
         arguments: *const clingo_symbol_t,
         arguments_size: usize,
-        data: *mut ::std::os::raw::c_void,
+        event_handler: *mut c_void,
         symbol_callback: clingo_symbol_callback_t,
-        symbol_callback_data: *mut ::std::os::raw::c_void,
+        symbol_callback_data: *mut c_void,
     ) -> bool {
-        assert!(!name.is_null());
-        let c_str = CStr::from_ptr(name);
-        match c_str.to_str() {
-            Ok(name) => {
-                if let Some(location) = (location as *const Location).as_ref() {
-                    if arguments_size > 0 {
-                        assert!(!arguments.is_null());
-                    }
-                    let arguments =
-                        std::slice::from_raw_parts(arguments as *const Symbol, arguments_size);
-
-                    if let Some(event_handler) = (data as *mut T).as_mut() {
-                        match event_handler.on_external_function(location, name, arguments) {
-                            Ok(symbols) => {
-                                if let Some(symbol_injector) = symbol_callback {
-                                    let v: Vec<clingo_symbol_t> =
-                                        symbols.iter().map(|symbol| (*symbol).0).collect();
-                                    return symbol_injector(
-                                        v.as_slice().as_ptr(),
-                                        v.len(),
-                                        symbol_callback_data,
-                                    );
-                                } else {
-                                    return true;
-                                }
-                            }
-                            Err(e) => {
-    // from the libclingo docs:
-    // If a (non-recoverable) clingo API function fails in this callback, it must return false.
-    // In case of errors not related to clingo, set error code ErrorType::Unknown and return false to stop solving with an error.                            
-                                eprintln!("Calling on_external_function() returned Error: {}", e);
-                                set_internal_error(
-                                    ErrorType::Runtime,
-                                    "Calling on_external_function() retuned Error.",
-                                )
-                            }
-                        }
-                    } else {
-                        set_internal_error(
-                ErrorType::Runtime,"unsafe_ground_callback() tried casting a null pointer to &mut ExternalFunctionHandler."
+        // check for null pointers
+        if location.is_null() | name.is_null() | arguments.is_null() | event_handler.is_null() {
+            set_internal_error(
+                ErrorType::Runtime,
+                "unsafe_ground_callback() got a null pointer.",
             );
-                    }
+            return false;
+        }
+        let location = unsafe { &*(location as *const Location) };
+        let name = unsafe { CStr::from_ptr(name) };
+        let arguments =
+            unsafe { std::slice::from_raw_parts(arguments as *const Symbol, arguments_size) };
+        let event_handler = unsafe { &mut *(event_handler as *mut T) };
+
+        if let Ok(name) = name.to_str() {
+            if let Ok(symbols) = event_handler.on_external_function(location, name, arguments) {
+                if let Some(symbol_injector) = symbol_callback {
+                    let v: Vec<clingo_symbol_t> =
+                        symbols.iter().map(|symbol| (*symbol).0).collect();
+                    unsafe {
+                        symbol_injector(v.as_slice().as_ptr(), v.len(), symbol_callback_data)
+                    };
+                    return true;
                 } else {
-                    set_internal_error(
-                        ErrorType::Runtime,
-                        "unsafe_ground_callback() tried casting a null pointer to &Location.",
-                    );
+                    // no symbol callback
+                    return true;
                 }
             }
+        }
+        match event_handler.try_symbol_callback(
+            location,
+            name,
+            arguments,
+            symbol_callback,
+            symbol_callback_data,
+        ) {
+            Ok(x) => x,
             Err(e) => {
-                println!("{:?}", e);
+                // from the libclingo docs:
+                // If a (non-recoverable) clingo API function fails in this callback, it must return false.
+                // In case of errors not related to clingo, set error code ErrorType::Unknown and return false to stop solving with an error.
+                eprintln!("Error in unsafe_ground_callback(): {}.", e);
+                set_internal_error(ErrorType::Runtime, "Error in unsafe_ground_callback().");
+                false
             }
         }
-        false
+    }
+
+    #[doc(hidden)]
+    fn try_symbol_callback(
+        &mut self,
+        location: &Location,
+        name: &CStr,
+        arguments: &[Symbol],
+        symbol_callback: clingo_symbol_callback_t,
+        symbol_callback_data: *mut c_void,
+    ) -> Result<bool, Error> {
+        let name = name.to_str()?;
+        let symbols = self.on_external_function(location, name, arguments)?;
+        if let Some(symbol_callback) = symbol_callback {
+            let v: Vec<clingo_symbol_t> = symbols.iter().map(|symbol| (*symbol).0).collect();
+            Ok(unsafe { symbol_callback(v.as_slice().as_ptr(), v.len(), symbol_callback_data) })
+        } else {
+            // no symbol callback
+            Ok(true)
+        }
     }
 }
 
@@ -1028,8 +1028,14 @@ impl Symbol {
     pub fn name(&self) -> Result<&str, Error> {
         let mut char_ptr = std::ptr::null() as *const c_char;
         if unsafe { clingo_symbol_name(self.0, &mut char_ptr) } {
-            let c_str = unsafe { CStr::from_ptr(char_ptr) };
-            Ok(c_str.to_str()?)
+            if char_ptr.is_null() {
+                Err(ClingoError::new(
+                    "clingo_symbol_name() returned a null pointer.",
+                ))?
+            } else {
+                let c_str = unsafe { CStr::from_ptr(char_ptr) };
+                Ok(c_str.to_str()?)
+            }
         } else {
             Err(ClingoError::new("Call to clingo_symbol_name() failed."))?
         }
@@ -1044,8 +1050,14 @@ impl Symbol {
     pub fn string(&self) -> Result<&str, Error> {
         let mut char_ptr = std::ptr::null() as *const c_char;
         if unsafe { clingo_symbol_string(self.0, &mut char_ptr) } {
-            let c_str = unsafe { CStr::from_ptr(char_ptr) };
-            Ok(c_str.to_str()?)
+            if char_ptr.is_null() {
+                Err(ClingoError::new(
+                    "clingo_symbol_string() returned a null pointer.",
+                ))?
+            } else {
+                let c_str = unsafe { CStr::from_ptr(char_ptr) };
+                Ok(c_str.to_str()?)
+            }
         } else {
             Err(ClingoError::new("Call to clingo_symbol_string() failed."))?
         }
@@ -1176,7 +1188,7 @@ pub fn parse_program<T: AstStatementHandler>(program: &str, handler: &mut T) -> 
         clingo_parse_program(
             program.as_ptr(),
             Some(T::unsafe_ast_callback::<T> as AstCallback),
-            data as *mut ::std::os::raw::c_void,
+            data as *mut c_void,
             logger,
             logger_data,
             0,
@@ -1215,9 +1227,9 @@ pub fn parse_program_with_logger<T: AstStatementHandler, L: Logger>(
         clingo_parse_program(
             program.as_ptr(),
             Some(T::unsafe_ast_callback::<T> as AstCallback),
-            handler_data as *mut ::std::os::raw::c_void,
+            handler_data as *mut c_void,
             Some(L::unsafe_logging_callback::<L> as LoggingCallback),
-            logger_data as *mut ::std::os::raw::c_void,
+            logger_data as *mut c_void,
             message_limit,
         )
     } {
@@ -1305,7 +1317,7 @@ pub trait Propagator {
     #[doc(hidden)]
     unsafe extern "C" fn unsafe_init<T: Propagator>(
         init: *mut clingo_propagate_init_t,
-        data: *mut ::std::os::raw::c_void,
+        data: *mut c_void,
     ) -> bool {
         assert!(!init.is_null());
         if let Some(init) = (init as *mut PropagateInit).as_mut() {
@@ -1389,7 +1401,7 @@ pub trait Propagator {
         control: *mut clingo_propagate_control_t,
         changes: *const clingo_literal_t,
         size: usize,
-        data: *mut ::std::os::raw::c_void,
+        data: *mut c_void,
     ) -> bool {
         assert!(!control.is_null());
         if let Some(control) = (control as *mut PropagateControl).as_mut() {
@@ -1431,7 +1443,7 @@ pub trait Propagator {
         control: *mut clingo_propagate_control_t,
         changes: *const clingo_literal_t,
         size: usize,
-        data: *mut ::std::os::raw::c_void,
+        data: *mut c_void,
     ) -> bool {
         if let Some(control) = (control as *mut PropagateControl).as_mut() {
             assert!(!changes.is_null());
@@ -1474,7 +1486,7 @@ pub trait Propagator {
     #[doc(hidden)]
     unsafe extern "C" fn unsafe_check<T: Propagator>(
         control: *mut clingo_propagate_control_t,
-        data: *mut ::std::os::raw::c_void,
+        data: *mut c_void,
     ) -> bool {
         if let Some(control) = (control as *mut PropagateControl).as_mut() {
             if let Some(propagator) = (data as *mut T).as_mut() {
@@ -1607,7 +1619,7 @@ impl Control {
                 c_args.as_ptr(),
                 c_args.len(),
                 Some(L::unsafe_logging_callback::<L> as LoggingCallback),
-                data as *mut ::std::os::raw::c_void,
+                data as *mut c_void,
                 message_limit,
                 &mut ctl_ptr,
             )
@@ -1707,7 +1719,7 @@ impl Control {
                 parts.as_ptr(),
                 parts_size,
                 None,
-                std::ptr::null_mut() as *mut ::std::os::raw::c_void,
+                std::ptr::null_mut() as *mut c_void,
             )
         } {
             Ok(())
@@ -1751,7 +1763,7 @@ impl Control {
                 parts.as_ptr(),
                 parts_size,
                 Some(T::unsafe_ground_callback::<T> as GroundCallback),
-                data as *mut ::std::os::raw::c_void,
+                data as *mut c_void,
             )
         } {
             Ok(())
@@ -1785,7 +1797,7 @@ impl Control {
                 assumptions.as_ptr() as *const clingo_literal_t,
                 assumptions.len(),
                 None,
-                std::ptr::null_mut() as *mut ::std::os::raw::c_void,
+                std::ptr::null_mut() as *mut c_void,
                 &mut handle,
             )
         } {
@@ -1828,7 +1840,7 @@ impl Control {
                 assumptions.as_ptr() as *const clingo_literal_t,
                 assumptions.len(),
                 Some(T::unsafe_solve_callback::<T> as SolveEventCallback),
-                data as *mut ::std::os::raw::c_void,
+                data as *mut c_void,
                 &mut handle,
             )
         } {
@@ -1951,7 +1963,7 @@ impl Control {
             clingo_control_register_propagator(
                 self.ctl.as_ptr(),
                 &propagator,
-                data_ptr as *mut ::std::os::raw::c_void,
+                data_ptr as *mut c_void,
                 sequential,
             )
         } {
@@ -2188,12 +2200,7 @@ impl Control {
             theory_atom_with_guard: Some(T::unsafe_theory_atom_with_guard::<T>),
         };
         unsafe {
-            clingo_control_register_observer(
-                self.ctl.as_ptr(),
-                &gpo,
-                replace,
-                data as *mut ::std::os::raw::c_void,
-            )
+            clingo_control_register_observer(self.ctl.as_ptr(), &gpo, replace, data as *mut c_void)
         }
     }
 
@@ -2480,7 +2487,7 @@ impl Configuration {
     /// - [`ClingoError`](struct.ClingoError.html)
     /// - [`Utf8Error`](https://doc.rust-lang.org/std/str/struct.Utf8Error.html)
     pub fn description(&self, Id(key): Id) -> Result<&str, Error> {
-        let mut description_ptr = unsafe { mem::uninitialized() };
+        let mut description_ptr = std::ptr::null() as *const c_char;
         if unsafe {
             clingo_configuration_description(
                 &self.0,
@@ -2488,9 +2495,14 @@ impl Configuration {
                 &mut description_ptr as *mut *const c_char,
             )
         } {
-            let cstr = unsafe { CStr::from_ptr(description_ptr) };
-            // all descriptions should be valid UTF-8 strings
-            Ok(cstr.to_str()?)
+            if description_ptr.is_null() {
+                Err(ClingoError::new(
+                    "clingo_configuration_description() returned a null pointer.",
+                ))?
+            } else {
+                let cstr = unsafe { CStr::from_ptr(description_ptr) };
+                Ok(cstr.to_str()?)
+            }
         } else {
             Err(ClingoError::new(
                 "Call to clingo_configuration_description() failed.",
@@ -2602,7 +2614,7 @@ impl Configuration {
     /// - [`ClingoError`](struct.ClingoError.html)
     /// - [`Utf8Error`](https://doc.rust-lang.org/std/str/struct.Utf8Error.html)
     pub fn map_subkey_name(&self, Id(key): Id, offset: usize) -> Result<&str, Error> {
-        let mut name_ptr = unsafe { mem::uninitialized() };
+        let mut name_ptr = std::ptr::null() as *const c_char;
         if unsafe {
             clingo_configuration_map_subkey_name(
                 &self.0,
@@ -2611,9 +2623,14 @@ impl Configuration {
                 &mut name_ptr as *mut *const c_char,
             )
         } {
-            let cstr = unsafe { CStr::from_ptr(name_ptr) };
-            // all configuration keys should be valid UTF-8 strings
-            Ok(cstr.to_str()?)
+            if name_ptr.is_null() {
+                Err(ClingoError::new(
+                    "clingo_configuration_map_subkey_name() returned a null pointer.",
+                ))?
+            } else {
+                let cstr = unsafe { CStr::from_ptr(name_ptr) };
+                Ok(cstr.to_str()?)
+            }
         } else {
             Err(ClingoError::new(
                 "Call to clingo_configuration_map_subkey_name() failed.",
@@ -2684,10 +2701,16 @@ impl Configuration {
     pub fn value_get(&self, Id(key): Id) -> Result<&str, Error> {
         let mut size = 0;
         if unsafe { clingo_configuration_value_get_size(&self.0, key, &mut size) } {
-            let mut value_ptr = unsafe { mem::uninitialized() };
-            if unsafe { clingo_configuration_value_get(&self.0, key, &mut value_ptr, size) } {
-                let cstr = unsafe { CStr::from_ptr(&value_ptr) };
+            let mut value_ptr = std::ptr::null_mut() as *mut c_char;
+            if unsafe { clingo_configuration_value_get(&self.0, key, value_ptr, size) } {
+            if value_ptr.is_null() {
+                Err(ClingoError::new(
+                    "clingo_configuration_value_get() returned a null pointer.",
+                ))?}
+            else{
+                let cstr = unsafe { CStr::from_ptr(value_ptr) };
                 Ok(cstr.to_str()?)
+            }
             } else {
                 Err(ClingoError::new(
                     "Call to clingo_configuration_value_get() failed.",
@@ -4873,7 +4896,7 @@ pub fn parse_term_with_logger<L: Logger>(
         clingo_parse_term(
             c_str.as_ptr(),
             Some(L::unsafe_logging_callback::<L> as LoggingCallback),
-            data as *mut ::std::os::raw::c_void,
+            data as *mut c_void,
             message_limit,
             &mut symbol,
         )
@@ -4899,7 +4922,7 @@ pub trait GroundProgramObserver {
     #[doc(hidden)]
     unsafe extern "C" fn unsafe_init_program<T: GroundProgramObserver>(
         incremental: bool,
-        data: *mut ::std::os::raw::c_void,
+        data: *mut c_void,
     ) -> bool {
         if let Some(gpo) = (data as *mut T).as_mut() {
             gpo.init_program(incremental)
@@ -4919,9 +4942,7 @@ pub trait GroundProgramObserver {
     /// **Returns** whether the call was successful
     fn begin_step(&mut self) -> bool;
     #[doc(hidden)]
-    unsafe extern "C" fn unsafe_begin_step<T: GroundProgramObserver>(
-        data: *mut ::std::os::raw::c_void,
-    ) -> bool {
+    unsafe extern "C" fn unsafe_begin_step<T: GroundProgramObserver>(data: *mut c_void) -> bool {
         if let Some(gpo) = (data as *mut T).as_mut() {
             gpo.begin_step()
         } else {
@@ -4942,9 +4963,7 @@ pub trait GroundProgramObserver {
     /// **Returns** whether the call was successful
     fn end_step(&mut self) -> bool;
     #[doc(hidden)]
-    unsafe extern "C" fn unsafe_end_step<T: GroundProgramObserver>(
-        data: *mut ::std::os::raw::c_void,
-    ) -> bool {
+    unsafe extern "C" fn unsafe_end_step<T: GroundProgramObserver>(data: *mut c_void) -> bool {
         if let Some(gpo) = (data as *mut T).as_mut() {
             gpo.end_step()
         } else {
@@ -4973,7 +4992,7 @@ pub trait GroundProgramObserver {
         head_size: usize,
         body: *const clingo_literal_t,
         body_size: usize,
-        data: *mut ::std::os::raw::c_void,
+        data: *mut c_void,
     ) -> bool {
         assert!(!head.is_null());
         let head = std::slice::from_raw_parts(head as *const Atom, head_size);
@@ -5017,7 +5036,7 @@ pub trait GroundProgramObserver {
         lower_bound: clingo_weight_t,
         body: *const clingo_weighted_literal_t,
         body_size: usize,
-        data: *mut ::std::os::raw::c_void,
+        data: *mut c_void,
     ) -> bool {
         assert!(!head.is_null());
         let head = std::slice::from_raw_parts(head as *const Atom, head_size);
@@ -5050,7 +5069,7 @@ pub trait GroundProgramObserver {
         priority: clingo_weight_t,
         literals: *const clingo_weighted_literal_t,
         size: usize,
-        data: *mut ::std::os::raw::c_void,
+        data: *mut c_void,
     ) -> bool {
         assert!(!literals.is_null());
         let literals = std::slice::from_raw_parts(literals as *const WeightedLiteral, size);
@@ -5078,7 +5097,7 @@ pub trait GroundProgramObserver {
     unsafe extern "C" fn unsafe_project<T: GroundProgramObserver>(
         atoms: *const clingo_atom_t,
         size: usize,
-        data: *mut ::std::os::raw::c_void,
+        data: *mut c_void,
     ) -> bool {
         assert!(!atoms.is_null());
         let atoms = std::slice::from_raw_parts(atoms as *const Atom, size);
@@ -5110,7 +5129,7 @@ pub trait GroundProgramObserver {
     unsafe extern "C" fn unsafe_output_atom<T: GroundProgramObserver>(
         symbol: clingo_symbol_t,
         atom: clingo_atom_t,
-        data: *mut ::std::os::raw::c_void,
+        data: *mut c_void,
     ) -> bool {
         if let Some(gpo) = (data as *mut T).as_mut() {
             gpo.output_atom(Symbol(symbol), Atom(atom))
@@ -5137,7 +5156,7 @@ pub trait GroundProgramObserver {
         symbol: clingo_symbol_t,
         condition: *const clingo_literal_t,
         size: usize,
-        data: *mut ::std::os::raw::c_void,
+        data: *mut c_void,
     ) -> bool {
         assert!(!condition.is_null());
         let condition = std::slice::from_raw_parts(condition as *const Literal, size);
@@ -5169,7 +5188,7 @@ pub trait GroundProgramObserver {
         value: ::std::os::raw::c_int,
         condition: *const clingo_literal_t,
         size: usize,
-        data: *mut ::std::os::raw::c_void,
+        data: *mut c_void,
     ) -> bool {
         assert!(!condition.is_null());
         let condition = std::slice::from_raw_parts(condition as *const Literal, size);
@@ -5198,7 +5217,7 @@ pub trait GroundProgramObserver {
     unsafe extern "C" fn unsafe_external<T: GroundProgramObserver>(
         atom: clingo_atom_t,
         type_: clingo_external_type_t,
-        data: *mut ::std::os::raw::c_void,
+        data: *mut c_void,
     ) -> bool {
         let type_ = match type_ as u32 {
             clingo_external_type_clingo_external_type_false => ExternalType::False,
@@ -5232,7 +5251,7 @@ pub trait GroundProgramObserver {
     unsafe extern "C" fn unsafe_assume<T: GroundProgramObserver>(
         literals: *const clingo_literal_t,
         size: usize,
-        data: *mut ::std::os::raw::c_void,
+        data: *mut c_void,
     ) -> bool {
         assert!(!literals.is_null());
         let literals = std::slice::from_raw_parts(literals as *const Literal, size);
@@ -5275,7 +5294,7 @@ pub trait GroundProgramObserver {
         priority: ::std::os::raw::c_uint,
         condition: *const clingo_literal_t,
         size: usize,
-        data: *mut ::std::os::raw::c_void,
+        data: *mut c_void,
     ) -> bool {
         let type_ = match type_ as u32 {
             clingo_heuristic_type_clingo_heuristic_type_factor => HeuristicType::Factor,
@@ -5317,7 +5336,7 @@ pub trait GroundProgramObserver {
         node_v: ::std::os::raw::c_int,
         condition: *const clingo_literal_t,
         size: usize,
-        data: *mut ::std::os::raw::c_void,
+        data: *mut c_void,
     ) -> bool {
         assert!(!condition.is_null());
         let condition = std::slice::from_raw_parts(condition as *const Literal, size);
@@ -5346,7 +5365,7 @@ pub trait GroundProgramObserver {
     unsafe extern "C" fn unsafe_theory_term_number<T: GroundProgramObserver>(
         term_id: clingo_id_t,
         number: ::std::os::raw::c_int,
-        data: *mut ::std::os::raw::c_void,
+        data: *mut c_void,
     ) -> bool {
         if let Some(gpo) = (data as *mut T).as_mut() {
             gpo.theory_term_number(Id(term_id), number)
@@ -5371,8 +5390,8 @@ pub trait GroundProgramObserver {
     #[doc(hidden)]
     unsafe extern "C" fn unsafe_theory_term_string<T: GroundProgramObserver>(
         term_id: clingo_id_t,
-        name: *const ::std::os::raw::c_char,
-        data: *mut ::std::os::raw::c_void,
+        name: *const c_char,
+        data: *mut c_void,
     ) -> bool {
         assert!(!name.is_null());
         let cstr = CStr::from_ptr(name);
@@ -5423,7 +5442,7 @@ pub trait GroundProgramObserver {
         name_id_or_type: ::std::os::raw::c_int,
         arguments: *const clingo_id_t,
         size: usize,
-        data: *mut ::std::os::raw::c_void,
+        data: *mut c_void,
     ) -> bool {
         assert!(!arguments.is_null());
         let arguments = std::slice::from_raw_parts(arguments as *const Id, size);
@@ -5456,7 +5475,7 @@ pub trait GroundProgramObserver {
         terms_size: usize,
         condition: *const clingo_literal_t,
         condition_size: usize,
-        data: *mut ::std::os::raw::c_void,
+        data: *mut c_void,
     ) -> bool {
         assert!(!terms.is_null());
         let terms = std::slice::from_raw_parts(terms as *const Id, terms_size);
@@ -5491,7 +5510,7 @@ pub trait GroundProgramObserver {
         term_id: clingo_id_t,
         elements: *const clingo_id_t,
         size: usize,
-        data: *mut ::std::os::raw::c_void,
+        data: *mut c_void,
     ) -> bool {
         assert!(!elements.is_null());
         let elements = std::slice::from_raw_parts(elements as *const Id, size);
@@ -5534,7 +5553,7 @@ pub trait GroundProgramObserver {
         size: usize,
         operator_id: clingo_id_t,
         right_hand_side_id: clingo_id_t,
-        data: *mut ::std::os::raw::c_void,
+        data: *mut c_void,
     ) -> bool {
         assert!(!elements.is_null());
         let elements = std::slice::from_raw_parts(elements as *const Id, size);
