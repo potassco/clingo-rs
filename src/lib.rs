@@ -96,6 +96,8 @@ pub enum ClauseType {
 pub enum SolveEventType {
     /// Issued if a model is found.
     Model = clingo_solve_event_type_clingo_solve_event_type_model as isize,
+    /// Issued when the statistics can be updated.
+    Statistics = clingo_solve_event_type_clingo_solve_event_type_statistics as isize,
     /// Issued if the search has completed.
     Finish = clingo_solve_event_type_clingo_solve_event_type_finish as isize,
 }
@@ -293,6 +295,7 @@ pub trait SolveEventHandler {
         // assert!(!event.is_null());
         let etype = match etype {
             clingo_solve_event_type_clingo_solve_event_type_model => SolveEventType::Model,
+            clingo_solve_event_type_clingo_solve_event_type_statistics => SolveEventType::Statistics,
             clingo_solve_event_type_clingo_solve_event_type_finish => SolveEventType::Finish,
             x => panic!("Failed to match clingo_solve_event_type: {}.", x),
         };
