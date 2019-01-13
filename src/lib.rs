@@ -7,7 +7,6 @@ use std::ffi::CString;
 use std::ffi::NulError;
 use std::hash::{Hash, Hasher};
 use std::marker::PhantomData;
-use std::mem;
 use std::os::raw::c_char;
 use std::os::raw::c_void;
 use std::ptr::NonNull;
@@ -177,6 +176,27 @@ pub enum SolveEventType {
     /// Issued if the search has completed.
     Finish = clingo_solve_event_type_clingo_solve_event_type_finish as isize,
 }
+impl SolveEventType {
+    fn try_from(code: u32) -> Result<SolveEventType, ClingoError> {
+        match code {
+            clingo_solve_event_type_clingo_solve_event_type_model => Ok(SolveEventType::Model),
+            clingo_solve_event_type_clingo_solve_event_type_statistics => {
+                Ok(SolveEventType::Statistics)
+            }
+            clingo_solve_event_type_clingo_solve_event_type_finish => Ok(SolveEventType::Finish),
+            x => {
+                eprintln!(
+                    "FFIError in {} {}, {} : Failed to match clingo_solve_event_type {}",
+                    file!(),
+                    line!(),
+                    column!(),
+                    x
+                );
+                Err(ClingoError::new("Failed to match clingo_solve_event_type."))
+            }
+        }
+    }
+}
 
 /// Enumeration for entries of the statistics.
 #[derive(Debug, Copy, Clone)]
@@ -224,6 +244,29 @@ pub enum Warning {
     /// Other kinds of warnings
     Other = clingo_warning_clingo_warning_other as isize,
 }
+impl Warning {
+    fn try_from(code: i32) -> Result<Warning, ClingoError> {
+        match code as u32 {
+            clingo_warning_clingo_warning_atom_undefined => Ok(Warning::AtomUndefined),
+            clingo_warning_clingo_warning_file_included => Ok(Warning::FileIncluded),
+            clingo_warning_clingo_warning_global_variable => Ok(Warning::GlobalVariable),
+            clingo_warning_clingo_warning_operation_undefined => Ok(Warning::OperationUndefined),
+            clingo_warning_clingo_warning_other => Ok(Warning::Other),
+            clingo_warning_clingo_warning_runtime_error => Ok(Warning::RuntimeError),
+            clingo_warning_clingo_warning_variable_unbounded => Ok(Warning::VariableUnbound),
+            x => {
+                eprintln!(
+                    "FFIError in {} {}, {} : Failed to match clingo_warning {}",
+                    file!(),
+                    line!(),
+                    column!(),
+                    x
+                );
+                Err(ClingoError::new("Failed to match clingo_warning."))
+            }
+        }
+    }
+}
 
 /// Enumeration of different external statements.
 #[derive(Debug, Copy, Clone)]
@@ -237,7 +280,26 @@ pub enum ExternalType {
     /// No longer treat an atom as external
     Release = clingo_external_type_clingo_external_type_release as isize,
 }
-
+impl ExternalType {
+    fn try_from(code: i32) -> Result<ExternalType, ClingoError> {
+        match code as u32 {
+            clingo_external_type_clingo_external_type_false => Ok(ExternalType::False),
+            clingo_external_type_clingo_external_type_free => Ok(ExternalType::Free),
+            clingo_external_type_clingo_external_type_release => Ok(ExternalType::Release),
+            clingo_external_type_clingo_external_type_true => Ok(ExternalType::True),
+            x => {
+                eprintln!(
+                    "FFIError in {} {}, {} : Failed to match clingo_external_type {}",
+                    file!(),
+                    line!(),
+                    column!(),
+                    x
+                );
+                Err(ClingoError::new("Failed to match clingo_external_type."))
+            }
+        }
+    }
+}
 /// Enumeration of different heuristic modifiers.
 #[derive(Debug, Copy, Clone)]
 pub enum HeuristicType {
@@ -253,6 +315,28 @@ pub enum HeuristicType {
     True = clingo_heuristic_type_clingo_heuristic_type_true as isize,
     /// Set the level of an atom and choose a negative sign
     False = clingo_heuristic_type_clingo_heuristic_type_false as isize,
+}
+impl HeuristicType {
+    fn try_from(code: i32) -> Result<HeuristicType, ClingoError> {
+        match code as u32 {
+            clingo_heuristic_type_clingo_heuristic_type_factor => Ok(HeuristicType::Factor),
+            clingo_heuristic_type_clingo_heuristic_type_false => Ok(HeuristicType::False),
+            clingo_heuristic_type_clingo_heuristic_type_init => Ok(HeuristicType::Init),
+            clingo_heuristic_type_clingo_heuristic_type_level => Ok(HeuristicType::Level),
+            clingo_heuristic_type_clingo_heuristic_type_sign => Ok(HeuristicType::Sign),
+            clingo_heuristic_type_clingo_heuristic_type_true => Ok(HeuristicType::True),
+            x => {
+                eprintln!(
+                    "FFIError in {} {}, {} : Failed to match clingo_heuristic_type {}",
+                    file!(),
+                    line!(),
+                    column!(),
+                    x
+                );
+                Err(ClingoError::new("Failed to match clingo_heuristic_type."))
+            }
+        }
+    }
 }
 
 /// Enumeration of theory term types.
@@ -372,41 +456,30 @@ pub trait SolveEventHandler {
     unsafe extern "C" fn unsafe_solve_callback<T: SolveEventHandler>(
         etype: clingo_solve_event_type_t,
         event: *mut c_void,
-        data: *mut c_void,
+        event_handler: *mut c_void,
         goon: *mut bool,
     ) -> bool {
-        // assert!(!event.is_null());
-        let etype = match etype {
-            clingo_solve_event_type_clingo_solve_event_type_model => SolveEventType::Model,
-            clingo_solve_event_type_clingo_solve_event_type_statistics => {
-                SolveEventType::Statistics
-            }
-            clingo_solve_event_type_clingo_solve_event_type_finish => SolveEventType::Finish,
-            x => {
+        // check for null pointers
+        if event_handler.is_null() | goon.is_null() {
+            set_internal_error(
+                ErrorType::Runtime,
+                "unsafe_solve_callback() got a null pointer.",
+            );
+            return false;
+        }
+        let event_handler = &mut *(event_handler as *mut T);
+        let goon = &mut *goon;
+
+        match SolveEventType::try_from(etype) {
+            Err(_) => {
                 // from the libclingo docs:
                 // If a (non-recoverable) clingo API function fails in this callback, it must return false.
                 // In case of errors not related to clingo, set error code ErrorType::Unknown and return false to stop solving with an error.
-                eprintln!("Failed to match clingo_solve_event_type: {}.", x);
-                set_internal_error(
-                    ErrorType::Runtime,
-                    "Failed to match clingo_solve_event_type.",
-                );
-                return false;
+                set_internal_error(ErrorType::Runtime, "Error in unsafe_solve_callback().");
+                false
             }
-        };
-
-        let msg = match (data as *mut T).as_mut() {
-            Some(event_handler) => {
-                if let Some(goon) = goon.as_mut() {
-                    return event_handler.on_solve_event(etype, goon);
-                } else {
-                    "unsafe_solve_callback() tried casting a null pointer to &bool."
-                }
-            }
-            None => "unsafe_solve_callback() tried casting a null pointer to &SolveEventHandler.",
-        };
-        set_internal_error(ErrorType::Runtime, msg);
-        false
+            Ok(etype) => event_handler.on_solve_event(etype, goon),
+        }
     }
 }
 
@@ -422,22 +495,18 @@ pub trait AstStatementHandler {
         stm: *const clingo_ast_statement_t,
         data: *mut c_void,
     ) -> bool {
-        if let Some(stm) = (stm as *const AstStatement<T>).as_ref() {
-            if let Some(data) = (data as *mut T).as_mut() {
-                return data.on_statement(stm);
-            } else {
-                set_internal_error(
-                    ErrorType::Runtime,
-                    "unsafe_ast_callback() tried casting a null pointer to &mut AstStatementHandler.",
-                );
-            }
-        } else {
+        // check for null pointers
+        if stm.is_null() | data.is_null() {
             set_internal_error(
                 ErrorType::Runtime,
-                "unsafe_ast_callback() tried casting a null pointer to &AstStatement.",
+                "unsafe_ast_callback() got a null pointer.",
             );
+            return false;
         }
-        false
+        let stm = &*(stm as *const AstStatement<T>);
+        let data = &mut *(data as *mut T);
+
+        data.on_statement(stm)
     }
 }
 
@@ -461,7 +530,7 @@ pub trait Logger {
         print!("warn {:?}: {}", code, message);
     }
     #[doc(hidden)]
-    extern "C" fn unsafe_logging_callback<L: Logger>(
+    unsafe extern "C" fn unsafe_logging_callback<L: Logger>(
         code: clingo_warning_t,
         message: *const c_char,
         logger: *mut c_void,
@@ -474,12 +543,12 @@ pub trait Logger {
             );
             return;
         }
-        let message = unsafe { CStr::from_ptr(message) };
-        let logger = unsafe { &mut *(logger as *mut L) };
+        let message = CStr::from_ptr(message);
+        let logger = &mut *(logger as *mut L);
 
         if let Err(e) = logger.try_logging_callback(code, message) {
             eprintln!("Error in unsafe_logging_callback(): {}.", e);
-            set_internal_error(ErrorType::Runtime, "Error in unsafe_ground_callback().");
+            set_internal_error(ErrorType::Runtime, "Error in unsafe_logging_callback().");
         }
     }
     #[doc(hidden)]
@@ -488,21 +557,9 @@ pub trait Logger {
         code: clingo_warning_t,
         message: &CStr,
     ) -> Result<(), Error> {
-        let code = try_from(code)?;
+        let code = Warning::try_from(code)?;
         let message = message.to_str()?;
         Ok(self.log(code, message))
-    }
-}
-fn try_from(code: i32) -> Result<Warning, Error> {
-    match code as u32 {
-        clingo_warning_clingo_warning_atom_undefined => Ok(Warning::AtomUndefined),
-        clingo_warning_clingo_warning_file_included => Ok(Warning::FileIncluded),
-        clingo_warning_clingo_warning_global_variable => Ok(Warning::GlobalVariable),
-        clingo_warning_clingo_warning_operation_undefined => Ok(Warning::OperationUndefined),
-        clingo_warning_clingo_warning_other => Ok(Warning::Other),
-        clingo_warning_clingo_warning_runtime_error => Ok(Warning::RuntimeError),
-        clingo_warning_clingo_warning_variable_unbounded => Ok(Warning::VariableUnbound),
-        x => Err(ClingoError::new("Failed to match clingo_warning."))?,
     }
 }
 
@@ -555,7 +612,7 @@ pub trait ExternalFunctionHandler {
         arguments: &[Symbol],
     ) -> Result<Vec<Symbol>, Error>;
     #[doc(hidden)]
-    extern "C" fn unsafe_ground_callback<T: ExternalFunctionHandler>(
+    unsafe extern "C" fn unsafe_ground_callback<T: ExternalFunctionHandler>(
         location: *const clingo_location_t,
         name: *const c_char,
         arguments: *const clingo_symbol_t,
@@ -565,34 +622,22 @@ pub trait ExternalFunctionHandler {
         symbol_callback_data: *mut c_void,
     ) -> bool {
         // check for null pointers
-        if location.is_null() | name.is_null() | arguments.is_null() | event_handler.is_null() {
+        if location.is_null()
+            | name.is_null()
+            | (arguments_size > 0 && arguments.is_null())
+            | event_handler.is_null()
+        {
             set_internal_error(
                 ErrorType::Runtime,
                 "unsafe_ground_callback() got a null pointer.",
             );
             return false;
         }
-        let location = unsafe { &*(location as *const Location) };
-        let name = unsafe { CStr::from_ptr(name) };
-        let arguments =
-            unsafe { std::slice::from_raw_parts(arguments as *const Symbol, arguments_size) };
-        let event_handler = unsafe { &mut *(event_handler as *mut T) };
+        let location = &*(location as *const Location);
+        let name = CStr::from_ptr(name);
+        let arguments = std::slice::from_raw_parts(arguments as *const Symbol, arguments_size);
+        let event_handler = &mut *(event_handler as *mut T);
 
-        if let Ok(name) = name.to_str() {
-            if let Ok(symbols) = event_handler.on_external_function(location, name, arguments) {
-                if let Some(symbol_injector) = symbol_callback {
-                    let v: Vec<clingo_symbol_t> =
-                        symbols.iter().map(|symbol| (*symbol).0).collect();
-                    unsafe {
-                        symbol_injector(v.as_slice().as_ptr(), v.len(), symbol_callback_data)
-                    };
-                    return true;
-                } else {
-                    // no symbol callback
-                    return true;
-                }
-            }
-        }
         match event_handler.try_symbol_callback(
             location,
             name,
@@ -1026,7 +1071,7 @@ impl Symbol {
     /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if symbol is not of type [`SymbolType::Function`](enum.SymbolType.html#variant.Function)
     /// - [`Utf8Error`](https://doc.rust-lang.org/std/str/struct.Utf8Error.html)
     pub fn name(&self) -> Result<&str, Error> {
-        let mut char_ptr = std::ptr::null() as *const c_char;
+        let mut char_ptr = std::ptr::null();
         if unsafe { clingo_symbol_name(self.0, &mut char_ptr) } {
             if char_ptr.is_null() {
                 Err(ClingoError::new(
@@ -1048,7 +1093,7 @@ impl Symbol {
     /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if symbol is not of type [`SymbolType::String`](enum.SymbolType.html#variant.String)
     /// - [`Utf8Error`](https://doc.rust-lang.org/std/str/struct.Utf8Error.html)
     pub fn string(&self) -> Result<&str, Error> {
-        let mut char_ptr = std::ptr::null() as *const c_char;
+        let mut char_ptr = std::ptr::null();
         if unsafe { clingo_symbol_string(self.0, &mut char_ptr) } {
             if char_ptr.is_null() {
                 Err(ClingoError::new(
@@ -1101,14 +1146,24 @@ impl Symbol {
     ///
     /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if symbol is not of type [`SymbolType::Function`](enum.SymbolType.html#variant.Function)
     pub fn arguments(self) -> Result<Vec<Symbol>, ClingoError> {
-        let mut symbol_ptr = std::ptr::null() as *const clingo_symbol_t;
+        let mut symbol_ptr = std::ptr::null();
         let mut size: usize = 0;
         if unsafe { clingo_symbol_arguments(self.0, &mut symbol_ptr, &mut size) } {
             let mut symbols = Vec::<Symbol>::with_capacity(size);
+
+            // let symbols_ptr = symbols.as_mut_ptr();
+            // let symbols = unsafe {std::slice::from_raw_parts(symbols_ptr, size)};
+
             for _ in 0..size {
-                let nsymbol = unsafe { *symbol_ptr };
-                symbols.push(Symbol(nsymbol));
-                symbol_ptr = unsafe { symbol_ptr.offset(1) };
+                if symbol_ptr.is_null() {
+                    return Err(ClingoError::new(
+                        "clingo_symbol_arguments() returned a null pointer.",
+                    ));
+                } else {
+                    let nsymbol = unsafe { *symbol_ptr };
+                    symbols.push(Symbol(nsymbol));
+                    symbol_ptr = unsafe { symbol_ptr.offset(1) };
+                }
             }
             Ok(symbols)
         } else {
@@ -1317,26 +1372,20 @@ pub trait Propagator {
     #[doc(hidden)]
     unsafe extern "C" fn unsafe_init<T: Propagator>(
         init: *mut clingo_propagate_init_t,
-        data: *mut c_void,
+        propagator: *mut c_void,
     ) -> bool {
-        assert!(!init.is_null());
-        if let Some(init) = (init as *mut PropagateInit).as_mut() {
-            assert!(!data.is_null());
-            if let Some(propagator) = (data as *mut T).as_mut() {
-                return propagator.init(init);
-            } else {
-                set_internal_error(
-                    ErrorType::Runtime,
-                    "unsafe_init tried casting a null pointer to &mut Propagator.",
-                );
-            }
-        } else {
+        // check for null pointers
+        if init.is_null() | propagator.is_null() {
             set_internal_error(
                 ErrorType::Runtime,
-                "unsafe_init tried casting a null pointer to &mut PropagateInit.",
+                "clingo_propagate_init_t() got a null pointer.",
             );
+            return false;
         }
-        false
+        let init = &mut *(init as *mut PropagateInit);
+        let propagator = &mut *(propagator as *mut T);
+
+        propagator.init(init)
     }
     /// Can be used to propagate solver literals given a
     /// [partial assignment](struct.Assignment.html).
@@ -1401,29 +1450,18 @@ pub trait Propagator {
         control: *mut clingo_propagate_control_t,
         changes: *const clingo_literal_t,
         size: usize,
-        data: *mut c_void,
+        propagator: *mut c_void,
     ) -> bool {
-        assert!(!control.is_null());
-        if let Some(control) = (control as *mut PropagateControl).as_mut() {
-            assert!(!changes.is_null());
-            let changes = std::slice::from_raw_parts(changes as *const Literal, size);
-
-            assert!(!data.is_null());
-            if let Some(propagator) = (data as *mut T).as_mut() {
-                return propagator.propagate(control, changes);
-            } else {
-                set_internal_error(
-                    ErrorType::Runtime,
-                    "unsafe_propagate() tried casting a null pointer to &mut Propagator.",
-                );
-            }
-        } else {
-            set_internal_error(
-                ErrorType::Runtime,
-                "unsafe_propagate() tried casting a null pointer to &mut PropagateControl.",
-            );
+        // check for null pointers
+        if control.is_null() | (size > 0 && changes.is_null()) | propagator.is_null() {
+            set_internal_error(ErrorType::Runtime, "unsafe_propagate() got a null pointer.");
+            return false;
         }
-        false
+        let control = &mut *(control as *mut PropagateControl);
+        let changes = std::slice::from_raw_parts(changes as *const Literal, size);
+        let propagator = &mut *(propagator as *mut T);
+
+        propagator.propagate(control, changes)
     }
     /// Called whenever a solver undoes assignments to watched solver literals.
     ///
@@ -1443,27 +1481,18 @@ pub trait Propagator {
         control: *mut clingo_propagate_control_t,
         changes: *const clingo_literal_t,
         size: usize,
-        data: *mut c_void,
+        propagator: *mut c_void,
     ) -> bool {
-        if let Some(control) = (control as *mut PropagateControl).as_mut() {
-            assert!(!changes.is_null());
-            let changes = std::slice::from_raw_parts(changes as *const Literal, size);
-
-            if let Some(propagator) = (data as *mut T).as_mut() {
-                return propagator.undo(control, changes);
-            } else {
-                set_internal_error(
-                    ErrorType::Runtime,
-                    "unsafe_undo() tried casting a null pointer to &mut Propagator.",
-                );
-            }
-        } else {
-            set_internal_error(
-                ErrorType::Runtime,
-                "unsafe_undo() tried casting a null pointer to &mut PropagateControl.",
-            );
+        // check for null pointers
+        if control.is_null() | (size > 0 && changes.is_null()) | propagator.is_null() {
+            set_internal_error(ErrorType::Runtime, "unsafe_undo() got a null pointer.");
+            return false;
         }
-        false
+        let control = &mut *(control as *mut PropagateControl);
+        let changes = std::slice::from_raw_parts(changes as *const Literal, size);
+        let propagator = &mut *(propagator as *mut T);
+
+        propagator.undo(control, changes)
     }
     /// This function is similar to
     /// [`PropagateControl::propagate()`](struct.PropagateControl.html#method.propagate) but is only
@@ -1486,24 +1515,17 @@ pub trait Propagator {
     #[doc(hidden)]
     unsafe extern "C" fn unsafe_check<T: Propagator>(
         control: *mut clingo_propagate_control_t,
-        data: *mut c_void,
+        propagator: *mut c_void,
     ) -> bool {
-        if let Some(control) = (control as *mut PropagateControl).as_mut() {
-            if let Some(propagator) = (data as *mut T).as_mut() {
-                return propagator.check(control);
-            } else {
-                set_internal_error(
-                    ErrorType::Runtime,
-                    "unsafe_check() tried casting a null pointer to &mut Propagator.",
-                );
-            }
-        } else {
-            set_internal_error(
-                ErrorType::Runtime,
-                "unsafe_check tried() casting a null pointer to &mut PropagateControl.",
-            );
+        // check for null pointers
+        if control.is_null() | propagator.is_null() {
+            set_internal_error(ErrorType::Runtime, "unsafe_check() got a null pointer.");
+            return false;
         }
-        false
+        let control = &mut *(control as *mut PropagateControl);
+        let propagator = &mut *(propagator as *mut T);
+
+        propagator.check(control)
     }
 }
 
@@ -1553,7 +1575,7 @@ impl Control {
             .map(|arg| arg.as_ptr())
             .collect::<Vec<*const c_char>>();
 
-        let mut ctl_ptr = unsafe { mem::uninitialized() };
+        let mut ctl_ptr = std::ptr::null_mut();
 
         if unsafe {
             clingo_control_new(
@@ -1611,7 +1633,7 @@ impl Control {
             .map(|arg| arg.as_ptr())
             .collect::<Vec<*const c_char>>();
 
-        let mut ctl_ptr = unsafe { mem::uninitialized() };
+        let mut ctl_ptr = std::ptr::null_mut();
 
         let data = logger as *mut L;
         if unsafe {
@@ -1719,7 +1741,7 @@ impl Control {
                 parts.as_ptr(),
                 parts_size,
                 None,
-                std::ptr::null_mut() as *mut c_void,
+                std::ptr::null_mut(),
             )
         } {
             Ok(())
@@ -1789,7 +1811,7 @@ impl Control {
         mode: SolveMode,
         assumptions: &[Literal],
     ) -> Result<SolveHandle, ClingoError> {
-        let mut handle = std::ptr::null_mut() as *mut clingo_solve_handle_t;
+        let mut handle = std::ptr::null_mut();
         if unsafe {
             clingo_control_solve(
                 self.ctl.as_ptr(),
@@ -1797,7 +1819,7 @@ impl Control {
                 assumptions.as_ptr() as *const clingo_literal_t,
                 assumptions.len(),
                 None,
-                std::ptr::null_mut() as *mut c_void,
+                std::ptr::null_mut(),
                 &mut handle,
             )
         } {
@@ -1829,10 +1851,10 @@ impl Control {
         &mut self,
         mode: SolveMode,
         assumptions: &[Literal],
-        handler: &mut T,
+        event_handler: &mut T,
     ) -> Result<SolveHandle, ClingoError> {
-        let mut handle = std::ptr::null_mut() as *mut clingo_solve_handle_t;
-        let data = handler as *mut T;
+        let mut handle = std::ptr::null_mut();
+        let event_handler = event_handler as *mut T;
         if unsafe {
             clingo_control_solve(
                 self.ctl.as_ptr(),
@@ -1840,7 +1862,7 @@ impl Control {
                 assumptions.as_ptr() as *const clingo_literal_t,
                 assumptions.len(),
                 Some(T::unsafe_solve_callback::<T> as SolveEventCallback),
-                data as *mut c_void,
+                event_handler as *mut c_void,
                 &mut handle,
             )
         } {
@@ -2002,7 +2024,7 @@ impl Control {
     ///
     /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     pub fn statistics(&self) -> Result<&Statistics, ClingoError> {
-        let mut stat = std::ptr::null() as *const clingo_statistics_t;
+        let mut stat = std::ptr::null();
         if unsafe { clingo_control_statistics(self.ctl.as_ptr(), &mut stat) } {
             match unsafe { (stat as *mut Statistics).as_ref() } {
                 Some(x) => Ok(x),
@@ -2026,7 +2048,7 @@ impl Control {
 
     /// Get a configuration object to change the solver configuration.
     pub fn configuration_mut(&mut self) -> Result<&mut Configuration, ClingoError> {
-        let mut conf = std::ptr::null_mut() as *mut clingo_configuration_t;
+        let mut conf = std::ptr::null_mut();
         if unsafe { clingo_control_configuration(self.ctl.as_ptr(), &mut conf) } {
             match unsafe { (conf as *mut Configuration).as_mut() } {
                 Some(x) => Ok(x),
@@ -2043,7 +2065,7 @@ impl Control {
 
     /// Get a configuration object to change the solver configuration.
     pub fn configuration(&self) -> Result<&Configuration, ClingoError> {
-        let mut conf = std::ptr::null_mut() as *mut clingo_configuration_t;
+        let mut conf = std::ptr::null_mut();
         if unsafe { clingo_control_configuration(self.ctl.as_ptr(), &mut conf) } {
             match unsafe { (conf as *const Configuration).as_ref() } {
                 Some(x) => Ok(x),
@@ -2121,7 +2143,7 @@ impl Control {
         let name = CString::new(name)?;
         let mut exist = false;
         if unsafe { clingo_control_has_const(self.ctl.as_ptr(), name.as_ptr(), &mut exist) } {
-            return Ok(exist);
+            Ok(exist)
         } else {
             Err(ClingoError::new(
                 "Call to clingo_control_has_const() failed.",
@@ -2131,7 +2153,7 @@ impl Control {
 
     /// Get an object to inspect symbolic atoms (the relevant Herbrand base) used
     pub fn symbolic_atoms(&self) -> Result<&SymbolicAtoms, ClingoError> {
-        let mut atoms = std::ptr::null_mut() as *mut clingo_symbolic_atoms_t;
+        let mut atoms = std::ptr::null_mut();
         if unsafe { clingo_control_symbolic_atoms(self.ctl.as_ptr(), &mut atoms) } {
             match unsafe { (atoms as *const SymbolicAtoms).as_ref() } {
                 Some(x) => Ok(x),
@@ -2148,7 +2170,7 @@ impl Control {
 
     /// Get an object to inspect theory atoms that occur in the grounding.
     pub fn theory_atoms(&self) -> Result<&TheoryAtoms, ClingoError> {
-        let mut atoms = std::ptr::null_mut() as *mut clingo_theory_atoms_t;
+        let mut atoms = std::ptr::null_mut();
         if unsafe { clingo_control_theory_atoms(self.ctl.as_ptr(), &mut atoms) } {
             match unsafe { (atoms as *const TheoryAtoms).as_ref() } {
                 Some(x) => Ok(x),
@@ -2231,7 +2253,7 @@ impl Control {
 
     /// Get an object to add non-ground directives to the program.
     pub fn program_builder(&mut self) -> Result<ProgramBuilder, ClingoError> {
-        let mut builder = std::ptr::null_mut() as *mut clingo_program_builder_t;
+        let mut builder = std::ptr::null_mut();
         if unsafe { clingo_control_program_builder(self.ctl.as_ptr(), &mut builder) } {
             // begin building the program
             if unsafe { clingo_program_builder_begin(builder) } {
@@ -2487,14 +2509,8 @@ impl Configuration {
     /// - [`ClingoError`](struct.ClingoError.html)
     /// - [`Utf8Error`](https://doc.rust-lang.org/std/str/struct.Utf8Error.html)
     pub fn description(&self, Id(key): Id) -> Result<&str, Error> {
-        let mut description_ptr = std::ptr::null() as *const c_char;
-        if unsafe {
-            clingo_configuration_description(
-                &self.0,
-                key,
-                &mut description_ptr as *mut *const c_char,
-            )
-        } {
+        let mut description_ptr = std::ptr::null();
+        if unsafe { clingo_configuration_description(&self.0, key, &mut description_ptr) } {
             if description_ptr.is_null() {
                 Err(ClingoError::new(
                     "clingo_configuration_description() returned a null pointer.",
@@ -2614,15 +2630,8 @@ impl Configuration {
     /// - [`ClingoError`](struct.ClingoError.html)
     /// - [`Utf8Error`](https://doc.rust-lang.org/std/str/struct.Utf8Error.html)
     pub fn map_subkey_name(&self, Id(key): Id, offset: usize) -> Result<&str, Error> {
-        let mut name_ptr = std::ptr::null() as *const c_char;
-        if unsafe {
-            clingo_configuration_map_subkey_name(
-                &self.0,
-                key,
-                offset,
-                &mut name_ptr as *mut *const c_char,
-            )
-        } {
+        let mut name_ptr = std::ptr::null();
+        if unsafe { clingo_configuration_map_subkey_name(&self.0, key, offset, &mut name_ptr) } {
             if name_ptr.is_null() {
                 Err(ClingoError::new(
                     "clingo_configuration_map_subkey_name() returned a null pointer.",
@@ -2654,7 +2663,7 @@ impl Configuration {
         let mut nkey = 0 as clingo_id_t;
         let name = CString::new(name)?;
         if unsafe { clingo_configuration_map_at(&self.0, key, name.as_ptr(), &mut nkey) } {
-            return Ok(Id(nkey));
+            Ok(Id(nkey))
         } else {
             Err(ClingoError::new(
                 "Call to clingo_configuration_value_is_assigned() failed.",
@@ -2701,16 +2710,11 @@ impl Configuration {
     pub fn value_get(&self, Id(key): Id) -> Result<&str, Error> {
         let mut size = 0;
         if unsafe { clingo_configuration_value_get_size(&self.0, key, &mut size) } {
-            let mut value_ptr = std::ptr::null_mut() as *mut c_char;
+            let mut value = Vec::<i8>::with_capacity(size);
+            let value_ptr = value.as_mut_ptr();
             if unsafe { clingo_configuration_value_get(&self.0, key, value_ptr, size) } {
-            if value_ptr.is_null() {
-                Err(ClingoError::new(
-                    "clingo_configuration_value_get() returned a null pointer.",
-                ))?}
-            else{
                 let cstr = unsafe { CStr::from_ptr(value_ptr) };
                 Ok(cstr.to_str()?)
-            }
             } else {
                 Err(ClingoError::new(
                     "Call to clingo_configuration_value_get() failed.",
@@ -2744,7 +2748,7 @@ impl Configuration {
             Ok(())
         } else {
             Err(ClingoError::new(
-                "Call toclingo_configuration_value_set() failed.",
+                "Call to clingo_configuration_value_set() failed.",
             ))?
         }
     }
@@ -3219,9 +3223,15 @@ impl Statistics {
     /// - [`ClingoError`](struct.ClingoError.html)
     /// - [`Utf8Error`](https://doc.rust-lang.org/std/str/struct.Utf8Error.html)
     pub fn map_subkey_name(&self, key: u64, offset: usize) -> Result<&str, Error> {
-        let mut name = std::ptr::null() as *const c_char;
+        let mut name = std::ptr::null();
         if unsafe { clingo_statistics_map_subkey_name(&self.0, key, offset, &mut name) } {
-            Ok(unsafe { CStr::from_ptr(name) }.to_str()?)
+            if name.is_null() {
+                Err(ClingoError::new(
+                    "clingo_statistics_map_subkey_name() returned a null pointer.",
+                ))?
+            } else {
+                Ok(unsafe { CStr::from_ptr(name) }.to_str()?)
+            }
         } else {
             Err(ClingoError::new(
                 "Call to clingo_statistics_map_subkey_name() failed.",
@@ -3251,7 +3261,7 @@ impl Statistics {
         let mut subkey = 0 as u64;
         let name = CString::new(name)?;
         if unsafe { clingo_statistics_map_at(&self.0, key, name.as_ptr(), &mut subkey) } {
-            return Ok(subkey);
+            Ok(subkey)
         } else {
             Err(ClingoError::new(
                 "Call to clingo_statistics_map_at() failed.",
@@ -3419,15 +3429,9 @@ impl SymbolicAtoms {
     pub fn signatures(&self) -> Result<Vec<Signature>, ClingoError> {
         let mut size = 0;
         if unsafe { clingo_symbolic_atoms_signatures_size(&self.0, &mut size) } {
-            let signatures = Vec::<Signature>::with_capacity(size);
-            let signatures_ptr = signatures.as_ptr();
-            if unsafe {
-                clingo_symbolic_atoms_signatures(
-                    &self.0,
-                    signatures_ptr as *mut clingo_signature_t,
-                    size,
-                )
-            } {
+            let mut signatures = Vec::<u64>::with_capacity(size);
+            let signatures_ptr = signatures.as_mut_ptr();
+            if unsafe { clingo_symbolic_atoms_signatures(&self.0, signatures_ptr, size) } {
                 let signatures_ref =
                     unsafe { std::slice::from_raw_parts(signatures_ptr as *const Signature, size) };
                 Ok(signatures_ref.to_owned())
@@ -3569,7 +3573,6 @@ impl TheoryAtoms {
         TheoryAtomsIterator {
             count: 0,
             atoms: &self,
-            atoms_size: self.size().unwrap(),
         }
     }
 
@@ -3640,12 +3643,20 @@ impl TheoryAtoms {
     /// - [`ClingoError`](struct.ClingoError.html)
     /// - [`Utf8Error`](https://doc.rust-lang.org/std/str/struct.Utf8Error.html)
     pub fn term_name<'a>(&self, Id(term): Id) -> Result<&'a str, Error> {
-        let mut char_ptr = std::ptr::null() as *const c_char;
+        let mut char_ptr = std::ptr::null();
         if unsafe { clingo_theory_atoms_term_name(&self.0, term, &mut char_ptr) } {
-            let c_str = unsafe { CStr::from_ptr(char_ptr) };
-            Ok(c_str.to_str()?)
+            if char_ptr.is_null() {
+                Err(ClingoError::new(
+                    "clingo_theory_atoms_term_name() returned a null pointer.",
+                ))?
+            } else {
+                let c_str = unsafe { CStr::from_ptr(char_ptr) };
+                Ok(c_str.to_str()?)
+            }
         } else {
-            Err(ClingoError::new("clingo_theory_atoms_term_name() failed."))?
+            Err(ClingoError::new(
+                "Call to clingo_theory_atoms_term_name() failed.",
+            ))?
         }
     }
 
@@ -3660,7 +3671,7 @@ impl TheoryAtoms {
     /// * `term` - id of the term
     pub fn term_arguments(&self, Id(term): Id) -> Result<Vec<Id>, ClingoError> {
         let mut size = 0;
-        let mut c_ptr = unsafe { mem::uninitialized() };
+        let mut c_ptr = std::ptr::null();
         if unsafe { clingo_theory_atoms_term_arguments(&self.0, term, &mut c_ptr, &mut size) } {
             let arguments_ref = unsafe { std::slice::from_raw_parts(c_ptr as *const Id, size) };
             Ok(arguments_ref.to_owned())
@@ -3687,10 +3698,17 @@ impl TheoryAtoms {
     pub fn term_to_string(&self, Id(term): Id) -> Result<&str, Error> {
         let mut size = 0;
         if unsafe { clingo_theory_atoms_term_to_string_size(&self.0, term, &mut size) } {
-            let mut c_ptr = unsafe { mem::uninitialized() };
-            if unsafe { clingo_theory_atoms_term_to_string(&self.0, term, &mut c_ptr, size) } {
-                let cstr = unsafe { CStr::from_ptr(&c_ptr) };
-                Ok(cstr.to_str()?)
+            let mut string = Vec::<i8>::with_capacity(size);
+            let c_ptr = string.as_mut_ptr();
+            if unsafe { clingo_theory_atoms_term_to_string(&self.0, term, c_ptr, size) } {
+                if c_ptr.is_null() {
+                    Err(ClingoError::new(
+                        "clingo_theory_atoms_term_to_string() returned a null pointer.",
+                    ))?
+                } else {
+                    let cstr = unsafe { CStr::from_ptr(c_ptr) };
+                    Ok(cstr.to_str()?)
+                }
             } else {
                 Err(ClingoError::new(
                     "Call to clingo_theory_atoms_term_to_string() failed.",
@@ -3710,7 +3728,7 @@ impl TheoryAtoms {
     /// * `element` - id of the element
     pub fn element_tuple(&self, Id(element): Id) -> Result<Vec<Id>, ClingoError> {
         let mut size = 0;
-        let mut tuple_ptr = unsafe { mem::uninitialized() };
+        let mut tuple_ptr = std::ptr::null();
         if unsafe { clingo_theory_atoms_element_tuple(&self.0, element, &mut tuple_ptr, &mut size) }
         {
             let tuple_ref = unsafe { std::slice::from_raw_parts(tuple_ptr as *const Id, size) };
@@ -3729,7 +3747,7 @@ impl TheoryAtoms {
     /// * `element` - id of the element
     pub fn element_condition(&self, Id(element): Id) -> Result<Vec<Literal>, ClingoError> {
         let mut size = 0;
-        let mut condition_ptr = unsafe { mem::uninitialized() };
+        let mut condition_ptr = std::ptr::null();
         if unsafe {
             clingo_theory_atoms_element_condition(&self.0, element, &mut condition_ptr, &mut size)
         } {
@@ -3754,9 +3772,15 @@ impl TheoryAtoms {
     ///
     /// * `element` - id of the element
     pub fn element_condition_id(&self, Id(element): Id) -> Result<Literal, ClingoError> {
-        let mut condition = unsafe { mem::uninitialized() };
-        if unsafe { clingo_theory_atoms_element_condition_id(&self.0, element, &mut condition) } {
-            Ok(Literal(condition))
+        let condition_ptr = std::ptr::null_mut();
+        if unsafe { clingo_theory_atoms_element_condition_id(&self.0, element, condition_ptr) } {
+            if condition_ptr.is_null() {
+                Err(ClingoError::new(
+                    "clingo_theory_atoms_element_condition_id() returned a null pointer.",
+                ))?
+            } else {
+                Ok(Literal(unsafe { *condition_ptr }))
+            }
         } else {
             Err(ClingoError::new(
                 "Call to clingo_theory_atoms_element_condition_id() failed.",
@@ -3780,11 +3804,17 @@ impl TheoryAtoms {
     pub fn element_to_string(&self, Id(element): Id) -> Result<&str, Error> {
         let mut size = 0;
         if unsafe { clingo_theory_atoms_element_to_string_size(&self.0, element, &mut size) } {
-            let mut c_ptr = unsafe { mem::uninitialized() };
-            if unsafe { clingo_theory_atoms_element_to_string(&self.0, element, &mut c_ptr, size) }
-            {
-                let cstr = unsafe { CStr::from_ptr(&c_ptr) };
-                Ok(cstr.to_str()?)
+            let mut string = Vec::<i8>::with_capacity(size);
+            let c_ptr = string.as_mut_ptr();
+            if unsafe { clingo_theory_atoms_element_to_string(&self.0, element, c_ptr, size) } {
+                if c_ptr.is_null() {
+                    Err(ClingoError::new(
+                        "clingo_theory_atoms_element_to_string() returned a null pointer.",
+                    ))?
+                } else {
+                    let cstr = unsafe { CStr::from_ptr(c_ptr) };
+                    Ok(cstr.to_str()?)
+                }
             } else {
                 Err(ClingoError::new(
                     "Call to clingo_theory_atoms_element_to_string() failed.",
@@ -3820,7 +3850,7 @@ impl TheoryAtoms {
     /// * `atom` - id of the atom
     pub fn atom_elements(&self, Id(atom): Id) -> Result<Vec<Id>, ClingoError> {
         let mut size = 0;
-        let mut elements_ptr = unsafe { mem::uninitialized() };
+        let mut elements_ptr = std::ptr::null() as *const clingo_id_t;
         if unsafe { clingo_theory_atoms_atom_elements(&self.0, atom, &mut elements_ptr, &mut size) }
         {
             let elements = unsafe { std::slice::from_raw_parts(elements_ptr as *const Id, size) };
@@ -3859,11 +3889,17 @@ impl TheoryAtoms {
     /// - [`Utf8Error`](https://doc.rust-lang.org/std/str/struct.Utf8Error.html)
     /// - [`ClingoError`](struct.ClingoError.html)
     pub fn atom_guard(&self, Id(atom): Id) -> Result<(&str, Id), Error> {
-        let mut c_ptr = unsafe { mem::uninitialized() };
+        let mut c_ptr = std::ptr::null() as *const c_char;
         let mut term = 0 as clingo_id_t;
         if unsafe { clingo_theory_atoms_atom_guard(&self.0, atom, &mut c_ptr, &mut term) } {
-            let cstr = unsafe { CStr::from_ptr(c_ptr) };
-            Ok((cstr.to_str()?, Id(term)))
+            if c_ptr.is_null() {
+                Err(ClingoError::new(
+                    "clingo_theory_atoms_atom_guard() returned a null pointer.",
+                ))?
+            } else {
+                let cstr = unsafe { CStr::from_ptr(c_ptr) };
+                Ok((cstr.to_str()?, Id(term)))
+            }
         } else {
             Err(ClingoError::new(
                 "Call to clingo_theory_atoms_atom_guard() failed.",
@@ -3901,9 +3937,10 @@ impl TheoryAtoms {
     pub fn atom_to_string(&self, Id(atom): Id) -> Result<&str, Error> {
         let mut size = 0;
         if unsafe { clingo_theory_atoms_atom_to_string_size(&self.0, atom, &mut size) } {
-            let mut c_ptr = unsafe { mem::uninitialized() };
-            if unsafe { clingo_theory_atoms_atom_to_string(&self.0, atom, &mut c_ptr, size) } {
-                let cstr = unsafe { CStr::from_ptr(&c_ptr) };
+            let mut string = Vec::<i8>::with_capacity(size);
+            let string_ptr = string.as_mut_ptr();
+            if unsafe { clingo_theory_atoms_atom_to_string(&self.0, atom, string_ptr, size) } {
+                let cstr = unsafe { CStr::from_ptr(string_ptr) };
                 Ok(cstr.to_str()?)
             } else {
                 Err(ClingoError::new(
@@ -3922,14 +3959,13 @@ impl TheoryAtoms {
 pub struct TheoryAtomsIterator<'a> {
     count: usize,
     atoms: &'a TheoryAtoms,
-    atoms_size: usize,
 }
 impl<'a> Iterator for TheoryAtomsIterator<'a> {
     type Item = Id;
 
     fn next(&mut self) -> Option<Id> {
         // check to see if we've finished counting or not.
-        if self.count < self.atoms_size {
+        if self.count < self.atoms.size().unwrap() {
             let ret = Id(self.count as clingo_id_t);
             // increment our count.
             self.count += 1;
@@ -4121,13 +4157,14 @@ impl Model {
     ///
     /// This object allows for adding clauses during model enumeration.
     pub fn context(&self) -> Result<&mut SolveControl, ClingoError> {
-        let mut control = unsafe { mem::uninitialized() };
-        if unsafe { clingo_model_context(&self.0, &mut control) } {
-            match unsafe { (control as *mut SolveControl).as_mut() } {
-                Some(stm) => Ok(stm),
-                None => Err(ClingoError::new(
-                    "Tried casting a null pointer to &mut SolveControl.",
-                )),
+        let control_ptr = std::ptr::null_mut();
+        if unsafe { clingo_model_context(&self.0, control_ptr) } {
+            if control_ptr.is_null() {
+                Err(ClingoError::new(
+                    "clingo_model_context() returned a null pointer.",
+                ))?
+            } else {
+                unsafe { Ok(&mut *(control_ptr as *mut SolveControl)) }
             }
         } else {
             Err(ClingoError::new("Call to clingo_model_context() failed."))
@@ -4835,10 +4872,16 @@ impl<'a> SolveHandle<'a> {
 /// - [`Utf8Error`](https://doc.rust-lang.org/std/str/struct.Utf8Error.html)
 pub fn add_string(string: &str) -> Result<&'static str, Error> {
     let in_cstr = CString::new(string)?;
-    let mut out_ptr = unsafe { mem::uninitialized() };
+    let mut out_ptr = std::ptr::null() as *const c_char;
     if unsafe { clingo_add_string(in_cstr.as_ptr(), &mut out_ptr) } {
-        let out_cstr = unsafe { CStr::from_ptr(out_ptr) };
-        Ok(out_cstr.to_str()?)
+        if out_ptr.is_null() {
+            Err(ClingoError::new(
+                "clingo_add_string returned a null pointer.",
+            ))?
+        } else {
+            let out_cstr = unsafe { CStr::from_ptr(out_ptr) };
+            Ok(out_cstr.to_str()?)
+        }
     } else {
         Err(ClingoError::new("Call to clingo_add_string failed."))?
     }
@@ -4992,23 +5035,18 @@ pub trait GroundProgramObserver {
         head_size: usize,
         body: *const clingo_literal_t,
         body_size: usize,
-        data: *mut c_void,
+        gpo: *mut c_void,
     ) -> bool {
-        assert!(!head.is_null());
-        let head = std::slice::from_raw_parts(head as *const Atom, head_size);
-
-        assert!(!body.is_null());
-        let body = std::slice::from_raw_parts(body as *const Literal, body_size);
-
-        if let Some(gpo) = (data as *mut T).as_mut() {
-            gpo.rule(choice, head, body)
-        } else {
-            set_internal_error(
-                ErrorType::Runtime,
-                "unsafe_rule tried casting a null pointer to &mut GroundProgramObserver.",
-            );
-            false
+        // check for null pointers
+        if (head_size > 0 && head.is_null()) | (body_size > 0 && body.is_null()) | gpo.is_null() {
+            set_internal_error(ErrorType::Runtime, "unsafe_rule() got a null pointer.");
+            return false;
         }
+        let head = std::slice::from_raw_parts(head as *const Atom, head_size);
+        let body = std::slice::from_raw_parts(body as *const Literal, body_size);
+        let gpo = &mut *(gpo as *mut T);
+
+        gpo.rule(choice, head, body)
     }
 
     /// Observe weight rules passed to the solver.
@@ -5036,23 +5074,21 @@ pub trait GroundProgramObserver {
         lower_bound: clingo_weight_t,
         body: *const clingo_weighted_literal_t,
         body_size: usize,
-        data: *mut c_void,
+        gpo: *mut c_void,
     ) -> bool {
-        assert!(!head.is_null());
-        let head = std::slice::from_raw_parts(head as *const Atom, head_size);
-
-        assert!(!body.is_null());
-        let body = std::slice::from_raw_parts(body as *const WeightedLiteral, body_size);
-
-        if let Some(gpo) = (data as *mut T).as_mut() {
-            gpo.weight_rule(choice, head, lower_bound, body)
-        } else {
+        // check for null pointers
+        if (head_size > 0 && head.is_null()) | (body_size > 0 && body.is_null()) | gpo.is_null() {
             set_internal_error(
                 ErrorType::Runtime,
-                "unsafe_weight_rule tried casting a null pointer to &mut GroundProgramObserver.",
+                "unsafe_weight_rule() got a null pointer.",
             );
-            false
+            return false;
         }
+        let head = std::slice::from_raw_parts(head as *const Atom, head_size);
+        let body = std::slice::from_raw_parts(body as *const WeightedLiteral, body_size);
+        let gpo = &mut *(gpo as *mut T);
+
+        gpo.weight_rule(choice, head, lower_bound, body)
     }
 
     /// Observe minimize constraints (or weak constraints) passed to the solver.
@@ -5069,20 +5105,17 @@ pub trait GroundProgramObserver {
         priority: clingo_weight_t,
         literals: *const clingo_weighted_literal_t,
         size: usize,
-        data: *mut c_void,
+        gpo: *mut c_void,
     ) -> bool {
-        assert!(!literals.is_null());
-        let literals = std::slice::from_raw_parts(literals as *const WeightedLiteral, size);
-
-        if let Some(gpo) = (data as *mut T).as_mut() {
-            gpo.minimize(priority, literals)
-        } else {
-            set_internal_error(
-                ErrorType::Runtime,
-                "unsafe_minimize tried casting a null pointer to &mut GroundProgramObserver.",
-            );
-            false
+        // check for null pointers
+        if (size > 0 && literals.is_null()) | gpo.is_null() {
+            set_internal_error(ErrorType::Runtime, "unsafe_minimize() got a null pointer.");
+            return false;
         }
+        let literals = std::slice::from_raw_parts(literals as *const WeightedLiteral, size);
+        let gpo = &mut *(gpo as *mut T);
+
+        gpo.minimize(priority, literals)
     }
 
     /// Observe projection directives passed to the solver.
@@ -5097,20 +5130,17 @@ pub trait GroundProgramObserver {
     unsafe extern "C" fn unsafe_project<T: GroundProgramObserver>(
         atoms: *const clingo_atom_t,
         size: usize,
-        data: *mut c_void,
+        gpo: *mut c_void,
     ) -> bool {
-        assert!(!atoms.is_null());
-        let atoms = std::slice::from_raw_parts(atoms as *const Atom, size);
-
-        if let Some(gpo) = (data as *mut T).as_mut() {
-            gpo.project(atoms)
-        } else {
-            set_internal_error(
-                ErrorType::Runtime,
-                "unsafe_project tried casting a null pointer to &mut GroundProgramObserver.",
-            );
-            false
+        // check for null pointers
+        if (size > 0 && atoms.is_null()) | gpo.is_null() {
+            set_internal_error(ErrorType::Runtime, "unsafe_project() got a null pointer.");
+            return false;
         }
+        let atoms = std::slice::from_raw_parts(atoms as *const Atom, size);
+        let gpo = &mut *(gpo as *mut T);
+
+        gpo.project(atoms)
     }
 
     /// Observe shown atoms passed to the solver.
@@ -5136,7 +5166,7 @@ pub trait GroundProgramObserver {
         } else {
             set_internal_error(
                 ErrorType::Runtime,
-                "unsafe_output_atom tried casting a null pointer to &mut GroundProgramObserver.",
+                "unsafe_output_atom() tried casting a null pointer to &mut GroundProgramObserver.",
             );
             false
         }
@@ -5156,20 +5186,20 @@ pub trait GroundProgramObserver {
         symbol: clingo_symbol_t,
         condition: *const clingo_literal_t,
         size: usize,
-        data: *mut c_void,
+        gpo: *mut c_void,
     ) -> bool {
-        assert!(!condition.is_null());
-        let condition = std::slice::from_raw_parts(condition as *const Literal, size);
-
-        if let Some(gpo) = (data as *mut T).as_mut() {
-            gpo.output_term(Symbol(symbol), condition)
-        } else {
+        // check for null pointers
+        if (size > 0 && condition.is_null()) | gpo.is_null() {
             set_internal_error(
                 ErrorType::Runtime,
-                "unsafe_output_term tried casting a null pointer to &mut GroundProgramObserver.",
+                "unsafe_output_term() got a null pointer.",
             );
-            false
+            return false;
         }
+        let condition = std::slice::from_raw_parts(condition as *const Literal, size);
+        let gpo = &mut *(gpo as *mut T);
+
+        gpo.output_term(Symbol(symbol), condition)
     }
 
     /// Observe shown csp variables passed to the solver.
@@ -5188,20 +5218,20 @@ pub trait GroundProgramObserver {
         value: ::std::os::raw::c_int,
         condition: *const clingo_literal_t,
         size: usize,
-        data: *mut c_void,
+        gpo: *mut c_void,
     ) -> bool {
-        assert!(!condition.is_null());
-        let condition = std::slice::from_raw_parts(condition as *const Literal, size);
-
-        if let Some(gpo) = (data as *mut T).as_mut() {
-            gpo.output_csp(Symbol(symbol), value, condition)
-        } else {
+        // check for null pointers
+        if (size > 0 && condition.is_null()) | gpo.is_null() {
             set_internal_error(
                 ErrorType::Runtime,
-                "unsafe_output_csp tried casting a null pointer to &mut GroundProgramObserver.",
+                "unsafe_output_csp() got a null pointer.",
             );
-            false
+            return false;
         }
+        let condition = std::slice::from_raw_parts(condition as *const Literal, size);
+        let gpo = &mut *(gpo as *mut T);
+
+        gpo.output_csp(Symbol(symbol), value, condition)
     }
 
     /// Observe external statements passed to the solver.
@@ -5209,32 +5239,30 @@ pub trait GroundProgramObserver {
     /// # Arguments
     ///
     /// * `atom` - the external atom
-    /// * `type` - the type of the external statement
+    /// * `etype` - the type of the external statement
     ///
     /// **Returns** whether the call was successful
     fn external(&mut self, atom: Atom, type_: ExternalType) -> bool;
     #[doc(hidden)]
     unsafe extern "C" fn unsafe_external<T: GroundProgramObserver>(
         atom: clingo_atom_t,
-        type_: clingo_external_type_t,
-        data: *mut c_void,
+        etype: clingo_external_type_t,
+        gpo: *mut c_void,
     ) -> bool {
-        let type_ = match type_ as u32 {
-            clingo_external_type_clingo_external_type_false => ExternalType::False,
-            clingo_external_type_clingo_external_type_free => ExternalType::Free,
-            clingo_external_type_clingo_external_type_release => ExternalType::Release,
-            clingo_external_type_clingo_external_type_true => ExternalType::True,
-            x => panic!("Failed to match clingo_external_type: {}.", x),
-        };
+        // check for null pointers
+        if gpo.is_null() {
+            set_internal_error(ErrorType::Runtime, "unsafe_external() got a null pointer.");
+            return false;
+        }
+        let gpo = &mut *(gpo as *mut T);
 
-        if let Some(gpo) = (data as *mut T).as_mut() {
-            gpo.external(Atom(atom), type_)
-        } else {
-            set_internal_error(
-                ErrorType::Runtime,
-                "unsafe_external tried casting a null pointer to &mut GroundProgramObserver.",
-            );
-            false
+        match ExternalType::try_from(etype) {
+            Err(e) => {
+                eprintln!("Error in unsafe_external(): {}.", e);
+                set_internal_error(ErrorType::Runtime, "Error in unsafe_external().");
+                false
+            }
+            Ok(etype) => gpo.external(Atom(atom), etype),
         }
     }
 
@@ -5251,20 +5279,17 @@ pub trait GroundProgramObserver {
     unsafe extern "C" fn unsafe_assume<T: GroundProgramObserver>(
         literals: *const clingo_literal_t,
         size: usize,
-        data: *mut c_void,
+        gpo: *mut c_void,
     ) -> bool {
-        assert!(!literals.is_null());
-        let literals = std::slice::from_raw_parts(literals as *const Literal, size);
-
-        if let Some(gpo) = (data as *mut T).as_mut() {
-            gpo.assume(literals)
-        } else {
-            set_internal_error(
-                ErrorType::Runtime,
-                "unsafe_assume tried casting a null pointer to &mut GroundProgramObserver.",
-            );
-            false
+        // check for null pointers
+        if (size > 0 && literals.is_null()) | gpo.is_null() {
+            set_internal_error(ErrorType::Runtime, "unsafe_assume() got a null pointer.");
+            return false;
         }
+        let literals = std::slice::from_raw_parts(literals as *const Literal, size);
+        let gpo = &mut *(gpo as *mut T);
+
+        gpo.assume(literals)
     }
 
     /// Observe heuristic directives passed to the solver.
@@ -5272,7 +5297,7 @@ pub trait GroundProgramObserver {
     /// # Arguments
     ///
     /// * `atom` - the target atom
-    /// * `type` - the type of the heuristic modification
+    /// * `htype` - the type of the heuristic modification
     /// * `bias` - the heuristic bias
     /// * `priority` - the heuristic priority
     /// * `condition` - the condition under which to apply the heuristic modification
@@ -5289,34 +5314,28 @@ pub trait GroundProgramObserver {
     #[doc(hidden)]
     unsafe extern "C" fn unsafe_heuristic<T: GroundProgramObserver>(
         atom: clingo_atom_t,
-        type_: clingo_heuristic_type_t,
+        htype: clingo_heuristic_type_t,
         bias: ::std::os::raw::c_int,
         priority: ::std::os::raw::c_uint,
         condition: *const clingo_literal_t,
         size: usize,
-        data: *mut c_void,
+        gpo: *mut c_void,
     ) -> bool {
-        let type_ = match type_ as u32 {
-            clingo_heuristic_type_clingo_heuristic_type_factor => HeuristicType::Factor,
-            clingo_heuristic_type_clingo_heuristic_type_false => HeuristicType::False,
-            clingo_heuristic_type_clingo_heuristic_type_init => HeuristicType::Init,
-            clingo_heuristic_type_clingo_heuristic_type_level => HeuristicType::Level,
-            clingo_heuristic_type_clingo_heuristic_type_sign => HeuristicType::Sign,
-            clingo_heuristic_type_clingo_heuristic_type_true => HeuristicType::True,
-            x => panic!("Failed to match clingo_heuristic_type: {}.", x),
-        };
-
-        assert!(!condition.is_null());
+        // check for null pointers
+        if (size > 0 && condition.is_null()) | gpo.is_null() {
+            set_internal_error(ErrorType::Runtime, "unsafe_heuristic() got a null pointer.");
+            return false;
+        }
         let condition = std::slice::from_raw_parts(condition as *const Literal, size);
+        let gpo = &mut *(gpo as *mut T);
 
-        if let Some(gpo) = (data as *mut T).as_mut() {
-            gpo.heuristic(Atom(atom), type_, bias, priority, condition)
-        } else {
-            set_internal_error(
-                ErrorType::Runtime,
-                "unsafe_heuristic tried casting a null pointer to &mut GroundProgramObserver.",
-            );
-            false
+        match HeuristicType::try_from(htype) {
+            Err(e) => {
+                eprintln!("Error in unsafe_heuristic(): {}.", e);
+                set_internal_error(ErrorType::Runtime, "Error in unsafe_heuristic().");
+                false
+            }
+            Ok(htype) => gpo.heuristic(Atom(atom), htype, bias, priority, condition),
         }
     }
 
@@ -5336,20 +5355,17 @@ pub trait GroundProgramObserver {
         node_v: ::std::os::raw::c_int,
         condition: *const clingo_literal_t,
         size: usize,
-        data: *mut c_void,
+        gpo: *mut c_void,
     ) -> bool {
-        assert!(!condition.is_null());
-        let condition = std::slice::from_raw_parts(condition as *const Literal, size);
-
-        if let Some(gpo) = (data as *mut T).as_mut() {
-            gpo.acyc_edge(node_u, node_v, condition)
-        } else {
-            set_internal_error(
-                ErrorType::Runtime,
-                "unsafe_acyc_edge tried casting a null pointer to &mut GroundProgramObserver.",
-            );
-            false
+        // check for null pointers
+        if (size > 0 && condition.is_null()) | gpo.is_null() {
+            set_internal_error(ErrorType::Runtime, "unsafe_heuristic() got a null pointer.");
+            return false;
         }
+        let condition = std::slice::from_raw_parts(condition as *const Literal, size);
+        let gpo = &mut *(gpo as *mut T);
+
+        gpo.acyc_edge(node_u, node_v, condition)
     }
 
     /// Observe numeric theory terms.
@@ -5365,9 +5381,9 @@ pub trait GroundProgramObserver {
     unsafe extern "C" fn unsafe_theory_term_number<T: GroundProgramObserver>(
         term_id: clingo_id_t,
         number: ::std::os::raw::c_int,
-        data: *mut c_void,
+        gpo: *mut c_void,
     ) -> bool {
-        if let Some(gpo) = (data as *mut T).as_mut() {
+        if let Some(gpo) = (gpo as *mut T).as_mut() {
             gpo.theory_term_number(Id(term_id), number)
         } else {
             set_internal_error(
@@ -5391,22 +5407,21 @@ pub trait GroundProgramObserver {
     unsafe extern "C" fn unsafe_theory_term_string<T: GroundProgramObserver>(
         term_id: clingo_id_t,
         name: *const c_char,
-        data: *mut c_void,
+        gpo: *mut c_void,
     ) -> bool {
-        assert!(!name.is_null());
-        let cstr = CStr::from_ptr(name);
-        match cstr.to_str() {
-            Ok(name) => {
-                if let Some(gpo) = (data as *mut T).as_mut() {
-                    gpo.theory_term_string(Id(term_id), name)
-                } else {
-                    set_internal_error(
-                                ErrorType::Runtime,
-                                    "unsafe_theory_term_string tried casting a null pointer to &mut GroundProgramObserver."
-                            );
-                    false
-                }
-            }
+        // check for null pointers
+        if name.is_null() | gpo.is_null() {
+            set_internal_error(
+                ErrorType::Runtime,
+                "unsafe_theory_term_string() got a null pointer.",
+            );
+            return false;
+        }
+        let name = CStr::from_ptr(name);
+        let gpo = &mut *(gpo as *mut T);
+
+        match name.to_str() {
+            Ok(name) => gpo.theory_term_string(Id(term_id), name),
             Err(e) => {
                 eprintln!("Utf8Error in unsafe theory_term_string: {}", e);
                 set_internal_error(
@@ -5442,20 +5457,20 @@ pub trait GroundProgramObserver {
         name_id_or_type: ::std::os::raw::c_int,
         arguments: *const clingo_id_t,
         size: usize,
-        data: *mut c_void,
+        gpo: *mut c_void,
     ) -> bool {
-        assert!(!arguments.is_null());
-        let arguments = std::slice::from_raw_parts(arguments as *const Id, size);
-
-        if let Some(gpo) = (data as *mut T).as_mut() {
-            gpo.theory_term_compound(Id(term_id), name_id_or_type, arguments)
-        } else {
+        // check for null pointers
+        if (size > 0 && arguments.is_null()) | gpo.is_null() {
             set_internal_error(
-                        ErrorType::Runtime,
-                            "unsafe_theory_term_compound tried casting a null pointer to &mut GroundProgramObserver."
-                    );
-            false
+                ErrorType::Runtime,
+                "unsafe_theory_term_compound() got a null pointer.",
+            );
+            return false;
         }
+        let arguments = std::slice::from_raw_parts(arguments as *const Id, size);
+        let gpo = &mut *(gpo as *mut T);
+
+        gpo.theory_term_compound(Id(term_id), name_id_or_type, arguments)
     }
 
     /// Observe theory elements.
@@ -5475,23 +5490,24 @@ pub trait GroundProgramObserver {
         terms_size: usize,
         condition: *const clingo_literal_t,
         condition_size: usize,
-        data: *mut c_void,
+        gpo: *mut c_void,
     ) -> bool {
-        assert!(!terms.is_null());
-        let terms = std::slice::from_raw_parts(terms as *const Id, terms_size);
-
-        assert!(!condition.is_null());
-        let condition = std::slice::from_raw_parts(condition as *const Literal, condition_size);
-
-        if let Some(gpo) = (data as *mut T).as_mut() {
-            gpo.theory_element(Id(element_id), terms, condition)
-        } else {
+        // check for null pointers
+        if (terms_size > 0 && terms.is_null())
+            | (condition_size > 0 && condition.is_null())
+            | gpo.is_null()
+        {
             set_internal_error(
                 ErrorType::Runtime,
-                "unsafe_theory_element tried casting a null pointer to &mut GroundProgramObserver.",
+                "unsafe_theory_element() got a null pointer.",
             );
-            false
+            return false;
         }
+        let terms = std::slice::from_raw_parts(terms as *const Id, terms_size);
+        let condition = std::slice::from_raw_parts(condition as *const Literal, condition_size);
+        let gpo = &mut *(gpo as *mut T);
+
+        gpo.theory_element(Id(element_id), terms, condition)
     }
 
     /// Observe theory atoms without guard.
@@ -5510,20 +5526,20 @@ pub trait GroundProgramObserver {
         term_id: clingo_id_t,
         elements: *const clingo_id_t,
         size: usize,
-        data: *mut c_void,
+        gpo: *mut c_void,
     ) -> bool {
-        assert!(!elements.is_null());
-        let elements = std::slice::from_raw_parts(elements as *const Id, size);
-
-        if let Some(gpo) = (data as *mut T).as_mut() {
-            gpo.theory_atom(Id(atom_id_or_zero), Id(term_id), elements)
-        } else {
+        // check for null pointers
+        if (size > 0 && elements.is_null()) | gpo.is_null() {
             set_internal_error(
                 ErrorType::Runtime,
-                "unsafe_theory_atom tried casting a null pointer to &mut GroundProgramObserver.",
+                "unsafe_theory_atom() got a null pointer.",
             );
-            false
+            return false;
         }
+        let elements = std::slice::from_raw_parts(elements as *const Id, size);
+        let gpo = &mut *(gpo as *mut T);
+
+        gpo.theory_atom(Id(atom_id_or_zero), Id(term_id), elements)
     }
 
     /// Observe theory atoms with guard.
@@ -5553,31 +5569,25 @@ pub trait GroundProgramObserver {
         size: usize,
         operator_id: clingo_id_t,
         right_hand_side_id: clingo_id_t,
-        data: *mut c_void,
+        gpo: *mut c_void,
     ) -> bool {
-        assert!(!elements.is_null());
-        let elements = std::slice::from_raw_parts(elements as *const Id, size);
-
-        if let Some(gpo) = (data as *mut T).as_mut() {
-            gpo.theory_atom_with_guard(
-                Id(atom_id_or_zero),
-                Id(term_id),
-                elements,
-                Id(operator_id),
-                Id(right_hand_side_id),
-            )
-        } else {
+        // check for null pointers
+        if (size > 0 && elements.is_null()) | gpo.is_null() {
             set_internal_error(
-                        ErrorType::Runtime,
-                            "unsafe_theory_atom_with_guard tried casting a null pointer to &mut GroundProgramObserver."
-                    );
-            false
+                ErrorType::Runtime,
+                "unsafe_theory_atom_with_guard() got a null pointer.",
+            );
+            return false;
         }
+        let elements = std::slice::from_raw_parts(elements as *const Id, size);
+        let gpo = &mut *(gpo as *mut T);
+
+        gpo.theory_atom_with_guard(
+            Id(atom_id_or_zero),
+            Id(term_id),
+            elements,
+            Id(operator_id),
+            Id(right_hand_side_id),
+        )
     }
 }
-
-// #[cfg(test)]
-// mod tests {
-//     use super::*;
-//
-// }
