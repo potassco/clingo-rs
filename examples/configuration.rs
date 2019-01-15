@@ -56,10 +56,10 @@ fn main() {
 
         // configure to enumerate all models
         sub_key = conf.map_at(root_key, "solve.models").unwrap();
-        conf.value_set(sub_key, "10")
-            .expect("Failed to set solve.models to 10.");
+        conf.value_set(sub_key, "0")
+            .expect("Failed to set solve.models to 0.");
         let bla = conf.value_get(sub_key).unwrap();
-        println!("bla:{}",bla);
+        println!("bla:{}", bla);
 
         // configure the first solver to use the berkmin heuristic
         sub_key = conf.map_at(root_key, "solver").unwrap();

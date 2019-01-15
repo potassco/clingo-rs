@@ -26,9 +26,9 @@ fn main() {
     let symbols2 = function_symbol.arguments().unwrap();
 
     // equal to comparison
-    for symbol in &symbols2 {
+    for symbol in symbols2 {
         print!("{} is ", symbols[0].to_string().unwrap());
-        if symbols[0] == *symbol {
+        if symbols[0] == symbol {
             print!("equal");
         } else {
             print!("not equal");

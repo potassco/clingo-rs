@@ -66,7 +66,7 @@ fn get_theory_atom_literal(ctl: &mut Control) -> Option<Literal> {
                 println!("theory atom b/1 has a guard: false");
             }
             // get the literal associated with the theory atom
-            return atoms.atom_literal(atom);
+            return atoms.atom_literal(atom).ok();
         }
     }
     None
