@@ -1317,17 +1317,16 @@ impl Symbol {
                 "Call to clingo_symbol_to_string_size() failed.",
             ))?
         }
-        let a1 = vec![1; size];
-        let cstring = unsafe { CString::from_vec_unchecked(a1) };
-        if !unsafe { clingo_symbol_to_string(self.0, cstring.as_ptr() as *mut c_char, size) } {
+        let mut string = Vec::with_capacity(size);
+        let string_ptr = string.as_mut_ptr();
+        if !unsafe { clingo_symbol_to_string(self.0, string_ptr, size) } {
             Err(ClingoError::new(
                 "Call to clingo_symbol_to_string() failed.",
             ))?
         }
-        match cstring.into_string() {
-            Ok(string) => Ok(string.trim_matches(char::from(0)).to_string()),
-            Err(e) => Err(e)?,
-        }
+        let c_str: &CStr = unsafe { CStr::from_ptr(string_ptr) };
+        let str_slice: &str = c_str.to_str()?;
+        Ok(str_slice.to_owned())
     }
 }
 
@@ -1667,6 +1666,9 @@ impl Control {
     /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if argument parsing fails
     pub fn new(arguments: std::vec::Vec<String>) -> Result<Control, Error> {
+    pub fn new<T: AsRef<str>>(
+        arguments: Option<impl IntoIterator<Item = T>>,
+    ) -> Result<Control, Error> {
         let logger = None;
         let logger_data = std::ptr::null_mut();
 
@@ -2782,22 +2784,23 @@ impl Configuration {
     ///
     /// - [`ClingoError`](struct.ClingoError.html)
     /// - [`Utf8Error`](https://doc.rust-lang.org/std/str/struct.Utf8Error.html)
-    pub fn value_get(&self, Id(key): Id) -> Result<&str, Error> {
+    pub fn value_get(&self, Id(key): Id) -> Result<String, Error> {
         let mut size = 0;
         if !unsafe { clingo_configuration_value_get_size(&self.0, key, &mut size) } {
             Err(ClingoError::new(
                 "Call to clingo_configuration_value_get_size() failed.",
             ))?
         }
-        let mut value = Vec::<i8>::with_capacity(size);
-        let value_ptr = value.as_mut_ptr();
-        if !unsafe { clingo_configuration_value_get(&self.0, key, value_ptr, size) } {
+        let mut string = Vec::with_capacity(size);
+        let string_ptr = string.as_mut_ptr();
+        if !unsafe { clingo_configuration_value_get(&self.0, key, string_ptr, size) } {
             Err(ClingoError::new(
                 "Call to clingo_configuration_value_get() failed.",
             ))?
         }
-        let cstr = unsafe { CStr::from_ptr(value_ptr) };
-        Ok(cstr.to_str()?)
+        let c_str: &CStr = unsafe { CStr::from_ptr(string_ptr) };
+        let str_slice: &str = c_str.to_str()?;
+        Ok(str_slice.to_owned())
     }
 
     /// Set the value of an entry.
@@ -3475,16 +3478,19 @@ impl SymbolicAtoms {
                 "Call to clingo_symbolic_atoms_signatures_size() failed.",
             ));
         }
-        let mut signatures = Vec::<u64>::with_capacity(size);
-        let signatures_ptr = signatures.as_mut_ptr();
-        if !unsafe { clingo_symbolic_atoms_signatures(&self.0, signatures_ptr, size) } {
+        let mut signatures = vec![Signature(0); size];
+        if !unsafe {
+            clingo_symbolic_atoms_signatures(
+                &self.0,
+                signatures.as_mut_ptr() as *mut clingo_signature_t,
+                size,
+            )
+        } {
             return Err(ClingoError::new(
                 "Call to clingo_symbolic_atoms_signatures() failed.",
             ));
         }
-        let signatures_ref =
-            unsafe { std::slice::from_raw_parts(signatures_ptr as *const Signature, size) };
-        Ok(signatures_ref.to_owned())
+        Ok(signatures)
     }
 
     //NODO clingo_symbolic_atoms_is_valid()
@@ -3683,7 +3689,7 @@ impl TheoryAtoms {
     /// # Arguments
     ///
     /// * `term` - id of the term
-    pub fn term_arguments(&self, Id(term): Id) -> Result<Vec<Id>, ClingoError> {
+    pub fn term_arguments(&self, Id(term): Id) -> Result<&[Id], ClingoError> {
         let mut size = 0;
         let mut c_ptr = std::ptr::null();
         if !unsafe { clingo_theory_atoms_term_arguments(&self.0, term, &mut c_ptr, &mut size) } {
@@ -3692,7 +3698,7 @@ impl TheoryAtoms {
             ))?
         }
         let arguments_ref = unsafe { std::slice::from_raw_parts(c_ptr as *const Id, size) };
-        Ok(arguments_ref.to_owned())
+        Ok(arguments_ref)
     }
 
     //NODO: pub fn clingo_theory_atoms_term_to_string_size()
@@ -3708,27 +3714,23 @@ impl TheoryAtoms {
     /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if the size is too small
     /// or [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     /// - [`Utf8Error`](https://doc.rust-lang.org/std/str/struct.Utf8Error.html)
-    pub fn term_to_string(&self, Id(term): Id) -> Result<&str, Error> {
+    pub fn term_to_string(&self, Id(term): Id) -> Result<String, Error> {
         let mut size = 0;
         if !unsafe { clingo_theory_atoms_term_to_string_size(&self.0, term, &mut size) } {
             Err(ClingoError::new(
                 "Call to clingo_theory_atoms_term_to_string_size() failed.",
             ))?
         }
-        let mut string = Vec::<i8>::with_capacity(size);
-        let c_ptr = string.as_mut_ptr();
-        if !unsafe { clingo_theory_atoms_term_to_string(&self.0, term, c_ptr, size) } {
+        let mut string = Vec::with_capacity(size);
+        let string_ptr = string.as_mut_ptr();
+        if !unsafe { clingo_theory_atoms_term_to_string(&self.0, term, string_ptr, size) } {
             Err(ClingoError::new(
                 "Call to clingo_theory_atoms_term_to_string() failed.",
             ))?
         }
-        if c_ptr.is_null() {
-            Err(ClingoError::new(
-                "clingo_theory_atoms_term_to_string() returned a null pointer.",
-            ))?
-        }
-        let cstr = unsafe { CStr::from_ptr(c_ptr) };
-        Ok(cstr.to_str()?)
+        let c_str: &CStr = unsafe { CStr::from_ptr(string_ptr) };
+        let str_slice: &str = c_str.to_str()?;
+        Ok(str_slice.to_owned())
     }
 
     /// Get the tuple (array of theory terms) of the given theory element.
@@ -3736,7 +3738,7 @@ impl TheoryAtoms {
     /// # Arguments
     ///
     /// * `element` - id of the element
-    pub fn element_tuple(&self, Id(element): Id) -> Result<Vec<Id>, ClingoError> {
+    pub fn element_tuple(&self, Id(element): Id) -> Result<&[Id], ClingoError> {
         let mut size = 0;
         let mut tuple_ptr = std::ptr::null();
         if !unsafe {
@@ -3747,7 +3749,7 @@ impl TheoryAtoms {
             ));
         }
         let tuple_ref = unsafe { std::slice::from_raw_parts(tuple_ptr as *const Id, size) };
-        Ok(tuple_ref.to_owned())
+        Ok(tuple_ref)
     }
 
     /// Get the condition (array of aspif literals) of the given theory element.
@@ -3755,7 +3757,7 @@ impl TheoryAtoms {
     /// # Arguments
     ///
     /// * `element` - id of the element
-    pub fn element_condition(&self, Id(element): Id) -> Result<Vec<Literal>, ClingoError> {
+    pub fn element_condition(&self, Id(element): Id) -> Result<&[Literal], ClingoError> {
         let mut size = 0;
         let mut condition_ptr = std::ptr::null();
         if !unsafe {
@@ -3767,7 +3769,7 @@ impl TheoryAtoms {
         }
         let condition_ref =
             unsafe { std::slice::from_raw_parts(condition_ptr as *const Literal, size) };
-        Ok(condition_ref.to_owned())
+        Ok(condition_ref)
     }
 
     /// Get the id of the condition of the given theory element.
@@ -3808,27 +3810,23 @@ impl TheoryAtoms {
     /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if the size is too small
     /// or [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     /// - [`Utf8Error`](https://doc.rust-lang.org/std/str/struct.Utf8Error.html)
-    pub fn element_to_string(&self, Id(element): Id) -> Result<&str, Error> {
+    pub fn element_to_string(&self, Id(element): Id) -> Result<String, Error> {
         let mut size = 0;
         if !unsafe { clingo_theory_atoms_element_to_string_size(&self.0, element, &mut size) } {
             Err(ClingoError::new(
                 "Call to clingo_theory_atoms_element_to_string_size() failed.",
             ))?
         }
-        let mut string = Vec::<i8>::with_capacity(size);
-        let c_ptr = string.as_mut_ptr();
-        if !unsafe { clingo_theory_atoms_element_to_string(&self.0, element, c_ptr, size) } {
+        let mut string = Vec::with_capacity(size);
+        let string_ptr = string.as_mut_ptr();
+        if !unsafe { clingo_theory_atoms_element_to_string(&self.0, element, string_ptr, size) } {
             Err(ClingoError::new(
                 "Call to clingo_theory_atoms_element_to_string() failed.",
             ))?
         }
-        if c_ptr.is_null() {
-            Err(ClingoError::new(
-                "clingo_theory_atoms_element_to_string() returned a null pointer.",
-            ))?
-        }
-        let cstr = unsafe { CStr::from_ptr(c_ptr) };
-        Ok(cstr.to_str()?)
+        let c_str: &CStr = unsafe { CStr::from_ptr(string_ptr) };
+        let str_slice: &str = c_str.to_str()?;
+        Ok(str_slice.to_owned())
     }
 
     /// Get the theory term associated with the theory atom.
@@ -3851,7 +3849,7 @@ impl TheoryAtoms {
     /// # Arguments
     ///
     /// * `atom` - id of the atom
-    pub fn atom_elements(&self, Id(atom): Id) -> Result<Vec<Id>, ClingoError> {
+    pub fn atom_elements(&self, Id(atom): Id) -> Result<&[Id], ClingoError> {
         let mut size = 0;
         let mut elements_ptr = std::ptr::null() as *const clingo_id_t;
         if !unsafe {
@@ -3862,7 +3860,7 @@ impl TheoryAtoms {
             ));
         }
         let elements = unsafe { std::slice::from_raw_parts(elements_ptr as *const Id, size) };
-        Ok(elements.to_owned())
+        Ok(elements)
     }
 
     /// Whether the theory atom has a guard.
@@ -3935,22 +3933,23 @@ impl TheoryAtoms {
     /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if the size is too small
     /// or [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     /// - [`Utf8Error`](https://doc.rust-lang.org/std/str/struct.Utf8Error.html)
-    pub fn atom_to_string(&self, Id(atom): Id) -> Result<&str, Error> {
+    pub fn atom_to_string(&self, Id(atom): Id) -> Result<String, Error> {
         let mut size = 0;
         if !unsafe { clingo_theory_atoms_atom_to_string_size(&self.0, atom, &mut size) } {
             Err(ClingoError::new(
                 "Call to clingo_theory_atoms_atom_to_string_size() failed.",
             ))?
         }
-        let mut string = Vec::<i8>::with_capacity(size);
+        let mut string = Vec::with_capacity(size);
         let string_ptr = string.as_mut_ptr();
         if !unsafe { clingo_theory_atoms_atom_to_string(&self.0, atom, string_ptr, size) } {
             Err(ClingoError::new(
                 "Call to clingo_theory_atoms_atom_to_string() failed.",
             ))?
         }
-        let cstr = unsafe { CStr::from_ptr(string_ptr) };
-        Ok(cstr.to_str()?)
+        let c_str: &CStr = unsafe { CStr::from_ptr(string_ptr) };
+        let str_slice: &str = c_str.to_str()?;
+        Ok(str_slice.to_owned())
     }
 }
 
@@ -4020,20 +4019,18 @@ impl Model {
                 "Call to clingo_model_symbols_size() failed.",
             ));
         }
-        let symbols = Vec::<Symbol>::with_capacity(size);
-        let symbols_ptr = symbols.as_ptr();
+        let symbols = vec![Symbol(0); size];
         if !unsafe {
             clingo_model_symbols(
                 &self.0,
                 show.bits(),
-                symbols_ptr as *mut clingo_symbol_t,
+                symbols.as_ptr() as *mut clingo_symbol_t,
                 size,
             )
         } {
             return Err(ClingoError::new("Call to clingo_model_symbols() failed."));
         }
-        let symbols_ref = unsafe { std::slice::from_raw_parts(symbols_ptr as *const Symbol, size) };
-        Ok(symbols_ref.to_owned())
+        Ok(symbols)
     }
 
     /// Constant time lookup to test whether an atom is in a model.
@@ -4077,13 +4074,11 @@ impl Model {
         if !unsafe { clingo_model_cost_size(&self.0, &mut size) } {
             return Err(ClingoError::new("Call to clingo_model_cost_size() failed."));
         }
-        let cost = Vec::<i64>::with_capacity(size);
-        let cost_ptr = cost.as_ptr();
-        if !unsafe { clingo_model_cost(&self.0, cost_ptr as *mut i64, size) } {
+        let mut cost = vec![0; size];
+        if !unsafe { clingo_model_cost(&self.0, cost.as_mut_ptr(), size) } {
             return Err(ClingoError::new("Call to clingo_model_cost() failed."));
         }
-        let cost_ref = unsafe { std::slice::from_raw_parts(cost_ptr as *const i64, size) };
-        Ok(cost_ref.to_owned())
+        Ok(cost)
     }
 
     /// Whether the optimality of a model has been proven.

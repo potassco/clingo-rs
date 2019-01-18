@@ -131,7 +131,7 @@ impl Propagator for PropagatorT {
                         let sym = item.symbol().unwrap();
                         let h = get_arg(&sym, 1).unwrap();
 
-                        // initialize the assignemnt literal -> hole mapping
+                        // initialize the assignment literal -> hole mapping
                         self.pigeons[lit_id] = h;
 
                         // watch the assignment literal

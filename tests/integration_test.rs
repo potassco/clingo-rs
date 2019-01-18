@@ -92,7 +92,9 @@ fn configuration_test() {
     let sub_key = conf.map_at(root_key, "solve.models").unwrap();
     conf.value_set(sub_key, "0").unwrap();
     let res = conf.value_get(sub_key).unwrap();
-    assert!(!(res != "0"));
+    assert_eq!(res, "0");
+    let desc = conf.description(sub_key).unwrap();
+    assert_eq!(desc, "Compute at most %A models (0 for all)\n");
 }
 #[test]
 fn backend_test() {
