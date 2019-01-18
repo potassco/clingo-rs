@@ -1666,9 +1666,6 @@ impl Control {
     /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if argument parsing fails
     pub fn new(arguments: std::vec::Vec<String>) -> Result<Control, Error> {
-    pub fn new<T: AsRef<str>>(
-        arguments: Option<impl IntoIterator<Item = T>>,
-    ) -> Result<Control, Error> {
         let logger = None;
         let logger_data = std::ptr::null_mut();
 
