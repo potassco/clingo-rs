@@ -1,3 +1,22 @@
+#![doc(html_root_url = "https://docs.rs/clingo/0.4.1")]
+//! This crate provides bindings to the [clingo](https://github.com/potassco/clingo) library version 5.3.0.
+//!
+//! ## --dynamic_linking
+//!
+//! The `clingo` crate defines a [Cargo feature] that allows to use the clingo library via dynamic linking.
+//!
+//! [Cargo feature]: https://doc.rust-lang.org/cargo/reference/manifest.html#the-features-section
+//!
+//! With dynamic linking enabled the clingo library is not build for static linking but it is assumed that a
+//! clingo dynamic library is installed on the system.
+//!
+//! The recommended way to use the optional dynamic linking support is as
+//! follows.
+//!
+//! ```toml
+//! [dependencies]
+//! clingo = { version = "0.4.1", features = ["dynamic_linking"] }
+//! ```
 #![allow(non_upper_case_globals)]
 use bitflags::bitflags;
 use clingo_sys::*;
