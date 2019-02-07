@@ -1,7 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## v0.4.0 - unreleased
+## v0.4.0 - Feb 2, 2019
 ### Fixed
 - removed copy derive for opaque types
 
