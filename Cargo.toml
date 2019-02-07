@@ -6,7 +6,7 @@ edition = "2018"
 description = "Rust idiomatic bindings to the clingo library"
 categories = ["api-bindings"]
 license = "MIT"
-repository = "https://github.com/sthiele/clingo-rs"
+repository = "https://github.com/potassco/clingo-rs"
 documentation = "https://docs.rs/clingo"
 readme = "README.md"
 exclude = ["/.travis.yml"]
@@ -15,7 +15,7 @@ exclude = ["/.travis.yml"]
 travis-ci = { repository = "sthiele/clingo-rs" }
 
 [dependencies]
-clingo-sys = "0.4.0"
+clingo-sys = "0.4.1"
 rand = "0.6"
 failure = "0.1"
 failure_derive = "0.1"
