@@ -4,7 +4,7 @@ use std::env;
 fn print_model(model: &Model) {
     // retrieve the symbols in the model
     let atoms = model
-        .symbols(&ShowType::SHOWN)
+        .symbols(ShowType::SHOWN)
         .expect("Failed to retrieve symbols in the model.");
 
     print!("Model:");
@@ -19,7 +19,7 @@ fn print_model(model: &Model) {
 fn solve(ctl: &mut Control) {
     // get a solve handle
     let mut handle = ctl
-        .solve(&SolveMode::YIELD, &[])
+        .solve(SolveMode::YIELD, &[])
         .expect("Failed retrieving solve handle.");
 
     // loop over all models
@@ -30,7 +30,7 @@ fn solve(ctl: &mut Control) {
             Ok(Some(model)) => print_model(model),
             // stop if there are no more models
             Ok(None) => break,
-            Err(e) => panic!("Error: {}", e.as_fail()),
+            Err(e) => panic!("Error: {}", e),
         }
     }
 
@@ -64,7 +64,7 @@ fn main() {
     let mut atom_ids = vec![];
     {
         // get iterator of the symbolic atoms
-        let mut atoms_iterator = ctl.symbolic_atoms().unwrap().iter();
+        let mut atoms_iterator = ctl.symbolic_atoms().unwrap().iter().unwrap();
 
         for atom in &atom_strings {
             let symbol = Symbol::create_id(atom, true).unwrap();
@@ -80,10 +80,10 @@ fn main() {
 
     {
         // get the backend
-        let backend = ctl.backend().unwrap();
+        let mut backend = ctl.backend().unwrap();
 
         // add an additional atom (called d below)
-        let atom_d = backend.add_atom().unwrap();
+        let atom_d = backend.add_atom(None).unwrap();
 
         // add rule: d :- a, b.
         let head = vec![atom_d];

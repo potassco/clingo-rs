@@ -1,0 +1,19 @@
+# Changelog
+All notable changes to this project will be documented in this file.
+
+## v0.4.0 - unreleased
+### Fixed
+- removed copy derive for opaque types
+
+### Changed
+- use libclingo 5.3.0
+- use rust stable
+
+### Added
+- more tests
+- this CHANGELOG file
+
+## Undocumented versions
+- 0.3.1 Apr 11, 2018
+- 0.3.0 Apr 11, 2018
+- 0.1.0 May 4, 2017

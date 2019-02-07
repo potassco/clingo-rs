@@ -10,7 +10,7 @@ impl<'a> AstStatementHandler for OnStatementData<'a> {
     // adds atom enable to all rule bodies
     fn on_statement<T>(&mut self, stm: &AstStatement<T>) -> bool {
         // pass through all statements that are not rules
-        if stm.statement_type() != ast::StatementType::Rule {
+        if stm.statement_type().unwrap() != ast::StatementType::Rule {
             self.builder
                 .as_mut()
                 .unwrap()
@@ -60,7 +60,7 @@ impl<'a> AstStatementHandler for OnStatementData<'a> {
 fn print_model(model: &Model) {
     // retrieve the symbols in the model
     let atoms = model
-        .symbols(&ShowType::SHOWN)
+        .symbols(ShowType::SHOWN)
         .expect("Failed to retrieve symbols in the model.");
 
     print!("Model:");
@@ -75,7 +75,7 @@ fn print_model(model: &Model) {
 fn solve(ctl: &mut Control) {
     // get a solve handle
     let mut handle = ctl
-        .solve(&SolveMode::YIELD, &[])
+        .solve(SolveMode::YIELD, &[])
         .expect("Failed retrieving solve handle.");
 
     // loop over all models
@@ -86,7 +86,7 @@ fn solve(ctl: &mut Control) {
             Ok(Some(model)) => print_model(model),
             // stop if there are no more models
             Ok(None) => break,
-            Err(e) => panic!("Error: {}", e.as_fail()),
+            Err(e) => panic!("Error: {}", e),
         }
     }
 
@@ -148,19 +148,25 @@ fn main() {
     ctl.ground(&parts)
         .expect("Failed to ground a logic program.");
 
+    // get the program literal corresponding to the external atom
+    let atoms = ctl.symbolic_atoms().unwrap();
+    let mut atm_it = atoms.iter().unwrap();
+    let item = atm_it.find(|e| e.symbol().unwrap() == sym).unwrap();
+    let atm = item.literal().unwrap();
+
     // solve with external enable = false
     println!("Solving with enable = false...");
     solve(&mut ctl);
 
     // solve with external enable = true
     println!("Solving with enable = true...");
-    ctl.assign_external(&sym, TruthValue::True)
+    ctl.assign_external(atm, TruthValue::True)
         .expect("Failed to assign #external enable true.");
     solve(&mut ctl);
 
     // solve with external enable = false
     println!("Solving with enable = false...");
-    ctl.assign_external(&sym, TruthValue::False)
+    ctl.assign_external(atm, TruthValue::False)
         .expect("Failed to assign #external enable false.");
     solve(&mut ctl);
 }

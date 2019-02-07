@@ -1,6 +1,9 @@
 # clingo-rs
+
+[![Build Status](https://travis-ci.org/sthiele/clingo-rs.svg?branch=master)](https://travis-ci.org/sthiele/clingo-rs)
+
 Rust bindings to the [clingo](https://github.com/potassco/clingo) library.
-Clingo version 5.2.2.
+Clingo version 5.3.0.
 
 ## Requirements
 

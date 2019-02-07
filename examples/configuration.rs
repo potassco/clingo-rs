@@ -4,7 +4,7 @@ use std::env;
 fn print_model(model: &Model) {
     // retrieve the symbols in the model
     let atoms = model
-        .symbols(&ShowType::SHOWN)
+        .symbols(ShowType::SHOWN)
         .expect("Failed to retrieve symbols in the model.");
 
     print!("Model:");
@@ -19,7 +19,7 @@ fn print_model(model: &Model) {
 fn solve(ctl: &mut Control) {
     // get a solve handle
     let mut handle = ctl
-        .solve(&SolveMode::YIELD, &[])
+        .solve(SolveMode::YIELD, &[])
         .expect("Failed retrieving solve handle.");
 
     // loop over all models
@@ -30,7 +30,7 @@ fn solve(ctl: &mut Control) {
             Ok(Some(model)) => print_model(model),
             // stop if there are no more models
             Ok(None) => break,
-            Err(e) => panic!("Error: {}", e.as_fail()),
+            Err(e) => panic!("Error: {}", e),
         }
     }
 
@@ -48,9 +48,33 @@ fn main() {
     // create a control object and pass command line arguments
     let mut ctl = Control::new(options).expect("Failed creating Control.");
 
+    {
+        // get the configuration object and its root key
+        let conf = ctl.configuration_mut().unwrap();
+        let root_key = conf.root().unwrap();
+        let mut sub_key;
+
+        // configure to enumerate all models
+        sub_key = conf.map_at(root_key, "solve.models").unwrap();
+        conf.value_set(sub_key, "0")
+            .expect("Failed to set solve.models to 0.");
+        let bla = conf.value_get(sub_key).unwrap();
+        println!("bla:{}", bla);
+
+        // configure the first solver to use the berkmin heuristic
+        sub_key = conf.map_at(root_key, "solver").unwrap();
+        sub_key = conf.array_at(sub_key, 0).unwrap();
+        sub_key = conf.map_at(sub_key, "heuristic").unwrap();
+        conf.value_set(sub_key, "berkmin")
+            .expect("Failed to set heuristic to berkmin.");
+    }
+    // note that the solver entry can be used both as an array and a map
+    // if used as a map, this simply sets the configuration of the first solver and
+    // is equivalent to the code above
+
     // add a logic program to the base part
     ctl.add("base", &[], "a :- not b. b :- not a.")
-        .expect("Failed to add a logic program.");;
+        .expect("Failed to add a logic program.");
 
     // ground the base part
     let part = Part::new("base", &[]).unwrap();

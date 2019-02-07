@@ -1,4 +1,23 @@
 language: rust
 rust:
-  - nightly
+  - stable
 cache: cargo
+matrix:
+  include:
+    - os: linux
+      compiler: gcc
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+      env:
+        - CXX=g++-5
+    - os: osx
+      env:
+        - CXX=clang++
+        - CXXFLAGS="-stdlib=libc++ "
+before_script: 
+  - (rustup component add rustfmt || true)
+  - test "$TRAVIS_OS_NAME" != osx || export MACOSX_DEPLOYMENT_TARGET=10.7

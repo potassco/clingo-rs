@@ -17,6 +17,7 @@ pub enum StatementType {
         clingo_ast_statement_type_clingo_ast_statement_type_project_atom_signature as isize,
     TheoryDefinition =
         clingo_ast_statement_type_clingo_ast_statement_type_theory_definition as isize,
+    Defined = clingo_ast_statement_type_clingo_ast_statement_type_defined as isize,
 }
 #[derive(Debug, Copy, Clone)]
 pub enum Sign {
@@ -68,6 +69,7 @@ pub enum BinaryOperator {
     Multiplication = clingo_ast_binary_operator_clingo_ast_binary_operator_multiplication as isize,
     Division = clingo_ast_binary_operator_clingo_ast_binary_operator_division as isize,
     Modulo = clingo_ast_binary_operator_clingo_ast_binary_operator_modulo as isize,
+    Power = clingo_ast_binary_operator_clingo_ast_binary_operator_power as isize,
 }
 #[derive(Debug, Copy, Clone)]
 pub enum TermType {
@@ -152,7 +154,7 @@ pub struct Rule(clingo_ast_rule_t);
 impl Rule {
     pub fn new(HeadLiteral(head): HeadLiteral, body: &[BodyLiteral]) -> Rule {
         let rule = clingo_ast_rule {
-            head: head,
+            head,
             body: body.as_ptr() as *const clingo_ast_body_literal_t,
             size: body.len(),
         };
@@ -221,6 +223,15 @@ impl ShowTerm {
         self.0.csp
     }
 }
+
+#[derive(Copy, Clone)]
+pub struct Defined(clingo_ast_defined);
+impl Defined {
+    pub fn signature(self) -> Signature {
+        Signature(self.0.signature)
+    }
+}
+
 #[derive(Copy, Clone)]
 pub struct Minimize(clingo_ast_minimize);
 impl Minimize {
@@ -284,7 +295,7 @@ impl BodyLiteral {
             literal: (lit_ref as *const Literal) as *const clingo_ast_literal,
         };
         BodyLiteral(clingo_ast_body_literal_t {
-            location: location,
+            location,
             sign: sign as clingo_ast_sign_t,
             type_: type_ as clingo_ast_body_literal_type_t,
             __bindgen_anon_1: _bg_union_2,
@@ -331,7 +342,7 @@ pub struct External(clingo_ast_external_t);
 impl External {
     pub fn new(Atom(atom): Atom, body: &[BodyLiteral]) -> External {
         let ext = clingo_ast_external {
-            atom: atom,
+            atom,
             body: body.as_ptr() as *const clingo_ast_body_literal_t,
             size: body.len(),
         };
@@ -406,9 +417,9 @@ impl Project {
 pub struct Atom(clingo_ast_term_t);
 impl Atom {
     pub fn from_symbol(Location(location): Location, Symbol(symbol): Symbol) -> Atom {
-        let _bg_union_1 = clingo_ast_term__bindgen_ty_1 { symbol: symbol };
+        let _bg_union_1 = clingo_ast_term__bindgen_ty_1 { symbol };
         let term = clingo_ast_term_t {
-            location: location,
+            location,
             type_: TermType::Symbol as clingo_ast_term_type_t,
             __bindgen_anon_1: _bg_union_1,
         };
@@ -422,9 +433,9 @@ impl Atom {
 pub struct Term(clingo_ast_term_t);
 impl Term {
     pub fn new_symbol(Location(location): Location, Symbol(symbol): Symbol) -> Term {
-        let _bg_union_1 = clingo_ast_term__bindgen_ty_1 { symbol: symbol };
+        let _bg_union_1 = clingo_ast_term__bindgen_ty_1 { symbol };
         let term = clingo_ast_term_t {
-            location: location,
+            location,
             type_: TermType::Symbol as clingo_ast_term_type_t,
             __bindgen_anon_1: _bg_union_1,
         };
@@ -442,7 +453,7 @@ impl Term {
             variable: cstr.as_ptr(),
         };
         let term = clingo_ast_term_t {
-            location: location,
+            location,
             type_: TermType::Variable as clingo_ast_term_type_t,
             __bindgen_anon_1: _bg_union_1,
         };
@@ -477,7 +488,7 @@ impl Literal {
             symbol: atom as *const clingo_sys::clingo_ast_term,
         };
         let lit = clingo_ast_literal_t {
-            location: location,
+            location,
             type_: LiteralType::Symbolic as clingo_ast_literal_type_t,
             sign: sign as clingo_ast_sign_t,
             __bindgen_anon_1: _bg_union_2,
@@ -589,12 +600,10 @@ impl CspProductTerm {
     pub fn coefficient(&self) -> Term {
         Term(self.0.coefficient)
     }
-    pub fn variable(&self) -> Result<&Term, WrapperError> {
+    pub fn variable(&self) -> Result<&Term, ClingoError> {
         match unsafe { (self.0.variable as *const Term).as_ref() } {
             Some(x) => Ok(x),
-            None => Err(WrapperError {
-                msg: "tried casting a null pointer to &Term.",
-            }),
+            None => Err(ClingoError::new("tried casting a null pointer to &Term.")),
         }
     }
 }
@@ -711,20 +720,20 @@ impl Aggregate {
             std::slice::from_raw_parts(self.0.elements as *const ConditionalLiteral, self.0.size)
         }
     }
-    pub fn left_guard(&self) -> Result<&AggregateGuard, WrapperError> {
+    pub fn left_guard(&self) -> Result<&AggregateGuard, ClingoError> {
         match unsafe { (self.0.left_guard as *const AggregateGuard).as_ref() } {
             Some(x) => Ok(x),
-            None => Err(WrapperError {
-                msg: "tried casting a null pointer to &AggregateGuard.",
-            }),
+            None => Err(ClingoError::new(
+                "tried casting a null pointer to &AggregateGuard.",
+            )),
         }
     }
-    pub fn right_guard(&self) -> Result<&AggregateGuard, WrapperError> {
+    pub fn right_guard(&self) -> Result<&AggregateGuard, ClingoError> {
         match unsafe { (self.0.right_guard as *const AggregateGuard).as_ref() } {
             Some(x) => Ok(x),
-            None => Err(WrapperError {
-                msg: "tried casting a null pointer to &AggregateGuard.",
-            }),
+            None => Err(ClingoError::new(
+                "tried casting a null pointer to &AggregateGuard.",
+            )),
         }
     }
 }
@@ -769,20 +778,20 @@ impl BodyAggregate {
             std::slice::from_raw_parts(self.0.elements as *const BodyAggregateElement, self.0.size)
         }
     }
-    pub fn left_guard(&self) -> Result<&AggregateGuard, WrapperError> {
+    pub fn left_guard(&self) -> Result<&AggregateGuard, ClingoError> {
         match unsafe { (self.0.left_guard as *const AggregateGuard).as_ref() } {
             Some(x) => Ok(x),
-            None => Err(WrapperError {
-                msg: "tried casting a null pointer to &AggregateGuard.",
-            }),
+            None => Err(ClingoError::new(
+                "tried casting a null pointer to &AggregateGuard.",
+            )),
         }
     }
-    pub fn right_guard(&self) -> Result<&AggregateGuard, WrapperError> {
+    pub fn right_guard(&self) -> Result<&AggregateGuard, ClingoError> {
         match unsafe { (self.0.right_guard as *const AggregateGuard).as_ref() } {
             Some(x) => Ok(x),
-            None => Err(WrapperError {
-                msg: "tried casting a null pointer to &AggregateGuard.",
-            }),
+            None => Err(ClingoError::new(
+                "tried casting a null pointer to &AggregateGuard.",
+            )),
         }
     }
 }
@@ -824,20 +833,20 @@ impl HeadAggregate {
             std::slice::from_raw_parts(self.0.elements as *const HeadAggregateElement, self.0.size)
         }
     }
-    pub fn left_guard(&self) -> Result<&AggregateGuard, WrapperError> {
+    pub fn left_guard(&self) -> Result<&AggregateGuard, ClingoError> {
         match unsafe { (self.0.left_guard as *const AggregateGuard).as_ref() } {
             Some(x) => Ok(x),
-            None => Err(WrapperError {
-                msg: "tried casting a null pointer to &AggregateGuard.",
-            }),
+            None => Err(ClingoError::new(
+                "tried casting a null pointer to &AggregateGuard.",
+            )),
         }
     }
-    pub fn right_guard(&self) -> Result<&AggregateGuard, WrapperError> {
+    pub fn right_guard(&self) -> Result<&AggregateGuard, ClingoError> {
         match unsafe { (self.0.right_guard as *const AggregateGuard).as_ref() } {
             Some(x) => Ok(x),
-            None => Err(WrapperError {
-                msg: "tried casting a null pointer to &AggregateGuard.",
-            }),
+            None => Err(ClingoError::new(
+                "tried casting a null pointer to &AggregateGuard.",
+            )),
         }
     }
 }
@@ -996,12 +1005,12 @@ impl TheoryAtom {
             std::slice::from_raw_parts(self.0.elements as *const TheoryAtomElement, self.0.size)
         }
     }
-    pub fn guard(&self) -> Result<&TheoryGuard, WrapperError> {
+    pub fn guard(&self) -> Result<&TheoryGuard, ClingoError> {
         match unsafe { (self.0.guard as *const TheoryGuard).as_ref() } {
             Some(x) => Ok(x),
-            None => Err(WrapperError {
-                msg: "tried casting a null pointer to &TheoryGuard.",
-            }),
+            None => Err(ClingoError::new(
+                "tried casting a null pointer to &TheoryGuard.",
+            )),
         }
     }
 }
@@ -1142,12 +1151,12 @@ impl TheoryAtomDefinition {
             c_str.to_str()
         }
     }
-    pub fn guard(&self) -> Result<&TheoryGuardDefinition, WrapperError> {
+    pub fn guard(&self) -> Result<&TheoryGuardDefinition, ClingoError> {
         match unsafe { (self.0.guard as *const TheoryGuardDefinition).as_ref() } {
             Some(x) => Ok(x),
-            None => Err(WrapperError {
-                msg: "tried casting a null pointer to &TheoryGuardDefinition.",
-            }),
+            None => Err(ClingoError::new(
+                "tried casting a null pointer to &TheoryGuardDefinition.",
+            )),
         }
     }
 }

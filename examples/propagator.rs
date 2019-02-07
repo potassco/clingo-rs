@@ -7,7 +7,7 @@ use std::vec::Vec;
 fn print_model(model: &Model) {
     // retrieve the symbols in the model
     let atoms = model
-        .symbols(&ShowType::SHOWN)
+        .symbols(ShowType::SHOWN)
         .expect("Failed to retrieve symbols in the model.");
 
     print!("Model:");
@@ -22,7 +22,7 @@ fn print_model(model: &Model) {
 fn solve(ctl: &mut Control) {
     // get a solve handle
     let mut handle = ctl
-        .solve(&SolveMode::YIELD, &[])
+        .solve(SolveMode::YIELD, &[])
         .expect("Failed to retrieve solve handle.");
 
     // loop over all models
@@ -33,7 +33,7 @@ fn solve(ctl: &mut Control) {
             Ok(Some(model)) => print_model(model),
             // stop if there are no more models
             Ok(None) => break,
-            Err(e) => panic!("Error: {}", e.as_fail()),
+            Err(e) => panic!("Error: {}", e),
         }
     }
 
@@ -109,7 +109,7 @@ impl Propagator for PropagatorT {
 
                 // get an iterator for place/2 atoms
                 // (atom order corresponds to grounding order (and is unpredictable))
-                let mut atoms_iterator = atoms.iter_with_signature(&sig);
+                let mut atoms_iterator = atoms.iter_with_signature(&sig).unwrap();
 
                 if pass == 1 {
                     // allocate memory for the assignment literal -> hole mapping
@@ -131,7 +131,7 @@ impl Propagator for PropagatorT {
                         let sym = item.symbol().unwrap();
                         let h = get_arg(&sym, 1).unwrap();
 
-                        // initialize the assignemnt literal -> hole mapping
+                        // initialize the assignment literal -> hole mapping
                         self.pigeons[lit_id] = h;
 
                         // watch the assignment literal
@@ -232,9 +232,7 @@ fn main() {
     };
 
     // create a control object and pass command line arguments
-    let option = Control::new(options);
-
-    match option {
+    match Control::new(options) {
         Ok(mut ctl) => {
             // register the propagator
             ctl.register_propagator(&mut prop, false)

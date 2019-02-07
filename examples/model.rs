@@ -1,7 +1,7 @@
 use clingo::*;
 use std::env;
 
-fn print_model(model: &Model, label: &str, show: &ShowType) {
+fn print_model(model: &Model, label: &str, show: ShowType) {
     print!("{}:", label);
 
     // retrieve the symbols in the model
@@ -19,7 +19,7 @@ fn print_model(model: &Model, label: &str, show: &ShowType) {
 fn solve(ctl: &mut Control) {
     // get a solve handle
     let mut handle = ctl
-        .solve(&SolveMode::YIELD, &[])
+        .solve(SolveMode::YIELD, &[])
         .expect("Failed retrieving solve handle.");
 
     // loop over all models
@@ -41,10 +41,10 @@ fn solve(ctl: &mut Control) {
 
                 println!("{}: {}", type_string, number);
 
-                print_model(model, "  shown", &ShowType::SHOWN);
-                print_model(model, "  atoms", &ShowType::ATOMS);
-                print_model(model, "  terms", &ShowType::TERMS);
-                print_model(model, " ~atoms", &(ShowType::COMPLEMENT | ShowType::ATOMS));
+                print_model(model, "  shown", ShowType::SHOWN);
+                print_model(model, "  atoms", ShowType::ATOMS);
+                print_model(model, "  terms", ShowType::TERMS);
+                print_model(model, " ~atoms", ShowType::COMPLEMENT | ShowType::ATOMS);
             }
             Ok(None) => {
                 // stop if there are no more models
@@ -68,13 +68,8 @@ fn main() {
     let mut ctl = Control::new(options).expect("Failed creating clingo_control.");
 
     // add a logic program to the base part
-    //     ctl.add("base", &[], "1 {a; b} 1. #show c : b. #show a/0.")
-    ctl.add(
-        "base",
-        &[],
-        "a(1..100). 1{b(X):a(X)}1. #maximize { V@2 : b(V) }.",
-    )
-    .expect("Failed to add a logic program.");
+    ctl.add("base", &[], "1 {a; b} 1. #show c : b. #show a/0.")
+        .expect("Failed to add a logic program.");
 
     // ground the base part
     let part = Part::new("base", &[]).unwrap();

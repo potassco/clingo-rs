@@ -68,7 +68,7 @@ fn print_statistics(stats: &Statistics, key: u64, depth: u8) {
 fn print_model(model: &Model) {
     // retrieve the symbols in the model
     let atoms = model
-        .symbols(&ShowType::SHOWN)
+        .symbols(ShowType::SHOWN)
         .expect("Failed to retrieve symbols in the model.");
 
     print!("Model:");
@@ -83,7 +83,7 @@ fn print_model(model: &Model) {
 fn solve(ctl: &mut Control) {
     // get a solve handle
     let mut handle = ctl
-        .solve(&SolveMode::YIELD, &[])
+        .solve(SolveMode::YIELD, &[])
         .expect("Failed retrieving solve handle.");
 
     // loop over all models
@@ -94,7 +94,7 @@ fn solve(ctl: &mut Control) {
             Ok(Some(model)) => print_model(model),
             // stop if there are no more models
             Ok(None) => break,
-            Err(e) => panic!("Error: {}", e.as_fail()),
+            Err(e) => panic!("Error: {}", e),
         }
     }
 

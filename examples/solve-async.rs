@@ -1,5 +1,6 @@
 use clingo::*;
-use rand::distributions::{IndependentSample, Range};
+use rand::distributions::Distribution;
+use rand::distributions::Uniform;
 use std::env;
 use std::sync::atomic::{AtomicBool, Ordering};
 
@@ -9,7 +10,7 @@ struct MySEHandler {
 impl SolveEventHandler for MySEHandler {
     fn on_solve_event(&mut self, type_: SolveEventType, _goon: &mut bool) -> bool {
         if type_ == SolveEventType::Finish {
-            self.atom.store(false, Ordering::Relaxed);
+            self.atom.store(false, Ordering::SeqCst);
         }
         true
     }
@@ -45,19 +46,18 @@ fn main() {
 
     // create a solve handle with an attached event handler
     let mut handle = ctl
-        .solve_with_event_handler(&(SolveMode::ASYNC | SolveMode::YIELD), &[], &mut running)
+        .solve_with_event_handler(SolveMode::ASYNC | SolveMode::YIELD, &[], &mut running)
         .expect("Failed to retrieve solve handle.");
 
     // let's approximate pi
     let mut samples = 0.;
     let mut in_circle = 0.;
-    let between = Range::new(-1f64, 1.);
     let mut rng = rand::thread_rng();
-
-    while running.atom.load(Ordering::Relaxed) {
+    let between = Uniform::new_inclusive(-1f64, 1.);
+    while running.atom.load(Ordering::SeqCst) {
         samples += 1.;
-        let x = between.ind_sample(&mut rng);
-        let y = between.ind_sample(&mut rng);
+        let x = between.sample(&mut rng);
+        let y = between.sample(&mut rng);
         if x * x + y * y <= 1. {
             in_circle += 1.;
         }

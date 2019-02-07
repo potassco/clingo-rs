@@ -4,7 +4,7 @@ use std::env;
 fn print_model(model: &Model) {
     // retrieve the symbols in the model
     let atoms = model
-        .symbols(&ShowType::SHOWN)
+        .symbols(ShowType::SHOWN)
         .expect("Failed to retrieve symbols in the model.");
 
     print!("Model:");
@@ -19,7 +19,7 @@ fn print_model(model: &Model) {
 fn solve(ctl: &mut Control) {
     // get a solve handle
     let mut handle = ctl
-        .solve(&SolveMode::YIELD, &[])
+        .solve(SolveMode::YIELD, &[])
         .expect("Failed retrieving solve handle.");
 
     // loop over all models
@@ -30,7 +30,7 @@ fn solve(ctl: &mut Control) {
             Ok(Some(model)) => print_model(model),
             // stop if there are no more models
             Ok(None) => break,
-            Err(e) => panic!("Error: {}", e.as_fail()),
+            Err(e) => panic!("Error: {}", e),
         }
     }
 
@@ -66,7 +66,7 @@ fn get_theory_atom_literal(ctl: &mut Control) -> Option<Literal> {
                 println!("theory atom b/1 has a guard: false");
             }
             // get the literal associated with the theory atom
-            return atoms.atom_literal(atom);
+            return atoms.atom_literal(atom).ok();
         }
     }
     None
@@ -104,7 +104,7 @@ fn main() {
     // the backend accepts any aspif literal)
     if let Some(lit) = get_theory_atom_literal(&mut ctl) {
         // get the backend
-        let backend = ctl.backend().unwrap();
+        let mut backend = ctl.backend().unwrap();
         // add the assumption
         backend.assume(&[lit]).expect("Failed to add assumption.");
     }

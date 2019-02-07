@@ -1,21 +1,24 @@
 [package]
 name = "clingo-sys"
-version = "0.3.0"
+version = "0.4.1"
 authors = ["sthiele <sthiele78@gmail.com>"]
+edition = "2018"
 description = "External FFI bindings to the C API of the clingo library"
 categories = ["external-ffi-bindings"]
 build = "build.rs"
 links = "clingo"
 license = "MIT"
-repository = "https://github.com/sthiele/clingo-rs"
+repository = "https://github.com/potassco/clingo-rs"
 documentation = "https://docs.rs/clingo-sys"
+readme = "README.md"
 
 [lib]
 name = "clingo_sys"
 path = "lib.rs"
 
 [dependencies]
-libc = "0.2.20"
+libc = "0.2"
 
 [build-dependencies]
 cc = "1.0"
+# bindgen = "0.46.0"

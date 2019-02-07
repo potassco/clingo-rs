@@ -1,74 +1,26 @@
 [package]
 name = "clingo"
-version = "0.3.1"
+version = "0.4.0"
 authors = ["sthiele <sthiele78@gmail.com>"]
+edition = "2018"
 description = "Rust idiomatic bindings to the clingo library"
 categories = ["api-bindings"]
 license = "MIT"
-repository = "https://github.com/sthiele/clingo-rs"
+repository = "https://github.com/potassco/clingo-rs"
 documentation = "https://docs.rs/clingo"
-edition = "2018"
+readme = "README.md"
+exclude = ["/.travis.yml"]
+
+[badges]
+travis-ci = { repository = "sthiele/clingo-rs" }
 
 [dependencies]
-clingo-sys = "0.3.0"
-libc = "0.2.20"
-rand = "0.3"
-failure = "0.1.1"
-failure_derive = "0.1.1"
-bitflags = "1.0.1"
+clingo-sys = "0.4.1"
+rand = "0.6"
+failure = "0.1"
+failure_derive = "0.1"
+bitflags = "1.0"
 
 [lib]
 name = "clingo"
 path = "src/lib.rs"
-
-[[example]]
-name = "version"
-path = "src/examples/version.rs"
-
-[[example]]
-name = "control"
-path = "src/examples/control.rs"
-
-[[example]]
-name = "symbolic-atoms"
-path = "src/examples/symbolic-atoms.rs"
-
-[[example]]
-name = "symbol"
-path = "src/examples/symbol.rs"
-
-[[example]]
-name = "model"
-path = "src/examples/model.rs"
-
-[[example]]
-name = "configuration"
-path = "src/examples/configuration.rs"
-
-[[example]]
-name = "statistics"
-path = "src/examples/statistics.rs"
-
-[[example]]
-name = "backend"
-path = "src/examples/backend.rs"
-
-[[example]]
-name = "theory-atoms"
-path = "src/examples/theory-atoms.rs"
-
-[[example]]
-name = "solve-async"
-path = "src/examples/solve-async.rs"
-
-[[example]]
-name = "propagator"
-path = "src/examples/propagator.rs"
-
-[[example]]
-name = "ast"
-path = "src/examples/ast.rs"
-
-[[example]]
-name = "inject-terms"
-path = "src/examples/inject-terms.rs"
