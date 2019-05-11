@@ -8,7 +8,7 @@
 //! [Cargo feature]: https://doc.rust-lang.org/cargo/reference/manifest.html#the-features-section
 //!
 //! With dynamic linking enabled the clingo library is not build for static linking but it is assumed that a
-//! clingo dynamic library is installed on the system.
+//! shared clingo library is installed on the system.
 //!
 //! The recommended way to use the optional dynamic linking support is as
 //! follows.
@@ -30,7 +30,6 @@ use std::os::raw::c_char;
 use std::os::raw::c_void;
 use std::ptr::NonNull;
 use std::str::Utf8Error;
-
 use failure::*;
 
 /// Functions and data structures to work with program ASTs.
