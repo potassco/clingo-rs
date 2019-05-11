@@ -125,6 +125,20 @@ pub enum ScriptType {
 #[derive(Copy, Clone)]
 pub struct HeadLiteral(clingo_ast_head_literal_t);
 impl HeadLiteral {
+    pub fn new(
+        Location(location): Location,
+        type_: HeadLiteralType,
+        lit_ref: &Literal,
+    ) -> HeadLiteral {
+        let _bg_union_2 = clingo_ast_head_literal__bindgen_ty_1 {
+            literal: (lit_ref as *const Literal) as *const clingo_ast_literal,
+        };
+        HeadLiteral(clingo_ast_head_literal_t {
+            location,
+            type_: type_ as clingo_ast_head_literal_type_t,
+            __bindgen_anon_1: _bg_union_2,
+        })
+    }
     pub fn location(&self) -> Location {
         Location(self.0.location)
     }
