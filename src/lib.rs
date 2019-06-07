@@ -5504,3 +5504,247 @@ pub trait GroundProgramObserver {
         )
     }
 }
+
+
+/// helper types and traits to simplify conversion from structs to clingo symbols
+
+pub trait ToSymbol {
+    fn symbol(&self) -> Result<Symbol, Error>;
+}
+/// struct to wrap a clingo symbol so that is can be added to a FactBase
+pub struct ReturnFact {
+    pub fact: Symbol,
+}
+impl ToSymbol for ReturnFact {
+    fn symbol(&self) -> Result<Symbol, Error> {
+        Ok(self.fact)
+    }
+}
+
+// Due to a temporary restriction in Rust's type system, these function are only implemented on tuples of arity 12 or less.
+// In the future, this may change.
+impl ToSymbol for () {
+    fn symbol(&self) -> Result<Symbol, Error> {
+        Symbol::create_function( "", &[], true)
+    }
+}
+impl<A: ToSymbol, B: ToSymbol> ToSymbol for (A,B) {
+    fn symbol(&self) -> Result<Symbol, Error> {
+        Symbol::create_function( "", &[self.0.symbol()?,self.1.symbol()?], true)
+    }
+}
+impl<A: ToSymbol, B: ToSymbol, C: ToSymbol> ToSymbol for (A,B,C) {
+    fn symbol(&self) -> Result<Symbol, Error> {
+        let mut tempvec = vec![];
+        tempvec.push(self.0.symbol()?);
+        tempvec.push(self.1.symbol()?);
+        tempvec.push(self.2.symbol()?);
+        Symbol::create_function( "", &tempvec, true)
+    }
+}
+impl<A: ToSymbol, B: ToSymbol, C: ToSymbol, D: ToSymbol> ToSymbol for (A,B,C,D) {
+    fn symbol(&self) -> Result<Symbol, Error> {
+        let mut tempvec = vec![];
+        tempvec.push(self.0.symbol()?);
+        tempvec.push(self.1.symbol()?);
+        tempvec.push(self.2.symbol()?);
+        tempvec.push(self.3.symbol()?);
+        Symbol::create_function( "", &tempvec, true)
+    }
+}
+
+impl<A: ToSymbol, B: ToSymbol, C: ToSymbol, D: ToSymbol, E: ToSymbol> ToSymbol for (A,B,C,D,E) {
+    fn symbol(&self) -> Result<Symbol, Error> {
+        let mut tempvec = vec![];
+        tempvec.push(self.0.symbol()?);
+        tempvec.push(self.1.symbol()?);
+        tempvec.push(self.2.symbol()?);
+        tempvec.push(self.3.symbol()?);
+        tempvec.push(self.4.symbol()?);
+        Symbol::create_function( "", &tempvec, true)
+    }
+}
+impl<A: ToSymbol, B: ToSymbol, C: ToSymbol, D: ToSymbol, E: ToSymbol, F: ToSymbol> ToSymbol for (A,B,C,D,E,F) {
+    fn symbol(&self) -> Result<Symbol, Error> {
+        let mut tempvec = vec![];
+        tempvec.push(self.0.symbol()?);
+        tempvec.push(self.1.symbol()?);
+        tempvec.push(self.2.symbol()?);
+        tempvec.push(self.3.symbol()?);
+        tempvec.push(self.4.symbol()?);
+        tempvec.push(self.5.symbol()?);
+        Symbol::create_function( "", &tempvec, true)
+    }
+}
+impl<A: ToSymbol, B: ToSymbol, C: ToSymbol, D: ToSymbol, E: ToSymbol, F: ToSymbol, G: ToSymbol> ToSymbol for (A,B,C,D,E,F,G) {
+    fn symbol(&self) -> Result<Symbol, Error> {
+        let mut tempvec = vec![];
+        tempvec.push(self.0.symbol()?);
+        tempvec.push(self.1.symbol()?);
+        tempvec.push(self.2.symbol()?);
+        tempvec.push(self.3.symbol()?);
+        tempvec.push(self.4.symbol()?);
+        tempvec.push(self.5.symbol()?);
+        tempvec.push(self.6.symbol()?);
+        Symbol::create_function( "", &tempvec, true)
+    }
+}
+impl<A: ToSymbol, B: ToSymbol, C: ToSymbol, D: ToSymbol, E: ToSymbol, F: ToSymbol, G: ToSymbol, H: ToSymbol> ToSymbol for (A,B,C,D,E,F,G,H) {
+    fn symbol(&self) -> Result<Symbol, Error> {
+        let mut tempvec = vec![];
+        tempvec.push(self.0.symbol()?);
+        tempvec.push(self.1.symbol()?);
+        tempvec.push(self.2.symbol()?);
+        tempvec.push(self.3.symbol()?);
+        tempvec.push(self.4.symbol()?);
+        tempvec.push(self.5.symbol()?);
+        tempvec.push(self.6.symbol()?);
+        tempvec.push(self.7.symbol()?);
+        Symbol::create_function( "", &tempvec, true)
+    }
+}
+
+impl<A: ToSymbol, B: ToSymbol, C: ToSymbol, D: ToSymbol, E: ToSymbol, F: ToSymbol, G: ToSymbol, H: ToSymbol, I: ToSymbol> ToSymbol for (A,B,C,D,E,F,G,H,I) {
+    fn symbol(&self) -> Result<Symbol, Error> {
+        let mut tempvec = vec![];
+        tempvec.push(self.0.symbol()?);
+        tempvec.push(self.1.symbol()?);
+        tempvec.push(self.2.symbol()?);
+        tempvec.push(self.3.symbol()?);
+        tempvec.push(self.4.symbol()?);
+        tempvec.push(self.5.symbol()?);
+        tempvec.push(self.6.symbol()?);
+        tempvec.push(self.7.symbol()?);
+        tempvec.push(self.8.symbol()?);
+        Symbol::create_function( "", &tempvec, true)
+    }
+}
+impl<A: ToSymbol, B: ToSymbol, C: ToSymbol, D: ToSymbol, E: ToSymbol, F: ToSymbol, G: ToSymbol, H: ToSymbol, I: ToSymbol, J: ToSymbol> ToSymbol for (A,B,C,D,E,F,G,H,I,J) {
+    fn symbol(&self) -> Result<Symbol, Error> {
+        let mut tempvec = vec![];
+        tempvec.push(self.0.symbol()?);
+        tempvec.push(self.1.symbol()?);
+        tempvec.push(self.2.symbol()?);
+        tempvec.push(self.3.symbol()?);
+        tempvec.push(self.4.symbol()?);
+        tempvec.push(self.5.symbol()?);
+        tempvec.push(self.6.symbol()?);
+        tempvec.push(self.7.symbol()?);
+        tempvec.push(self.8.symbol()?);
+        tempvec.push(self.9.symbol()?);
+        Symbol::create_function( "", &tempvec, true)
+    }
+}
+impl<A: ToSymbol, B: ToSymbol, C: ToSymbol, D: ToSymbol, E: ToSymbol, F: ToSymbol, G: ToSymbol, H: ToSymbol, I: ToSymbol, J: ToSymbol, K: ToSymbol> ToSymbol for (A,B,C,D,E,F,G,H,I,J,K) {
+    fn symbol(&self) -> Result<Symbol, Error> {
+        let mut tempvec = vec![];
+        tempvec.push(self.0.symbol()?);
+        tempvec.push(self.1.symbol()?);
+        tempvec.push(self.2.symbol()?);
+        tempvec.push(self.3.symbol()?);
+        tempvec.push(self.4.symbol()?);
+        tempvec.push(self.5.symbol()?);
+        tempvec.push(self.6.symbol()?);
+        tempvec.push(self.7.symbol()?);
+        tempvec.push(self.8.symbol()?);
+        tempvec.push(self.9.symbol()?);
+        tempvec.push(self.10.symbol()?);
+        Symbol::create_function( "", &tempvec, true)
+    }
+}
+impl<A: ToSymbol, B: ToSymbol, C: ToSymbol, D: ToSymbol, E: ToSymbol, F: ToSymbol, G: ToSymbol, H: ToSymbol, I: ToSymbol, J: ToSymbol, K: ToSymbol, L: ToSymbol> ToSymbol for (A,B,C,D,E,F,G,H,I,J,K,L) {
+    fn symbol(&self) -> Result<Symbol, Error> {
+        let mut tempvec = vec![];
+        tempvec.push(self.0.symbol()?);
+        tempvec.push(self.1.symbol()?);
+        tempvec.push(self.2.symbol()?);
+        tempvec.push(self.3.symbol()?);
+        tempvec.push(self.4.symbol()?);
+        tempvec.push(self.5.symbol()?);
+        tempvec.push(self.6.symbol()?);
+        tempvec.push(self.7.symbol()?);
+        tempvec.push(self.8.symbol()?);
+        tempvec.push(self.9.symbol()?);
+        tempvec.push(self.10.symbol()?);
+        tempvec.push(self.11.symbol()?);
+        Symbol::create_function( "", &tempvec, true)
+    }
+}
+impl ToSymbol for bool {
+    fn symbol(&self) -> Result<Symbol, Error> {
+        if *self {
+            Symbol::create_id("true",true)
+        } else {
+            Symbol::create_id("false",true)
+        }
+    }
+}
+impl ToSymbol for u8 {
+    fn symbol(&self) -> Result<Symbol, Error> {
+        Ok(Symbol::create_number(*self as i32))
+    }
+}
+impl ToSymbol for i8 {
+    fn symbol(&self) -> Result<Symbol, Error> {
+        Ok(Symbol::create_number(*self as i32))
+    }
+}
+impl ToSymbol for u16 {
+    fn symbol(&self) -> Result<Symbol, Error> {
+        Ok(Symbol::create_number(*self as i32))
+    }
+}
+impl ToSymbol for i16 {
+    fn symbol(&self) -> Result<Symbol, Error> {
+        Ok(Symbol::create_number(*self as i32))
+    }
+}
+impl ToSymbol for u32 {
+    fn symbol(&self) -> Result<Symbol, Error> {
+        Ok(Symbol::create_number(*self as i32))
+    }
+}
+impl ToSymbol for i32 {
+    fn symbol(&self) -> Result<Symbol, Error> {
+        Ok(Symbol::create_number(*self))
+    }
+}
+impl ToSymbol for String {
+    fn symbol(&self) -> Result<Symbol, Error> {
+        Symbol::create_string(self)
+    }
+}
+impl ToSymbol for str {
+    fn symbol(&self) -> Result<Symbol, Error> {
+        Symbol::create_string(self)
+    }
+}
+impl<T: ToSymbol> ToSymbol for &T {
+    fn symbol(&self) -> Result<Symbol, Error> {
+        (*self).symbol()
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct FactBase {
+    facts: Vec<Symbol>,
+}
+impl FactBase {
+    pub fn len(&self) -> usize {
+        self.facts.len()
+    }
+    pub fn empty() -> FactBase {
+        FactBase { facts: vec![] }
+    }
+    pub fn iter(&self) -> std::slice::Iter<'_, Symbol> {
+        self.facts.iter()
+    }
+    pub fn add_fact(&mut self, fact: &ToSymbol) {
+        self.facts.push(fact.symbol().unwrap());
+    }
+    pub fn union(&mut self, facts: &FactBase) {
+        for s in &facts.facts {
+            self.facts.push(s.clone());
+        }
+    }
+}
