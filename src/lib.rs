@@ -5511,13 +5511,10 @@ pub trait GroundProgramObserver {
 pub trait ToSymbol {
     fn symbol(&self) -> Result<Symbol, Error>;
 }
-/// struct to wrap a clingo symbol so that is can be added to a FactBase
-pub struct ReturnFact {
-    pub fact: Symbol,
-}
-impl ToSymbol for ReturnFact {
+
+impl ToSymbol for Symbol {
     fn symbol(&self) -> Result<Symbol, Error> {
-        Ok(self.fact)
+        Ok(*self)
     }
 }
 
@@ -5798,13 +5795,13 @@ impl FactBase {
     pub fn len(&self) -> usize {
         self.facts.len()
     }
-    pub fn empty() -> FactBase {
+    pub fn new() -> FactBase {
         FactBase { facts: HashSet::new() }
     }
     pub fn iter(&self) -> std::collections::hash_set::Iter<'_, Symbol> {
         self.facts.iter()
     }
-    pub fn add_fact(&mut self, fact: &ToSymbol) {
+    pub fn insert(&mut self, fact: &ToSymbol) {
         self.facts.insert(fact.symbol().unwrap());
         // self.facts.sort();
     }
@@ -5812,5 +5809,45 @@ impl FactBase {
         for s in &facts.facts {
             self.facts.insert(s.clone());
         }
+    }
+    pub fn print(&self) {
+        for fact in &self.facts {
+            print!("{}.",fact.to_string().unwrap());
+        }
+        println!();
+    }
+}
+
+pub fn add_facts(ctl: &mut Control, facts: &FactBase) {
+    // get the program builder
+    let mut builder = ctl.program_builder().ok();
+
+    // initialize the location
+    let location = Location::new("<rewrite>", "<rewrite>", 0, 0, 0, 0).unwrap();
+
+    for sym in facts.iter() {
+        // print!("{}",sym.to_string().unwrap());
+
+        // initilize atom to add
+        let atom = ast::Atom::from_symbol(location, *sym);
+
+        // create literal
+        let lit = ast::Literal::from_atom(location, ast::Sign::None, &atom);
+
+        // add atom enable to the rule body
+        let hlit = ast::HeadLiteral::new(atom.location(), ast::HeadLiteralType::Literal, &lit);
+
+        // initialize the rule
+        let rule = ast::Rule::new(hlit, &[]);
+
+        // initialize the statement
+        let stm = rule.ast_statement(location);
+
+        // add the rewritten statement to the program
+        builder
+            .as_mut()
+            .unwrap()
+            .add(&stm)
+            .expect("Failed to add statement to ProgramBuilder.");
     }
 }
