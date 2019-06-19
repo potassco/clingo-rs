@@ -12,6 +12,7 @@ use std::os::raw::c_void;
 use std::ptr::NonNull;
 use std::str::Utf8Error;
 
+use std::collections::HashSet;
 use failure::*;
 
 /// Functions and data structures to work with program ASTs.
@@ -5790,24 +5791,26 @@ impl<T: ToSymbol> ToSymbol for &T {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct FactBase {
-    facts: Vec<Symbol>,
+    // facts: Vec<Symbol>,
+    facts: HashSet<Symbol>,
 }
 impl FactBase {
     pub fn len(&self) -> usize {
         self.facts.len()
     }
     pub fn empty() -> FactBase {
-        FactBase { facts: vec![] }
+        FactBase { facts: HashSet::new() }
     }
-    pub fn iter(&self) -> std::slice::Iter<'_, Symbol> {
+    pub fn iter(&self) -> std::collections::hash_set::Iter<'_, Symbol> {
         self.facts.iter()
     }
     pub fn add_fact(&mut self, fact: &ToSymbol) {
-        self.facts.push(fact.symbol().unwrap());
+        self.facts.insert(fact.symbol().unwrap());
+        // self.facts.sort();
     }
     pub fn union(&mut self, facts: &FactBase) {
         for s in &facts.facts {
-            self.facts.push(s.clone());
+            self.facts.insert(s.clone());
         }
     }
 }
