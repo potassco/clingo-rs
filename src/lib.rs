@@ -1935,6 +1935,66 @@ impl Control {
         }
     }
 
+    /// Covenience function that returns an iterator over the models.
+    /// Uses [solve](struct.Control.html#method.solve) with [SolveMode::Yield](enum.SolveMode.html#variant.YIELD) and empty assumptions.
+    ///
+    /// # Errors
+    ///
+    /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if solving could not be started
+    pub fn all_models(&mut self) -> Result<AllModels, ClingoError> {
+        let mut handle = std::ptr::null_mut();
+        if !unsafe {
+            clingo_control_solve(
+                self.ctl.as_ptr(),
+                SolveMode::YIELD.bits(),
+                std::ptr::null() as *const clingo_literal_t,
+                0,
+                None,
+                std::ptr::null_mut(),
+                &mut handle,
+            )
+        } {
+            return Err(ClingoError::new("Call to clingo_control_solve() failed."));
+        }
+        match unsafe { handle.as_mut() } {
+            Some(handle_ref) => Ok(AllModels(SolveHandle { theref: handle_ref })),
+            None => Err(ClingoError::new(
+                "Tried casting a null pointer to &mut clingo_solve_handle.",
+            )),
+        }
+    }
+
+    /// Covenience function that returns an iterator over the optimal models.
+    /// Uses [solve](struct.Control.html#method.solve) with [SolveMode::Yield](enum.SolveMode.html#variant.YIELD) and empty assumptions.
+    ///
+    /// # Errors
+    ///
+    /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if solving could not be started
+    pub fn optimal_models(&mut self) -> Result<OptimalModels, ClingoError> {
+        let mut handle = std::ptr::null_mut();
+        if !unsafe {
+            clingo_control_solve(
+                self.ctl.as_ptr(),
+                SolveMode::YIELD.bits(),
+                std::ptr::null() as *const clingo_literal_t,
+                0,
+                None,
+                std::ptr::null_mut(),
+                &mut handle,
+            )
+        } {
+            return Err(ClingoError::new("Call to clingo_control_solve() failed."));
+        }
+        match unsafe { handle.as_mut() } {
+            Some(handle_ref) => Ok(OptimalModels(SolveHandle { theref: handle_ref })),
+            None => Err(ClingoError::new(
+                "Tried casting a null pointer to &mut clingo_solve_handle.",
+            )),
+        }
+    }
+
     /// Solve the currently [grounded](struct.Control.html#method.ground) logic program
     /// enumerating its models.
     ///
@@ -4771,6 +4831,66 @@ impl<'a> SolveHandle<'a> {
         }
         Ok(())
     }
+}
+
+pub struct OptimalModels<'a>(SolveHandle<'a>);
+
+impl<'a, 'b> Iterator for OptimalModels<'a> {
+    type Item = MModel;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        loop {
+            self.0.resume().expect("Failed resume on solve handle.");
+            match self.0.model() {
+                Ok(Some(model)) => {
+                    if model.optimality_proven().unwrap() {
+                        let symbols = model.symbols(ShowType::SHOWN).unwrap();
+                        return Some(MModel {
+                            symbols,
+                            model_type: model.model_type().unwrap(),
+                            number: model.number().unwrap(),
+                        });
+                    }
+                }
+                Ok(None) => {
+                    return None;
+                }
+                Err(e) => panic!(e),
+            }
+        }
+    }
+}
+pub struct AllModels<'a>(SolveHandle<'a>);
+impl<'a, 'b> Iterator for AllModels<'a> {
+    type Item = MModel;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        loop {
+            self.0.resume().expect("Failed resume on solve handle.");
+            match self.0.model() {
+                Ok(Some(model)) => {
+                    if model.optimality_proven().unwrap() {
+                        let symbols = model.symbols(ShowType::SHOWN).unwrap();
+                        return Some(MModel {
+                            symbols,
+                            model_type: model.model_type().unwrap(),
+                            number: model.number().unwrap(),
+                        });
+                    }
+                }
+                Ok(None) => {
+                    return None;
+                }
+                Err(e) => panic!(e),
+            }
+        }
+    }
+}
+
+pub struct MModel {
+    pub symbols: Vec<Symbol>,
+    pub model_type: ModelType,
+    pub number: u64,
 }
 
 /// Internalize a string.
