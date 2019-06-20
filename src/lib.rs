@@ -12,8 +12,8 @@ use std::os::raw::c_void;
 use std::ptr::NonNull;
 use std::str::Utf8Error;
 
-use std::collections::HashSet;
 use failure::*;
+use std::collections::HashSet;
 
 /// Functions and data structures to work with program ASTs.
 pub mod ast;
@@ -5796,7 +5796,9 @@ impl FactBase {
         self.facts.len()
     }
     pub fn new() -> FactBase {
-        FactBase { facts: HashSet::new() }
+        FactBase {
+            facts: HashSet::new(),
+        }
     }
     pub fn iter(&self) -> std::collections::hash_set::Iter<'_, Symbol> {
         self.facts.iter()
@@ -5812,7 +5814,7 @@ impl FactBase {
     }
     pub fn print(&self) {
         for fact in &self.facts {
-            print!("{}.",fact.to_string().unwrap());
+            print!("{}.", fact.to_string().unwrap());
         }
         println!();
     }
