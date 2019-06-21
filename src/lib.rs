@@ -4845,8 +4845,10 @@ impl<'a, 'b> Iterator for OptimalModels<'a> {
                 Ok(Some(model)) => {
                     if model.optimality_proven().unwrap() {
                         let symbols = model.symbols(ShowType::SHOWN).unwrap();
+                        let cost = model.cost().unwrap();
                         return Some(MModel {
                             symbols,
+                            cost,
                             model_type: model.model_type().unwrap(),
                             number: model.number().unwrap(),
                         });
@@ -4871,8 +4873,10 @@ impl<'a, 'b> Iterator for AllModels<'a> {
                 Ok(Some(model)) => {
                     if model.optimality_proven().unwrap() {
                         let symbols = model.symbols(ShowType::SHOWN).unwrap();
+                        let cost = model.cost().unwrap();
                         return Some(MModel {
                             symbols,
+                            cost,
                             model_type: model.model_type().unwrap(),
                             number: model.number().unwrap(),
                         });
@@ -4889,6 +4893,7 @@ impl<'a, 'b> Iterator for AllModels<'a> {
 
 pub struct MModel {
     pub symbols: Vec<Symbol>,
+    pub cost : Vec<i64>,
     pub model_type: ModelType,
     pub number: u64,
 }
