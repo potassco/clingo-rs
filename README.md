@@ -37,7 +37,7 @@ The [`clingo_derive`](https://docs.rs/clingo_derive) crate helps easing the use 
 In your `Cargo.toml` add:
 
     [dependencies]
-    clingo-rs = "1.4.2"
+    clingo-rs = "0.4.2"
     clingo-derive = "*"
 
 In your source write:
@@ -70,7 +70,7 @@ follows.
 
 ```toml
 [dependencies]
-clingo = { version = "0.4.1", features = ["dynamic_linking"] }
+clingo = { version = "0.4.2", features = ["dynamic_linking"] }
 ```
 
 ## Contribution
