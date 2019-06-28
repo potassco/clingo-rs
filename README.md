@@ -29,6 +29,24 @@ Clingo version 5.3.0.
     cargo run --example=inject-terms 0
     cargo run --example=version
 
+
+## --dynamic_linking
+
+The crate defines a [Cargo feature] that allows to use the clingo library via dynamic linking.
+
+[Cargo feature]: https://doc.rust-lang.org/cargo/reference/manifest.html#the-features-section
+
+With dynamic linking enabled the clingo library is not build for static linking but it is assumed that a
+clingo dynamic library is installed on the system.
+
+The recommended way to use the optional dynamic linking support is as
+follows.
+
+```toml
+[dependencies]
+clingo = { version = "0.4.1", features = ["dynamic_linking"] }
+```
+
 ## Contribution
 
 Any contribution intentionally submitted for inclusion in the work by you, shall be licensed under the terms of the MIT license without any additional terms or conditions.

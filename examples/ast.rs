@@ -30,13 +30,13 @@ impl<'a> AstStatementHandler for OnStatementData<'a> {
             // create atom enable
             let lit = ast::Literal::from_atom(self.atom.location(), ast::Sign::None, &self.atom);
             // add atom enable to the rule body
-            let y = ast::BodyLiteral::new(
+            let blit = ast::BodyLiteral::new(
                 self.atom.location(),
                 ast::Sign::None,
                 ast::BodyLiteralType::Literal,
                 &lit,
             );
-            extended_body.push(y);
+            extended_body.push(blit);
 
             // initialize the rule
             let head = rule.head();
