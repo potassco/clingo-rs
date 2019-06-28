@@ -31,6 +31,7 @@ use std::os::raw::c_void;
 use std::ptr::NonNull;
 use std::str::Utf8Error;
 use failure::*;
+use std::collections::HashSet;
 
 /// Functions and data structures to work with program ASTs.
 pub mod ast;
@@ -1946,6 +1947,66 @@ impl Control {
         }
         match unsafe { handle.as_mut() } {
             Some(handle_ref) => Ok(SolveHandle { theref: handle_ref }),
+            None => Err(ClingoError::new(
+                "Tried casting a null pointer to &mut clingo_solve_handle.",
+            )),
+        }
+    }
+
+    /// Covenience function that returns an iterator over the models.
+    /// Uses [solve](struct.Control.html#method.solve) with [SolveMode::Yield](enum.SolveMode.html#variant.YIELD) and empty assumptions.
+    ///
+    /// # Errors
+    ///
+    /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if solving could not be started
+    pub fn all_models(&mut self) -> Result<AllModels, ClingoError> {
+        let mut handle = std::ptr::null_mut();
+        if !unsafe {
+            clingo_control_solve(
+                self.ctl.as_ptr(),
+                SolveMode::YIELD.bits(),
+                std::ptr::null() as *const clingo_literal_t,
+                0,
+                None,
+                std::ptr::null_mut(),
+                &mut handle,
+            )
+        } {
+            return Err(ClingoError::new("Call to clingo_control_solve() failed."));
+        }
+        match unsafe { handle.as_mut() } {
+            Some(handle_ref) => Ok(AllModels(SolveHandle { theref: handle_ref })),
+            None => Err(ClingoError::new(
+                "Tried casting a null pointer to &mut clingo_solve_handle.",
+            )),
+        }
+    }
+
+    /// Covenience function that returns an iterator over the optimal models.
+    /// Uses [solve](struct.Control.html#method.solve) with [SolveMode::Yield](enum.SolveMode.html#variant.YIELD) and empty assumptions.
+    ///
+    /// # Errors
+    ///
+    /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if solving could not be started
+    pub fn optimal_models(&mut self) -> Result<OptimalModels, ClingoError> {
+        let mut handle = std::ptr::null_mut();
+        if !unsafe {
+            clingo_control_solve(
+                self.ctl.as_ptr(),
+                SolveMode::YIELD.bits(),
+                std::ptr::null() as *const clingo_literal_t,
+                0,
+                None,
+                std::ptr::null_mut(),
+                &mut handle,
+            )
+        } {
+            return Err(ClingoError::new("Call to clingo_control_solve() failed."));
+        }
+        match unsafe { handle.as_mut() } {
+            Some(handle_ref) => Ok(OptimalModels(SolveHandle { theref: handle_ref })),
             None => Err(ClingoError::new(
                 "Tried casting a null pointer to &mut clingo_solve_handle.",
             )),
@@ -4790,6 +4851,71 @@ impl<'a> SolveHandle<'a> {
     }
 }
 
+pub struct OptimalModels<'a>(SolveHandle<'a>);
+
+impl<'a, 'b> Iterator for OptimalModels<'a> {
+    type Item = MModel;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        loop {
+            self.0.resume().expect("Failed resume on solve handle.");
+            match self.0.model() {
+                Ok(Some(model)) => {
+                    if model.optimality_proven().unwrap() {
+                        let symbols = model.symbols(ShowType::SHOWN).unwrap();
+                        let cost = model.cost().unwrap();
+                        return Some(MModel {
+                            symbols,
+                            cost,
+                            model_type: model.model_type().unwrap(),
+                            number: model.number().unwrap(),
+                        });
+                    }
+                }
+                Ok(None) => {
+                    return None;
+                }
+                Err(e) => panic!(e),
+            }
+        }
+    }
+}
+pub struct AllModels<'a>(SolveHandle<'a>);
+impl<'a, 'b> Iterator for AllModels<'a> {
+    type Item = MModel;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        loop {
+            self.0.resume().expect("Failed resume on solve handle.");
+            match self.0.model() {
+                Ok(Some(model)) => {
+                    if model.optimality_proven().unwrap() {
+                        let symbols = model.symbols(ShowType::SHOWN).unwrap();
+                        let cost = model.cost().unwrap();
+                        return Some(MModel {
+                            symbols,
+                            cost,
+                            model_type: model.model_type().unwrap(),
+                            number: model.number().unwrap(),
+                        });
+                    }
+                }
+                Ok(None) => {
+                    return None;
+                }
+                Err(e) => panic!(e),
+            }
+        }
+    }
+}
+
+pub struct MModel {
+    pub symbols: Vec<Symbol>,
+    pub cost : Vec<i64>,
+    pub model_type: ModelType,
+    pub number: u64,
+}
+
 /// Internalize a string.
 ///
 /// This functions takes a string as input and returns an equal unique string
@@ -5520,5 +5646,353 @@ pub trait GroundProgramObserver {
             Id(operator_id),
             Id(right_hand_side_id),
         )
+    }
+}
+
+/// helper types and traits to simplify conversion from structs to clingo symbols
+
+pub trait ToSymbol {
+    fn symbol(&self) -> Result<Symbol, Error>;
+}
+
+impl ToSymbol for Symbol {
+    fn symbol(&self) -> Result<Symbol, Error> {
+        Ok(*self)
+    }
+}
+
+// Due to a temporary restriction in Rust's type system, these function are only implemented on tuples of arity 12 or less.
+// In the future, this may change.
+impl ToSymbol for () {
+    fn symbol(&self) -> Result<Symbol, Error> {
+        Symbol::create_function("", &[], true)
+    }
+}
+impl<A: ToSymbol, B: ToSymbol> ToSymbol for (A, B) {
+    fn symbol(&self) -> Result<Symbol, Error> {
+        Symbol::create_function("", &[self.0.symbol()?, self.1.symbol()?], true)
+    }
+}
+impl<A: ToSymbol, B: ToSymbol, C: ToSymbol> ToSymbol for (A, B, C) {
+    fn symbol(&self) -> Result<Symbol, Error> {
+        let mut tempvec = vec![];
+        tempvec.push(self.0.symbol()?);
+        tempvec.push(self.1.symbol()?);
+        tempvec.push(self.2.symbol()?);
+        Symbol::create_function("", &tempvec, true)
+    }
+}
+impl<A: ToSymbol, B: ToSymbol, C: ToSymbol, D: ToSymbol> ToSymbol for (A, B, C, D) {
+    fn symbol(&self) -> Result<Symbol, Error> {
+        let mut tempvec = vec![];
+        tempvec.push(self.0.symbol()?);
+        tempvec.push(self.1.symbol()?);
+        tempvec.push(self.2.symbol()?);
+        tempvec.push(self.3.symbol()?);
+        Symbol::create_function("", &tempvec, true)
+    }
+}
+
+impl<A: ToSymbol, B: ToSymbol, C: ToSymbol, D: ToSymbol, E: ToSymbol> ToSymbol for (A, B, C, D, E) {
+    fn symbol(&self) -> Result<Symbol, Error> {
+        let mut tempvec = vec![];
+        tempvec.push(self.0.symbol()?);
+        tempvec.push(self.1.symbol()?);
+        tempvec.push(self.2.symbol()?);
+        tempvec.push(self.3.symbol()?);
+        tempvec.push(self.4.symbol()?);
+        Symbol::create_function("", &tempvec, true)
+    }
+}
+impl<A: ToSymbol, B: ToSymbol, C: ToSymbol, D: ToSymbol, E: ToSymbol, F: ToSymbol> ToSymbol
+    for (A, B, C, D, E, F)
+{
+    fn symbol(&self) -> Result<Symbol, Error> {
+        let mut tempvec = vec![];
+        tempvec.push(self.0.symbol()?);
+        tempvec.push(self.1.symbol()?);
+        tempvec.push(self.2.symbol()?);
+        tempvec.push(self.3.symbol()?);
+        tempvec.push(self.4.symbol()?);
+        tempvec.push(self.5.symbol()?);
+        Symbol::create_function("", &tempvec, true)
+    }
+}
+impl<A: ToSymbol, B: ToSymbol, C: ToSymbol, D: ToSymbol, E: ToSymbol, F: ToSymbol, G: ToSymbol>
+    ToSymbol for (A, B, C, D, E, F, G)
+{
+    fn symbol(&self) -> Result<Symbol, Error> {
+        let mut tempvec = vec![];
+        tempvec.push(self.0.symbol()?);
+        tempvec.push(self.1.symbol()?);
+        tempvec.push(self.2.symbol()?);
+        tempvec.push(self.3.symbol()?);
+        tempvec.push(self.4.symbol()?);
+        tempvec.push(self.5.symbol()?);
+        tempvec.push(self.6.symbol()?);
+        Symbol::create_function("", &tempvec, true)
+    }
+}
+impl<
+        A: ToSymbol,
+        B: ToSymbol,
+        C: ToSymbol,
+        D: ToSymbol,
+        E: ToSymbol,
+        F: ToSymbol,
+        G: ToSymbol,
+        H: ToSymbol,
+    > ToSymbol for (A, B, C, D, E, F, G, H)
+{
+    fn symbol(&self) -> Result<Symbol, Error> {
+        let mut tempvec = vec![];
+        tempvec.push(self.0.symbol()?);
+        tempvec.push(self.1.symbol()?);
+        tempvec.push(self.2.symbol()?);
+        tempvec.push(self.3.symbol()?);
+        tempvec.push(self.4.symbol()?);
+        tempvec.push(self.5.symbol()?);
+        tempvec.push(self.6.symbol()?);
+        tempvec.push(self.7.symbol()?);
+        Symbol::create_function("", &tempvec, true)
+    }
+}
+
+impl<
+        A: ToSymbol,
+        B: ToSymbol,
+        C: ToSymbol,
+        D: ToSymbol,
+        E: ToSymbol,
+        F: ToSymbol,
+        G: ToSymbol,
+        H: ToSymbol,
+        I: ToSymbol,
+    > ToSymbol for (A, B, C, D, E, F, G, H, I)
+{
+    fn symbol(&self) -> Result<Symbol, Error> {
+        let mut tempvec = vec![];
+        tempvec.push(self.0.symbol()?);
+        tempvec.push(self.1.symbol()?);
+        tempvec.push(self.2.symbol()?);
+        tempvec.push(self.3.symbol()?);
+        tempvec.push(self.4.symbol()?);
+        tempvec.push(self.5.symbol()?);
+        tempvec.push(self.6.symbol()?);
+        tempvec.push(self.7.symbol()?);
+        tempvec.push(self.8.symbol()?);
+        Symbol::create_function("", &tempvec, true)
+    }
+}
+impl<
+        A: ToSymbol,
+        B: ToSymbol,
+        C: ToSymbol,
+        D: ToSymbol,
+        E: ToSymbol,
+        F: ToSymbol,
+        G: ToSymbol,
+        H: ToSymbol,
+        I: ToSymbol,
+        J: ToSymbol,
+    > ToSymbol for (A, B, C, D, E, F, G, H, I, J)
+{
+    fn symbol(&self) -> Result<Symbol, Error> {
+        let mut tempvec = vec![];
+        tempvec.push(self.0.symbol()?);
+        tempvec.push(self.1.symbol()?);
+        tempvec.push(self.2.symbol()?);
+        tempvec.push(self.3.symbol()?);
+        tempvec.push(self.4.symbol()?);
+        tempvec.push(self.5.symbol()?);
+        tempvec.push(self.6.symbol()?);
+        tempvec.push(self.7.symbol()?);
+        tempvec.push(self.8.symbol()?);
+        tempvec.push(self.9.symbol()?);
+        Symbol::create_function("", &tempvec, true)
+    }
+}
+impl<
+        A: ToSymbol,
+        B: ToSymbol,
+        C: ToSymbol,
+        D: ToSymbol,
+        E: ToSymbol,
+        F: ToSymbol,
+        G: ToSymbol,
+        H: ToSymbol,
+        I: ToSymbol,
+        J: ToSymbol,
+        K: ToSymbol,
+    > ToSymbol for (A, B, C, D, E, F, G, H, I, J, K)
+{
+    fn symbol(&self) -> Result<Symbol, Error> {
+        let mut tempvec = vec![];
+        tempvec.push(self.0.symbol()?);
+        tempvec.push(self.1.symbol()?);
+        tempvec.push(self.2.symbol()?);
+        tempvec.push(self.3.symbol()?);
+        tempvec.push(self.4.symbol()?);
+        tempvec.push(self.5.symbol()?);
+        tempvec.push(self.6.symbol()?);
+        tempvec.push(self.7.symbol()?);
+        tempvec.push(self.8.symbol()?);
+        tempvec.push(self.9.symbol()?);
+        tempvec.push(self.10.symbol()?);
+        Symbol::create_function("", &tempvec, true)
+    }
+}
+impl<
+        A: ToSymbol,
+        B: ToSymbol,
+        C: ToSymbol,
+        D: ToSymbol,
+        E: ToSymbol,
+        F: ToSymbol,
+        G: ToSymbol,
+        H: ToSymbol,
+        I: ToSymbol,
+        J: ToSymbol,
+        K: ToSymbol,
+        L: ToSymbol,
+    > ToSymbol for (A, B, C, D, E, F, G, H, I, J, K, L)
+{
+    fn symbol(&self) -> Result<Symbol, Error> {
+        let mut tempvec = vec![];
+        tempvec.push(self.0.symbol()?);
+        tempvec.push(self.1.symbol()?);
+        tempvec.push(self.2.symbol()?);
+        tempvec.push(self.3.symbol()?);
+        tempvec.push(self.4.symbol()?);
+        tempvec.push(self.5.symbol()?);
+        tempvec.push(self.6.symbol()?);
+        tempvec.push(self.7.symbol()?);
+        tempvec.push(self.8.symbol()?);
+        tempvec.push(self.9.symbol()?);
+        tempvec.push(self.10.symbol()?);
+        tempvec.push(self.11.symbol()?);
+        Symbol::create_function("", &tempvec, true)
+    }
+}
+impl ToSymbol for bool {
+    fn symbol(&self) -> Result<Symbol, Error> {
+        if *self {
+            Symbol::create_id("true", true)
+        } else {
+            Symbol::create_id("false", true)
+        }
+    }
+}
+impl ToSymbol for u8 {
+    fn symbol(&self) -> Result<Symbol, Error> {
+        Ok(Symbol::create_number(*self as i32))
+    }
+}
+impl ToSymbol for i8 {
+    fn symbol(&self) -> Result<Symbol, Error> {
+        Ok(Symbol::create_number(*self as i32))
+    }
+}
+impl ToSymbol for u16 {
+    fn symbol(&self) -> Result<Symbol, Error> {
+        Ok(Symbol::create_number(*self as i32))
+    }
+}
+impl ToSymbol for i16 {
+    fn symbol(&self) -> Result<Symbol, Error> {
+        Ok(Symbol::create_number(*self as i32))
+    }
+}
+impl ToSymbol for u32 {
+    fn symbol(&self) -> Result<Symbol, Error> {
+        Ok(Symbol::create_number(*self as i32))
+    }
+}
+impl ToSymbol for i32 {
+    fn symbol(&self) -> Result<Symbol, Error> {
+        Ok(Symbol::create_number(*self))
+    }
+}
+impl ToSymbol for String {
+    fn symbol(&self) -> Result<Symbol, Error> {
+        Symbol::create_string(self)
+    }
+}
+impl ToSymbol for str {
+    fn symbol(&self) -> Result<Symbol, Error> {
+        Symbol::create_string(self)
+    }
+}
+impl<T: ToSymbol> ToSymbol for &T {
+    fn symbol(&self) -> Result<Symbol, Error> {
+        (*self).symbol()
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct FactBase {
+    // facts: Vec<Symbol>,
+    facts: HashSet<Symbol>,
+}
+impl FactBase {
+    pub fn len(&self) -> usize {
+        self.facts.len()
+    }
+    pub fn new() -> FactBase {
+        FactBase {
+            facts: HashSet::new(),
+        }
+    }
+    pub fn iter(&self) -> std::collections::hash_set::Iter<'_, Symbol> {
+        self.facts.iter()
+    }
+    pub fn insert(&mut self, fact: &ToSymbol) {
+        self.facts.insert(fact.symbol().unwrap());
+        // self.facts.sort();
+    }
+    pub fn union(&mut self, facts: &FactBase) {
+        for s in &facts.facts {
+            self.facts.insert(s.clone());
+        }
+    }
+    pub fn print(&self) {
+        for fact in &self.facts {
+            print!("{}.", fact.to_string().unwrap());
+        }
+        println!();
+    }
+}
+
+pub fn add_facts(ctl: &mut Control, facts: &FactBase) {
+    // get the program builder
+    let mut builder = ctl.program_builder().ok();
+
+    // initialize the location
+    let location = Location::new("<rewrite>", "<rewrite>", 0, 0, 0, 0).unwrap();
+
+    for sym in facts.iter() {
+        // print!("{}",sym.to_string().unwrap());
+
+        // initilize atom to add
+        let atom = ast::Atom::from_symbol(location, *sym);
+
+        // create literal
+        let lit = ast::Literal::from_atom(location, ast::Sign::None, &atom);
+
+        // add atom enable to the rule body
+        let hlit = ast::HeadLiteral::new(atom.location(), ast::HeadLiteralType::Literal, &lit);
+
+        // initialize the rule
+        let rule = ast::Rule::new(hlit, &[]);
+
+        // initialize the statement
+        let stm = rule.ast_statement(location);
+
+        // add the rewritten statement to the program
+        builder
+            .as_mut()
+            .unwrap()
+            .add(&stm)
+            .expect("Failed to add statement to ProgramBuilder.");
     }
 }
