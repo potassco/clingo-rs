@@ -30,6 +30,32 @@ Clingo version 5.3.0.
     cargo run --example=version
 
 
+## `clingo_derive` crate
+
+The [`clingo_derive`](https://docs.rs/clingo_derive) crate helps easing the use of rust data types as facts.
+
+In your `Cargo.toml` add:
+
+    [dependencies]
+    clingo-rs = "1.4.2"
+    clingo-derive = "*"
+
+In your source write:
+
+    use clingo_derive::*;
+    use clingo::FactBase;
+
+    #[derive(ToSymbol)]
+    struct Point {
+        x: i32,
+        y: i32,
+    }
+
+    let p = Point{ x:4, y:2 };
+    let fb = FactBase::new();
+    fb.insert(p);
+
+
 ## --dynamic_linking
 
 The crate defines a [Cargo feature] that allows to use the clingo library via dynamic linking.
