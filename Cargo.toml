@@ -14,13 +14,21 @@ exclude = ["/.travis.yml"]
 [badges]
 travis-ci = { repository = "sthiele/clingo-rs" }
 
+[lib]
+name = "clingo"
+path = "src/lib.rs"
+
+[features]
+dynamic_linking = ["clingo-sys/dynamic_linking"]
+
 [dependencies]
-clingo-sys = "0.4.1"
+# clingo-sys = "0.4.1"
 rand = "0.6"
 failure = "0.1"
 failure_derive = "0.1"
 bitflags = "1.0"
 
-[lib]
-name = "clingo"
-path = "src/lib.rs"
+[dependencies.clingo-sys]
+path = "./clingo-sys"
+version = "0.4.1"
+
