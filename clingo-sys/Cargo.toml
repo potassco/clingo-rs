@@ -1,6 +1,6 @@
 [package]
 name = "clingo-sys"
-version = "0.4.1"
+version = "0.4.2"
 authors = ["sthiele <sthiele78@gmail.com>"]
 edition = "2018"
 description = "External FFI bindings to the C API of the clingo library"
