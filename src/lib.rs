@@ -1,6 +1,31 @@
 #![doc(html_root_url = "https://docs.rs/clingo/0.4.3")]
 //! This crate provides bindings to the [clingo](https://github.com/potassco/clingo) library version 5.3.0.
 //!
+//! ## `clingo_derive` crate
+//! 
+//! The [`clingo_derive`](https://docs.rs/clingo_derive) crate helps easing the use of rust data types as facts.
+//! 
+//! In your `Cargo.toml` add:
+//! 
+//!     [dependencies]
+//!     clingo-rs = "0.4.3"
+//!     clingo-derive = "*"
+//! 
+//! In your source write:
+//! 
+//!     use clingo_derive::*;
+//!     use clingo::FactBase;
+//! 
+//!     #[derive(ToSymbol)]
+//!     struct Point {
+//!         x: i32,
+//!         y: i32,
+//!     }
+//! 
+//!     let p = Point{ x:4, y:2 };
+//!     let fb = FactBase::new();
+//!     fb.insert(p);
+//!     
 //! ## --dynamic_linking
 //!
 //! The `clingo` crate defines a [Cargo feature] that allows to use the clingo library via dynamic linking.
@@ -15,7 +40,7 @@
 //!
 //! ```toml
 //! [dependencies]
-//! clingo = { version = "0.4.1", features = ["dynamic_linking"] }
+//! clingo = { version = "0.4.3", features = ["dynamic_linking"] }
 //! ```
 #![allow(non_upper_case_globals)]
 use bitflags::bitflags;
