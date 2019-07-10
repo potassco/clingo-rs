@@ -4889,16 +4889,14 @@ impl<'a, 'b> Iterator for AllModels<'a> {
             self.0.resume().expect("Failed resume on solve handle.");
             match self.0.model() {
                 Ok(Some(model)) => {
-                    if model.optimality_proven().unwrap() {
-                        let symbols = model.symbols(ShowType::SHOWN).unwrap();
-                        let cost = model.cost().unwrap();
-                        return Some(MModel {
-                            symbols,
-                            cost,
-                            model_type: model.model_type().unwrap(),
-                            number: model.number().unwrap(),
-                        });
-                    }
+                    let symbols = model.symbols(ShowType::SHOWN).unwrap();
+                    let cost = model.cost().unwrap();
+                    return Some(MModel {
+                        symbols,
+                        cost,
+                        model_type: model.model_type().unwrap(),
+                        number: model.number().unwrap(),
+                    });
                 }
                 Ok(None) => {
                     return None;
