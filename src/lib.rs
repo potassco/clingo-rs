@@ -1,4 +1,4 @@
-#![doc(html_root_url = "https://docs.rs/clingo/0.4.1")]
+#![doc(html_root_url = "https://docs.rs/clingo/0.4.3")]
 //! This crate provides bindings to the [clingo](https://github.com/potassco/clingo) library version 5.3.0.
 //!
 //! ## --dynamic_linking
