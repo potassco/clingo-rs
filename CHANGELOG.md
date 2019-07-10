@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## v0.4.3 - Jul 10, 2019
+### Fixed
+- remove optimality check from AllModels Iterator 
+
 ## v0.4.2 - Jun 28, 2019
 ### Added
 - added the possiblibity to create HeadLiterals ast::HeadLiteral::new()
