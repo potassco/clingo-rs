@@ -2,30 +2,33 @@
 //! This crate provides bindings to the [clingo](https://github.com/potassco/clingo) library version 5.3.0.
 //!
 //! ## `clingo_derive` crate
-//! 
+//!
 //! The [`clingo_derive`](https://docs.rs/clingo_derive) crate helps easing the use of rust data types as facts.
-//! 
+//!
 //! In your `Cargo.toml` add:
-//! 
-//!     [dependencies]
-//!     clingo-rs = "0.4.3"
-//!     clingo-derive = "*"
-//! 
+//!
+//! ```toml
+//! [dependencies]
+//! clingo-rs = "0.4.3"
+//! clingo-derive = "*"
+//! ```
+//!
 //! In your source write:
-//! 
-//!     use clingo_derive::*;
-//!     use clingo::FactBase;
-//! 
-//!     #[derive(ToSymbol)]
-//!     struct Point {
-//!         x: i32,
-//!         y: i32,
-//!     }
-//! 
-//!     let p = Point{ x:4, y:2 };
-//!     let fb = FactBase::new();
-//!     fb.insert(p);
-//!     
+//! ```ignore
+//! use clingo_derive::*;
+//! use clingo::FactBase;
+//!
+//! #[derive(ToSymbol)]
+//! struct Point {
+//!    x: i32,
+//!    y: i32,
+//!  }
+//!
+//! let p = Point{ x:4, y:2 };
+//! let fb = FactBase::new();
+//! fb.insert(p);
+//! ```
+
 //! ## --dynamic_linking
 //!
 //! The `clingo` crate defines a [Cargo feature] that allows to use the clingo library via dynamic linking.
@@ -45,7 +48,9 @@
 #![allow(non_upper_case_globals)]
 use bitflags::bitflags;
 use clingo_sys::*;
+use failure::*;
 use std::cmp::Ordering;
+use std::collections::HashSet;
 use std::ffi::CStr;
 use std::ffi::CString;
 use std::ffi::NulError;
@@ -55,8 +60,6 @@ use std::os::raw::c_char;
 use std::os::raw::c_void;
 use std::ptr::NonNull;
 use std::str::Utf8Error;
-use failure::*;
-use std::collections::HashSet;
 
 /// Functions and data structures to work with program ASTs.
 pub mod ast;
@@ -4934,7 +4937,7 @@ impl<'a, 'b> Iterator for AllModels<'a> {
 
 pub struct MModel {
     pub symbols: Vec<Symbol>,
-    pub cost : Vec<i64>,
+    pub cost: Vec<i64>,
     pub model_type: ModelType,
     pub number: u64,
 }
