@@ -24,4 +24,4 @@ libc = "0.2"
 
 [build-dependencies]
 cc = "1.0"
-# bindgen = "0.46.0"
+bindgen = "0.50.0"

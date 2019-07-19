@@ -19,33 +19,19 @@ pub const _ATFILE_SOURCE: u32 = 1;
 pub const __USE_MISC: u32 = 1;
 pub const __USE_ATFILE: u32 = 1;
 pub const __USE_FORTIFY_LEVEL: u32 = 0;
-pub const __GLIBC_USE_DEPRECATED_GETS: u32 = 0;
 pub const _STDC_PREDEF_H: u32 = 1;
 pub const __STDC_IEC_559__: u32 = 1;
 pub const __STDC_IEC_559_COMPLEX__: u32 = 1;
-pub const __STDC_ISO_10646__: u32 = 201706;
+pub const __STDC_ISO_10646__: u32 = 201505;
+pub const __STDC_NO_THREADS__: u32 = 1;
 pub const __GNU_LIBRARY__: u32 = 6;
 pub const __GLIBC__: u32 = 2;
-pub const __GLIBC_MINOR__: u32 = 28;
+pub const __GLIBC_MINOR__: u32 = 23;
 pub const _SYS_CDEFS_H: u32 = 1;
-pub const __glibc_c99_flexarr_available: u32 = 1;
 pub const __WORDSIZE: u32 = 64;
 pub const __WORDSIZE_TIME64_COMPAT32: u32 = 1;
 pub const __SYSCALL_WORDSIZE: u32 = 64;
-pub const __HAVE_GENERIC_SELECTION: u32 = 1;
-pub const __GLIBC_USE_LIB_EXT2: u32 = 0;
-pub const __GLIBC_USE_IEC_60559_BFP_EXT: u32 = 0;
-pub const __GLIBC_USE_IEC_60559_FUNCS_EXT: u32 = 0;
-pub const __GLIBC_USE_IEC_60559_TYPES_EXT: u32 = 0;
-pub const _BITS_TYPES_H: u32 = 1;
-pub const _BITS_TYPESIZES_H: u32 = 1;
-pub const __OFF_T_MATCHES_OFF64_T: u32 = 1;
-pub const __INO_T_MATCHES_INO64_T: u32 = 1;
-pub const __RLIM_T_MATCHES_RLIM64_T: u32 = 1;
-pub const __FD_SETSIZE: u32 = 1024;
 pub const _BITS_WCHAR_H: u32 = 1;
-pub const _BITS_STDINT_INTN_H: u32 = 1;
-pub const _BITS_STDINT_UINTN_H: u32 = 1;
 pub const INT8_MIN: i32 = -128;
 pub const INT16_MIN: i32 = -32768;
 pub const INT32_MIN: i32 = -2147483648;
@@ -87,107 +73,18 @@ pub const true_: u32 = 1;
 pub const false_: u32 = 0;
 pub const __bool_true_false_are_defined: u32 = 1;
 pub const CLINGO_VERSION_MAJOR: u32 = 5;
-pub const CLINGO_VERSION_MINOR: u32 = 3;
+pub const CLINGO_VERSION_MINOR: u32 = 4;
 pub const CLINGO_VERSION_REVISION: u32 = 0;
-pub const CLINGO_VERSION: &'static [u8; 6usize] = b"5.3.0\0";
+pub const CLINGO_VERSION: &'static [u8; 6usize] = b"5.4.0\0";
 pub type wchar_t = ::std::os::raw::c_int;
-pub type __u_char = ::std::os::raw::c_uchar;
-pub type __u_short = ::std::os::raw::c_ushort;
-pub type __u_int = ::std::os::raw::c_uint;
-pub type __u_long = ::std::os::raw::c_ulong;
-pub type __int8_t = ::std::os::raw::c_schar;
-pub type __uint8_t = ::std::os::raw::c_uchar;
-pub type __int16_t = ::std::os::raw::c_short;
-pub type __uint16_t = ::std::os::raw::c_ushort;
-pub type __int32_t = ::std::os::raw::c_int;
-pub type __uint32_t = ::std::os::raw::c_uint;
-pub type __int64_t = ::std::os::raw::c_long;
-pub type __uint64_t = ::std::os::raw::c_ulong;
-pub type __int_least8_t = __int8_t;
-pub type __uint_least8_t = __uint8_t;
-pub type __int_least16_t = __int16_t;
-pub type __uint_least16_t = __uint16_t;
-pub type __int_least32_t = __int32_t;
-pub type __uint_least32_t = __uint32_t;
-pub type __int_least64_t = __int64_t;
-pub type __uint_least64_t = __uint64_t;
-pub type __quad_t = ::std::os::raw::c_long;
-pub type __u_quad_t = ::std::os::raw::c_ulong;
-pub type __intmax_t = ::std::os::raw::c_long;
-pub type __uintmax_t = ::std::os::raw::c_ulong;
-pub type __dev_t = ::std::os::raw::c_ulong;
-pub type __uid_t = ::std::os::raw::c_uint;
-pub type __gid_t = ::std::os::raw::c_uint;
-pub type __ino_t = ::std::os::raw::c_ulong;
-pub type __ino64_t = ::std::os::raw::c_ulong;
-pub type __mode_t = ::std::os::raw::c_uint;
-pub type __nlink_t = ::std::os::raw::c_ulong;
-pub type __off_t = ::std::os::raw::c_long;
-pub type __off64_t = ::std::os::raw::c_long;
-pub type __pid_t = ::std::os::raw::c_int;
-#[repr(C)]
-#[derive(Debug, Copy, Clone)]
-pub struct __fsid_t {
-    pub __val: [::std::os::raw::c_int; 2usize],
-}
-#[test]
-fn bindgen_test_layout___fsid_t() {
-    assert_eq!(
-        ::std::mem::size_of::<__fsid_t>(),
-        8usize,
-        concat!("Size of: ", stringify!(__fsid_t))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<__fsid_t>(),
-        4usize,
-        concat!("Alignment of ", stringify!(__fsid_t))
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<__fsid_t>())).__val as *const _ as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(__fsid_t),
-            "::",
-            stringify!(__val)
-        )
-    );
-}
-pub type __clock_t = ::std::os::raw::c_long;
-pub type __rlim_t = ::std::os::raw::c_ulong;
-pub type __rlim64_t = ::std::os::raw::c_ulong;
-pub type __id_t = ::std::os::raw::c_uint;
-pub type __time_t = ::std::os::raw::c_long;
-pub type __useconds_t = ::std::os::raw::c_uint;
-pub type __suseconds_t = ::std::os::raw::c_long;
-pub type __daddr_t = ::std::os::raw::c_int;
-pub type __key_t = ::std::os::raw::c_int;
-pub type __clockid_t = ::std::os::raw::c_int;
-pub type __timer_t = *mut ::std::os::raw::c_void;
-pub type __blksize_t = ::std::os::raw::c_long;
-pub type __blkcnt_t = ::std::os::raw::c_long;
-pub type __blkcnt64_t = ::std::os::raw::c_long;
-pub type __fsblkcnt_t = ::std::os::raw::c_ulong;
-pub type __fsblkcnt64_t = ::std::os::raw::c_ulong;
-pub type __fsfilcnt_t = ::std::os::raw::c_ulong;
-pub type __fsfilcnt64_t = ::std::os::raw::c_ulong;
-pub type __fsword_t = ::std::os::raw::c_long;
-pub type __ssize_t = ::std::os::raw::c_long;
-pub type __syscall_slong_t = ::std::os::raw::c_long;
-pub type __syscall_ulong_t = ::std::os::raw::c_ulong;
-pub type __loff_t = __off64_t;
-pub type __caddr_t = *mut ::std::os::raw::c_char;
-pub type __intptr_t = ::std::os::raw::c_long;
-pub type __socklen_t = ::std::os::raw::c_uint;
-pub type __sig_atomic_t = ::std::os::raw::c_int;
-pub type int_least8_t = __int_least8_t;
-pub type int_least16_t = __int_least16_t;
-pub type int_least32_t = __int_least32_t;
-pub type int_least64_t = __int_least64_t;
-pub type uint_least8_t = __uint_least8_t;
-pub type uint_least16_t = __uint_least16_t;
-pub type uint_least32_t = __uint_least32_t;
-pub type uint_least64_t = __uint_least64_t;
+pub type int_least8_t = ::std::os::raw::c_schar;
+pub type int_least16_t = ::std::os::raw::c_short;
+pub type int_least32_t = ::std::os::raw::c_int;
+pub type int_least64_t = ::std::os::raw::c_long;
+pub type uint_least8_t = ::std::os::raw::c_uchar;
+pub type uint_least16_t = ::std::os::raw::c_ushort;
+pub type uint_least32_t = ::std::os::raw::c_uint;
+pub type uint_least64_t = ::std::os::raw::c_ulong;
 pub type int_fast8_t = ::std::os::raw::c_schar;
 pub type int_fast16_t = ::std::os::raw::c_long;
 pub type int_fast32_t = ::std::os::raw::c_long;
@@ -196,88 +93,88 @@ pub type uint_fast8_t = ::std::os::raw::c_uchar;
 pub type uint_fast16_t = ::std::os::raw::c_ulong;
 pub type uint_fast32_t = ::std::os::raw::c_ulong;
 pub type uint_fast64_t = ::std::os::raw::c_ulong;
-pub type intmax_t = __intmax_t;
-pub type uintmax_t = __uintmax_t;
-#[doc = " Signed integer type used for aspif and solver literals."]
+pub type intmax_t = ::std::os::raw::c_long;
+pub type uintmax_t = ::std::os::raw::c_ulong;
+#[doc = "! Signed integer type used for aspif and solver literals."]
 pub type clingo_literal_t = i32;
-#[doc = " Unsigned integer type used for aspif atoms."]
+#[doc = "! Unsigned integer type used for aspif atoms."]
 pub type clingo_atom_t = u32;
-#[doc = " Unsigned integer type used in various places."]
+#[doc = "! Unsigned integer type used in various places."]
 pub type clingo_id_t = u32;
-#[doc = " Signed integer type for weights in sum aggregates and minimize constraints."]
+#[doc = "! Signed integer type for weights in sum aggregates and minimize constraints."]
 pub type clingo_weight_t = i32;
-#[doc = " successful API calls"]
+#[doc = "!< successful API calls"]
 pub const clingo_error_clingo_error_success: clingo_error = 0;
-#[doc = " errors only detectable at runtime like invalid input"]
+#[doc = "!< errors only detectable at runtime like invalid input"]
 pub const clingo_error_clingo_error_runtime: clingo_error = 1;
-#[doc = " wrong usage of the clingo API"]
+#[doc = "!< wrong usage of the clingo API"]
 pub const clingo_error_clingo_error_logic: clingo_error = 2;
-#[doc = " memory could not be allocated"]
+#[doc = "!< memory could not be allocated"]
 pub const clingo_error_clingo_error_bad_alloc: clingo_error = 3;
-#[doc = " errors unrelated to clingo"]
+#[doc = "!< errors unrelated to clingo"]
 pub const clingo_error_clingo_error_unknown: clingo_error = 4;
-#[doc = " Enumeration of error codes."]
-#[doc = ""]
-#[doc = " @note Errors can only be recovered from if explicitly mentioned; most"]
-#[doc = " functions do not provide strong exception guarantees.  This means that in"]
-#[doc = " case of errors associated objects cannot be used further.  If such an"]
-#[doc = " object has a free function, this function can and should still be called."]
+#[doc = "! Enumeration of error codes."]
+#[doc = "!"]
+#[doc = "! @note Errors can only be recovered from if explicitly mentioned; most"]
+#[doc = "! functions do not provide strong exception guarantees.  This means that in"]
+#[doc = "! case of errors associated objects cannot be used further.  If such an"]
+#[doc = "! object has a free function, this function can and should still be called."]
 pub type clingo_error = u32;
-#[doc = " Corresponding type to ::clingo_error."]
+#[doc = "! Corresponding type to ::clingo_error."]
 pub type clingo_error_t = ::std::os::raw::c_int;
 extern "C" {
-    #[doc = " Convert error code into string."]
+    #[doc = "! Convert error code into string."]
     pub fn clingo_error_string(code: clingo_error_t) -> *const ::std::os::raw::c_char;
 }
 extern "C" {
-    #[doc = " Get the last error code set by a clingo API call."]
-    #[doc = " @note Each thread has its own local error code."]
-    #[doc = " @return error code"]
+    #[doc = "! Get the last error code set by a clingo API call."]
+    #[doc = "! @note Each thread has its own local error code."]
+    #[doc = "! @return error code"]
     pub fn clingo_error_code() -> clingo_error_t;
 }
 extern "C" {
-    #[doc = " Get the last error message set if an API call fails."]
-    #[doc = " @note Each thread has its own local error message."]
-    #[doc = " @return error message or NULL"]
+    #[doc = "! Get the last error message set if an API call fails."]
+    #[doc = "! @note Each thread has its own local error message."]
+    #[doc = "! @return error message or NULL"]
     pub fn clingo_error_message() -> *const ::std::os::raw::c_char;
 }
 extern "C" {
-    #[doc = " Set a custom error code and message in the active thread."]
-    #[doc = " @param[in] code the error code"]
-    #[doc = " @param[in] message the error message"]
+    #[doc = "! Set a custom error code and message in the active thread."]
+    #[doc = "! @param[in] code the error code"]
+    #[doc = "! @param[in] message the error message"]
     pub fn clingo_set_error(code: clingo_error_t, message: *const ::std::os::raw::c_char);
 }
-#[doc = " undefined arithmetic operation or weight of aggregate"]
+#[doc = "!< undefined arithmetic operation or weight of aggregate"]
 pub const clingo_warning_clingo_warning_operation_undefined: clingo_warning = 0;
-#[doc = " to report multiple errors; a corresponding runtime error is raised later"]
+#[doc = "!< to report multiple errors; a corresponding runtime error is raised later"]
 pub const clingo_warning_clingo_warning_runtime_error: clingo_warning = 1;
-#[doc = " undefined atom in program"]
+#[doc = "!< undefined atom in program"]
 pub const clingo_warning_clingo_warning_atom_undefined: clingo_warning = 2;
-#[doc = " same file included multiple times"]
+#[doc = "!< same file included multiple times"]
 pub const clingo_warning_clingo_warning_file_included: clingo_warning = 3;
-#[doc = " CSP variable with unbounded domain"]
+#[doc = "!< CSP variable with unbounded domain"]
 pub const clingo_warning_clingo_warning_variable_unbounded: clingo_warning = 4;
-#[doc = " global variable in tuple of aggregate element"]
+#[doc = "!< global variable in tuple of aggregate element"]
 pub const clingo_warning_clingo_warning_global_variable: clingo_warning = 5;
-#[doc = " other kinds of warnings"]
+#[doc = "!< other kinds of warnings"]
 pub const clingo_warning_clingo_warning_other: clingo_warning = 6;
-#[doc = " Enumeration of warning codes."]
+#[doc = "! Enumeration of warning codes."]
 pub type clingo_warning = u32;
-#[doc = " Corresponding type to ::clingo_warning."]
+#[doc = "! Corresponding type to ::clingo_warning."]
 pub type clingo_warning_t = ::std::os::raw::c_int;
 extern "C" {
-    #[doc = " Convert warning code into string."]
+    #[doc = "! Convert warning code into string."]
     pub fn clingo_warning_string(code: clingo_warning_t) -> *const ::std::os::raw::c_char;
 }
-#[doc = " Callback to intercept warning messages."]
-#[doc = ""]
-#[doc = " @param[in] code associated warning code"]
-#[doc = " @param[in] message warning message"]
-#[doc = " @param[in] data user data for callback"]
-#[doc = ""]
-#[doc = " @see clingo_control_new()"]
-#[doc = " @see clingo_parse_term()"]
-#[doc = " @see clingo_parse_program()"]
+#[doc = "! Callback to intercept warning messages."]
+#[doc = "!"]
+#[doc = "! @param[in] code associated warning code"]
+#[doc = "! @param[in] message warning message"]
+#[doc = "! @param[in] data user data for callback"]
+#[doc = "!"]
+#[doc = "! @see clingo_control_new()"]
+#[doc = "! @see clingo_parse_term()"]
+#[doc = "! @see clingo_parse_program()"]
 pub type clingo_logger_t = ::std::option::Option<
     unsafe extern "C" fn(
         code: clingo_warning_t,
@@ -286,45 +183,45 @@ pub type clingo_logger_t = ::std::option::Option<
     ),
 >;
 extern "C" {
-    #[doc = " Obtain the clingo version."]
-    #[doc = ""]
-    #[doc = " @param[out] major major version number"]
-    #[doc = " @param[out] minor minor version number"]
-    #[doc = " @param[out] revision revision number"]
+    #[doc = "! Obtain the clingo version."]
+    #[doc = "!"]
+    #[doc = "! @param[out] major major version number"]
+    #[doc = "! @param[out] minor minor version number"]
+    #[doc = "! @param[out] revision revision number"]
     pub fn clingo_version(
         major: *mut ::std::os::raw::c_int,
         minor: *mut ::std::os::raw::c_int,
         revision: *mut ::std::os::raw::c_int,
     );
 }
-#[doc = " no truth value"]
+#[doc = "!< no truth value"]
 pub const clingo_truth_value_clingo_truth_value_free: clingo_truth_value = 0;
-#[doc = " true"]
+#[doc = "!< true"]
 pub const clingo_truth_value_clingo_truth_value_true: clingo_truth_value = 1;
-#[doc = " false"]
+#[doc = "!< false"]
 pub const clingo_truth_value_clingo_truth_value_false: clingo_truth_value = 2;
-#[doc = " Represents three-valued truth values."]
+#[doc = "! Represents three-valued truth values."]
 pub type clingo_truth_value = u32;
-#[doc = " Corresponding type to ::clingo_truth_value."]
+#[doc = "! Corresponding type to ::clingo_truth_value."]
 pub type clingo_truth_value_t = ::std::os::raw::c_int;
-#[doc = " Represents a source code location marking its beginnig and end."]
-#[doc = ""]
-#[doc = " @note Not all locations refer to physical files."]
-#[doc = " By convention, such locations use a name put in angular brackets as filename."]
+#[doc = "! Represents a source code location marking its beginnig and end."]
+#[doc = "!"]
+#[doc = "! @note Not all locations refer to physical files."]
+#[doc = "! By convention, such locations use a name put in angular brackets as filename."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct clingo_location {
-    #[doc = " the file where the location begins"]
+    #[doc = "!< the file where the location begins"]
     pub begin_file: *const ::std::os::raw::c_char,
-    #[doc = " the file where the location ends"]
+    #[doc = "!< the file where the location ends"]
     pub end_file: *const ::std::os::raw::c_char,
-    #[doc = " the line where the location begins"]
+    #[doc = "!< the line where the location begins"]
     pub begin_line: usize,
-    #[doc = " the line where the location ends"]
+    #[doc = "!< the line where the location ends"]
     pub end_line: usize,
-    #[doc = " the column where the location begins"]
+    #[doc = "!< the column where the location begins"]
     pub begin_column: usize,
-    #[doc = " the column where the location ends"]
+    #[doc = "!< the column where the location ends"]
     pub end_column: usize,
 }
 #[test]
@@ -401,20 +298,20 @@ fn bindgen_test_layout_clingo_location() {
     );
 }
 pub type clingo_location_t = clingo_location;
-#[doc = " Represents a predicate signature."]
-#[doc = ""]
-#[doc = " Signatures have a name and an arity, and can be positive or negative (to"]
-#[doc = " represent classical negation)."]
+#[doc = "! Represents a predicate signature."]
+#[doc = "!"]
+#[doc = "! Signatures have a name and an arity, and can be positive or negative (to"]
+#[doc = "! represent classical negation)."]
 pub type clingo_signature_t = u64;
 extern "C" {
-    #[doc = " Create a new signature."]
-    #[doc = ""]
-    #[doc = " @param[in] name name of the signature"]
-    #[doc = " @param[in] arity arity of the signature"]
-    #[doc = " @param[in] positive false if the signature has a classical negation sign"]
-    #[doc = " @param[out] signature the resulting signature"]
-    #[doc = " @return whether the call was successful; might set one of the following error codes:"]
-    #[doc = " - ::clingo_error_bad_alloc"]
+    #[doc = "! Create a new signature."]
+    #[doc = "!"]
+    #[doc = "! @param[in] name name of the signature"]
+    #[doc = "! @param[in] arity arity of the signature"]
+    #[doc = "! @param[in] positive false if the signature has a classical negation sign"]
+    #[doc = "! @param[out] signature the resulting signature"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_bad_alloc"]
     pub fn clingo_signature_create(
         name: *const ::std::os::raw::c_char,
         arity: u32,
@@ -423,120 +320,120 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Get the name of a signature."]
-    #[doc = ""]
-    #[doc = " @param[in] signature the target signature"]
-    #[doc = " @return the name of the signature"]
+    #[doc = "! Get the name of a signature."]
+    #[doc = "!"]
+    #[doc = "! @param[in] signature the target signature"]
+    #[doc = "! @return the name of the signature"]
     pub fn clingo_signature_name(signature: clingo_signature_t) -> *const ::std::os::raw::c_char;
 }
 extern "C" {
-    #[doc = " Get the arity of a signature."]
-    #[doc = ""]
-    #[doc = " @param[in] signature the target signature"]
-    #[doc = " @return the arity of the signature"]
+    #[doc = "! Get the arity of a signature."]
+    #[doc = "!"]
+    #[doc = "! @param[in] signature the target signature"]
+    #[doc = "! @return the arity of the signature"]
     pub fn clingo_signature_arity(signature: clingo_signature_t) -> u32;
 }
 extern "C" {
-    #[doc = " Whether the signature is positive (is not classically negated)."]
-    #[doc = ""]
-    #[doc = " @param[in] signature the target signature"]
-    #[doc = " @return whether the signature has no sign"]
+    #[doc = "! Whether the signature is positive (is not classically negated)."]
+    #[doc = "!"]
+    #[doc = "! @param[in] signature the target signature"]
+    #[doc = "! @return whether the signature has no sign"]
     pub fn clingo_signature_is_positive(signature: clingo_signature_t) -> bool;
 }
 extern "C" {
-    #[doc = " Whether the signature is negative (is classically negated)."]
-    #[doc = ""]
-    #[doc = " @param[in] signature the target signature"]
-    #[doc = " @return whether the signature has a sign"]
+    #[doc = "! Whether the signature is negative (is classically negated)."]
+    #[doc = "!"]
+    #[doc = "! @param[in] signature the target signature"]
+    #[doc = "! @return whether the signature has a sign"]
     pub fn clingo_signature_is_negative(signature: clingo_signature_t) -> bool;
 }
 extern "C" {
-    #[doc = " Check if two signatures are equal."]
-    #[doc = ""]
-    #[doc = " @param[in] a first signature"]
-    #[doc = " @param[in] b second signature"]
-    #[doc = " @return whether a == b"]
+    #[doc = "! Check if two signatures are equal."]
+    #[doc = "!"]
+    #[doc = "! @param[in] a first signature"]
+    #[doc = "! @param[in] b second signature"]
+    #[doc = "! @return whether a == b"]
     pub fn clingo_signature_is_equal_to(a: clingo_signature_t, b: clingo_signature_t) -> bool;
 }
 extern "C" {
-    #[doc = " Check if a signature is less than another signature."]
-    #[doc = ""]
-    #[doc = " Signatures are compared first by sign (unsigned < signed), then by arity,"]
-    #[doc = " then by name."]
-    #[doc = ""]
-    #[doc = " @param[in] a first signature"]
-    #[doc = " @param[in] b second signature"]
-    #[doc = " @return whether a < b"]
+    #[doc = "! Check if a signature is less than another signature."]
+    #[doc = "!"]
+    #[doc = "! Signatures are compared first by sign (unsigned < signed), then by arity,"]
+    #[doc = "! then by name."]
+    #[doc = "!"]
+    #[doc = "! @param[in] a first signature"]
+    #[doc = "! @param[in] b second signature"]
+    #[doc = "! @return whether a < b"]
     pub fn clingo_signature_is_less_than(a: clingo_signature_t, b: clingo_signature_t) -> bool;
 }
 extern "C" {
-    #[doc = " Calculate a hash code of a signature."]
-    #[doc = ""]
-    #[doc = " @param[in] signature the target signature"]
-    #[doc = " @return the hash code of the signature"]
+    #[doc = "! Calculate a hash code of a signature."]
+    #[doc = "!"]
+    #[doc = "! @param[in] signature the target signature"]
+    #[doc = "! @return the hash code of the signature"]
     pub fn clingo_signature_hash(signature: clingo_signature_t) -> usize;
 }
-#[doc = " the <tt>\\#inf</tt> symbol"]
+#[doc = "!< the <tt>\\#inf</tt> symbol"]
 pub const clingo_symbol_type_clingo_symbol_type_infimum: clingo_symbol_type = 0;
-#[doc = " a numeric symbol, e.g., `1`"]
+#[doc = "!< a numeric symbol, e.g., `1`"]
 pub const clingo_symbol_type_clingo_symbol_type_number: clingo_symbol_type = 1;
-#[doc = " a string symbol, e.g., `\"a\"`"]
+#[doc = "!< a string symbol, e.g., `\"a\"`"]
 pub const clingo_symbol_type_clingo_symbol_type_string: clingo_symbol_type = 4;
-#[doc = " a numeric symbol, e.g., `c`, `(1, \"a\")`, or `f(1,\"a\")`"]
+#[doc = "!< a numeric symbol, e.g., `c`, `(1, \"a\")`, or `f(1,\"a\")`"]
 pub const clingo_symbol_type_clingo_symbol_type_function: clingo_symbol_type = 5;
-#[doc = " the <tt>\\#sup</tt> symbol"]
+#[doc = "!< the <tt>\\#sup</tt> symbol"]
 pub const clingo_symbol_type_clingo_symbol_type_supremum: clingo_symbol_type = 7;
-#[doc = " Enumeration of available symbol types."]
+#[doc = "! Enumeration of available symbol types."]
 pub type clingo_symbol_type = u32;
-#[doc = " Corresponding type to ::clingo_symbol_type."]
+#[doc = "! Corresponding type to ::clingo_symbol_type."]
 pub type clingo_symbol_type_t = ::std::os::raw::c_int;
-#[doc = " Represents a symbol."]
-#[doc = ""]
-#[doc = " This includes numbers, strings, functions (including constants when"]
-#[doc = " arguments are empty and tuples when the name is empty), <tt>\\#inf</tt> and <tt>\\#sup</tt>."]
+#[doc = "! Represents a symbol."]
+#[doc = "!"]
+#[doc = "! This includes numbers, strings, functions (including constants when"]
+#[doc = "! arguments are empty and tuples when the name is empty), <tt>\\#inf</tt> and <tt>\\#sup</tt>."]
 pub type clingo_symbol_t = u64;
 extern "C" {
-    #[doc = " Construct a symbol representing a number."]
-    #[doc = ""]
-    #[doc = " @param[in] number the number"]
-    #[doc = " @param[out] symbol the resulting symbol"]
+    #[doc = "! Construct a symbol representing a number."]
+    #[doc = "!"]
+    #[doc = "! @param[in] number the number"]
+    #[doc = "! @param[out] symbol the resulting symbol"]
     pub fn clingo_symbol_create_number(number: ::std::os::raw::c_int, symbol: *mut clingo_symbol_t);
 }
 extern "C" {
-    #[doc = " Construct a symbol representing \\#sup."]
-    #[doc = ""]
-    #[doc = " @param[out] symbol the resulting symbol"]
+    #[doc = "! Construct a symbol representing \\#sup."]
+    #[doc = "!"]
+    #[doc = "! @param[out] symbol the resulting symbol"]
     pub fn clingo_symbol_create_supremum(symbol: *mut clingo_symbol_t);
 }
 extern "C" {
-    #[doc = " Construct a symbol representing <tt>\\#inf</tt>."]
-    #[doc = ""]
-    #[doc = " @param[out] symbol the resulting symbol"]
+    #[doc = "! Construct a symbol representing <tt>\\#inf</tt>."]
+    #[doc = "!"]
+    #[doc = "! @param[out] symbol the resulting symbol"]
     pub fn clingo_symbol_create_infimum(symbol: *mut clingo_symbol_t);
 }
 extern "C" {
-    #[doc = " Construct a symbol representing a string."]
-    #[doc = ""]
-    #[doc = " @param[in] string the string"]
-    #[doc = " @param[out] symbol the resulting symbol"]
-    #[doc = " @return whether the call was successful; might set one of the following error codes:"]
-    #[doc = " - ::clingo_error_bad_alloc"]
+    #[doc = "! Construct a symbol representing a string."]
+    #[doc = "!"]
+    #[doc = "! @param[in] string the string"]
+    #[doc = "! @param[out] symbol the resulting symbol"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_bad_alloc"]
     pub fn clingo_symbol_create_string(
         string: *const ::std::os::raw::c_char,
         symbol: *mut clingo_symbol_t,
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Construct a symbol representing an id."]
-    #[doc = ""]
-    #[doc = " @note This is just a shortcut for clingo_symbol_create_function() with"]
-    #[doc = " empty arguments."]
-    #[doc = ""]
-    #[doc = " @param[in] name the name"]
-    #[doc = " @param[in] positive whether the symbol has a classical negation sign"]
-    #[doc = " @param[out] symbol the resulting symbol"]
-    #[doc = " @return whether the call was successful; might set one of the following error codes:"]
-    #[doc = " - ::clingo_error_bad_alloc"]
+    #[doc = "! Construct a symbol representing an id."]
+    #[doc = "!"]
+    #[doc = "! @note This is just a shortcut for clingo_symbol_create_function() with"]
+    #[doc = "! empty arguments."]
+    #[doc = "!"]
+    #[doc = "! @param[in] name the name"]
+    #[doc = "! @param[in] positive whether the symbol has a classical negation sign"]
+    #[doc = "! @param[out] symbol the resulting symbol"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_bad_alloc"]
     pub fn clingo_symbol_create_id(
         name: *const ::std::os::raw::c_char,
         positive: bool,
@@ -544,17 +441,17 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Construct a symbol representing a function or tuple."]
-    #[doc = ""]
-    #[doc = " @note To create tuples, the empty string has to be used as name."]
-    #[doc = ""]
-    #[doc = " @param[in] name the name of the function"]
-    #[doc = " @param[in] arguments the arguments of the function"]
-    #[doc = " @param[in] arguments_size the number of arguments"]
-    #[doc = " @param[in] positive whether the symbol has a classical negation sign"]
-    #[doc = " @param[out] symbol the resulting symbol"]
-    #[doc = " @return whether the call was successful; might set one of the following error codes:"]
-    #[doc = " - ::clingo_error_bad_alloc"]
+    #[doc = "! Construct a symbol representing a function or tuple."]
+    #[doc = "!"]
+    #[doc = "! @note To create tuples, the empty string has to be used as name."]
+    #[doc = "!"]
+    #[doc = "! @param[in] name the name of the function"]
+    #[doc = "! @param[in] arguments the arguments of the function"]
+    #[doc = "! @param[in] arguments_size the number of arguments"]
+    #[doc = "! @param[in] positive whether the symbol has a classical negation sign"]
+    #[doc = "! @param[out] symbol the resulting symbol"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_bad_alloc"]
     pub fn clingo_symbol_create_function(
         name: *const ::std::os::raw::c_char,
         arguments: *const clingo_symbol_t,
@@ -564,67 +461,67 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Get the number of a symbol."]
-    #[doc = ""]
-    #[doc = " @param[in] symbol the target symbol"]
-    #[doc = " @param[out] number the resulting number"]
-    #[doc = " @return whether the call was successful; might set one of the following error codes:"]
-    #[doc = " - ::clingo_error_runtime if symbol is not of type ::clingo_symbol_type_number"]
+    #[doc = "! Get the number of a symbol."]
+    #[doc = "!"]
+    #[doc = "! @param[in] symbol the target symbol"]
+    #[doc = "! @param[out] number the resulting number"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_runtime if symbol is not of type ::clingo_symbol_type_number"]
     pub fn clingo_symbol_number(
         symbol: clingo_symbol_t,
         number: *mut ::std::os::raw::c_int,
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Get the name of a symbol."]
-    #[doc = ""]
-    #[doc = " @param[in] symbol the target symbol"]
-    #[doc = " @param[out] name the resulting name"]
-    #[doc = " @return whether the call was successful; might set one of the following error codes:"]
-    #[doc = " - ::clingo_error_runtime if symbol is not of type ::clingo_symbol_type_function"]
+    #[doc = "! Get the name of a symbol."]
+    #[doc = "!"]
+    #[doc = "! @param[in] symbol the target symbol"]
+    #[doc = "! @param[out] name the resulting name"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_runtime if symbol is not of type ::clingo_symbol_type_function"]
     pub fn clingo_symbol_name(
         symbol: clingo_symbol_t,
         name: *mut *const ::std::os::raw::c_char,
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Get the string of a symbol."]
-    #[doc = ""]
-    #[doc = " @param[in] symbol the target symbol"]
-    #[doc = " @param[out] string the resulting string"]
-    #[doc = " @return whether the call was successful; might set one of the following error codes:"]
-    #[doc = " - ::clingo_error_runtime if symbol is not of type ::clingo_symbol_type_string"]
+    #[doc = "! Get the string of a symbol."]
+    #[doc = "!"]
+    #[doc = "! @param[in] symbol the target symbol"]
+    #[doc = "! @param[out] string the resulting string"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_runtime if symbol is not of type ::clingo_symbol_type_string"]
     pub fn clingo_symbol_string(
         symbol: clingo_symbol_t,
         string: *mut *const ::std::os::raw::c_char,
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Check if a function is positive (does not have a sign)."]
-    #[doc = ""]
-    #[doc = " @param[in] symbol the target symbol"]
-    #[doc = " @param[out] positive the result"]
-    #[doc = " @return whether the call was successful; might set one of the following error codes:"]
-    #[doc = " - ::clingo_error_runtime if symbol is not of type ::clingo_symbol_type_function"]
+    #[doc = "! Check if a function is positive (does not have a sign)."]
+    #[doc = "!"]
+    #[doc = "! @param[in] symbol the target symbol"]
+    #[doc = "! @param[out] positive the result"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_runtime if symbol is not of type ::clingo_symbol_type_function"]
     pub fn clingo_symbol_is_positive(symbol: clingo_symbol_t, positive: *mut bool) -> bool;
 }
 extern "C" {
-    #[doc = " Check if a function is negative (has a sign)."]
-    #[doc = ""]
-    #[doc = " @param[in] symbol the target symbol"]
-    #[doc = " @param[out] negative the result"]
-    #[doc = " @return whether the call was successful; might set one of the following error codes:"]
-    #[doc = " - ::clingo_error_runtime if symbol is not of type ::clingo_symbol_type_function"]
+    #[doc = "! Check if a function is negative (has a sign)."]
+    #[doc = "!"]
+    #[doc = "! @param[in] symbol the target symbol"]
+    #[doc = "! @param[out] negative the result"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_runtime if symbol is not of type ::clingo_symbol_type_function"]
     pub fn clingo_symbol_is_negative(symbol: clingo_symbol_t, negative: *mut bool) -> bool;
 }
 extern "C" {
-    #[doc = " Get the arguments of a symbol."]
-    #[doc = ""]
-    #[doc = " @param[in] symbol the target symbol"]
-    #[doc = " @param[out] arguments the resulting arguments"]
-    #[doc = " @param[out] arguments_size the number of arguments"]
-    #[doc = " @return whether the call was successful; might set one of the following error codes:"]
-    #[doc = " - ::clingo_error_runtime if symbol is not of type ::clingo_symbol_type_function"]
+    #[doc = "! Get the arguments of a symbol."]
+    #[doc = "!"]
+    #[doc = "! @param[in] symbol the target symbol"]
+    #[doc = "! @param[out] arguments the resulting arguments"]
+    #[doc = "! @param[out] arguments_size the number of arguments"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_runtime if symbol is not of type ::clingo_symbol_type_function"]
     pub fn clingo_symbol_arguments(
         symbol: clingo_symbol_t,
         arguments: *mut *const clingo_symbol_t,
@@ -632,31 +529,31 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Get the type of a symbol."]
-    #[doc = ""]
-    #[doc = " @param[in] symbol the target symbol"]
-    #[doc = " @return the type of the symbol"]
+    #[doc = "! Get the type of a symbol."]
+    #[doc = "!"]
+    #[doc = "! @param[in] symbol the target symbol"]
+    #[doc = "! @return the type of the symbol"]
     pub fn clingo_symbol_type(symbol: clingo_symbol_t) -> clingo_symbol_type_t;
 }
 extern "C" {
-    #[doc = " Get the size of the string representation of a symbol (including the terminating 0)."]
-    #[doc = ""]
-    #[doc = " @param[in] symbol the target symbol"]
-    #[doc = " @param[out] size the resulting size"]
-    #[doc = " @return whether the call was successful; might set one of the following error codes:"]
-    #[doc = " - ::clingo_error_bad_alloc"]
+    #[doc = "! Get the size of the string representation of a symbol (including the terminating 0)."]
+    #[doc = "!"]
+    #[doc = "! @param[in] symbol the target symbol"]
+    #[doc = "! @param[out] size the resulting size"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_bad_alloc"]
     pub fn clingo_symbol_to_string_size(symbol: clingo_symbol_t, size: *mut usize) -> bool;
 }
 extern "C" {
-    #[doc = " Get the string representation of a symbol."]
-    #[doc = ""]
-    #[doc = " @param[in] symbol the target symbol"]
-    #[doc = " @param[out] string the resulting string"]
-    #[doc = " @param[in] size the size of the string"]
-    #[doc = " @return whether the call was successful; might set one of the following error codes:"]
-    #[doc = " - ::clingo_error_bad_alloc"]
-    #[doc = ""]
-    #[doc = " @see clingo_symbol_to_string_size()"]
+    #[doc = "! Get the string representation of a symbol."]
+    #[doc = "!"]
+    #[doc = "! @param[in] symbol the target symbol"]
+    #[doc = "! @param[out] string the resulting string"]
+    #[doc = "! @param[in] size the size of the string"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_bad_alloc"]
+    #[doc = "!"]
+    #[doc = "! @see clingo_symbol_to_string_size()"]
     pub fn clingo_symbol_to_string(
         symbol: clingo_symbol_t,
         string: *mut ::std::os::raw::c_char,
@@ -664,62 +561,62 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Check if two symbols are equal."]
-    #[doc = ""]
-    #[doc = " @param[in] a first symbol"]
-    #[doc = " @param[in] b second symbol"]
-    #[doc = " @return whether a == b"]
+    #[doc = "! Check if two symbols are equal."]
+    #[doc = "!"]
+    #[doc = "! @param[in] a first symbol"]
+    #[doc = "! @param[in] b second symbol"]
+    #[doc = "! @return whether a == b"]
     pub fn clingo_symbol_is_equal_to(a: clingo_symbol_t, b: clingo_symbol_t) -> bool;
 }
 extern "C" {
-    #[doc = " Check if a symbol is less than another symbol."]
-    #[doc = ""]
-    #[doc = " Symbols are first compared by type.  If the types are equal, the values are"]
-    #[doc = " compared (where strings are compared using strcmp).  Functions are first"]
-    #[doc = " compared by signature and then lexicographically by arguments."]
-    #[doc = ""]
-    #[doc = " @param[in] a first symbol"]
-    #[doc = " @param[in] b second symbol"]
-    #[doc = " @return whether a < b"]
+    #[doc = "! Check if a symbol is less than another symbol."]
+    #[doc = "!"]
+    #[doc = "! Symbols are first compared by type.  If the types are equal, the values are"]
+    #[doc = "! compared (where strings are compared using strcmp).  Functions are first"]
+    #[doc = "! compared by signature and then lexicographically by arguments."]
+    #[doc = "!"]
+    #[doc = "! @param[in] a first symbol"]
+    #[doc = "! @param[in] b second symbol"]
+    #[doc = "! @return whether a < b"]
     pub fn clingo_symbol_is_less_than(a: clingo_symbol_t, b: clingo_symbol_t) -> bool;
 }
 extern "C" {
-    #[doc = " Calculate a hash code of a symbol."]
-    #[doc = ""]
-    #[doc = " @param[in] symbol the target symbol"]
-    #[doc = " @return the hash code of the symbol"]
+    #[doc = "! Calculate a hash code of a symbol."]
+    #[doc = "!"]
+    #[doc = "! @param[in] symbol the target symbol"]
+    #[doc = "! @return the hash code of the symbol"]
     pub fn clingo_symbol_hash(symbol: clingo_symbol_t) -> usize;
 }
 extern "C" {
-    #[doc = " Internalize a string."]
-    #[doc = ""]
-    #[doc = " This functions takes a string as input and returns an equal unique string"]
-    #[doc = " that is (at the moment) not freed until the program is closed.  All strings"]
-    #[doc = " returned from clingo API functions are internalized and must not be freed."]
-    #[doc = ""]
-    #[doc = " @param[in] string the string to internalize"]
-    #[doc = " @param[out] result the internalized string"]
-    #[doc = " @return whether the call was successful; might set one of the following error codes:"]
-    #[doc = " - ::clingo_error_bad_alloc"]
+    #[doc = "! Internalize a string."]
+    #[doc = "!"]
+    #[doc = "! This functions takes a string as input and returns an equal unique string"]
+    #[doc = "! that is (at the moment) not freed until the program is closed.  All strings"]
+    #[doc = "! returned from clingo API functions are internalized and must not be freed."]
+    #[doc = "!"]
+    #[doc = "! @param[in] string the string to internalize"]
+    #[doc = "! @param[out] result the internalized string"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_bad_alloc"]
     pub fn clingo_add_string(
         string: *const ::std::os::raw::c_char,
         result: *mut *const ::std::os::raw::c_char,
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Parse a term in string form."]
-    #[doc = ""]
-    #[doc = " The result of this function is a symbol. The input term can contain"]
-    #[doc = " unevaluated functions, which are evaluated during parsing."]
-    #[doc = ""]
-    #[doc = " @param[in] string the string to parse"]
-    #[doc = " @param[in] logger optional logger to report warnings during parsing"]
-    #[doc = " @param[in] logger_data user data for the logger"]
-    #[doc = " @param[in] message_limit maximum number of times to call the logger"]
-    #[doc = " @param[out] symbol the resulting symbol"]
-    #[doc = " @return whether the call was successful; might set one of the following error codes:"]
-    #[doc = " - ::clingo_error_bad_alloc"]
-    #[doc = " - ::clingo_error_runtime if parsing fails"]
+    #[doc = "! Parse a term in string form."]
+    #[doc = "!"]
+    #[doc = "! The result of this function is a symbol. The input term can contain"]
+    #[doc = "! unevaluated functions, which are evaluated during parsing."]
+    #[doc = "!"]
+    #[doc = "! @param[in] string the string to parse"]
+    #[doc = "! @param[in] logger optional logger to report warnings during parsing"]
+    #[doc = "! @param[in] logger_data user data for the logger"]
+    #[doc = "! @param[in] message_limit maximum number of times to call the logger"]
+    #[doc = "! @param[out] symbol the resulting symbol"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_bad_alloc"]
+    #[doc = "! - ::clingo_error_runtime if parsing fails"]
     pub fn clingo_parse_term(
         string: *const ::std::os::raw::c_char,
         logger: clingo_logger_t,
@@ -733,40 +630,40 @@ extern "C" {
 pub struct clingo_symbolic_atoms {
     _unused: [u8; 0],
 }
-#[doc = " Object to inspect symbolic atoms in a program---the relevant Herbrand base"]
-#[doc = " gringo uses to instantiate programs."]
-#[doc = ""]
-#[doc = " @see clingo_control_symbolic_atoms()"]
+#[doc = "! Object to inspect symbolic atoms in a program---the relevant Herbrand base"]
+#[doc = "! gringo uses to instantiate programs."]
+#[doc = "!"]
+#[doc = "! @see clingo_control_symbolic_atoms()"]
 pub type clingo_symbolic_atoms_t = clingo_symbolic_atoms;
-#[doc = " Object to iterate over symbolic atoms."]
-#[doc = ""]
-#[doc = " Such an iterator either points to a symbolic atom within a sequence of"]
-#[doc = " symbolic atoms or to the end of the sequence."]
-#[doc = ""]
-#[doc = " @note Iterators are valid as long as the underlying sequence is not modified."]
-#[doc = " Operations that can change this sequence are ::clingo_control_ground(),"]
-#[doc = " ::clingo_control_cleanup(), and functions that modify the underlying"]
-#[doc = " non-ground program."]
+#[doc = "! Object to iterate over symbolic atoms."]
+#[doc = "!"]
+#[doc = "! Such an iterator either points to a symbolic atom within a sequence of"]
+#[doc = "! symbolic atoms or to the end of the sequence."]
+#[doc = "!"]
+#[doc = "! @note Iterators are valid as long as the underlying sequence is not modified."]
+#[doc = "! Operations that can change this sequence are ::clingo_control_ground(),"]
+#[doc = "! ::clingo_control_cleanup(), and functions that modify the underlying"]
+#[doc = "! non-ground program."]
 pub type clingo_symbolic_atom_iterator_t = u64;
 extern "C" {
-    #[doc = " Get the number of different atoms occurring in a logic program."]
-    #[doc = ""]
-    #[doc = " @param[in] atoms the target"]
-    #[doc = " @param[out] size the number of atoms"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Get the number of different atoms occurring in a logic program."]
+    #[doc = "!"]
+    #[doc = "! @param[in] atoms the target"]
+    #[doc = "! @param[out] size the number of atoms"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_symbolic_atoms_size(
         atoms: *const clingo_symbolic_atoms_t,
         size: *mut usize,
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Get a forward iterator to the beginning of the sequence of all symbolic"]
-    #[doc = " atoms optionally restricted to a given signature."]
-    #[doc = ""]
-    #[doc = " @param[in] atoms the target"]
-    #[doc = " @param[in] signature optional signature"]
-    #[doc = " @param[out] iterator the resulting iterator"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Get a forward iterator to the beginning of the sequence of all symbolic"]
+    #[doc = "! atoms optionally restricted to a given signature."]
+    #[doc = "!"]
+    #[doc = "! @param[in] atoms the target"]
+    #[doc = "! @param[in] signature optional signature"]
+    #[doc = "! @param[out] iterator the resulting iterator"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_symbolic_atoms_begin(
         atoms: *const clingo_symbolic_atoms_t,
         signature: *const clingo_signature_t,
@@ -774,38 +671,38 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Iterator pointing to the end of the sequence of symbolic atoms."]
-    #[doc = ""]
-    #[doc = " @param[in] atoms the target"]
-    #[doc = " @param[out] iterator the resulting iterator"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Iterator pointing to the end of the sequence of symbolic atoms."]
+    #[doc = "!"]
+    #[doc = "! @param[in] atoms the target"]
+    #[doc = "! @param[out] iterator the resulting iterator"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_symbolic_atoms_end(
         atoms: *const clingo_symbolic_atoms_t,
         iterator: *mut clingo_symbolic_atom_iterator_t,
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Find a symbolic atom given its symbolic representation."]
-    #[doc = ""]
-    #[doc = " @param[in] atoms the target"]
-    #[doc = " @param[in] symbol the symbol to lookup"]
-    #[doc = " @param[out] iterator iterator pointing to the symbolic atom or to the end"]
-    #[doc = " of the sequence if no corresponding atom is found"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Find a symbolic atom given its symbolic representation."]
+    #[doc = "!"]
+    #[doc = "! @param[in] atoms the target"]
+    #[doc = "! @param[in] symbol the symbol to lookup"]
+    #[doc = "! @param[out] iterator iterator pointing to the symbolic atom or to the end"]
+    #[doc = "! of the sequence if no corresponding atom is found"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_symbolic_atoms_find(
-        atoms: *mut clingo_symbolic_atoms_t,
+        atoms: *const clingo_symbolic_atoms_t,
         symbol: clingo_symbol_t,
         iterator: *mut clingo_symbolic_atom_iterator_t,
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Check if two iterators point to the same element (or end of the sequence)."]
-    #[doc = ""]
-    #[doc = " @param[in] atoms the target"]
-    #[doc = " @param[in] a the first iterator"]
-    #[doc = " @param[in] b the second iterator"]
-    #[doc = " @param[out] equal whether the two iterators are equal"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Check if two iterators point to the same element (or end of the sequence)."]
+    #[doc = "!"]
+    #[doc = "! @param[in] atoms the target"]
+    #[doc = "! @param[in] a the first iterator"]
+    #[doc = "! @param[in] b the second iterator"]
+    #[doc = "! @param[out] equal whether the two iterators are equal"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_symbolic_atoms_iterator_is_equal_to(
         atoms: *const clingo_symbolic_atoms_t,
         a: clingo_symbolic_atom_iterator_t,
@@ -814,12 +711,12 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Get the symbolic representation of an atom."]
-    #[doc = ""]
-    #[doc = " @param[in] atoms the target"]
-    #[doc = " @param[in] iterator iterator to the atom"]
-    #[doc = " @param[out] symbol the resulting symbol"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Get the symbolic representation of an atom."]
+    #[doc = "!"]
+    #[doc = "! @param[in] atoms the target"]
+    #[doc = "! @param[in] iterator iterator to the atom"]
+    #[doc = "! @param[out] symbol the resulting symbol"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_symbolic_atoms_symbol(
         atoms: *const clingo_symbolic_atoms_t,
         iterator: clingo_symbolic_atom_iterator_t,
@@ -827,16 +724,16 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Check whether an atom is a fact."]
-    #[doc = ""]
-    #[doc = " @note This does not determine if an atom is a cautious consequence. The"]
-    #[doc = " grounding or solving component\'s simplifications can only detect this in"]
-    #[doc = " some cases."]
-    #[doc = ""]
-    #[doc = " @param[in] atoms the target"]
-    #[doc = " @param[in] iterator iterator to the atom"]
-    #[doc = " @param[out] fact whether the atom is a fact"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Check whether an atom is a fact."]
+    #[doc = "!"]
+    #[doc = "! @note This does not determine if an atom is a cautious consequence. The"]
+    #[doc = "! grounding or solving component's simplifications can only detect this in"]
+    #[doc = "! some cases."]
+    #[doc = "!"]
+    #[doc = "! @param[in] atoms the target"]
+    #[doc = "! @param[in] iterator iterator to the atom"]
+    #[doc = "! @param[out] fact whether the atom is a fact"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_symbolic_atoms_is_fact(
         atoms: *const clingo_symbolic_atoms_t,
         iterator: clingo_symbolic_atom_iterator_t,
@@ -844,15 +741,15 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Check whether an atom is external."]
-    #[doc = ""]
-    #[doc = " An atom is external if it has been defined using an external directive and"]
-    #[doc = " has not been released or defined by a rule."]
-    #[doc = ""]
-    #[doc = " @param[in] atoms the target"]
-    #[doc = " @param[in] iterator iterator to the atom"]
-    #[doc = " @param[out] external whether the atom is a external"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Check whether an atom is external."]
+    #[doc = "!"]
+    #[doc = "! An atom is external if it has been defined using an external directive and"]
+    #[doc = "! has not been released or defined by a rule."]
+    #[doc = "!"]
+    #[doc = "! @param[in] atoms the target"]
+    #[doc = "! @param[in] iterator iterator to the atom"]
+    #[doc = "! @param[out] external whether the atom is a external"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_symbolic_atoms_is_external(
         atoms: *const clingo_symbolic_atoms_t,
         iterator: clingo_symbolic_atom_iterator_t,
@@ -860,16 +757,16 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Returns the (numeric) aspif literal corresponding to the given symbolic atom."]
-    #[doc = ""]
-    #[doc = " Such a literal can be mapped to a solver literal (see the \\ref Propagator"]
-    #[doc = " module) or be used in rules in aspif format (see the \\ref ProgramBuilder"]
-    #[doc = " module)."]
-    #[doc = ""]
-    #[doc = " @param[in] atoms the target"]
-    #[doc = " @param[in] iterator iterator to the atom"]
-    #[doc = " @param[out] literal the associated literal"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Returns the (numeric) aspif literal corresponding to the given symbolic atom."]
+    #[doc = "!"]
+    #[doc = "! Such a literal can be mapped to a solver literal (see the \\ref Propagator"]
+    #[doc = "! module) or be used in rules in aspif format (see the \\ref ProgramBuilder"]
+    #[doc = "! module)."]
+    #[doc = "!"]
+    #[doc = "! @param[in] atoms the target"]
+    #[doc = "! @param[in] iterator iterator to the atom"]
+    #[doc = "! @param[out] literal the associated literal"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_symbolic_atoms_literal(
         atoms: *const clingo_symbolic_atoms_t,
         iterator: clingo_symbolic_atom_iterator_t,
@@ -877,27 +774,27 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Get the number of different predicate signatures used in the program."]
-    #[doc = ""]
-    #[doc = " @param[in] atoms the target"]
-    #[doc = " @param[out] size the number of signatures"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Get the number of different predicate signatures used in the program."]
+    #[doc = "!"]
+    #[doc = "! @param[in] atoms the target"]
+    #[doc = "! @param[out] size the number of signatures"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_symbolic_atoms_signatures_size(
         atoms: *const clingo_symbolic_atoms_t,
         size: *mut usize,
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Get the predicate signatures occurring in a logic program."]
-    #[doc = ""]
-    #[doc = " @param[in] atoms the target"]
-    #[doc = " @param[out] signatures the resulting signatures"]
-    #[doc = " @param[in] size the number of signatures"]
-    #[doc = " @return whether the call was successful; might set one of the following error codes:"]
-    #[doc = " - ::clingo_error_bad_alloc"]
-    #[doc = " - ::clingo_error_runtime if the size is too small"]
-    #[doc = ""]
-    #[doc = " @see clingo_symbolic_atoms_signatures_size()"]
+    #[doc = "! Get the predicate signatures occurring in a logic program."]
+    #[doc = "!"]
+    #[doc = "! @param[in] atoms the target"]
+    #[doc = "! @param[out] signatures the resulting signatures"]
+    #[doc = "! @param[in] size the number of signatures"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_bad_alloc"]
+    #[doc = "! - ::clingo_error_runtime if the size is too small"]
+    #[doc = "!"]
+    #[doc = "! @see clingo_symbolic_atoms_signatures_size()"]
     pub fn clingo_symbolic_atoms_signatures(
         atoms: *const clingo_symbolic_atoms_t,
         signatures: *mut clingo_signature_t,
@@ -905,12 +802,12 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Get an iterator to the next element in the sequence of symbolic atoms."]
-    #[doc = ""]
-    #[doc = " @param[in] atoms the target"]
-    #[doc = " @param[in] iterator the current iterator"]
-    #[doc = " @param[out] next the succeeding iterator"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Get an iterator to the next element in the sequence of symbolic atoms."]
+    #[doc = "!"]
+    #[doc = "! @param[in] atoms the target"]
+    #[doc = "! @param[in] iterator the current iterator"]
+    #[doc = "! @param[out] next the succeeding iterator"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_symbolic_atoms_next(
         atoms: *const clingo_symbolic_atoms_t,
         iterator: clingo_symbolic_atom_iterator_t,
@@ -918,28 +815,28 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Check whether the given iterator points to some element with the sequence"]
-    #[doc = " of symbolic atoms or to the end of the sequence."]
-    #[doc = ""]
-    #[doc = " @param[in] atoms the target"]
-    #[doc = " @param[in] iterator the iterator"]
-    #[doc = " @param[out] valid whether the iterator points to some element within the"]
-    #[doc = " sequence"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Check whether the given iterator points to some element with the sequence"]
+    #[doc = "! of symbolic atoms or to the end of the sequence."]
+    #[doc = "!"]
+    #[doc = "! @param[in] atoms the target"]
+    #[doc = "! @param[in] iterator the iterator"]
+    #[doc = "! @param[out] valid whether the iterator points to some element within the"]
+    #[doc = "! sequence"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_symbolic_atoms_is_valid(
-        atoms: *mut clingo_symbolic_atoms_t,
+        atoms: *const clingo_symbolic_atoms_t,
         iterator: clingo_symbolic_atom_iterator_t,
         valid: *mut bool,
     ) -> bool;
 }
-#[doc = " Callback function to inject symbols."]
-#[doc = ""]
-#[doc = " @param symbols array of symbols"]
-#[doc = " @param symbols_size size of the symbol array"]
-#[doc = " @param data user data of the callback"]
-#[doc = " @return whether the call was successful; might set one of the following error codes:"]
-#[doc = " - ::clingo_error_bad_alloc"]
-#[doc = " @see ::clingo_ground_callback_t"]
+#[doc = "! Callback function to inject symbols."]
+#[doc = "!"]
+#[doc = "! @param symbols array of symbols"]
+#[doc = "! @param symbols_size size of the symbol array"]
+#[doc = "! @param data user data of the callback"]
+#[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+#[doc = "! - ::clingo_error_bad_alloc"]
+#[doc = "! @see ::clingo_ground_callback_t"]
 pub type clingo_symbol_callback_t = ::std::option::Option<
     unsafe extern "C" fn(
         symbols: *const clingo_symbol_t,
@@ -947,36 +844,36 @@ pub type clingo_symbol_callback_t = ::std::option::Option<
         data: *mut ::std::os::raw::c_void,
     ) -> bool,
 >;
-#[doc = " a tuple term, e.g., `(1,2,3)`"]
+#[doc = "!< a tuple term, e.g., `(1,2,3)`"]
 pub const clingo_theory_term_type_clingo_theory_term_type_tuple: clingo_theory_term_type = 0;
-#[doc = " a list term, e.g., `[1,2,3]`"]
+#[doc = "!< a list term, e.g., `[1,2,3]`"]
 pub const clingo_theory_term_type_clingo_theory_term_type_list: clingo_theory_term_type = 1;
-#[doc = " a set term, e.g., `{1,2,3}`"]
+#[doc = "!< a set term, e.g., `{1,2,3}`"]
 pub const clingo_theory_term_type_clingo_theory_term_type_set: clingo_theory_term_type = 2;
-#[doc = " a function term, e.g., `f(1,2,3)`"]
+#[doc = "!< a function term, e.g., `f(1,2,3)`"]
 pub const clingo_theory_term_type_clingo_theory_term_type_function: clingo_theory_term_type = 3;
-#[doc = " a number term, e.g., `42`"]
+#[doc = "!< a number term, e.g., `42`"]
 pub const clingo_theory_term_type_clingo_theory_term_type_number: clingo_theory_term_type = 4;
-#[doc = " a symbol term, e.g., `c`"]
+#[doc = "!< a symbol term, e.g., `c`"]
 pub const clingo_theory_term_type_clingo_theory_term_type_symbol: clingo_theory_term_type = 5;
-#[doc = " Enumeration of theory term types."]
+#[doc = "! Enumeration of theory term types."]
 pub type clingo_theory_term_type = u32;
-#[doc = " Corresponding type to ::clingo_theory_term_type."]
+#[doc = "! Corresponding type to ::clingo_theory_term_type."]
 pub type clingo_theory_term_type_t = ::std::os::raw::c_int;
 #[repr(C)]
 #[derive(Debug)]
 pub struct clingo_theory_atoms {
     _unused: [u8; 0],
 }
-#[doc = " Container that stores theory atoms, elements, and terms (see @ref clingo_control_theory_atoms())."]
+#[doc = "! Container that stores theory atoms, elements, and terms (see @ref clingo_control_theory_atoms())."]
 pub type clingo_theory_atoms_t = clingo_theory_atoms;
 extern "C" {
-    #[doc = " Get the type of the given theory term."]
-    #[doc = ""]
-    #[doc = " @param[in] atoms container where the term is stored"]
-    #[doc = " @param[in] term id of the term"]
-    #[doc = " @param[out] type the resulting type"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Get the type of the given theory term."]
+    #[doc = "!"]
+    #[doc = "! @param[in] atoms container where the term is stored"]
+    #[doc = "! @param[in] term id of the term"]
+    #[doc = "! @param[out] type the resulting type"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_theory_atoms_term_type(
         atoms: *const clingo_theory_atoms_t,
         term: clingo_id_t,
@@ -984,13 +881,13 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Get the number of the given numeric theory term."]
-    #[doc = ""]
-    #[doc = " @pre The term must be of type ::clingo_theory_term_type_number."]
-    #[doc = " @param[in] atoms container where the term is stored"]
-    #[doc = " @param[in] term id of the term"]
-    #[doc = " @param[out] number the resulting number"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Get the number of the given numeric theory term."]
+    #[doc = "!"]
+    #[doc = "! @pre The term must be of type ::clingo_theory_term_type_number."]
+    #[doc = "! @param[in] atoms container where the term is stored"]
+    #[doc = "! @param[in] term id of the term"]
+    #[doc = "! @param[out] number the resulting number"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_theory_atoms_term_number(
         atoms: *const clingo_theory_atoms_t,
         term: clingo_id_t,
@@ -998,13 +895,13 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Get the name of the given constant or function theory term."]
-    #[doc = ""]
-    #[doc = " @pre The term must be of type ::clingo_theory_term_type_function or ::clingo_theory_term_type_symbol."]
-    #[doc = " @param[in] atoms container where the term is stored"]
-    #[doc = " @param[in] term id of the term"]
-    #[doc = " @param[out] name the resulting name"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Get the name of the given constant or function theory term."]
+    #[doc = "!"]
+    #[doc = "! @pre The term must be of type ::clingo_theory_term_type_function or ::clingo_theory_term_type_symbol."]
+    #[doc = "! @param[in] atoms container where the term is stored"]
+    #[doc = "! @param[in] term id of the term"]
+    #[doc = "! @param[out] name the resulting name"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_theory_atoms_term_name(
         atoms: *const clingo_theory_atoms_t,
         term: clingo_id_t,
@@ -1012,14 +909,14 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Get the arguments of the given function theory term."]
-    #[doc = ""]
-    #[doc = " @pre The term must be of type ::clingo_theory_term_type_function."]
-    #[doc = " @param[in] atoms container where the term is stored"]
-    #[doc = " @param[in] term id of the term"]
-    #[doc = " @param[out] arguments the resulting arguments in form of an array of term ids"]
-    #[doc = " @param[out] size the number of arguments"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Get the arguments of the given function theory term."]
+    #[doc = "!"]
+    #[doc = "! @pre The term must be of type ::clingo_theory_term_type_function."]
+    #[doc = "! @param[in] atoms container where the term is stored"]
+    #[doc = "! @param[in] term id of the term"]
+    #[doc = "! @param[out] arguments the resulting arguments in form of an array of term ids"]
+    #[doc = "! @param[out] size the number of arguments"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_theory_atoms_term_arguments(
         atoms: *const clingo_theory_atoms_t,
         term: clingo_id_t,
@@ -1028,13 +925,13 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Get the size of the string representation of the given theory term (including the terminating 0)."]
-    #[doc = ""]
-    #[doc = " @param[in] atoms container where the term is stored"]
-    #[doc = " @param[in] term id of the term"]
-    #[doc = " @param[out] size the resulting size"]
-    #[doc = " @return whether the call was successful; might set one of the following error codes:"]
-    #[doc = " - ::clingo_error_bad_alloc"]
+    #[doc = "! Get the size of the string representation of the given theory term (including the terminating 0)."]
+    #[doc = "!"]
+    #[doc = "! @param[in] atoms container where the term is stored"]
+    #[doc = "! @param[in] term id of the term"]
+    #[doc = "! @param[out] size the resulting size"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_bad_alloc"]
     pub fn clingo_theory_atoms_term_to_string_size(
         atoms: *const clingo_theory_atoms_t,
         term: clingo_id_t,
@@ -1042,17 +939,17 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Get the string representation of the given theory term."]
-    #[doc = ""]
-    #[doc = " @param[in] atoms container where the term is stored"]
-    #[doc = " @param[in] term id of the term"]
-    #[doc = " @param[out] string the resulting string"]
-    #[doc = " @param[in] size the size of the string"]
-    #[doc = " @return whether the call was successful; might set one of the following error codes:"]
-    #[doc = " - ::clingo_error_runtime if the size is too small"]
-    #[doc = " - ::clingo_error_bad_alloc"]
-    #[doc = ""]
-    #[doc = " @see clingo_theory_atoms_term_to_string_size()"]
+    #[doc = "! Get the string representation of the given theory term."]
+    #[doc = "!"]
+    #[doc = "! @param[in] atoms container where the term is stored"]
+    #[doc = "! @param[in] term id of the term"]
+    #[doc = "! @param[out] string the resulting string"]
+    #[doc = "! @param[in] size the size of the string"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_runtime if the size is too small"]
+    #[doc = "! - ::clingo_error_bad_alloc"]
+    #[doc = "!"]
+    #[doc = "! @see clingo_theory_atoms_term_to_string_size()"]
     pub fn clingo_theory_atoms_term_to_string(
         atoms: *const clingo_theory_atoms_t,
         term: clingo_id_t,
@@ -1061,13 +958,13 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Get the tuple (array of theory terms) of the given theory element."]
-    #[doc = ""]
-    #[doc = " @param[in] atoms container where the element is stored"]
-    #[doc = " @param[in] element id of the element"]
-    #[doc = " @param[out] tuple the resulting array of term ids"]
-    #[doc = " @param[out] size the number of term ids"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Get the tuple (array of theory terms) of the given theory element."]
+    #[doc = "!"]
+    #[doc = "! @param[in] atoms container where the element is stored"]
+    #[doc = "! @param[in] element id of the element"]
+    #[doc = "! @param[out] tuple the resulting array of term ids"]
+    #[doc = "! @param[out] size the number of term ids"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_theory_atoms_element_tuple(
         atoms: *const clingo_theory_atoms_t,
         element: clingo_id_t,
@@ -1076,13 +973,13 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Get the condition (array of aspif literals) of the given theory element."]
-    #[doc = ""]
-    #[doc = " @param[in] atoms container where the element is stored"]
-    #[doc = " @param[in] element id of the element"]
-    #[doc = " @param[out] condition the resulting array of aspif literals"]
-    #[doc = " @param[out] size the number of term literals"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Get the condition (array of aspif literals) of the given theory element."]
+    #[doc = "!"]
+    #[doc = "! @param[in] atoms container where the element is stored"]
+    #[doc = "! @param[in] element id of the element"]
+    #[doc = "! @param[out] condition the resulting array of aspif literals"]
+    #[doc = "! @param[out] size the number of term literals"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_theory_atoms_element_condition(
         atoms: *const clingo_theory_atoms_t,
         element: clingo_id_t,
@@ -1091,17 +988,17 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Get the id of the condition of the given theory element."]
-    #[doc = ""]
-    #[doc = " @note"]
-    #[doc = " This id can be mapped to a solver literal using clingo_propagate_init_solver_literal()."]
-    #[doc = " This id is not (necessarily) an aspif literal;"]
-    #[doc = " to get aspif literals use clingo_theory_atoms_element_condition()."]
-    #[doc = ""]
-    #[doc = " @param[in] atoms container where the element is stored"]
-    #[doc = " @param[in] element id of the element"]
-    #[doc = " @param[out] condition the resulting condition id"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Get the id of the condition of the given theory element."]
+    #[doc = "!"]
+    #[doc = "! @note"]
+    #[doc = "! This id can be mapped to a solver literal using clingo_propagate_init_solver_literal()."]
+    #[doc = "! This id is not (necessarily) an aspif literal;"]
+    #[doc = "! to get aspif literals use clingo_theory_atoms_element_condition()."]
+    #[doc = "!"]
+    #[doc = "! @param[in] atoms container where the element is stored"]
+    #[doc = "! @param[in] element id of the element"]
+    #[doc = "! @param[out] condition the resulting condition id"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_theory_atoms_element_condition_id(
         atoms: *const clingo_theory_atoms_t,
         element: clingo_id_t,
@@ -1109,13 +1006,13 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Get the size of the string representation of the given theory element (including the terminating 0)."]
-    #[doc = ""]
-    #[doc = " @param[in] atoms container where the element is stored"]
-    #[doc = " @param[in] element id of the element"]
-    #[doc = " @param[out] size the resulting size"]
-    #[doc = " @return whether the call was successful; might set one of the following error codes:"]
-    #[doc = " - ::clingo_error_bad_alloc"]
+    #[doc = "! Get the size of the string representation of the given theory element (including the terminating 0)."]
+    #[doc = "!"]
+    #[doc = "! @param[in] atoms container where the element is stored"]
+    #[doc = "! @param[in] element id of the element"]
+    #[doc = "! @param[out] size the resulting size"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_bad_alloc"]
     pub fn clingo_theory_atoms_element_to_string_size(
         atoms: *const clingo_theory_atoms_t,
         element: clingo_id_t,
@@ -1123,15 +1020,15 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Get the string representation of the given theory element."]
-    #[doc = ""]
-    #[doc = " @param[in] atoms container where the element is stored"]
-    #[doc = " @param[in] element id of the element"]
-    #[doc = " @param[out] string the resulting string"]
-    #[doc = " @param[in] size the size of the string"]
-    #[doc = " @return whether the call was successful; might set one of the following error codes:"]
-    #[doc = " - ::clingo_error_runtime if the size is too small"]
-    #[doc = " - ::clingo_error_bad_alloc"]
+    #[doc = "! Get the string representation of the given theory element."]
+    #[doc = "!"]
+    #[doc = "! @param[in] atoms container where the element is stored"]
+    #[doc = "! @param[in] element id of the element"]
+    #[doc = "! @param[out] string the resulting string"]
+    #[doc = "! @param[in] size the size of the string"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_runtime if the size is too small"]
+    #[doc = "! - ::clingo_error_bad_alloc"]
     pub fn clingo_theory_atoms_element_to_string(
         atoms: *const clingo_theory_atoms_t,
         element: clingo_id_t,
@@ -1140,20 +1037,20 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Get the total number of theory atoms."]
-    #[doc = ""]
-    #[doc = " @param[in] atoms the target"]
-    #[doc = " @param[out] size the resulting number"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Get the total number of theory atoms."]
+    #[doc = "!"]
+    #[doc = "! @param[in] atoms the target"]
+    #[doc = "! @param[out] size the resulting number"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_theory_atoms_size(atoms: *const clingo_theory_atoms_t, size: *mut usize) -> bool;
 }
 extern "C" {
-    #[doc = " Get the theory term associated with the theory atom."]
-    #[doc = ""]
-    #[doc = " @param[in] atoms container where the atom is stored"]
-    #[doc = " @param[in] atom id of the atom"]
-    #[doc = " @param[out] term the resulting term id"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Get the theory term associated with the theory atom."]
+    #[doc = "!"]
+    #[doc = "! @param[in] atoms container where the atom is stored"]
+    #[doc = "! @param[in] atom id of the atom"]
+    #[doc = "! @param[out] term the resulting term id"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_theory_atoms_atom_term(
         atoms: *const clingo_theory_atoms_t,
         atom: clingo_id_t,
@@ -1161,13 +1058,13 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Get the theory elements associated with the theory atom."]
-    #[doc = ""]
-    #[doc = " @param[in] atoms container where the atom is stored"]
-    #[doc = " @param[in] atom id of the atom"]
-    #[doc = " @param[out] elements the resulting array of elements"]
-    #[doc = " @param[out] size the number of elements"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Get the theory elements associated with the theory atom."]
+    #[doc = "!"]
+    #[doc = "! @param[in] atoms container where the atom is stored"]
+    #[doc = "! @param[in] atom id of the atom"]
+    #[doc = "! @param[out] elements the resulting array of elements"]
+    #[doc = "! @param[out] size the number of elements"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_theory_atoms_atom_elements(
         atoms: *const clingo_theory_atoms_t,
         atom: clingo_id_t,
@@ -1176,12 +1073,12 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Whether the theory atom has a guard."]
-    #[doc = ""]
-    #[doc = " @param[in] atoms container where the atom is stored"]
-    #[doc = " @param[in] atom id of the atom"]
-    #[doc = " @param[out] has_guard whether the theory atom has a guard"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Whether the theory atom has a guard."]
+    #[doc = "!"]
+    #[doc = "! @param[in] atoms container where the atom is stored"]
+    #[doc = "! @param[in] atom id of the atom"]
+    #[doc = "! @param[out] has_guard whether the theory atom has a guard"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_theory_atoms_atom_has_guard(
         atoms: *const clingo_theory_atoms_t,
         atom: clingo_id_t,
@@ -1189,13 +1086,13 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Get the guard consisting of a theory operator and a theory term of the given theory atom."]
-    #[doc = ""]
-    #[doc = " @param[in] atoms container where the atom is stored"]
-    #[doc = " @param[in] atom id of the atom"]
-    #[doc = " @param[out] connective the resulting theory operator"]
-    #[doc = " @param[out] term the resulting term"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Get the guard consisting of a theory operator and a theory term of the given theory atom."]
+    #[doc = "!"]
+    #[doc = "! @param[in] atoms container where the atom is stored"]
+    #[doc = "! @param[in] atom id of the atom"]
+    #[doc = "! @param[out] connective the resulting theory operator"]
+    #[doc = "! @param[out] term the resulting term"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_theory_atoms_atom_guard(
         atoms: *const clingo_theory_atoms_t,
         atom: clingo_id_t,
@@ -1204,12 +1101,12 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Get the aspif literal associated with the given theory atom."]
-    #[doc = ""]
-    #[doc = " @param[in] atoms container where the atom is stored"]
-    #[doc = " @param[in] atom id of the atom"]
-    #[doc = " @param[out] literal the resulting literal"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Get the aspif literal associated with the given theory atom."]
+    #[doc = "!"]
+    #[doc = "! @param[in] atoms container where the atom is stored"]
+    #[doc = "! @param[in] atom id of the atom"]
+    #[doc = "! @param[out] literal the resulting literal"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_theory_atoms_atom_literal(
         atoms: *const clingo_theory_atoms_t,
         atom: clingo_id_t,
@@ -1217,13 +1114,13 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Get the size of the string representation of the given theory atom (including the terminating 0)."]
-    #[doc = ""]
-    #[doc = " @param[in] atoms container where the atom is stored"]
-    #[doc = " @param[in] atom id of the element"]
-    #[doc = " @param[out] size the resulting size"]
-    #[doc = " @return whether the call was successful; might set one of the following error codes:"]
-    #[doc = " - ::clingo_error_bad_alloc"]
+    #[doc = "! Get the size of the string representation of the given theory atom (including the terminating 0)."]
+    #[doc = "!"]
+    #[doc = "! @param[in] atoms container where the atom is stored"]
+    #[doc = "! @param[in] atom id of the element"]
+    #[doc = "! @param[out] size the resulting size"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_bad_alloc"]
     pub fn clingo_theory_atoms_atom_to_string_size(
         atoms: *const clingo_theory_atoms_t,
         atom: clingo_id_t,
@@ -1231,15 +1128,15 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Get the string representation of the given theory atom."]
-    #[doc = ""]
-    #[doc = " @param[in] atoms container where the atom is stored"]
-    #[doc = " @param[in] atom id of the element"]
-    #[doc = " @param[out] string the resulting string"]
-    #[doc = " @param[in] size the size of the string"]
-    #[doc = " @return whether the call was successful; might set one of the following error codes:"]
-    #[doc = " - ::clingo_error_runtime if the size is too small"]
-    #[doc = " - ::clingo_error_bad_alloc"]
+    #[doc = "! Get the string representation of the given theory atom."]
+    #[doc = "!"]
+    #[doc = "! @param[in] atoms container where the atom is stored"]
+    #[doc = "! @param[in] atom id of the element"]
+    #[doc = "! @param[out] string the resulting string"]
+    #[doc = "! @param[in] size the size of the string"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_runtime if the size is too small"]
+    #[doc = "! - ::clingo_error_bad_alloc"]
     pub fn clingo_theory_atoms_atom_to_string(
         atoms: *const clingo_theory_atoms_t,
         atom: clingo_id_t,
@@ -1252,48 +1149,57 @@ extern "C" {
 pub struct clingo_assignment {
     _unused: [u8; 0],
 }
-#[doc = " Represents a (partial) assignment of a particular solver."]
-#[doc = ""]
-#[doc = " An assignment assigns truth values to a set of literals."]
-#[doc = " A literal is assigned to either @link clingo_assignment_truth_value() true or false, or is unassigned@endlink."]
-#[doc = " Furthermore, each assigned literal is associated with a @link clingo_assignment_level() decision level@endlink."]
-#[doc = " There is exactly one @link clingo_assignment_decision() decision literal@endlink for each decision level greater than zero."]
-#[doc = " Assignments to all other literals on the same level are consequences implied by the current and possibly previous decisions."]
-#[doc = " Assignments on level zero are immediate consequences of the current program."]
-#[doc = " Decision levels are consecutive numbers starting with zero up to and including the @link clingo_assignment_decision_level() current decision level@endlink."]
+#[doc = "! Represents a (partial) assignment of a particular solver."]
+#[doc = "!"]
+#[doc = "! An assignment assigns truth values to a set of literals."]
+#[doc = "! A literal is assigned to either @link clingo_assignment_truth_value() true or false, or is unassigned@endlink."]
+#[doc = "! Furthermore, each assigned literal is associated with a @link clingo_assignment_level() decision level@endlink."]
+#[doc = "! There is exactly one @link clingo_assignment_decision() decision literal@endlink for each decision level greater than zero."]
+#[doc = "! Assignments to all other literals on the same level are consequences implied by the current and possibly previous decisions."]
+#[doc = "! Assignments on level zero are immediate consequences of the current program."]
+#[doc = "! Decision levels are consecutive numbers starting with zero up to and including the @link clingo_assignment_decision_level() current decision level@endlink."]
 pub type clingo_assignment_t = clingo_assignment;
 extern "C" {
-    #[doc = " Get the current decision level."]
-    #[doc = ""]
-    #[doc = " @param[in] assignment the target assignment"]
-    #[doc = " @return the decision level"]
+    #[doc = "! Get the current decision level."]
+    #[doc = "!"]
+    #[doc = "! @param[in] assignment the target assignment"]
+    #[doc = "! @return the decision level"]
     pub fn clingo_assignment_decision_level(assignment: *const clingo_assignment_t) -> u32;
 }
 extern "C" {
-    #[doc = " Check if the given assignment is conflicting."]
-    #[doc = ""]
-    #[doc = " @param[in] assignment the target assignment"]
-    #[doc = " @return whether the assignment is conflicting"]
+    #[doc = "! Get the current root level."]
+    #[doc = "!"]
+    #[doc = "! Decisions levels smaller or equal to the root level are not backtracked during solving."]
+    #[doc = "!"]
+    #[doc = "! @param[in] assignment the target assignment"]
+    #[doc = "! @return the decision level"]
+    pub fn clingo_assignment_root_level(assignment: *const clingo_assignment_t) -> u32;
+}
+extern "C" {
+    #[doc = "! Check if the given assignment is conflicting."]
+    #[doc = "!"]
+    #[doc = "! @param[in] assignment the target assignment"]
+    #[doc = "! @return whether the assignment is conflicting"]
     pub fn clingo_assignment_has_conflict(assignment: *const clingo_assignment_t) -> bool;
 }
 extern "C" {
-    #[doc = " Check if the given literal is part of a (partial) assignment."]
-    #[doc = ""]
-    #[doc = " @param[in] assignment the target assignment"]
-    #[doc = " @param[in] literal the literal"]
-    #[doc = " @return whether the literal is valid"]
+    #[doc = "! Check if the given literal is part of a (partial) assignment."]
+    #[doc = "!"]
+    #[doc = "! @param[in] assignment the target assignment"]
+    #[doc = "! @param[in] literal the literal"]
+    #[doc = "! @return whether the literal is valid"]
     pub fn clingo_assignment_has_literal(
         assignment: *const clingo_assignment_t,
         literal: clingo_literal_t,
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Determine the decision level of a given literal."]
-    #[doc = ""]
-    #[doc = " @param[in] assignment the target assignment"]
-    #[doc = " @param[in] literal the literal"]
-    #[doc = " @param[out] level the resulting level"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Determine the decision level of a given literal."]
+    #[doc = "!"]
+    #[doc = "! @param[in] assignment the target assignment"]
+    #[doc = "! @param[in] literal the literal"]
+    #[doc = "! @param[out] level the resulting level"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_assignment_level(
         assignment: *const clingo_assignment_t,
         literal: clingo_literal_t,
@@ -1301,12 +1207,12 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Determine the decision literal given a decision level."]
-    #[doc = ""]
-    #[doc = " @param[in] assignment the target assignment"]
-    #[doc = " @param[in] level the level"]
-    #[doc = " @param[out] literal the resulting literal"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Determine the decision literal given a decision level."]
+    #[doc = "!"]
+    #[doc = "! @param[in] assignment the target assignment"]
+    #[doc = "! @param[in] level the level"]
+    #[doc = "! @param[out] literal the resulting literal"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_assignment_decision(
         assignment: *const clingo_assignment_t,
         level: u32,
@@ -1314,12 +1220,12 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Check if a literal has a fixed truth value."]
-    #[doc = ""]
-    #[doc = " @param[in] assignment the target assignment"]
-    #[doc = " @param[in] literal the literal"]
-    #[doc = " @param[out] is_fixed whether the literal is fixed"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Check if a literal has a fixed truth value."]
+    #[doc = "!"]
+    #[doc = "! @param[in] assignment the target assignment"]
+    #[doc = "! @param[in] literal the literal"]
+    #[doc = "! @param[out] is_fixed whether the literal is fixed"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_assignment_is_fixed(
         assignment: *const clingo_assignment_t,
         literal: clingo_literal_t,
@@ -1327,13 +1233,13 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Check if a literal is true."]
-    #[doc = ""]
-    #[doc = " @param[in] assignment the target assignment"]
-    #[doc = " @param[in] literal the literal"]
-    #[doc = " @param[out] is_true whether the literal is true"]
-    #[doc = " @return whether the call was successful"]
-    #[doc = " @see clingo_assignment_truth_value()"]
+    #[doc = "! Check if a literal is true."]
+    #[doc = "!"]
+    #[doc = "! @param[in] assignment the target assignment"]
+    #[doc = "! @param[in] literal the literal"]
+    #[doc = "! @param[out] is_true whether the literal is true"]
+    #[doc = "! @return whether the call was successful"]
+    #[doc = "! @see clingo_assignment_truth_value()"]
     pub fn clingo_assignment_is_true(
         assignment: *const clingo_assignment_t,
         literal: clingo_literal_t,
@@ -1341,13 +1247,13 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Check if a literal has a fixed truth value."]
-    #[doc = ""]
-    #[doc = " @param[in] assignment the target assignment"]
-    #[doc = " @param[in] literal the literal"]
-    #[doc = " @param[out] is_false whether the literal is false"]
-    #[doc = " @return whether the call was successful"]
-    #[doc = " @see clingo_assignment_truth_value()"]
+    #[doc = "! Check if a literal has a fixed truth value."]
+    #[doc = "!"]
+    #[doc = "! @param[in] assignment the target assignment"]
+    #[doc = "! @param[in] literal the literal"]
+    #[doc = "! @param[out] is_false whether the literal is false"]
+    #[doc = "! @return whether the call was successful"]
+    #[doc = "! @see clingo_assignment_truth_value()"]
     pub fn clingo_assignment_is_false(
         assignment: *const clingo_assignment_t,
         literal: clingo_literal_t,
@@ -1355,12 +1261,12 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Determine the truth value of a given literal."]
-    #[doc = ""]
-    #[doc = " @param[in] assignment the target assignment"]
-    #[doc = " @param[in] literal the literal"]
-    #[doc = " @param[out] value the resulting truth value"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Determine the truth value of a given literal."]
+    #[doc = "!"]
+    #[doc = "! @param[in] assignment the target assignment"]
+    #[doc = "! @param[in] literal the literal"]
+    #[doc = "! @param[out] value the resulting truth value"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_assignment_truth_value(
         assignment: *const clingo_assignment_t,
         literal: clingo_literal_t,
@@ -1368,61 +1274,61 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " The number of assigned literals in the assignment."]
-    #[doc = ""]
-    #[doc = " @param[in] assignment the target"]
-    #[doc = " @return the number of literals"]
+    #[doc = "! The number of assigned literals in the assignment."]
+    #[doc = "!"]
+    #[doc = "! @param[in] assignment the target"]
+    #[doc = "! @return the number of literals"]
     pub fn clingo_assignment_size(assignment: *const clingo_assignment_t) -> usize;
 }
 extern "C" {
-    #[doc = " The maximum size of the assignment (if all literals are assigned)."]
-    #[doc = ""]
-    #[doc = " @param[in] assignment the target"]
-    #[doc = " @return the maximum size"]
+    #[doc = "! The maximum size of the assignment (if all literals are assigned)."]
+    #[doc = "!"]
+    #[doc = "! @param[in] assignment the target"]
+    #[doc = "! @return the maximum size"]
     pub fn clingo_assignment_max_size(assignment: *const clingo_assignment_t) -> usize;
 }
 extern "C" {
-    #[doc = " Check if the assignmen is total, i.e. - size == max_size."]
-    #[doc = ""]
-    #[doc = " @param[in] assignment the target"]
-    #[doc = " @return wheather the assignment is total"]
+    #[doc = "! Check if the assignmen is total, i.e. - size == max_size."]
+    #[doc = "!"]
+    #[doc = "! @param[in] assignment the target"]
+    #[doc = "! @return wheather the assignment is total"]
     pub fn clingo_assignment_is_total(assignment: *const clingo_assignment_t) -> bool;
 }
-#[doc = " do not call @ref ::clingo_propagator::check() at all"]
+#[doc = "!< do not call @ref ::clingo_propagator::check() at all"]
 pub const clingo_propagator_check_mode_clingo_propagator_check_mode_none:
     clingo_propagator_check_mode = 0;
-#[doc = " call @ref ::clingo_propagator::check() on total assignment"]
+#[doc = "!< call @ref ::clingo_propagator::check() on total assignment"]
 pub const clingo_propagator_check_mode_clingo_propagator_check_mode_total:
     clingo_propagator_check_mode = 1;
-#[doc = " call @ref ::clingo_propagator::check() on propagation fixpoints"]
+#[doc = "!< call @ref ::clingo_propagator::check() on propagation fixpoints"]
 pub const clingo_propagator_check_mode_clingo_propagator_check_mode_fixpoint:
     clingo_propagator_check_mode = 2;
-#[doc = " Supported check modes for propagators."]
+#[doc = "! Supported check modes for propagators."]
 pub type clingo_propagator_check_mode = u32;
-#[doc = " Corresponding type to ::clingo_propagator_check_mode."]
+#[doc = "! Corresponding type to ::clingo_propagator_check_mode."]
 pub type clingo_propagator_check_mode_t = ::std::os::raw::c_int;
 #[repr(C)]
 #[derive(Debug)]
 pub struct clingo_propagate_init {
     _unused: [u8; 0],
 }
-#[doc = " Object to initialize a user-defined propagator before each solving step."]
-#[doc = ""]
-#[doc = " Each @link SymbolicAtoms symbolic@endlink or @link TheoryAtoms theory atom@endlink is uniquely associated with an aspif atom in form of a positive integer (@ref ::clingo_literal_t)."]
-#[doc = " Aspif literals additionally are signed to represent default negation."]
-#[doc = " Furthermore, there are non-zero integer solver literals (also represented using @ref ::clingo_literal_t)."]
-#[doc = " There is a surjective mapping from program atoms to solver literals."]
-#[doc = ""]
-#[doc = " All methods called during propagation use solver literals whereas clingo_symbolic_atoms_literal() and clingo_theory_atoms_atom_literal() return program literals."]
-#[doc = " The function clingo_propagate_init_solver_literal() can be used to map program literals or @link clingo_theory_atoms_element_condition_id() condition ids@endlink to solver literals."]
+#[doc = "! Object to initialize a user-defined propagator before each solving step."]
+#[doc = "!"]
+#[doc = "! Each @link SymbolicAtoms symbolic@endlink or @link TheoryAtoms theory atom@endlink is uniquely associated with an aspif atom in form of a positive integer (@ref ::clingo_literal_t)."]
+#[doc = "! Aspif literals additionally are signed to represent default negation."]
+#[doc = "! Furthermore, there are non-zero integer solver literals (also represented using @ref ::clingo_literal_t)."]
+#[doc = "! There is a surjective mapping from program atoms to solver literals."]
+#[doc = "!"]
+#[doc = "! All methods called during propagation use solver literals whereas clingo_symbolic_atoms_literal() and clingo_theory_atoms_atom_literal() return program literals."]
+#[doc = "! The function clingo_propagate_init_solver_literal() can be used to map program literals or @link clingo_theory_atoms_element_condition_id() condition ids@endlink to solver literals."]
 pub type clingo_propagate_init_t = clingo_propagate_init;
 extern "C" {
-    #[doc = " Map the given program literal or condition id to its solver literal."]
-    #[doc = ""]
-    #[doc = " @param[in] init the target"]
-    #[doc = " @param[in] aspif_literal the aspif literal to map"]
-    #[doc = " @param[out] solver_literal the resulting solver literal"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Map the given program literal or condition id to its solver literal."]
+    #[doc = "!"]
+    #[doc = "! @param[in] init the target"]
+    #[doc = "! @param[in] aspif_literal the aspif literal to map"]
+    #[doc = "! @param[out] solver_literal the resulting solver literal"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_propagate_init_solver_literal(
         init: *const clingo_propagate_init_t,
         aspif_literal: clingo_literal_t,
@@ -1430,203 +1336,203 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Add a watch for the solver literal in the given phase."]
-    #[doc = ""]
-    #[doc = " @param[in] init the target"]
-    #[doc = " @param[in] solver_literal the solver literal"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Add a watch for the solver literal in the given phase."]
+    #[doc = "!"]
+    #[doc = "! @param[in] init the target"]
+    #[doc = "! @param[in] solver_literal the solver literal"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_propagate_init_add_watch(
         init: *mut clingo_propagate_init_t,
         solver_literal: clingo_literal_t,
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Add a watch for the solver literal in the given phase to the given solver thread."]
-    #[doc = ""]
-    #[doc = " @param[in] init the target"]
-    #[doc = " @param[in] solver_literal the solver literal"]
-    #[doc = " @param[in] thread_id the id of the solver thread"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Add a watch for the solver literal in the given phase to the given solver thread."]
+    #[doc = "!"]
+    #[doc = "! @param[in] init the target"]
+    #[doc = "! @param[in] solver_literal the solver literal"]
+    #[doc = "! @param[in] thread_id the id of the solver thread"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_propagate_init_add_watch_to_thread(
         init: *mut clingo_propagate_init_t,
         solver_literal: clingo_literal_t,
-        thread_id: u32,
+        thread_id: clingo_id_t,
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Get an object to inspect the symbolic atoms."]
-    #[doc = ""]
-    #[doc = " @param[in] init the target"]
-    #[doc = " @param[out] atoms the resulting object"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Get an object to inspect the symbolic atoms."]
+    #[doc = "!"]
+    #[doc = "! @param[in] init the target"]
+    #[doc = "! @param[out] atoms the resulting object"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_propagate_init_symbolic_atoms(
         init: *const clingo_propagate_init_t,
-        atoms: *mut *mut clingo_symbolic_atoms_t,
+        atoms: *mut *const clingo_symbolic_atoms_t,
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Get an object to inspect the theory atoms."]
-    #[doc = ""]
-    #[doc = " @param[in] init the target"]
-    #[doc = " @param[out] atoms the resulting object"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Get an object to inspect the theory atoms."]
+    #[doc = "!"]
+    #[doc = "! @param[in] init the target"]
+    #[doc = "! @param[out] atoms the resulting object"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_propagate_init_theory_atoms(
         init: *const clingo_propagate_init_t,
-        atoms: *mut *mut clingo_theory_atoms_t,
+        atoms: *mut *const clingo_theory_atoms_t,
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Get the number of threads used in subsequent solving."]
-    #[doc = ""]
-    #[doc = " @param[in] init the target"]
-    #[doc = " @return the number of threads"]
-    #[doc = " @see clingo_propagate_control_thread_id()"]
+    #[doc = "! Get the number of threads used in subsequent solving."]
+    #[doc = "!"]
+    #[doc = "! @param[in] init the target"]
+    #[doc = "! @return the number of threads"]
+    #[doc = "! @see clingo_propagate_control_thread_id()"]
     pub fn clingo_propagate_init_number_of_threads(
         init: *const clingo_propagate_init_t,
     ) -> ::std::os::raw::c_int;
 }
 extern "C" {
-    #[doc = " Configure when to call the check method of the propagator."]
-    #[doc = ""]
-    #[doc = " @param[in] init the target"]
-    #[doc = " @param[in] mode bitmask when to call the propagator"]
-    #[doc = " @see @ref ::clingo_propagator::check()"]
+    #[doc = "! Configure when to call the check method of the propagator."]
+    #[doc = "!"]
+    #[doc = "! @param[in] init the target"]
+    #[doc = "! @param[in] mode bitmask when to call the propagator"]
+    #[doc = "! @see @ref ::clingo_propagator::check()"]
     pub fn clingo_propagate_init_set_check_mode(
         init: *mut clingo_propagate_init_t,
         mode: clingo_propagator_check_mode_t,
     );
 }
 extern "C" {
-    #[doc = " Get the current check mode of the propagator."]
-    #[doc = ""]
-    #[doc = " @param[in] init the target"]
-    #[doc = " @return bitmask when to call the propagator"]
-    #[doc = " @see clingo_propagate_init_set_check_mode()"]
+    #[doc = "! Get the current check mode of the propagator."]
+    #[doc = "!"]
+    #[doc = "! @param[in] init the target"]
+    #[doc = "! @return bitmask when to call the propagator"]
+    #[doc = "! @see clingo_propagate_init_set_check_mode()"]
     pub fn clingo_propagate_init_get_check_mode(
         init: *const clingo_propagate_init_t,
     ) -> clingo_propagator_check_mode_t;
 }
 extern "C" {
-    #[doc = " Get the top level assignment solver."]
-    #[doc = ""]
-    #[doc = " @param[in] init the target"]
-    #[doc = " @return the assignment"]
+    #[doc = "! Get the top level assignment solver."]
+    #[doc = "!"]
+    #[doc = "! @param[in] init the target"]
+    #[doc = "! @return the assignment"]
     pub fn clingo_propagate_init_assignment(
-        init: *mut clingo_propagate_init_t,
-    ) -> *mut clingo_assignment_t;
+        init: *const clingo_propagate_init_t,
+    ) -> *const clingo_assignment_t;
 }
-#[doc = " clause is subject to the solvers deletion policy"]
+#[doc = "!< clause is subject to the solvers deletion policy"]
 pub const clingo_clause_type_clingo_clause_type_learnt: clingo_clause_type = 0;
-#[doc = " clause is not subject to the solvers deletion policy"]
+#[doc = "!< clause is not subject to the solvers deletion policy"]
 pub const clingo_clause_type_clingo_clause_type_static: clingo_clause_type = 1;
-#[doc = " like ::clingo_clause_type_learnt but the clause is deleted after a solving step"]
+#[doc = "!< like ::clingo_clause_type_learnt but the clause is deleted after a solving step"]
 pub const clingo_clause_type_clingo_clause_type_volatile: clingo_clause_type = 2;
-#[doc = " like ::clingo_clause_type_static but the clause is deleted after a solving step"]
+#[doc = "!< like ::clingo_clause_type_static but the clause is deleted after a solving step"]
 pub const clingo_clause_type_clingo_clause_type_volatile_static: clingo_clause_type = 3;
-#[doc = " Enumeration of clause types determining the lifetime of a clause."]
-#[doc = ""]
-#[doc = " Clauses in the solver are either cleaned up based on a configurable deletion policy or at the end of a solving step."]
-#[doc = " The values of this enumeration determine if a clause is subject to one of the above deletion strategies."]
+#[doc = "! Enumeration of clause types determining the lifetime of a clause."]
+#[doc = "!"]
+#[doc = "! Clauses in the solver are either cleaned up based on a configurable deletion policy or at the end of a solving step."]
+#[doc = "! The values of this enumeration determine if a clause is subject to one of the above deletion strategies."]
 pub type clingo_clause_type = u32;
-#[doc = " Corresponding type to ::clingo_clause_type."]
+#[doc = "! Corresponding type to ::clingo_clause_type."]
 pub type clingo_clause_type_t = ::std::os::raw::c_int;
 #[repr(C)]
 #[derive(Debug)]
 pub struct clingo_propagate_control {
     _unused: [u8; 0],
 }
-#[doc = " This object can be used to add clauses and propagate literals while solving."]
+#[doc = "! This object can be used to add clauses and propagate literals while solving."]
 pub type clingo_propagate_control_t = clingo_propagate_control;
 extern "C" {
-    #[doc = " Get the id of the underlying solver thread."]
-    #[doc = ""]
-    #[doc = " Thread ids are consecutive numbers starting with zero."]
-    #[doc = ""]
-    #[doc = " @param[in] control the target"]
-    #[doc = " @return the thread id"]
+    #[doc = "! Get the id of the underlying solver thread."]
+    #[doc = "!"]
+    #[doc = "! Thread ids are consecutive numbers starting with zero."]
+    #[doc = "!"]
+    #[doc = "! @param[in] control the target"]
+    #[doc = "! @return the thread id"]
     pub fn clingo_propagate_control_thread_id(
-        control: *mut clingo_propagate_control_t,
+        control: *const clingo_propagate_control_t,
     ) -> clingo_id_t;
 }
 extern "C" {
-    #[doc = " Get the assignment associated with the underlying solver."]
-    #[doc = ""]
-    #[doc = " @param[in] control the target"]
-    #[doc = " @return the assignment"]
+    #[doc = "! Get the assignment associated with the underlying solver."]
+    #[doc = "!"]
+    #[doc = "! @param[in] control the target"]
+    #[doc = "! @return the assignment"]
     pub fn clingo_propagate_control_assignment(
         control: *const clingo_propagate_control_t,
-    ) -> *mut clingo_assignment_t;
+    ) -> *const clingo_assignment_t;
 }
 extern "C" {
-    #[doc = " Adds a new volatile literal to the underlying solver thread."]
-    #[doc = ""]
-    #[doc = " @attention The literal is only valid within the current solving step and solver thread."]
-    #[doc = " All volatile literals and clauses involving a volatile literal are deleted after the current search."]
-    #[doc = ""]
-    #[doc = " @param[in] control the target"]
-    #[doc = " @param[out] result the (positive) solver literal"]
-    #[doc = " @return whether the call was successful; might set one of the following error codes:"]
-    #[doc = " - ::clingo_error_bad_alloc"]
-    #[doc = " - ::clingo_error_logic if the assignment is conflicting"]
+    #[doc = "! Adds a new volatile literal to the underlying solver thread."]
+    #[doc = "!"]
+    #[doc = "! @attention The literal is only valid within the current solving step and solver thread."]
+    #[doc = "! All volatile literals and clauses involving a volatile literal are deleted after the current search."]
+    #[doc = "!"]
+    #[doc = "! @param[in] control the target"]
+    #[doc = "! @param[out] result the (positive) solver literal"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_bad_alloc"]
+    #[doc = "! - ::clingo_error_logic if the assignment is conflicting"]
     pub fn clingo_propagate_control_add_literal(
         control: *mut clingo_propagate_control_t,
         result: *mut clingo_literal_t,
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Add a watch for the solver literal in the given phase."]
-    #[doc = ""]
-    #[doc = " @note Unlike @ref clingo_propagate_init_add_watch() this does not add a watch to all solver threads but just the current one."]
-    #[doc = ""]
-    #[doc = " @param[in] control the target"]
-    #[doc = " @param[in] literal the literal to watch"]
-    #[doc = " @return whether the call was successful; might set one of the following error codes:"]
-    #[doc = " - ::clingo_error_bad_alloc"]
-    #[doc = " - ::clingo_error_logic if the literal is invalid"]
-    #[doc = " @see clingo_propagate_control_remove_watch()"]
+    #[doc = "! Add a watch for the solver literal in the given phase."]
+    #[doc = "!"]
+    #[doc = "! @note Unlike @ref clingo_propagate_init_add_watch() this does not add a watch to all solver threads but just the current one."]
+    #[doc = "!"]
+    #[doc = "! @param[in] control the target"]
+    #[doc = "! @param[in] literal the literal to watch"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_bad_alloc"]
+    #[doc = "! - ::clingo_error_logic if the literal is invalid"]
+    #[doc = "! @see clingo_propagate_control_remove_watch()"]
     pub fn clingo_propagate_control_add_watch(
         control: *mut clingo_propagate_control_t,
         literal: clingo_literal_t,
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Check whether a literal is watched in the current solver thread."]
-    #[doc = ""]
-    #[doc = " @param[in] control the target"]
-    #[doc = " @param[in] literal the literal to check"]
-    #[doc = ""]
-    #[doc = " @return whether the literal is watched"]
+    #[doc = "! Check whether a literal is watched in the current solver thread."]
+    #[doc = "!"]
+    #[doc = "! @param[in] control the target"]
+    #[doc = "! @param[in] literal the literal to check"]
+    #[doc = "!"]
+    #[doc = "! @return whether the literal is watched"]
     pub fn clingo_propagate_control_has_watch(
         control: *const clingo_propagate_control_t,
         literal: clingo_literal_t,
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Removes the watch (if any) for the given solver literal."]
-    #[doc = ""]
-    #[doc = " @note Similar to @ref clingo_propagate_init_add_watch() this just removes the watch in the current solver thread."]
-    #[doc = ""]
-    #[doc = " @param[in] control the target"]
-    #[doc = " @param[in] literal the literal to remove"]
+    #[doc = "! Removes the watch (if any) for the given solver literal."]
+    #[doc = "!"]
+    #[doc = "! @note Similar to @ref clingo_propagate_init_add_watch() this just removes the watch in the current solver thread."]
+    #[doc = "!"]
+    #[doc = "! @param[in] control the target"]
+    #[doc = "! @param[in] literal the literal to remove"]
     pub fn clingo_propagate_control_remove_watch(
         control: *mut clingo_propagate_control_t,
         literal: clingo_literal_t,
     );
 }
 extern "C" {
-    #[doc = " Add the given clause to the solver."]
-    #[doc = ""]
-    #[doc = " This method sets its result to false if the current propagation must be stopped for the solver to backtrack."]
-    #[doc = ""]
-    #[doc = " @attention No further calls on the control object or functions on the assignment should be called when the result of this method is false."]
-    #[doc = ""]
-    #[doc = " @param[in] control the target"]
-    #[doc = " @param[in] clause the clause to add"]
-    #[doc = " @param[in] size the size of the clause"]
-    #[doc = " @param[in] type the clause type determining its lifetime"]
-    #[doc = " @param[out] result result indicating whether propagation has to be stopped"]
-    #[doc = " @return whether the call was successful; might set one of the following error codes:"]
-    #[doc = " - ::clingo_error_bad_alloc"]
+    #[doc = "! Add the given clause to the solver."]
+    #[doc = "!"]
+    #[doc = "! This method sets its result to false if the current propagation must be stopped for the solver to backtrack."]
+    #[doc = "!"]
+    #[doc = "! @attention No further calls on the control object or functions on the assignment should be called when the result of this method is false."]
+    #[doc = "!"]
+    #[doc = "! @param[in] control the target"]
+    #[doc = "! @param[in] clause the clause to add"]
+    #[doc = "! @param[in] size the size of the clause"]
+    #[doc = "! @param[in] type the clause type determining its lifetime"]
+    #[doc = "! @param[out] result result indicating whether propagation has to be stopped"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_bad_alloc"]
     pub fn clingo_propagate_control_add_clause(
         control: *mut clingo_propagate_control_t,
         clause: *const clingo_literal_t,
@@ -1636,29 +1542,29 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Propagate implied literals (resulting from added clauses)."]
-    #[doc = ""]
-    #[doc = " This method sets its result to false if the current propagation must be stopped for the solver to backtrack."]
-    #[doc = ""]
-    #[doc = " @attention No further calls on the control object or functions on the assignment should be called when the result of this method is false."]
-    #[doc = ""]
-    #[doc = " @param[in] control the target"]
-    #[doc = " @param[out] result result indicating whether propagation has to be stopped"]
-    #[doc = " @return whether the call was successful; might set one of the following error codes:"]
-    #[doc = " - ::clingo_error_bad_alloc"]
+    #[doc = "! Propagate implied literals (resulting from added clauses)."]
+    #[doc = "!"]
+    #[doc = "! This method sets its result to false if the current propagation must be stopped for the solver to backtrack."]
+    #[doc = "!"]
+    #[doc = "! @attention No further calls on the control object or functions on the assignment should be called when the result of this method is false."]
+    #[doc = "!"]
+    #[doc = "! @param[in] control the target"]
+    #[doc = "! @param[out] result result indicating whether propagation has to be stopped"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_bad_alloc"]
     pub fn clingo_propagate_control_propagate(
         control: *mut clingo_propagate_control_t,
         result: *mut bool,
     ) -> bool;
 }
-#[doc = " Typedef for @ref ::clingo_propagator::init()."]
+#[doc = "! Typedef for @ref ::clingo_propagator::init()."]
 pub type clingo_propagator_init_callback_t = ::std::option::Option<
     unsafe extern "C" fn(
         arg1: *mut clingo_propagate_init_t,
         arg2: *mut ::std::os::raw::c_void,
     ) -> bool,
 >;
-#[doc = " Typedef for @ref ::clingo_propagator::propagate()."]
+#[doc = "! Typedef for @ref ::clingo_propagator::propagate()."]
 pub type clingo_propagator_propagate_callback_t = ::std::option::Option<
     unsafe extern "C" fn(
         arg1: *mut clingo_propagate_control_t,
@@ -1667,84 +1573,84 @@ pub type clingo_propagator_propagate_callback_t = ::std::option::Option<
         arg4: *mut ::std::os::raw::c_void,
     ) -> bool,
 >;
-#[doc = " Typedef for @ref ::clingo_propagator::undo()."]
+#[doc = "! Typedef for @ref ::clingo_propagator::undo()."]
 pub type clingo_propagator_undo_callback_t = ::std::option::Option<
     unsafe extern "C" fn(
-        arg1: *mut clingo_propagate_control_t,
+        arg1: *const clingo_propagate_control_t,
         arg2: *const clingo_literal_t,
         arg3: usize,
         arg4: *mut ::std::os::raw::c_void,
     ) -> bool,
 >;
-#[doc = " Typedef for @ref ::clingo_propagator::check()."]
+#[doc = "! Typedef for @ref ::clingo_propagator::check()."]
 pub type clingo_propagator_check_callback_t = ::std::option::Option<
     unsafe extern "C" fn(
         arg1: *mut clingo_propagate_control_t,
         arg2: *mut ::std::os::raw::c_void,
     ) -> bool,
 >;
-#[doc = " An instance of this struct has to be registered with a solver to implement a custom propagator."]
-#[doc = ""]
-#[doc = " Not all callbacks have to be implemented and can be set to NULL if not needed."]
-#[doc = " @see Propagator"]
+#[doc = "! An instance of this struct has to be registered with a solver to implement a custom propagator."]
+#[doc = "!"]
+#[doc = "! Not all callbacks have to be implemented and can be set to NULL if not needed."]
+#[doc = "! @see Propagator"]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct clingo_propagator {
-    #[doc = " This function is called once before each solving step."]
-    #[doc = " It is used to map relevant program literals to solver literals, add watches for solver literals, and initialize the data structures used during propagation."]
-    #[doc = ""]
-    #[doc = " @note This is the last point to access symbolic and theory atoms."]
-    #[doc = " Once the search has started, they are no longer accessible."]
-    #[doc = ""]
-    #[doc = " @param[in] init initizialization object"]
-    #[doc = " @param[in] data user data for the callback"]
-    #[doc = " @return whether the call was successful"]
-    #[doc = " @see ::clingo_propagator_init_callback_t"]
+    #[doc = "! This function is called once before each solving step."]
+    #[doc = "! It is used to map relevant program literals to solver literals, add watches for solver literals, and initialize the data structures used during propagation."]
+    #[doc = "!"]
+    #[doc = "! @note This is the last point to access symbolic and theory atoms."]
+    #[doc = "! Once the search has started, they are no longer accessible."]
+    #[doc = "!"]
+    #[doc = "! @param[in] init initizialization object"]
+    #[doc = "! @param[in] data user data for the callback"]
+    #[doc = "! @return whether the call was successful"]
+    #[doc = "! @see ::clingo_propagator_init_callback_t"]
     pub init: ::std::option::Option<
         unsafe extern "C" fn(
             init: *mut clingo_propagate_init_t,
             data: *mut ::std::os::raw::c_void,
         ) -> bool,
     >,
-    #[doc = " Can be used to propagate solver literals given a @link clingo_assignment_t partial assignment@endlink."]
-    #[doc = ""]
-    #[doc = " Called during propagation with a non-empty array of @link clingo_propagate_init_add_watch() watched solver literals@endlink"]
-    #[doc = " that have been assigned to true since the last call to either propagate, undo, (or the start of the search) - the change set."]
-    #[doc = " Only watched solver literals are contained in the change set."]
-    #[doc = " Each literal in the change set is true w.r.t. the current @link clingo_assignment_t assignment@endlink."]
-    #[doc = " @ref clingo_propagate_control_add_clause() can be used to add clauses."]
-    #[doc = " If a clause is unit resulting, it can be propagated using @ref clingo_propagate_control_propagate()."]
-    #[doc = " If the result of either of the two methods is false, the propagate function must return immediately."]
-    #[doc = ""]
-    #[doc = " The following snippet shows how to use the methods to add clauses and propagate consequences within the callback."]
-    #[doc = " The important point is to return true (true to indicate there was no error) if the result of either of the methods is false."]
-    #[doc = " ~~~~~~~~~~~~~~~{.c}"]
-    #[doc = " bool result;"]
-    #[doc = " clingo_literal_t clause[] = { ... };"]
-    #[doc = ""]
-    #[doc = " // add a clause"]
-    #[doc = " if (!clingo_propagate_control_add_clause(control, clause, clingo_clause_type_learnt, &result) { return false; }"]
-    #[doc = " if (!result) { return true; }"]
-    #[doc = " // propagate its consequences"]
-    #[doc = " if (!clingo_propagate_control_propagate(control, &result) { return false; }"]
-    #[doc = " if (!result) { return true; }"]
-    #[doc = ""]
-    #[doc = " // add further clauses and propagate them"]
-    #[doc = " ..."]
-    #[doc = ""]
-    #[doc = " return true;"]
-    #[doc = " ~~~~~~~~~~~~~~~"]
-    #[doc = ""]
-    #[doc = " @note"]
-    #[doc = " This function can be called from different solving threads."]
-    #[doc = " Each thread has its own assignment and id, which can be obtained using @ref clingo_propagate_control_thread_id()."]
-    #[doc = ""]
-    #[doc = " @param[in] control control object for the target solver"]
-    #[doc = " @param[in] changes the change set"]
-    #[doc = " @param[in] size the size of the change set"]
-    #[doc = " @param[in] data user data for the callback"]
-    #[doc = " @return whether the call was successful"]
-    #[doc = " @see ::clingo_propagator_propagate_callback_t"]
+    #[doc = "! Can be used to propagate solver literals given a @link clingo_assignment_t partial assignment@endlink."]
+    #[doc = "!"]
+    #[doc = "! Called during propagation with a non-empty array of @link clingo_propagate_init_add_watch() watched solver literals@endlink"]
+    #[doc = "! that have been assigned to true since the last call to either propagate, undo, (or the start of the search) - the change set."]
+    #[doc = "! Only watched solver literals are contained in the change set."]
+    #[doc = "! Each literal in the change set is true w.r.t. the current @link clingo_assignment_t assignment@endlink."]
+    #[doc = "! @ref clingo_propagate_control_add_clause() can be used to add clauses."]
+    #[doc = "! If a clause is unit resulting, it can be propagated using @ref clingo_propagate_control_propagate()."]
+    #[doc = "! If the result of either of the two methods is false, the propagate function must return immediately."]
+    #[doc = "!"]
+    #[doc = "! The following snippet shows how to use the methods to add clauses and propagate consequences within the callback."]
+    #[doc = "! The important point is to return true (true to indicate there was no error) if the result of either of the methods is false."]
+    #[doc = "! ~~~~~~~~~~~~~~~{.c}"]
+    #[doc = "! bool result;"]
+    #[doc = "! clingo_literal_t clause[] = { ... };"]
+    #[doc = "!"]
+    #[doc = "! // add a clause"]
+    #[doc = "! if (!clingo_propagate_control_add_clause(control, clause, clingo_clause_type_learnt, &result) { return false; }"]
+    #[doc = "! if (!result) { return true; }"]
+    #[doc = "! // propagate its consequences"]
+    #[doc = "! if (!clingo_propagate_control_propagate(control, &result) { return false; }"]
+    #[doc = "! if (!result) { return true; }"]
+    #[doc = "!"]
+    #[doc = "! // add further clauses and propagate them"]
+    #[doc = "! ..."]
+    #[doc = "!"]
+    #[doc = "! return true;"]
+    #[doc = "! ~~~~~~~~~~~~~~~"]
+    #[doc = "!"]
+    #[doc = "! @note"]
+    #[doc = "! This function can be called from different solving threads."]
+    #[doc = "! Each thread has its own assignment and id, which can be obtained using @ref clingo_propagate_control_thread_id()."]
+    #[doc = "!"]
+    #[doc = "! @param[in] control control object for the target solver"]
+    #[doc = "! @param[in] changes the change set"]
+    #[doc = "! @param[in] size the size of the change set"]
+    #[doc = "! @param[in] data user data for the callback"]
+    #[doc = "! @return whether the call was successful"]
+    #[doc = "! @see ::clingo_propagator_propagate_callback_t"]
     pub propagate: ::std::option::Option<
         unsafe extern "C" fn(
             control: *mut clingo_propagate_control_t,
@@ -1753,39 +1659,62 @@ pub struct clingo_propagator {
             data: *mut ::std::os::raw::c_void,
         ) -> bool,
     >,
-    #[doc = " Called whenever a solver undoes assignments to watched solver literals."]
-    #[doc = ""]
-    #[doc = " This callback is meant to update assignment dependent state in the propagator."]
-    #[doc = ""]
-    #[doc = " @note No clauses must be propagated in this callback."]
-    #[doc = ""]
-    #[doc = " @param[in] control control object for the target solver"]
-    #[doc = " @param[in] changes the change set"]
-    #[doc = " @param[in] size the size of the change set"]
-    #[doc = " @param[in] data user data for the callback"]
-    #[doc = " @see ::clingo_propagator_undo_callback_t"]
+    #[doc = "! Called whenever a solver undoes assignments to watched solver literals."]
+    #[doc = "!"]
+    #[doc = "! This callback is meant to update assignment dependent state in the propagator."]
+    #[doc = "!"]
+    #[doc = "! @note No clauses must be propagated in this callback."]
+    #[doc = "!"]
+    #[doc = "! @param[in] control control object for the target solver"]
+    #[doc = "! @param[in] changes the change set"]
+    #[doc = "! @param[in] size the size of the change set"]
+    #[doc = "! @param[in] data user data for the callback"]
+    #[doc = "! @return whether the call was successful"]
+    #[doc = "! @see ::clingo_propagator_undo_callback_t"]
     pub undo: ::std::option::Option<
         unsafe extern "C" fn(
-            control: *mut clingo_propagate_control_t,
+            control: *const clingo_propagate_control_t,
             changes: *const clingo_literal_t,
             size: usize,
             data: *mut ::std::os::raw::c_void,
         ) -> bool,
     >,
-    #[doc = " This function is similar to @ref clingo_propagate_control_propagate() but is called without a change set on propagation fixpoints."]
-    #[doc = ""]
-    #[doc = " When exactly this function is called, can be configured using the @ref clingo_propagate_init_set_check_mode() function."]
-    #[doc = ""]
-    #[doc = " @note This function is called even if no watches have been added."]
-    #[doc = ""]
-    #[doc = " @param[in] control control object for the target solver"]
-    #[doc = " @param[in] data user data for the callback"]
-    #[doc = " @return whether the call was successful"]
-    #[doc = " @see ::clingo_propagator_check_callback_t"]
+    #[doc = "! This function is similar to @ref clingo_propagate_control_propagate() but is called without a change set on propagation fixpoints."]
+    #[doc = "!"]
+    #[doc = "! When exactly this function is called, can be configured using the @ref clingo_propagate_init_set_check_mode() function."]
+    #[doc = "!"]
+    #[doc = "! @note This function is called even if no watches have been added."]
+    #[doc = "!"]
+    #[doc = "! @param[in] control control object for the target solver"]
+    #[doc = "! @param[in] data user data for the callback"]
+    #[doc = "! @return whether the call was successful"]
+    #[doc = "! @see ::clingo_propagator_check_callback_t"]
     pub check: ::std::option::Option<
         unsafe extern "C" fn(
             control: *mut clingo_propagate_control_t,
             data: *mut ::std::os::raw::c_void,
+        ) -> bool,
+    >,
+    #[doc = "! This function allows a propagator to implement domain-specific heuristics."]
+    #[doc = "!"]
+    #[doc = "! It is called whenever propagation reaches a fixed point and"]
+    #[doc = "! should return a free solver literal that is to be assigned true."]
+    #[doc = "! In case multiple propagators are registered,"]
+    #[doc = "! this function can return 0 to let a propagator registered later make a decision."]
+    #[doc = "! If all propagators return 0, then the fallback literal is"]
+    #[doc = "!"]
+    #[doc = "! @param[in] thread_id the solver's thread id"]
+    #[doc = "! @param[in] assignment the assignment of the solver"]
+    #[doc = "! @param[in] fallback the literal choosen by the solver's heuristic"]
+    #[doc = "! @param[out] decision the literal to make true"]
+    #[doc = "! @return whether the call was successful"]
+    pub decide: ::std::option::Option<
+        unsafe extern "C" fn(
+            thread_id: clingo_id_t,
+            assignment: *const clingo_assignment_t,
+            fallback: clingo_literal_t,
+            data: *mut ::std::os::raw::c_void,
+            decision: *mut clingo_literal_t,
         ) -> bool,
     >,
 }
@@ -1793,7 +1722,7 @@ pub struct clingo_propagator {
 fn bindgen_test_layout_clingo_propagator() {
     assert_eq!(
         ::std::mem::size_of::<clingo_propagator>(),
-        32usize,
+        40usize,
         concat!("Size of: ", stringify!(clingo_propagator))
     );
     assert_eq!(
@@ -1841,42 +1770,52 @@ fn bindgen_test_layout_clingo_propagator() {
             stringify!(check)
         )
     );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<clingo_propagator>())).decide as *const _ as usize },
+        32usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(clingo_propagator),
+            "::",
+            stringify!(decide)
+        )
+    );
 }
 pub type clingo_propagator_t = clingo_propagator;
-#[doc = " set the level of an atom"]
+#[doc = "!< set the level of an atom"]
 pub const clingo_heuristic_type_clingo_heuristic_type_level: clingo_heuristic_type = 0;
-#[doc = " configure which sign to chose for an atom"]
+#[doc = "!< configure which sign to chose for an atom"]
 pub const clingo_heuristic_type_clingo_heuristic_type_sign: clingo_heuristic_type = 1;
-#[doc = " modify VSIDS factor of an atom"]
+#[doc = "!< modify VSIDS factor of an atom"]
 pub const clingo_heuristic_type_clingo_heuristic_type_factor: clingo_heuristic_type = 2;
-#[doc = " modify the initial VSIDS score of an atom"]
+#[doc = "!< modify the initial VSIDS score of an atom"]
 pub const clingo_heuristic_type_clingo_heuristic_type_init: clingo_heuristic_type = 3;
-#[doc = " set the level of an atom and choose a positive sign"]
+#[doc = "!< set the level of an atom and choose a positive sign"]
 pub const clingo_heuristic_type_clingo_heuristic_type_true: clingo_heuristic_type = 4;
-#[doc = " set the level of an atom and choose a negative sign"]
+#[doc = "!< set the level of an atom and choose a negative sign"]
 pub const clingo_heuristic_type_clingo_heuristic_type_false: clingo_heuristic_type = 5;
-#[doc = " Enumeration of different heuristic modifiers."]
-#[doc = " @ingroup ProgramInspection"]
+#[doc = "! Enumeration of different heuristic modifiers."]
+#[doc = "! @ingroup ProgramInspection"]
 pub type clingo_heuristic_type = u32;
-#[doc = " Corresponding type to ::clingo_heuristic_type."]
-#[doc = " @ingroup ProgramInspection"]
+#[doc = "! Corresponding type to ::clingo_heuristic_type."]
+#[doc = "! @ingroup ProgramInspection"]
 pub type clingo_heuristic_type_t = ::std::os::raw::c_int;
-#[doc = " allow an external to be assigned freely"]
+#[doc = "!< allow an external to be assigned freely"]
 pub const clingo_external_type_clingo_external_type_free: clingo_external_type = 0;
-#[doc = " assign an external to true"]
+#[doc = "!< assign an external to true"]
 pub const clingo_external_type_clingo_external_type_true: clingo_external_type = 1;
-#[doc = " assign an external to false"]
+#[doc = "!< assign an external to false"]
 pub const clingo_external_type_clingo_external_type_false: clingo_external_type = 2;
-#[doc = " no longer treat an atom as external"]
+#[doc = "!< no longer treat an atom as external"]
 pub const clingo_external_type_clingo_external_type_release: clingo_external_type = 3;
-#[doc = " Enumeration of different external statements."]
-#[doc = " @ingroup ProgramInspection"]
+#[doc = "! Enumeration of different external statements."]
+#[doc = "! @ingroup ProgramInspection"]
 pub type clingo_external_type = u32;
-#[doc = " Corresponding type to ::clingo_external_type."]
-#[doc = " @ingroup ProgramInspection"]
+#[doc = "! Corresponding type to ::clingo_external_type."]
+#[doc = "! @ingroup ProgramInspection"]
 pub type clingo_external_type_t = ::std::os::raw::c_int;
-#[doc = " A Literal with an associated weight."]
-#[doc = " @ingroup ProgramInspection"]
+#[doc = "! A Literal with an associated weight."]
+#[doc = "! @ingroup ProgramInspection"]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct clingo_weighted_literal {
@@ -1922,37 +1861,37 @@ pub type clingo_weighted_literal_t = clingo_weighted_literal;
 pub struct clingo_backend {
     _unused: [u8; 0],
 }
-#[doc = " Handle to the backend to add directives in aspif format."]
+#[doc = "! Handle to the backend to add directives in aspif format."]
 pub type clingo_backend_t = clingo_backend;
 extern "C" {
-    #[doc = " Prepare the backend for usage."]
-    #[doc = ""]
-    #[doc = " @param[in] backend the target backend"]
-    #[doc = " @return whether the call was successful; might set one of the following error codes:"]
-    #[doc = " - ::clingo_error_bad_alloc"]
-    #[doc = " - ::clingo_error_runtime"]
+    #[doc = "! Prepare the backend for usage."]
+    #[doc = "!"]
+    #[doc = "! @param[in] backend the target backend"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_bad_alloc"]
+    #[doc = "! - ::clingo_error_runtime"]
     pub fn clingo_backend_begin(backend: *mut clingo_backend_t) -> bool;
 }
 extern "C" {
-    #[doc = " Finalize the backend after using it."]
-    #[doc = ""]
-    #[doc = " @param[in] backend the target backend"]
-    #[doc = " @return whether the call was successful; might set one of the following error codes:"]
-    #[doc = " - ::clingo_error_bad_alloc"]
-    #[doc = " - ::clingo_error_runtime"]
+    #[doc = "! Finalize the backend after using it."]
+    #[doc = "!"]
+    #[doc = "! @param[in] backend the target backend"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_bad_alloc"]
+    #[doc = "! - ::clingo_error_runtime"]
     pub fn clingo_backend_end(backend: *mut clingo_backend_t) -> bool;
 }
 extern "C" {
-    #[doc = " Add a rule to the program."]
-    #[doc = ""]
-    #[doc = " @param[in] backend the target backend"]
-    #[doc = " @param[in] choice determines if the head is a choice or a disjunction"]
-    #[doc = " @param[in] head the head atoms"]
-    #[doc = " @param[in] head_size the number of atoms in the head"]
-    #[doc = " @param[in] body the body literals"]
-    #[doc = " @param[in] body_size the number of literals in the body"]
-    #[doc = " @return whether the call was successful; might set one of the following error codes:"]
-    #[doc = " - ::clingo_error_bad_alloc"]
+    #[doc = "! Add a rule to the program."]
+    #[doc = "!"]
+    #[doc = "! @param[in] backend the target backend"]
+    #[doc = "! @param[in] choice determines if the head is a choice or a disjunction"]
+    #[doc = "! @param[in] head the head atoms"]
+    #[doc = "! @param[in] head_size the number of atoms in the head"]
+    #[doc = "! @param[in] body the body literals"]
+    #[doc = "! @param[in] body_size the number of literals in the body"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_bad_alloc"]
     pub fn clingo_backend_rule(
         backend: *mut clingo_backend_t,
         choice: bool,
@@ -1963,18 +1902,18 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Add a weight rule to the program."]
-    #[doc = ""]
-    #[doc = " @attention All weights and the lower bound must be positive."]
-    #[doc = " @param[in] backend the target backend"]
-    #[doc = " @param[in] choice determines if the head is a choice or a disjunction"]
-    #[doc = " @param[in] head the head atoms"]
-    #[doc = " @param[in] head_size the number of atoms in the head"]
-    #[doc = " @param[in] lower_bound the lower bound of the weight rule"]
-    #[doc = " @param[in] body the weighted body literals"]
-    #[doc = " @param[in] body_size the number of weighted literals in the body"]
-    #[doc = " @return whether the call was successful; might set one of the following error codes:"]
-    #[doc = " - ::clingo_error_bad_alloc"]
+    #[doc = "! Add a weight rule to the program."]
+    #[doc = "!"]
+    #[doc = "! @attention All weights and the lower bound must be positive."]
+    #[doc = "! @param[in] backend the target backend"]
+    #[doc = "! @param[in] choice determines if the head is a choice or a disjunction"]
+    #[doc = "! @param[in] head the head atoms"]
+    #[doc = "! @param[in] head_size the number of atoms in the head"]
+    #[doc = "! @param[in] lower_bound the lower bound of the weight rule"]
+    #[doc = "! @param[in] body the weighted body literals"]
+    #[doc = "! @param[in] body_size the number of weighted literals in the body"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_bad_alloc"]
     pub fn clingo_backend_weight_rule(
         backend: *mut clingo_backend_t,
         choice: bool,
@@ -1986,14 +1925,14 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Add a minimize constraint (or weak constraint) to the program."]
-    #[doc = ""]
-    #[doc = " @param[in] backend the target backend"]
-    #[doc = " @param[in] priority the priority of the constraint"]
-    #[doc = " @param[in] literals the weighted literals whose sum to minimize"]
-    #[doc = " @param[in] size the number of weighted literals"]
-    #[doc = " @return whether the call was successful; might set one of the following error codes:"]
-    #[doc = " - ::clingo_error_bad_alloc"]
+    #[doc = "! Add a minimize constraint (or weak constraint) to the program."]
+    #[doc = "!"]
+    #[doc = "! @param[in] backend the target backend"]
+    #[doc = "! @param[in] priority the priority of the constraint"]
+    #[doc = "! @param[in] literals the weighted literals whose sum to minimize"]
+    #[doc = "! @param[in] size the number of weighted literals"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_bad_alloc"]
     pub fn clingo_backend_minimize(
         backend: *mut clingo_backend_t,
         priority: clingo_weight_t,
@@ -2002,13 +1941,13 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Add a projection directive."]
-    #[doc = ""]
-    #[doc = " @param[in] backend the target backend"]
-    #[doc = " @param[in] atoms the atoms to project on"]
-    #[doc = " @param[in] size the number of atoms"]
-    #[doc = " @return whether the call was successful; might set one of the following error codes:"]
-    #[doc = " - ::clingo_error_bad_alloc"]
+    #[doc = "! Add a projection directive."]
+    #[doc = "!"]
+    #[doc = "! @param[in] backend the target backend"]
+    #[doc = "! @param[in] atoms the atoms to project on"]
+    #[doc = "! @param[in] size the number of atoms"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_bad_alloc"]
     pub fn clingo_backend_project(
         backend: *mut clingo_backend_t,
         atoms: *const clingo_atom_t,
@@ -2016,13 +1955,13 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Add an external statement."]
-    #[doc = ""]
-    #[doc = " @param[in] backend the target backend"]
-    #[doc = " @param[in] atom the external atom"]
-    #[doc = " @param[in] type the type of the external statement"]
-    #[doc = " @return whether the call was successful; might set one of the following error codes:"]
-    #[doc = " - ::clingo_error_bad_alloc"]
+    #[doc = "! Add an external statement."]
+    #[doc = "!"]
+    #[doc = "! @param[in] backend the target backend"]
+    #[doc = "! @param[in] atom the external atom"]
+    #[doc = "! @param[in] type the type of the external statement"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_bad_alloc"]
     pub fn clingo_backend_external(
         backend: *mut clingo_backend_t,
         atom: clingo_atom_t,
@@ -2030,13 +1969,13 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Add an assumption directive."]
-    #[doc = ""]
-    #[doc = " @param[in] backend the target backend"]
-    #[doc = " @param[in] literals the literals to assume (positive literals are true and negative literals false for the next solve call)"]
-    #[doc = " @param[in] size the number of atoms"]
-    #[doc = " @return whether the call was successful; might set one of the following error codes:"]
-    #[doc = " - ::clingo_error_bad_alloc"]
+    #[doc = "! Add an assumption directive."]
+    #[doc = "!"]
+    #[doc = "! @param[in] backend the target backend"]
+    #[doc = "! @param[in] literals the literals to assume (positive literals are true and negative literals false for the next solve call)"]
+    #[doc = "! @param[in] size the number of atoms"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_bad_alloc"]
     pub fn clingo_backend_assume(
         backend: *mut clingo_backend_t,
         literals: *const clingo_literal_t,
@@ -2044,17 +1983,17 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Add an heuristic directive."]
-    #[doc = ""]
-    #[doc = " @param[in] backend the target backend"]
-    #[doc = " @param[in] atom the target atom"]
-    #[doc = " @param[in] type the type of the heuristic modification"]
-    #[doc = " @param[in] bias the heuristic bias"]
-    #[doc = " @param[in] priority the heuristic priority"]
-    #[doc = " @param[in] condition the condition under which to apply the heuristic modification"]
-    #[doc = " @param[in] size the number of atoms in the condition"]
-    #[doc = " @return whether the call was successful; might set one of the following error codes:"]
-    #[doc = " - ::clingo_error_bad_alloc"]
+    #[doc = "! Add an heuristic directive."]
+    #[doc = "!"]
+    #[doc = "! @param[in] backend the target backend"]
+    #[doc = "! @param[in] atom the target atom"]
+    #[doc = "! @param[in] type the type of the heuristic modification"]
+    #[doc = "! @param[in] bias the heuristic bias"]
+    #[doc = "! @param[in] priority the heuristic priority"]
+    #[doc = "! @param[in] condition the condition under which to apply the heuristic modification"]
+    #[doc = "! @param[in] size the number of atoms in the condition"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_bad_alloc"]
     pub fn clingo_backend_heuristic(
         backend: *mut clingo_backend_t,
         atom: clingo_atom_t,
@@ -2066,15 +2005,15 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Add an edge directive."]
-    #[doc = ""]
-    #[doc = " @param[in] backend the target backend"]
-    #[doc = " @param[in] node_u the start vertex of the edge"]
-    #[doc = " @param[in] node_v the end vertex of the edge"]
-    #[doc = " @param[in] condition the condition under which the edge is part of the graph"]
-    #[doc = " @param[in] size the number of atoms in the condition"]
-    #[doc = " @return whether the call was successful; might set one of the following error codes:"]
-    #[doc = " - ::clingo_error_bad_alloc"]
+    #[doc = "! Add an edge directive."]
+    #[doc = "!"]
+    #[doc = "! @param[in] backend the target backend"]
+    #[doc = "! @param[in] node_u the start vertex of the edge"]
+    #[doc = "! @param[in] node_v the end vertex of the edge"]
+    #[doc = "! @param[in] condition the condition under which the edge is part of the graph"]
+    #[doc = "! @param[in] size the number of atoms in the condition"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_bad_alloc"]
     pub fn clingo_backend_acyc_edge(
         backend: *mut clingo_backend_t,
         node_u: ::std::os::raw::c_int,
@@ -2084,55 +2023,55 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Get a fresh atom to be used in aspif directives."]
-    #[doc = ""]
-    #[doc = " @param[in] backend the target backend"]
-    #[doc = " @param[in] symbol optional symbol to associate the atom with"]
-    #[doc = " @param[out] atom the resulting atom"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Get a fresh atom to be used in aspif directives."]
+    #[doc = "!"]
+    #[doc = "! @param[in] backend the target backend"]
+    #[doc = "! @param[in] symbol optional symbol to associate the atom with"]
+    #[doc = "! @param[out] atom the resulting atom"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_backend_add_atom(
         backend: *mut clingo_backend_t,
         symbol: *mut clingo_symbol_t,
         atom: *mut clingo_atom_t,
     ) -> bool;
 }
-#[doc = " the entry is a (string) value"]
+#[doc = "!< the entry is a (string) value"]
 pub const clingo_configuration_type_clingo_configuration_type_value: clingo_configuration_type = 1;
-#[doc = " the entry is an array"]
+#[doc = "!< the entry is an array"]
 pub const clingo_configuration_type_clingo_configuration_type_array: clingo_configuration_type = 2;
-#[doc = " the entry is a map"]
+#[doc = "!< the entry is a map"]
 pub const clingo_configuration_type_clingo_configuration_type_map: clingo_configuration_type = 4;
-#[doc = " Enumeration for entries of the configuration."]
+#[doc = "! Enumeration for entries of the configuration."]
 pub type clingo_configuration_type = u32;
-#[doc = " Bitset for values of type ::clingo_configuration_type."]
+#[doc = "! Bitset for values of type ::clingo_configuration_type."]
 pub type clingo_configuration_type_bitset_t = ::std::os::raw::c_uint;
 #[repr(C)]
 #[derive(Debug)]
 pub struct clingo_configuration {
     _unused: [u8; 0],
 }
-#[doc = " Handle for to the solver configuration."]
+#[doc = "! Handle for to the solver configuration."]
 pub type clingo_configuration_t = clingo_configuration;
 extern "C" {
-    #[doc = " Get the root key of the configuration."]
-    #[doc = ""]
-    #[doc = " @param[in] configuration the target configuration"]
-    #[doc = " @param[out] key the root key"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Get the root key of the configuration."]
+    #[doc = "!"]
+    #[doc = "! @param[in] configuration the target configuration"]
+    #[doc = "! @param[out] key the root key"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_configuration_root(
         configuration: *const clingo_configuration_t,
         key: *mut clingo_id_t,
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Get the type of a key."]
-    #[doc = ""]
-    #[doc = " @note The type is bitset, an entry can have multiple (but at least one) type."]
-    #[doc = ""]
-    #[doc = " @param[in] configuration the target configuration"]
-    #[doc = " @param[in] key the key"]
-    #[doc = " @param[out] type the resulting type"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Get the type of a key."]
+    #[doc = "!"]
+    #[doc = "! @note The type is bitset, an entry can have multiple (but at least one) type."]
+    #[doc = "!"]
+    #[doc = "! @param[in] configuration the target configuration"]
+    #[doc = "! @param[in] key the key"]
+    #[doc = "! @param[out] type the resulting type"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_configuration_type(
         configuration: *const clingo_configuration_t,
         key: clingo_id_t,
@@ -2140,12 +2079,12 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Get the description of an entry."]
-    #[doc = ""]
-    #[doc = " @param[in] configuration the target configuration"]
-    #[doc = " @param[in] key the key"]
-    #[doc = " @param[out] description the description"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Get the description of an entry."]
+    #[doc = "!"]
+    #[doc = "! @param[in] configuration the target configuration"]
+    #[doc = "! @param[in] key the key"]
+    #[doc = "! @param[out] description the description"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_configuration_description(
         configuration: *const clingo_configuration_t,
         key: clingo_id_t,
@@ -2153,13 +2092,13 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Get the size of an array entry."]
-    #[doc = ""]
-    #[doc = " @pre The @link clingo_configuration_type() type@endlink of the entry must be @ref ::clingo_configuration_type_array."]
-    #[doc = " @param[in] configuration the target configuration"]
-    #[doc = " @param[in] key the key"]
-    #[doc = " @param[out] size the resulting size"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Get the size of an array entry."]
+    #[doc = "!"]
+    #[doc = "! @pre The @link clingo_configuration_type() type@endlink of the entry must be @ref ::clingo_configuration_type_array."]
+    #[doc = "! @param[in] configuration the target configuration"]
+    #[doc = "! @param[in] key the key"]
+    #[doc = "! @param[out] size the resulting size"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_configuration_array_size(
         configuration: *const clingo_configuration_t,
         key: clingo_id_t,
@@ -2167,15 +2106,15 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Get the subkey at the given offset of an array entry."]
-    #[doc = ""]
-    #[doc = " @note Some array entries, like fore example the solver configuration, can be accessed past there actual size to add subentries."]
-    #[doc = " @pre The @link clingo_configuration_type() type@endlink of the entry must be @ref ::clingo_configuration_type_array."]
-    #[doc = " @param[in] configuration the target configuration"]
-    #[doc = " @param[in] key the key"]
-    #[doc = " @param[in] offset the offset in the array"]
-    #[doc = " @param[out] subkey the resulting subkey"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Get the subkey at the given offset of an array entry."]
+    #[doc = "!"]
+    #[doc = "! @note Some array entries, like fore example the solver configuration, can be accessed past there actual size to add subentries."]
+    #[doc = "! @pre The @link clingo_configuration_type() type@endlink of the entry must be @ref ::clingo_configuration_type_array."]
+    #[doc = "! @param[in] configuration the target configuration"]
+    #[doc = "! @param[in] key the key"]
+    #[doc = "! @param[in] offset the offset in the array"]
+    #[doc = "! @param[out] subkey the resulting subkey"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_configuration_array_at(
         configuration: *const clingo_configuration_t,
         key: clingo_id_t,
@@ -2184,13 +2123,13 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Get the number of subkeys of a map entry."]
-    #[doc = ""]
-    #[doc = " @pre The @link clingo_configuration_type() type@endlink of the entry must be @ref ::clingo_configuration_type_map."]
-    #[doc = " @param[in] configuration the target configuration"]
-    #[doc = " @param[in] key the key"]
-    #[doc = " @param[out] size the resulting number"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Get the number of subkeys of a map entry."]
+    #[doc = "!"]
+    #[doc = "! @pre The @link clingo_configuration_type() type@endlink of the entry must be @ref ::clingo_configuration_type_map."]
+    #[doc = "! @param[in] configuration the target configuration"]
+    #[doc = "! @param[in] key the key"]
+    #[doc = "! @param[out] size the resulting number"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_configuration_map_size(
         configuration: *const clingo_configuration_t,
         key: clingo_id_t,
@@ -2198,15 +2137,15 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Query whether the map has a key."]
-    #[doc = ""]
-    #[doc = " @pre The @link clingo_configuration_type() type@endlink of the entry must be @ref ::clingo_configuration_type_map."]
-    #[doc = " @note Multiple levels can be looked up by concatenating keys with a period."]
-    #[doc = " @param[in] configuration the target configuration"]
-    #[doc = " @param[in] key the key"]
-    #[doc = " @param[in] name the name to lookup the subkey"]
-    #[doc = " @param[out] result whether the key is in the map"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Query whether the map has a key."]
+    #[doc = "!"]
+    #[doc = "! @pre The @link clingo_configuration_type() type@endlink of the entry must be @ref ::clingo_configuration_type_map."]
+    #[doc = "! @note Multiple levels can be looked up by concatenating keys with a period."]
+    #[doc = "! @param[in] configuration the target configuration"]
+    #[doc = "! @param[in] key the key"]
+    #[doc = "! @param[in] name the name to lookup the subkey"]
+    #[doc = "! @param[out] result whether the key is in the map"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_configuration_map_has_subkey(
         configuration: *const clingo_configuration_t,
         key: clingo_id_t,
@@ -2215,14 +2154,14 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Get the name associated with the offset-th subkey."]
-    #[doc = ""]
-    #[doc = " @pre The @link clingo_configuration_type() type@endlink of the entry must be @ref ::clingo_configuration_type_map."]
-    #[doc = " @param[in] configuration the target configuration"]
-    #[doc = " @param[in] key the key"]
-    #[doc = " @param[in] offset the offset of the name"]
-    #[doc = " @param[out] name the resulting name"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Get the name associated with the offset-th subkey."]
+    #[doc = "!"]
+    #[doc = "! @pre The @link clingo_configuration_type() type@endlink of the entry must be @ref ::clingo_configuration_type_map."]
+    #[doc = "! @param[in] configuration the target configuration"]
+    #[doc = "! @param[in] key the key"]
+    #[doc = "! @param[in] offset the offset of the name"]
+    #[doc = "! @param[out] name the resulting name"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_configuration_map_subkey_name(
         configuration: *const clingo_configuration_t,
         key: clingo_id_t,
@@ -2231,15 +2170,15 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Lookup a subkey under the given name."]
-    #[doc = ""]
-    #[doc = " @pre The @link clingo_configuration_type() type@endlink of the entry must be @ref ::clingo_configuration_type_map."]
-    #[doc = " @note Multiple levels can be looked up by concatenating keys with a period."]
-    #[doc = " @param[in] configuration the target configuration"]
-    #[doc = " @param[in] key the key"]
-    #[doc = " @param[in] name the name to lookup the subkey"]
-    #[doc = " @param[out] subkey the resulting subkey"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Lookup a subkey under the given name."]
+    #[doc = "!"]
+    #[doc = "! @pre The @link clingo_configuration_type() type@endlink of the entry must be @ref ::clingo_configuration_type_map."]
+    #[doc = "! @note Multiple levels can be looked up by concatenating keys with a period."]
+    #[doc = "! @param[in] configuration the target configuration"]
+    #[doc = "! @param[in] key the key"]
+    #[doc = "! @param[in] name the name to lookup the subkey"]
+    #[doc = "! @param[out] subkey the resulting subkey"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_configuration_map_at(
         configuration: *const clingo_configuration_t,
         key: clingo_id_t,
@@ -2248,13 +2187,13 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Check whether a entry has a value."]
-    #[doc = ""]
-    #[doc = " @pre The @link clingo_configuration_type() type@endlink of the entry must be @ref ::clingo_configuration_type_value."]
-    #[doc = " @param[in] configuration the target configuration"]
-    #[doc = " @param[in] key the key"]
-    #[doc = " @param[out] assigned whether the entry has a value"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Check whether a entry has a value."]
+    #[doc = "!"]
+    #[doc = "! @pre The @link clingo_configuration_type() type@endlink of the entry must be @ref ::clingo_configuration_type_value."]
+    #[doc = "! @param[in] configuration the target configuration"]
+    #[doc = "! @param[in] key the key"]
+    #[doc = "! @param[out] assigned whether the entry has a value"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_configuration_value_is_assigned(
         configuration: *const clingo_configuration_t,
         key: clingo_id_t,
@@ -2262,13 +2201,13 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Get the size of the string value of the given entry."]
-    #[doc = ""]
-    #[doc = " @pre The @link clingo_configuration_type() type@endlink of the entry must be @ref ::clingo_configuration_type_value."]
-    #[doc = " @param[in] configuration the target configuration"]
-    #[doc = " @param[in] key the key"]
-    #[doc = " @param[out] size the resulting size"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Get the size of the string value of the given entry."]
+    #[doc = "!"]
+    #[doc = "! @pre The @link clingo_configuration_type() type@endlink of the entry must be @ref ::clingo_configuration_type_value."]
+    #[doc = "! @param[in] configuration the target configuration"]
+    #[doc = "! @param[in] key the key"]
+    #[doc = "! @param[out] size the resulting size"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_configuration_value_get_size(
         configuration: *const clingo_configuration_t,
         key: clingo_id_t,
@@ -2276,15 +2215,15 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Get the string value of the given entry."]
-    #[doc = ""]
-    #[doc = " @pre The @link clingo_configuration_type() type@endlink of the entry must be @ref ::clingo_configuration_type_value."]
-    #[doc = " @pre The given size must be larger or equal to size of the value."]
-    #[doc = " @param[in] configuration the target configuration"]
-    #[doc = " @param[in] key the key"]
-    #[doc = " @param[out] value the resulting string value"]
-    #[doc = " @param[in] size the size of the given char array"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Get the string value of the given entry."]
+    #[doc = "!"]
+    #[doc = "! @pre The @link clingo_configuration_type() type@endlink of the entry must be @ref ::clingo_configuration_type_value."]
+    #[doc = "! @pre The given size must be larger or equal to size of the value."]
+    #[doc = "! @param[in] configuration the target configuration"]
+    #[doc = "! @param[in] key the key"]
+    #[doc = "! @param[out] value the resulting string value"]
+    #[doc = "! @param[in] size the size of the given char array"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_configuration_value_get(
         configuration: *const clingo_configuration_t,
         key: clingo_id_t,
@@ -2293,53 +2232,53 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Set the value of an entry."]
-    #[doc = ""]
-    #[doc = " @pre The @link clingo_configuration_type() type@endlink of the entry must be @ref ::clingo_configuration_type_value."]
-    #[doc = " @param[in] configuration the target configuration"]
-    #[doc = " @param[in] key the key"]
-    #[doc = " @param[in] value the value to set"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Set the value of an entry."]
+    #[doc = "!"]
+    #[doc = "! @pre The @link clingo_configuration_type() type@endlink of the entry must be @ref ::clingo_configuration_type_value."]
+    #[doc = "! @param[in] configuration the target configuration"]
+    #[doc = "! @param[in] key the key"]
+    #[doc = "! @param[in] value the value to set"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_configuration_value_set(
         configuration: *mut clingo_configuration_t,
         key: clingo_id_t,
         value: *const ::std::os::raw::c_char,
     ) -> bool;
 }
-#[doc = " the entry is invalid (has neither of the types below)"]
+#[doc = "!< the entry is invalid (has neither of the types below)"]
 pub const clingo_statistics_type_clingo_statistics_type_empty: clingo_statistics_type = 0;
-#[doc = " the entry is a (double) value"]
+#[doc = "!< the entry is a (double) value"]
 pub const clingo_statistics_type_clingo_statistics_type_value: clingo_statistics_type = 1;
-#[doc = " the entry is an array"]
+#[doc = "!< the entry is an array"]
 pub const clingo_statistics_type_clingo_statistics_type_array: clingo_statistics_type = 2;
-#[doc = " the entry is a map"]
+#[doc = "!< the entry is a map"]
 pub const clingo_statistics_type_clingo_statistics_type_map: clingo_statistics_type = 3;
-#[doc = " Enumeration for entries of the statistics."]
+#[doc = "! Enumeration for entries of the statistics."]
 pub type clingo_statistics_type = u32;
-#[doc = " Corresponding type to ::clingo_statistics_type."]
+#[doc = "! Corresponding type to ::clingo_statistics_type."]
 pub type clingo_statistics_type_t = ::std::os::raw::c_int;
 #[repr(C)]
 #[derive(Debug)]
 pub struct clingo_statistic {
     _unused: [u8; 0],
 }
-#[doc = " Handle for the solver statistics."]
+#[doc = "! Handle for the solver statistics."]
 pub type clingo_statistics_t = clingo_statistic;
 extern "C" {
-    #[doc = " Get the root key of the statistics."]
-    #[doc = ""]
-    #[doc = " @param[in] statistics the target statistics"]
-    #[doc = " @param[out] key the root key"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Get the root key of the statistics."]
+    #[doc = "!"]
+    #[doc = "! @param[in] statistics the target statistics"]
+    #[doc = "! @param[out] key the root key"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_statistics_root(statistics: *const clingo_statistics_t, key: *mut u64) -> bool;
 }
 extern "C" {
-    #[doc = " Get the type of a key."]
-    #[doc = ""]
-    #[doc = " @param[in] statistics the target statistics"]
-    #[doc = " @param[in] key the key"]
-    #[doc = " @param[out] type the resulting type"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Get the type of a key."]
+    #[doc = "!"]
+    #[doc = "! @param[in] statistics the target statistics"]
+    #[doc = "! @param[in] key the key"]
+    #[doc = "! @param[out] type the resulting type"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_statistics_type(
         statistics: *const clingo_statistics_t,
         key: u64,
@@ -2347,13 +2286,13 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Get the size of an array entry."]
-    #[doc = ""]
-    #[doc = " @pre The @link clingo_statistics_type() type@endlink of the entry must be @ref ::clingo_statistics_type_array."]
-    #[doc = " @param[in] statistics the target statistics"]
-    #[doc = " @param[in] key the key"]
-    #[doc = " @param[out] size the resulting size"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Get the size of an array entry."]
+    #[doc = "!"]
+    #[doc = "! @pre The @link clingo_statistics_type() type@endlink of the entry must be @ref ::clingo_statistics_type_array."]
+    #[doc = "! @param[in] statistics the target statistics"]
+    #[doc = "! @param[in] key the key"]
+    #[doc = "! @param[out] size the resulting size"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_statistics_array_size(
         statistics: *const clingo_statistics_t,
         key: u64,
@@ -2361,14 +2300,14 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Get the subkey at the given offset of an array entry."]
-    #[doc = ""]
-    #[doc = " @pre The @link clingo_statistics_type() type@endlink of the entry must be @ref ::clingo_statistics_type_array."]
-    #[doc = " @param[in] statistics the target statistics"]
-    #[doc = " @param[in] key the key"]
-    #[doc = " @param[in] offset the offset in the array"]
-    #[doc = " @param[out] subkey the resulting subkey"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Get the subkey at the given offset of an array entry."]
+    #[doc = "!"]
+    #[doc = "! @pre The @link clingo_statistics_type() type@endlink of the entry must be @ref ::clingo_statistics_type_array."]
+    #[doc = "! @param[in] statistics the target statistics"]
+    #[doc = "! @param[in] key the key"]
+    #[doc = "! @param[in] offset the offset in the array"]
+    #[doc = "! @param[out] subkey the resulting subkey"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_statistics_array_at(
         statistics: *const clingo_statistics_t,
         key: u64,
@@ -2377,14 +2316,14 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Create the subkey at the end of an array entry."]
-    #[doc = ""]
-    #[doc = " @pre The @link clingo_statistics_type() type@endlink of the entry must be @ref ::clingo_statistics_type_array."]
-    #[doc = " @param[in] statistics the target statistics"]
-    #[doc = " @param[in] key the key"]
-    #[doc = " @param[in] type the type of the new subkey"]
-    #[doc = " @param[out] subkey the resulting subkey"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Create the subkey at the end of an array entry."]
+    #[doc = "!"]
+    #[doc = "! @pre The @link clingo_statistics_type() type@endlink of the entry must be @ref ::clingo_statistics_type_array."]
+    #[doc = "! @param[in] statistics the target statistics"]
+    #[doc = "! @param[in] key the key"]
+    #[doc = "! @param[in] type the type of the new subkey"]
+    #[doc = "! @param[out] subkey the resulting subkey"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_statistics_array_push(
         statistics: *mut clingo_statistics_t,
         key: u64,
@@ -2393,13 +2332,13 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Get the number of subkeys of a map entry."]
-    #[doc = ""]
-    #[doc = " @pre The @link clingo_statistics_type() type@endlink of the entry must be @ref ::clingo_statistics_type_map."]
-    #[doc = " @param[in] statistics the target statistics"]
-    #[doc = " @param[in] key the key"]
-    #[doc = " @param[out] size the resulting number"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Get the number of subkeys of a map entry."]
+    #[doc = "!"]
+    #[doc = "! @pre The @link clingo_statistics_type() type@endlink of the entry must be @ref ::clingo_statistics_type_map."]
+    #[doc = "! @param[in] statistics the target statistics"]
+    #[doc = "! @param[in] key the key"]
+    #[doc = "! @param[out] size the resulting number"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_statistics_map_size(
         statistics: *const clingo_statistics_t,
         key: u64,
@@ -2407,14 +2346,14 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Test if the given map contains a specific subkey."]
-    #[doc = ""]
-    #[doc = " @pre The @link clingo_statistics_type() type@endlink of the entry must be @ref ::clingo_statistics_type_map."]
-    #[doc = " @param[in] statistics the target statistics"]
-    #[doc = " @param[in] key the key"]
-    #[doc = " @param[in] name name of the subkey"]
-    #[doc = " @param[out] result true if the map has a subkey with the given name"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Test if the given map contains a specific subkey."]
+    #[doc = "!"]
+    #[doc = "! @pre The @link clingo_statistics_type() type@endlink of the entry must be @ref ::clingo_statistics_type_map."]
+    #[doc = "! @param[in] statistics the target statistics"]
+    #[doc = "! @param[in] key the key"]
+    #[doc = "! @param[in] name name of the subkey"]
+    #[doc = "! @param[out] result true if the map has a subkey with the given name"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_statistics_map_has_subkey(
         statistics: *const clingo_statistics_t,
         key: u64,
@@ -2423,14 +2362,14 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Get the name associated with the offset-th subkey."]
-    #[doc = ""]
-    #[doc = " @pre The @link clingo_statistics_type() type@endlink of the entry must be @ref ::clingo_statistics_type_map."]
-    #[doc = " @param[in] statistics the target statistics"]
-    #[doc = " @param[in] key the key"]
-    #[doc = " @param[in] offset the offset of the name"]
-    #[doc = " @param[out] name the resulting name"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Get the name associated with the offset-th subkey."]
+    #[doc = "!"]
+    #[doc = "! @pre The @link clingo_statistics_type() type@endlink of the entry must be @ref ::clingo_statistics_type_map."]
+    #[doc = "! @param[in] statistics the target statistics"]
+    #[doc = "! @param[in] key the key"]
+    #[doc = "! @param[in] offset the offset of the name"]
+    #[doc = "! @param[out] name the resulting name"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_statistics_map_subkey_name(
         statistics: *const clingo_statistics_t,
         key: u64,
@@ -2439,15 +2378,15 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Lookup a subkey under the given name."]
-    #[doc = ""]
-    #[doc = " @pre The @link clingo_statistics_type() type@endlink of the entry must be @ref ::clingo_statistics_type_map."]
-    #[doc = " @note Multiple levels can be looked up by concatenating keys with a period."]
-    #[doc = " @param[in] statistics the target statistics"]
-    #[doc = " @param[in] key the key"]
-    #[doc = " @param[in] name the name to lookup the subkey"]
-    #[doc = " @param[out] subkey the resulting subkey"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Lookup a subkey under the given name."]
+    #[doc = "!"]
+    #[doc = "! @pre The @link clingo_statistics_type() type@endlink of the entry must be @ref ::clingo_statistics_type_map."]
+    #[doc = "! @note Multiple levels can be looked up by concatenating keys with a period."]
+    #[doc = "! @param[in] statistics the target statistics"]
+    #[doc = "! @param[in] key the key"]
+    #[doc = "! @param[in] name the name to lookup the subkey"]
+    #[doc = "! @param[out] subkey the resulting subkey"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_statistics_map_at(
         statistics: *const clingo_statistics_t,
         key: u64,
@@ -2456,15 +2395,15 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Add a subkey with the given name."]
-    #[doc = ""]
-    #[doc = " @pre The @link clingo_statistics_type() type@endlink of the entry must be @ref ::clingo_statistics_type_map."]
-    #[doc = " @param[in] statistics the target statistics"]
-    #[doc = " @param[in] key the key"]
-    #[doc = " @param[in] name the name of the new subkey"]
-    #[doc = " @param[in] type the type of the new subkey"]
-    #[doc = " @param[out] subkey the index of the resulting subkey"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Add a subkey with the given name."]
+    #[doc = "!"]
+    #[doc = "! @pre The @link clingo_statistics_type() type@endlink of the entry must be @ref ::clingo_statistics_type_map."]
+    #[doc = "! @param[in] statistics the target statistics"]
+    #[doc = "! @param[in] key the key"]
+    #[doc = "! @param[in] name the name of the new subkey"]
+    #[doc = "! @param[in] type the type of the new subkey"]
+    #[doc = "! @param[out] subkey the index of the resulting subkey"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_statistics_map_add_subkey(
         statistics: *mut clingo_statistics_t,
         key: u64,
@@ -2474,13 +2413,13 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Get the value of the given entry."]
-    #[doc = ""]
-    #[doc = " @pre The @link clingo_statistics_type() type@endlink of the entry must be @ref ::clingo_statistics_type_value."]
-    #[doc = " @param[in] statistics the target statistics"]
-    #[doc = " @param[in] key the key"]
-    #[doc = " @param[out] value the resulting value"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Get the value of the given entry."]
+    #[doc = "!"]
+    #[doc = "! @pre The @link clingo_statistics_type() type@endlink of the entry must be @ref ::clingo_statistics_type_value."]
+    #[doc = "! @param[in] statistics the target statistics"]
+    #[doc = "! @param[in] key the key"]
+    #[doc = "! @param[out] value the resulting value"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_statistics_value_get(
         statistics: *const clingo_statistics_t,
         key: u64,
@@ -2488,13 +2427,13 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Set the value of the given entry."]
-    #[doc = ""]
-    #[doc = " @pre The @link clingo_statistics_type() type@endlink of the entry must be @ref ::clingo_statistics_type_value."]
-    #[doc = " @param[in] statistics the target statistics"]
-    #[doc = " @param[in] key the key"]
-    #[doc = " @param[out] value the new value"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Set the value of the given entry."]
+    #[doc = "!"]
+    #[doc = "! @pre The @link clingo_statistics_type() type@endlink of the entry must be @ref ::clingo_statistics_type_value."]
+    #[doc = "! @param[in] statistics the target statistics"]
+    #[doc = "! @param[in] key the key"]
+    #[doc = "! @param[out] value the new value"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_statistics_value_set(
         statistics: *mut clingo_statistics_t,
         key: u64,
@@ -2506,66 +2445,66 @@ extern "C" {
 pub struct clingo_solve_control {
     _unused: [u8; 0],
 }
-#[doc = " Object to add clauses during search."]
+#[doc = "! Object to add clauses during search."]
 pub type clingo_solve_control_t = clingo_solve_control;
 #[repr(C)]
 #[derive(Debug)]
 pub struct clingo_model {
     _unused: [u8; 0],
 }
-#[doc = " Object representing a model."]
+#[doc = "! Object representing a model."]
 pub type clingo_model_t = clingo_model;
-#[doc = " The model represents a stable model."]
+#[doc = "!< The model represents a stable model."]
 pub const clingo_model_type_clingo_model_type_stable_model: clingo_model_type = 0;
-#[doc = " The model represents a set of brave consequences."]
+#[doc = "!< The model represents a set of brave consequences."]
 pub const clingo_model_type_clingo_model_type_brave_consequences: clingo_model_type = 1;
-#[doc = " The model represents a set of cautious consequences."]
+#[doc = "!< The model represents a set of cautious consequences."]
 pub const clingo_model_type_clingo_model_type_cautious_consequences: clingo_model_type = 2;
-#[doc = " Enumeration for the different model types."]
+#[doc = "! Enumeration for the different model types."]
 pub type clingo_model_type = u32;
-#[doc = " Corresponding type to ::clingo_model_type."]
+#[doc = "! Corresponding type to ::clingo_model_type."]
 pub type clingo_model_type_t = ::std::os::raw::c_int;
-#[doc = " Select CSP assignments."]
+#[doc = "!< Select CSP assignments."]
 pub const clingo_show_type_clingo_show_type_csp: clingo_show_type = 1;
-#[doc = " Select shown atoms and terms."]
+#[doc = "!< Select shown atoms and terms."]
 pub const clingo_show_type_clingo_show_type_shown: clingo_show_type = 2;
-#[doc = " Select all atoms."]
+#[doc = "!< Select all atoms."]
 pub const clingo_show_type_clingo_show_type_atoms: clingo_show_type = 4;
-#[doc = " Select all terms."]
+#[doc = "!< Select all terms."]
 pub const clingo_show_type_clingo_show_type_terms: clingo_show_type = 8;
-#[doc = " Select everything."]
+#[doc = "!< Select everything."]
 pub const clingo_show_type_clingo_show_type_all: clingo_show_type = 15;
-#[doc = " Select false instead of true atoms (::clingo_show_type_atoms) or terms (::clingo_show_type_terms)."]
+#[doc = "!< Select false instead of true atoms (::clingo_show_type_atoms) or terms (::clingo_show_type_terms)."]
 pub const clingo_show_type_clingo_show_type_complement: clingo_show_type = 16;
-#[doc = " Enumeration of bit flags to select symbols in models."]
+#[doc = "! Enumeration of bit flags to select symbols in models."]
 pub type clingo_show_type = u32;
-#[doc = " Corresponding type to ::clingo_show_type."]
+#[doc = "! Corresponding type to ::clingo_show_type."]
 pub type clingo_show_type_bitset_t = ::std::os::raw::c_uint;
 extern "C" {
-    #[doc = " Get the type of the model."]
-    #[doc = ""]
-    #[doc = " @param[in] model the target"]
-    #[doc = " @param[out] type the type of the model"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Get the type of the model."]
+    #[doc = "!"]
+    #[doc = "! @param[in] model the target"]
+    #[doc = "! @param[out] type the type of the model"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_model_type(model: *const clingo_model_t, type_: *mut clingo_model_type_t)
         -> bool;
 }
 extern "C" {
-    #[doc = " Get the running number of the model."]
-    #[doc = ""]
-    #[doc = " @param[in] model the target"]
-    #[doc = " @param[out] number the number of the model"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Get the running number of the model."]
+    #[doc = "!"]
+    #[doc = "! @param[in] model the target"]
+    #[doc = "! @param[out] number the number of the model"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_model_number(model: *const clingo_model_t, number: *mut u64) -> bool;
 }
 extern "C" {
-    #[doc = " Get the number of symbols of the selected types in the model."]
-    #[doc = ""]
-    #[doc = " @param[in] model the target"]
-    #[doc = " @param[in] show which symbols to select"]
-    #[doc = " @param[out] size the number symbols"]
-    #[doc = " @return whether the call was successful; might set one of the following error codes:"]
-    #[doc = " - ::clingo_error_bad_alloc"]
+    #[doc = "! Get the number of symbols of the selected types in the model."]
+    #[doc = "!"]
+    #[doc = "! @param[in] model the target"]
+    #[doc = "! @param[in] show which symbols to select"]
+    #[doc = "! @param[out] size the number symbols"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_bad_alloc"]
     pub fn clingo_model_symbols_size(
         model: *const clingo_model_t,
         show: clingo_show_type_bitset_t,
@@ -2573,21 +2512,21 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Get the symbols of the selected types in the model."]
-    #[doc = ""]
-    #[doc = " @note CSP assignments are represented using functions with name \"$\""]
-    #[doc = " where the first argument is the name of the CSP variable and the second one its"]
-    #[doc = " value."]
-    #[doc = ""]
-    #[doc = " @param[in] model the target"]
-    #[doc = " @param[in] show which symbols to select"]
-    #[doc = " @param[out] symbols the resulting symbols"]
-    #[doc = " @param[in] size the number of selected symbols"]
-    #[doc = " @return whether the call was successful; might set one of the following error codes:"]
-    #[doc = " - ::clingo_error_bad_alloc"]
-    #[doc = " - ::clingo_error_runtime if the size is too small"]
-    #[doc = ""]
-    #[doc = " @see clingo_model_symbols_size()"]
+    #[doc = "! Get the symbols of the selected types in the model."]
+    #[doc = "!"]
+    #[doc = "! @note CSP assignments are represented using functions with name \"$\""]
+    #[doc = "! where the first argument is the name of the CSP variable and the second one its"]
+    #[doc = "! value."]
+    #[doc = "!"]
+    #[doc = "! @param[in] model the target"]
+    #[doc = "! @param[in] show which symbols to select"]
+    #[doc = "! @param[out] symbols the resulting symbols"]
+    #[doc = "! @param[in] size the number of selected symbols"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_bad_alloc"]
+    #[doc = "! - ::clingo_error_runtime if the size is too small"]
+    #[doc = "!"]
+    #[doc = "! @see clingo_model_symbols_size()"]
     pub fn clingo_model_symbols(
         model: *const clingo_model_t,
         show: clingo_show_type_bitset_t,
@@ -2596,12 +2535,12 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Constant time lookup to test whether an atom is in a model."]
-    #[doc = ""]
-    #[doc = " @param[in] model the target"]
-    #[doc = " @param[in] atom the atom to lookup"]
-    #[doc = " @param[out] contained whether the atom is contained"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Constant time lookup to test whether an atom is in a model."]
+    #[doc = "!"]
+    #[doc = "! @param[in] model the target"]
+    #[doc = "! @param[in] atom the atom to lookup"]
+    #[doc = "! @param[out] contained whether the atom is contained"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_model_contains(
         model: *const clingo_model_t,
         atom: clingo_symbol_t,
@@ -2609,12 +2548,12 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Check if a program literal is true in a model."]
-    #[doc = ""]
-    #[doc = " @param[in] model the target"]
-    #[doc = " @param[in] literal the literal to lookup"]
-    #[doc = " @param[out] result whether the literal is true"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Check if a program literal is true in a model."]
+    #[doc = "!"]
+    #[doc = "! @param[in] model the target"]
+    #[doc = "! @param[in] literal the literal to lookup"]
+    #[doc = "! @param[out] result whether the literal is true"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_model_is_true(
         model: *const clingo_model_t,
         literal: clingo_literal_t,
@@ -2622,56 +2561,56 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Get the number of cost values of a model."]
-    #[doc = ""]
-    #[doc = " @param[in] model the target"]
-    #[doc = " @param[out] size the number of costs"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Get the number of cost values of a model."]
+    #[doc = "!"]
+    #[doc = "! @param[in] model the target"]
+    #[doc = "! @param[out] size the number of costs"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_model_cost_size(model: *const clingo_model_t, size: *mut usize) -> bool;
 }
 extern "C" {
-    #[doc = " Get the cost vector of a model."]
-    #[doc = ""]
-    #[doc = " @param[in] model the target"]
-    #[doc = " @param[out] costs the resulting costs"]
-    #[doc = " @param[in] size the number of costs"]
-    #[doc = " @return whether the call was successful; might set one of the following error codes:"]
-    #[doc = " - ::clingo_error_bad_alloc"]
-    #[doc = " - ::clingo_error_runtime if the size is too small"]
-    #[doc = ""]
-    #[doc = " @see clingo_model_cost_size()"]
-    #[doc = " @see clingo_model_optimality_proven()"]
+    #[doc = "! Get the cost vector of a model."]
+    #[doc = "!"]
+    #[doc = "! @param[in] model the target"]
+    #[doc = "! @param[out] costs the resulting costs"]
+    #[doc = "! @param[in] size the number of costs"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_bad_alloc"]
+    #[doc = "! - ::clingo_error_runtime if the size is too small"]
+    #[doc = "!"]
+    #[doc = "! @see clingo_model_cost_size()"]
+    #[doc = "! @see clingo_model_optimality_proven()"]
     pub fn clingo_model_cost(model: *const clingo_model_t, costs: *mut i64, size: usize) -> bool;
 }
 extern "C" {
-    #[doc = " Whether the optimality of a model has been proven."]
-    #[doc = ""]
-    #[doc = " @param[in] model the target"]
-    #[doc = " @param[out] proven whether the optimality has been proven"]
-    #[doc = " @return whether the call was successful"]
-    #[doc = ""]
-    #[doc = " @see clingo_model_cost()"]
+    #[doc = "! Whether the optimality of a model has been proven."]
+    #[doc = "!"]
+    #[doc = "! @param[in] model the target"]
+    #[doc = "! @param[out] proven whether the optimality has been proven"]
+    #[doc = "! @return whether the call was successful"]
+    #[doc = "!"]
+    #[doc = "! @see clingo_model_cost()"]
     pub fn clingo_model_optimality_proven(model: *const clingo_model_t, proven: *mut bool) -> bool;
 }
 extern "C" {
-    #[doc = " Get the id of the solver thread that found the model."]
-    #[doc = ""]
-    #[doc = " @param[in] model the target"]
-    #[doc = " @param[out] id the resulting thread id"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Get the id of the solver thread that found the model."]
+    #[doc = "!"]
+    #[doc = "! @param[in] model the target"]
+    #[doc = "! @param[out] id the resulting thread id"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_model_thread_id(model: *const clingo_model_t, id: *mut clingo_id_t) -> bool;
 }
 extern "C" {
-    #[doc = " Add symbols to the model."]
-    #[doc = ""]
-    #[doc = " These symbols will appear in clingo\'s output, which means that this"]
-    #[doc = " function is only meaningful if there is an underlying clingo application."]
-    #[doc = " Only models passed to the ::clingo_solve_event_callback_t are extendable."]
-    #[doc = ""]
-    #[doc = " @param[in] model the target"]
-    #[doc = " @param[in] symbols the symbols to add"]
-    #[doc = " @param[in] size the number of symbols to add"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Add symbols to the model."]
+    #[doc = "!"]
+    #[doc = "! These symbols will appear in clingo's output, which means that this"]
+    #[doc = "! function is only meaningful if there is an underlying clingo application."]
+    #[doc = "! Only models passed to the ::clingo_solve_event_callback_t are extendable."]
+    #[doc = "!"]
+    #[doc = "! @param[in] model the target"]
+    #[doc = "! @param[in] symbols the symbols to add"]
+    #[doc = "! @param[in] size the number of symbols to add"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_model_extend(
         model: *mut clingo_model_t,
         symbols: *const clingo_symbol_t,
@@ -2679,41 +2618,41 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Get the associated solve control object of a model."]
-    #[doc = ""]
-    #[doc = " This object allows for adding clauses during model enumeration."]
-    #[doc = " @param[in] model the target"]
-    #[doc = " @param[out] control the resulting solve control object"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Get the associated solve control object of a model."]
+    #[doc = "!"]
+    #[doc = "! This object allows for adding clauses during model enumeration."]
+    #[doc = "! @param[in] model the target"]
+    #[doc = "! @param[out] control the resulting solve control object"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_model_context(
         model: *const clingo_model_t,
         control: *mut *mut clingo_solve_control_t,
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Get an object to inspect the symbolic atoms."]
-    #[doc = ""]
-    #[doc = " @param[in] control the target"]
-    #[doc = " @param[out] atoms the resulting object"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Get an object to inspect the symbolic atoms."]
+    #[doc = "!"]
+    #[doc = "! @param[in] control the target"]
+    #[doc = "! @param[out] atoms the resulting object"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_solve_control_symbolic_atoms(
-        control: *mut clingo_solve_control_t,
-        atoms: *mut *mut clingo_symbolic_atoms_t,
+        control: *const clingo_solve_control_t,
+        atoms: *mut *const clingo_symbolic_atoms_t,
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Add a clause that applies to the current solving step during model"]
-    #[doc = " enumeration."]
-    #[doc = ""]
-    #[doc = " @note The @ref Propagator module provides a more sophisticated"]
-    #[doc = " interface to add clauses - even on partial assignments."]
-    #[doc = ""]
-    #[doc = " @param[in] control the target"]
-    #[doc = " @param[in] clause array of literals representing the clause"]
-    #[doc = " @param[in] size the size of the literal array"]
-    #[doc = " @return whether the call was successful; might set one of the following error codes:"]
-    #[doc = " - ::clingo_error_bad_alloc"]
-    #[doc = " - ::clingo_error_runtime if adding the clause fails"]
+    #[doc = "! Add a clause that applies to the current solving step during model"]
+    #[doc = "! enumeration."]
+    #[doc = "!"]
+    #[doc = "! @note The @ref Propagator module provides a more sophisticated"]
+    #[doc = "! interface to add clauses - even on partial assignments."]
+    #[doc = "!"]
+    #[doc = "! @param[in] control the target"]
+    #[doc = "! @param[in] clause array of literals representing the clause"]
+    #[doc = "! @param[in] size the size of the literal array"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_bad_alloc"]
+    #[doc = "! - ::clingo_error_runtime if adding the clause fails"]
     pub fn clingo_solve_control_add_clause(
         control: *mut clingo_solve_control_t,
         clause: *const clingo_literal_t,
@@ -2726,38 +2665,38 @@ pub const clingo_solve_result_clingo_solve_result_exhausted: clingo_solve_result
 pub const clingo_solve_result_clingo_solve_result_interrupted: clingo_solve_result = 8;
 pub type clingo_solve_result = u32;
 pub type clingo_solve_result_bitset_t = ::std::os::raw::c_uint;
-#[doc = " Enable non-blocking search."]
+#[doc = "!< Enable non-blocking search."]
 pub const clingo_solve_mode_clingo_solve_mode_async: clingo_solve_mode = 1;
-#[doc = " Yield models in calls to clingo_solve_handle_model."]
+#[doc = "!< Yield models in calls to clingo_solve_handle_model."]
 pub const clingo_solve_mode_clingo_solve_mode_yield: clingo_solve_mode = 2;
-#[doc = " Enumeration of solve modes."]
+#[doc = "! Enumeration of solve modes."]
 pub type clingo_solve_mode = u32;
-#[doc = " Corresponding type to ::clingo_solve_mode."]
+#[doc = "! Corresponding type to ::clingo_solve_mode."]
 pub type clingo_solve_mode_bitset_t = ::std::os::raw::c_uint;
-#[doc = " Issued if a model is found."]
+#[doc = "!< Issued if a model is found."]
 pub const clingo_solve_event_type_clingo_solve_event_type_model: clingo_solve_event_type = 0;
-#[doc = " Issued when the statistics can be updated."]
+#[doc = "!< Issued when the statistics can be updated."]
 pub const clingo_solve_event_type_clingo_solve_event_type_statistics: clingo_solve_event_type = 1;
-#[doc = " Issued if the search has completed."]
+#[doc = "!< Issued if the search has completed."]
 pub const clingo_solve_event_type_clingo_solve_event_type_finish: clingo_solve_event_type = 2;
-#[doc = " Enumeration of solve events."]
+#[doc = "! Enumeration of solve events."]
 pub type clingo_solve_event_type = u32;
-#[doc = " Corresponding type to ::clingo_solve_event_type."]
+#[doc = "! Corresponding type to ::clingo_solve_event_type."]
 pub type clingo_solve_event_type_t = ::std::os::raw::c_uint;
-#[doc = " Callback function called during search to notify when the search is finished or a model is ready."]
-#[doc = ""]
-#[doc = " If a (non-recoverable) clingo API function fails in this callback, it must return false."]
-#[doc = " In case of errors not related to clingo, set error code ::clingo_error_unknown and return false to stop solving with an error."]
-#[doc = ""]
-#[doc = " The event is either a pointer to a model, a pointer to two statistics objects (per step and accumulated statistics), or a solve result."]
-#[doc = " @attention If the search is finished, the model is NULL."]
-#[doc = ""]
-#[doc = " @param[in] event the current event."]
-#[doc = " @param[in] data user data of the callback"]
-#[doc = " @param[out] goon can be set to false to stop solving"]
-#[doc = " @return whether the call was successful"]
-#[doc = ""]
-#[doc = " @see clingo_control_solve()"]
+#[doc = "! Callback function called during search to notify when the search is finished or a model is ready."]
+#[doc = "!"]
+#[doc = "! If a (non-recoverable) clingo API function fails in this callback, it must return false."]
+#[doc = "! In case of errors not related to clingo, set error code ::clingo_error_unknown and return false to stop solving with an error."]
+#[doc = "!"]
+#[doc = "! The event is either a pointer to a model, a pointer to two statistics objects (per step and accumulated statistics), or a solve result."]
+#[doc = "! @attention If the search is finished, the model is NULL."]
+#[doc = "!"]
+#[doc = "! @param[in] event the current event."]
+#[doc = "! @param[in] data user data of the callback"]
+#[doc = "! @param[out] goon can be set to false to stop solving"]
+#[doc = "! @return whether the call was successful"]
+#[doc = "!"]
+#[doc = "! @see clingo_control_solve()"]
 pub type clingo_solve_event_callback_t = ::std::option::Option<
     unsafe extern "C" fn(
         type_: clingo_solve_event_type_t,
@@ -2771,36 +2710,36 @@ pub type clingo_solve_event_callback_t = ::std::option::Option<
 pub struct clingo_solve_handle {
     _unused: [u8; 0],
 }
-#[doc = " Search handle to a solve call."]
-#[doc = ""]
-#[doc = " @see clingo_control_solve()"]
+#[doc = "! Search handle to a solve call."]
+#[doc = "!"]
+#[doc = "! @see clingo_control_solve()"]
 pub type clingo_solve_handle_t = clingo_solve_handle;
 extern "C" {
-    #[doc = " Get the next solve result."]
-    #[doc = ""]
-    #[doc = " Blocks until the result is ready."]
-    #[doc = " When yielding partial solve results can be obtained, i.e.,"]
-    #[doc = " when a model is ready, the result will be satisfiable but neither the search exhausted nor the optimality proven."]
-    #[doc = ""]
-    #[doc = " @param[in] handle the target"]
-    #[doc = " @param[out] result the solve result"]
-    #[doc = " @return whether the call was successful; might set one of the following error codes:"]
-    #[doc = " - ::clingo_error_bad_alloc"]
-    #[doc = " - ::clingo_error_runtime if solving fails"]
+    #[doc = "! Get the next solve result."]
+    #[doc = "!"]
+    #[doc = "! Blocks until the result is ready."]
+    #[doc = "! When yielding partial solve results can be obtained, i.e.,"]
+    #[doc = "! when a model is ready, the result will be satisfiable but neither the search exhausted nor the optimality proven."]
+    #[doc = "!"]
+    #[doc = "! @param[in] handle the target"]
+    #[doc = "! @param[out] result the solve result"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_bad_alloc"]
+    #[doc = "! - ::clingo_error_runtime if solving fails"]
     pub fn clingo_solve_handle_get(
         handle: *mut clingo_solve_handle_t,
         result: *mut clingo_solve_result_bitset_t,
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Wait for the specified amount of time to check if the next result is ready."]
-    #[doc = ""]
-    #[doc = " If the time is set to zero, this function can be used to poll if the search is still active."]
-    #[doc = " If the time is negative, the function blocks until the search is finished."]
-    #[doc = ""]
-    #[doc = " @param[in] handle the target"]
-    #[doc = " @param[in] timeout the maximum time to wait"]
-    #[doc = " @param[out] result whether the search has finished"]
+    #[doc = "! Wait for the specified amount of time to check if the next result is ready."]
+    #[doc = "!"]
+    #[doc = "! If the time is set to zero, this function can be used to poll if the search is still active."]
+    #[doc = "! If the time is negative, the function blocks until the search is finished."]
+    #[doc = "!"]
+    #[doc = "! @param[in] handle the target"]
+    #[doc = "! @param[in] timeout the maximum time to wait"]
+    #[doc = "! @param[out] result whether the search has finished"]
     pub fn clingo_solve_handle_wait(
         handle: *mut clingo_solve_handle_t,
         timeout: f64,
@@ -2808,49 +2747,49 @@ extern "C" {
     );
 }
 extern "C" {
-    #[doc = " Get the next model (or zero if there are no more models)."]
-    #[doc = ""]
-    #[doc = " @param[in] handle the target"]
-    #[doc = " @param[out] model the model (it is NULL if there are no more models)"]
-    #[doc = " @return whether the call was successful; might set one of the following error codes:"]
-    #[doc = " - ::clingo_error_bad_alloc"]
-    #[doc = " - ::clingo_error_runtime if solving fails"]
+    #[doc = "! Get the next model (or zero if there are no more models)."]
+    #[doc = "!"]
+    #[doc = "! @param[in] handle the target"]
+    #[doc = "! @param[out] model the model (it is NULL if there are no more models)"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_bad_alloc"]
+    #[doc = "! - ::clingo_error_runtime if solving fails"]
     pub fn clingo_solve_handle_model(
         handle: *mut clingo_solve_handle_t,
         model: *mut *const clingo_model_t,
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Discards the last model and starts the search for the next one."]
-    #[doc = ""]
-    #[doc = " If the search has been started asynchronously, this function continues the search in the background."]
-    #[doc = ""]
-    #[doc = " @note This function does not block."]
-    #[doc = ""]
-    #[doc = " @param[in] handle the target"]
-    #[doc = " @return whether the call was successful; might set one of the following error codes:"]
-    #[doc = " - ::clingo_error_bad_alloc"]
-    #[doc = " - ::clingo_error_runtime if solving fails"]
+    #[doc = "! Discards the last model and starts the search for the next one."]
+    #[doc = "!"]
+    #[doc = "! If the search has been started asynchronously, this function continues the search in the background."]
+    #[doc = "!"]
+    #[doc = "! @note This function does not block."]
+    #[doc = "!"]
+    #[doc = "! @param[in] handle the target"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_bad_alloc"]
+    #[doc = "! - ::clingo_error_runtime if solving fails"]
     pub fn clingo_solve_handle_resume(handle: *mut clingo_solve_handle_t) -> bool;
 }
 extern "C" {
-    #[doc = " Stop the running search and block until done."]
-    #[doc = ""]
-    #[doc = " @param[in] handle the target"]
-    #[doc = " @return whether the call was successful; might set one of the following error codes:"]
-    #[doc = " - ::clingo_error_bad_alloc"]
-    #[doc = " - ::clingo_error_runtime if solving fails"]
+    #[doc = "! Stop the running search and block until done."]
+    #[doc = "!"]
+    #[doc = "! @param[in] handle the target"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_bad_alloc"]
+    #[doc = "! - ::clingo_error_runtime if solving fails"]
     pub fn clingo_solve_handle_cancel(handle: *mut clingo_solve_handle_t) -> bool;
 }
 extern "C" {
-    #[doc = " Stops the running search and releases the handle."]
-    #[doc = ""]
-    #[doc = " Blocks until the search is stopped (as if an implicit cancel was called before the handle is released)."]
-    #[doc = ""]
-    #[doc = " @param[in] handle the target"]
-    #[doc = " @return whether the call was successful; might set one of the following error codes:"]
-    #[doc = " - ::clingo_error_bad_alloc"]
-    #[doc = " - ::clingo_error_runtime if solving fails"]
+    #[doc = "! Stops the running search and releases the handle."]
+    #[doc = "!"]
+    #[doc = "! Blocks until the search is stopped (as if an implicit cancel was called before the handle is released)."]
+    #[doc = "!"]
+    #[doc = "! @param[in] handle the target"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_bad_alloc"]
+    #[doc = "! - ::clingo_error_runtime if solving fails"]
     pub fn clingo_solve_handle_close(handle: *mut clingo_solve_handle_t) -> bool;
 }
 pub const clingo_ast_comparison_operator_clingo_ast_comparison_operator_greater_than:
@@ -2865,8 +2804,8 @@ pub const clingo_ast_comparison_operator_clingo_ast_comparison_operator_not_equa
     clingo_ast_comparison_operator = 4;
 pub const clingo_ast_comparison_operator_clingo_ast_comparison_operator_equal:
     clingo_ast_comparison_operator = 5;
-#[doc = " @addtogroup AST"]
-#[doc = " @{"]
+#[doc = "! @addtogroup AST"]
+#[doc = "! @{"]
 pub type clingo_ast_comparison_operator = u32;
 pub type clingo_ast_comparison_operator_t = ::std::os::raw::c_int;
 pub const clingo_ast_sign_clingo_ast_sign_none: clingo_ast_sign = 0;
@@ -3369,7 +3308,7 @@ pub type clingo_ast_csp_product_term_t = clingo_ast_csp_product_term;
 #[derive(Debug, Copy, Clone)]
 pub struct clingo_ast_csp_sum_term {
     pub location: clingo_location_t,
-    pub terms: *mut clingo_ast_csp_product_term_t,
+    pub terms: *const clingo_ast_csp_product_term_t,
     pub size: usize,
 }
 #[test]
@@ -6117,12 +6056,13 @@ pub struct clingo_ast_external {
     pub atom: clingo_ast_term_t,
     pub body: *const clingo_ast_body_literal_t,
     pub size: usize,
+    pub type_: clingo_ast_term_t,
 }
 #[test]
 fn bindgen_test_layout_clingo_ast_external() {
     assert_eq!(
         ::std::mem::size_of::<clingo_ast_external>(),
-        80usize,
+        144usize,
         concat!("Size of: ", stringify!(clingo_ast_external))
     );
     assert_eq!(
@@ -6158,6 +6098,16 @@ fn bindgen_test_layout_clingo_ast_external() {
             stringify!(clingo_ast_external),
             "::",
             stringify!(size)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<clingo_ast_external>())).type_ as *const _ as usize },
+        80usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(clingo_ast_external),
+            "::",
+            stringify!(type_)
         )
     );
 }
@@ -6648,17 +6598,17 @@ pub type clingo_ast_callback_t = ::std::option::Option<
     ) -> bool,
 >;
 extern "C" {
-    #[doc = " Parse the given program and return an abstract syntax tree for each statement via a callback."]
-    #[doc = ""]
-    #[doc = " @param[in] program the program in gringo syntax"]
-    #[doc = " @param[in] callback the callback reporting statements"]
-    #[doc = " @param[in] callback_data user data for the callback"]
-    #[doc = " @param[in] logger callback to report messages during parsing"]
-    #[doc = " @param[in] logger_data user data for the logger"]
-    #[doc = " @param[in] message_limit the maximum number of times the logger is called"]
-    #[doc = " @return whether the call was successful; might set one of the following error codes:"]
-    #[doc = " - ::clingo_error_runtime if parsing fails"]
-    #[doc = " - ::clingo_error_bad_alloc"]
+    #[doc = "! Parse the given program and return an abstract syntax tree for each statement via a callback."]
+    #[doc = "!"]
+    #[doc = "! @param[in] program the program in gringo syntax"]
+    #[doc = "! @param[in] callback the callback reporting statements"]
+    #[doc = "! @param[in] callback_data user data for the callback"]
+    #[doc = "! @param[in] logger callback to report messages during parsing"]
+    #[doc = "! @param[in] logger_data user data for the logger"]
+    #[doc = "! @param[in] message_limit the maximum number of times the logger is called"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_runtime if parsing fails"]
+    #[doc = "! - ::clingo_error_bad_alloc"]
     pub fn clingo_parse_program(
         program: *const ::std::os::raw::c_char,
         callback: clingo_ast_callback_t,
@@ -6673,87 +6623,87 @@ extern "C" {
 pub struct clingo_program_builder {
     _unused: [u8; 0],
 }
-#[doc = " Object to build non-ground programs."]
+#[doc = "! Object to build non-ground programs."]
 pub type clingo_program_builder_t = clingo_program_builder;
 extern "C" {
-    #[doc = " Begin building a program."]
-    #[doc = ""]
-    #[doc = " @param builder the target program builder"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Begin building a program."]
+    #[doc = "!"]
+    #[doc = "! @param builder the target program builder"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_program_builder_begin(builder: *mut clingo_program_builder_t) -> bool;
 }
 extern "C" {
-    #[doc = " Adds a statement to the program."]
-    #[doc = ""]
-    #[doc = " @attention @ref clingo_program_builder_begin() must be called before adding statements and @ref clingo_program_builder_end() must be called after all statements have been added."]
-    #[doc = " @param builder the target program builder"]
-    #[doc = " @param statement the statement to add"]
-    #[doc = " @return whether the call was successful; might set one of the following error codes:"]
-    #[doc = " - ::clingo_error_runtime for statements of invalid form"]
-    #[doc = " - ::clingo_error_bad_alloc"]
+    #[doc = "! Adds a statement to the program."]
+    #[doc = "!"]
+    #[doc = "! @attention @ref clingo_program_builder_begin() must be called before adding statements and @ref clingo_program_builder_end() must be called after all statements have been added."]
+    #[doc = "! @param builder the target program builder"]
+    #[doc = "! @param statement the statement to add"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_runtime for statements of invalid form"]
+    #[doc = "! - ::clingo_error_bad_alloc"]
     pub fn clingo_program_builder_add(
         builder: *mut clingo_program_builder_t,
         statement: *const clingo_ast_statement_t,
     ) -> bool;
 }
 extern "C" {
-    #[doc = " End building a program."]
-    #[doc = ""]
-    #[doc = " @param builder the target program builder"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! End building a program."]
+    #[doc = "!"]
+    #[doc = "! @param builder the target program builder"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_program_builder_end(builder: *mut clingo_program_builder_t) -> bool;
 }
-#[doc = " An instance of this struct has to be registered with a solver to observe ground directives as they are passed to the solver."]
-#[doc = ""]
-#[doc = " @note This interface is closely modeled after the aspif format."]
-#[doc = " For more information please refer to the specification of the aspif format."]
-#[doc = ""]
-#[doc = " Not all callbacks have to be implemented and can be set to NULL if not needed."]
-#[doc = " If one of the callbacks in the struct fails, grounding is stopped."]
-#[doc = " If a non-recoverable clingo API call fails, a callback must return false."]
-#[doc = " Otherwise ::clingo_error_unknown should be set and false returned."]
-#[doc = ""]
-#[doc = " @see clingo_control_register_observer()"]
+#[doc = "! An instance of this struct has to be registered with a solver to observe ground directives as they are passed to the solver."]
+#[doc = "!"]
+#[doc = "! @note This interface is closely modeled after the aspif format."]
+#[doc = "! For more information please refer to the specification of the aspif format."]
+#[doc = "!"]
+#[doc = "! Not all callbacks have to be implemented and can be set to NULL if not needed."]
+#[doc = "! If one of the callbacks in the struct fails, grounding is stopped."]
+#[doc = "! If a non-recoverable clingo API call fails, a callback must return false."]
+#[doc = "! Otherwise ::clingo_error_unknown should be set and false returned."]
+#[doc = "!"]
+#[doc = "! @see clingo_control_register_observer()"]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct clingo_ground_program_observer {
-    #[doc = " Called once in the beginning."]
-    #[doc = ""]
-    #[doc = " If the incremental flag is true, there can be multiple calls to @ref clingo_control_solve()."]
-    #[doc = ""]
-    #[doc = " @param[in] incremental whether the program is incremental"]
-    #[doc = " @param[in] data user data for the callback"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Called once in the beginning."]
+    #[doc = "!"]
+    #[doc = "! If the incremental flag is true, there can be multiple calls to @ref clingo_control_solve()."]
+    #[doc = "!"]
+    #[doc = "! @param[in] incremental whether the program is incremental"]
+    #[doc = "! @param[in] data user data for the callback"]
+    #[doc = "! @return whether the call was successful"]
     pub init_program: ::std::option::Option<
         unsafe extern "C" fn(incremental: bool, data: *mut ::std::os::raw::c_void) -> bool,
     >,
-    #[doc = " Marks the beginning of a block of directives passed to the solver."]
-    #[doc = ""]
-    #[doc = " @see @ref end_step"]
-    #[doc = ""]
-    #[doc = " @param[in] data user data for the callback"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Marks the beginning of a block of directives passed to the solver."]
+    #[doc = "!"]
+    #[doc = "! @see @ref end_step"]
+    #[doc = "!"]
+    #[doc = "! @param[in] data user data for the callback"]
+    #[doc = "! @return whether the call was successful"]
     pub begin_step:
         ::std::option::Option<unsafe extern "C" fn(data: *mut ::std::os::raw::c_void) -> bool>,
-    #[doc = " Marks the end of a block of directives passed to the solver."]
-    #[doc = ""]
-    #[doc = " This function is called before solving starts."]
-    #[doc = ""]
-    #[doc = " @see @ref begin_step"]
-    #[doc = ""]
-    #[doc = " @param[in] data user data for the callback"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Marks the end of a block of directives passed to the solver."]
+    #[doc = "!"]
+    #[doc = "! This function is called before solving starts."]
+    #[doc = "!"]
+    #[doc = "! @see @ref begin_step"]
+    #[doc = "!"]
+    #[doc = "! @param[in] data user data for the callback"]
+    #[doc = "! @return whether the call was successful"]
     pub end_step:
         ::std::option::Option<unsafe extern "C" fn(data: *mut ::std::os::raw::c_void) -> bool>,
-    #[doc = " Observe rules passed to the solver."]
-    #[doc = ""]
-    #[doc = " @param[in] choice determines if the head is a choice or a disjunction"]
-    #[doc = " @param[in] head the head atoms"]
-    #[doc = " @param[in] head_size the number of atoms in the head"]
-    #[doc = " @param[in] body the body literals"]
-    #[doc = " @param[in] body_size the number of literals in the body"]
-    #[doc = " @param[in] data user data for the callback"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Observe rules passed to the solver."]
+    #[doc = "!"]
+    #[doc = "! @param[in] choice determines if the head is a choice or a disjunction"]
+    #[doc = "! @param[in] head the head atoms"]
+    #[doc = "! @param[in] head_size the number of atoms in the head"]
+    #[doc = "! @param[in] body the body literals"]
+    #[doc = "! @param[in] body_size the number of literals in the body"]
+    #[doc = "! @param[in] data user data for the callback"]
+    #[doc = "! @return whether the call was successful"]
     pub rule: ::std::option::Option<
         unsafe extern "C" fn(
             choice: bool,
@@ -6764,16 +6714,16 @@ pub struct clingo_ground_program_observer {
             data: *mut ::std::os::raw::c_void,
         ) -> bool,
     >,
-    #[doc = " Observe weight rules passed to the solver."]
-    #[doc = ""]
-    #[doc = " @param[in] choice determines if the head is a choice or a disjunction"]
-    #[doc = " @param[in] head the head atoms"]
-    #[doc = " @param[in] head_size the number of atoms in the head"]
-    #[doc = " @param[in] lower_bound the lower bound of the weight rule"]
-    #[doc = " @param[in] body the weighted body literals"]
-    #[doc = " @param[in] body_size the number of weighted literals in the body"]
-    #[doc = " @param[in] data user data for the callback"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Observe weight rules passed to the solver."]
+    #[doc = "!"]
+    #[doc = "! @param[in] choice determines if the head is a choice or a disjunction"]
+    #[doc = "! @param[in] head the head atoms"]
+    #[doc = "! @param[in] head_size the number of atoms in the head"]
+    #[doc = "! @param[in] lower_bound the lower bound of the weight rule"]
+    #[doc = "! @param[in] body the weighted body literals"]
+    #[doc = "! @param[in] body_size the number of weighted literals in the body"]
+    #[doc = "! @param[in] data user data for the callback"]
+    #[doc = "! @return whether the call was successful"]
     pub weight_rule: ::std::option::Option<
         unsafe extern "C" fn(
             choice: bool,
@@ -6785,13 +6735,13 @@ pub struct clingo_ground_program_observer {
             data: *mut ::std::os::raw::c_void,
         ) -> bool,
     >,
-    #[doc = " Observe minimize constraints (or weak constraints) passed to the solver."]
-    #[doc = ""]
-    #[doc = " @param[in] priority the priority of the constraint"]
-    #[doc = " @param[in] literals the weighted literals whose sum to minimize"]
-    #[doc = " @param[in] size the number of weighted literals"]
-    #[doc = " @param[in] data user data for the callback"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Observe minimize constraints (or weak constraints) passed to the solver."]
+    #[doc = "!"]
+    #[doc = "! @param[in] priority the priority of the constraint"]
+    #[doc = "! @param[in] literals the weighted literals whose sum to minimize"]
+    #[doc = "! @param[in] size the number of weighted literals"]
+    #[doc = "! @param[in] data user data for the callback"]
+    #[doc = "! @return whether the call was successful"]
     pub minimize: ::std::option::Option<
         unsafe extern "C" fn(
             priority: clingo_weight_t,
@@ -6800,12 +6750,12 @@ pub struct clingo_ground_program_observer {
             data: *mut ::std::os::raw::c_void,
         ) -> bool,
     >,
-    #[doc = " Observe projection directives passed to the solver."]
-    #[doc = ""]
-    #[doc = " @param[in] atoms the atoms to project on"]
-    #[doc = " @param[in] size the number of atoms"]
-    #[doc = " @param[in] data user data for the callback"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Observe projection directives passed to the solver."]
+    #[doc = "!"]
+    #[doc = "! @param[in] atoms the atoms to project on"]
+    #[doc = "! @param[in] size the number of atoms"]
+    #[doc = "! @param[in] data user data for the callback"]
+    #[doc = "! @return whether the call was successful"]
     pub project: ::std::option::Option<
         unsafe extern "C" fn(
             atoms: *const clingo_atom_t,
@@ -6813,14 +6763,14 @@ pub struct clingo_ground_program_observer {
             data: *mut ::std::os::raw::c_void,
         ) -> bool,
     >,
-    #[doc = " Observe shown atoms passed to the solver."]
-    #[doc = " \\note Facts do not have an associated aspif atom."]
-    #[doc = " The value of the atom is set to zero."]
-    #[doc = ""]
-    #[doc = " @param[in] symbol the symbolic representation of the atom"]
-    #[doc = " @param[in] atom the aspif atom (0 for facts)"]
-    #[doc = " @param[in] data user data for the callback"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Observe shown atoms passed to the solver."]
+    #[doc = "! \\note Facts do not have an associated aspif atom."]
+    #[doc = "! The value of the atom is set to zero."]
+    #[doc = "!"]
+    #[doc = "! @param[in] symbol the symbolic representation of the atom"]
+    #[doc = "! @param[in] atom the aspif atom (0 for facts)"]
+    #[doc = "! @param[in] data user data for the callback"]
+    #[doc = "! @return whether the call was successful"]
     pub output_atom: ::std::option::Option<
         unsafe extern "C" fn(
             symbol: clingo_symbol_t,
@@ -6828,13 +6778,13 @@ pub struct clingo_ground_program_observer {
             data: *mut ::std::os::raw::c_void,
         ) -> bool,
     >,
-    #[doc = " Observe shown terms passed to the solver."]
-    #[doc = ""]
-    #[doc = " @param[in] symbol the symbolic representation of the term"]
-    #[doc = " @param[in] condition the literals of the condition"]
-    #[doc = " @param[in] size the size of the condition"]
-    #[doc = " @param[in] data user data for the callback"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Observe shown terms passed to the solver."]
+    #[doc = "!"]
+    #[doc = "! @param[in] symbol the symbolic representation of the term"]
+    #[doc = "! @param[in] condition the literals of the condition"]
+    #[doc = "! @param[in] size the size of the condition"]
+    #[doc = "! @param[in] data user data for the callback"]
+    #[doc = "! @return whether the call was successful"]
     pub output_term: ::std::option::Option<
         unsafe extern "C" fn(
             symbol: clingo_symbol_t,
@@ -6843,14 +6793,14 @@ pub struct clingo_ground_program_observer {
             data: *mut ::std::os::raw::c_void,
         ) -> bool,
     >,
-    #[doc = " Observe shown csp variables passed to the solver."]
-    #[doc = ""]
-    #[doc = " @param[in] symbol the symbolic representation of the variable"]
-    #[doc = " @param[in] value the value of the variable"]
-    #[doc = " @param[in] condition the literals of the condition"]
-    #[doc = " @param[in] size the size of the condition"]
-    #[doc = " @param[in] data user data for the callback"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Observe shown csp variables passed to the solver."]
+    #[doc = "!"]
+    #[doc = "! @param[in] symbol the symbolic representation of the variable"]
+    #[doc = "! @param[in] value the value of the variable"]
+    #[doc = "! @param[in] condition the literals of the condition"]
+    #[doc = "! @param[in] size the size of the condition"]
+    #[doc = "! @param[in] data user data for the callback"]
+    #[doc = "! @return whether the call was successful"]
     pub output_csp: ::std::option::Option<
         unsafe extern "C" fn(
             symbol: clingo_symbol_t,
@@ -6860,12 +6810,12 @@ pub struct clingo_ground_program_observer {
             data: *mut ::std::os::raw::c_void,
         ) -> bool,
     >,
-    #[doc = " Observe external statements passed to the solver."]
-    #[doc = ""]
-    #[doc = " @param[in] atom the external atom"]
-    #[doc = " @param[in] type the type of the external statement"]
-    #[doc = " @param[in] data user data for the callback"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Observe external statements passed to the solver."]
+    #[doc = "!"]
+    #[doc = "! @param[in] atom the external atom"]
+    #[doc = "! @param[in] type the type of the external statement"]
+    #[doc = "! @param[in] data user data for the callback"]
+    #[doc = "! @return whether the call was successful"]
     pub external: ::std::option::Option<
         unsafe extern "C" fn(
             atom: clingo_atom_t,
@@ -6873,12 +6823,12 @@ pub struct clingo_ground_program_observer {
             data: *mut ::std::os::raw::c_void,
         ) -> bool,
     >,
-    #[doc = " Observe assumption directives passed to the solver."]
-    #[doc = ""]
-    #[doc = " @param[in] literals the literals to assume (positive literals are true and negative literals false for the next solve call)"]
-    #[doc = " @param[in] size the number of atoms"]
-    #[doc = " @param[in] data user data for the callback"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Observe assumption directives passed to the solver."]
+    #[doc = "!"]
+    #[doc = "! @param[in] literals the literals to assume (positive literals are true and negative literals false for the next solve call)"]
+    #[doc = "! @param[in] size the number of atoms"]
+    #[doc = "! @param[in] data user data for the callback"]
+    #[doc = "! @return whether the call was successful"]
     pub assume: ::std::option::Option<
         unsafe extern "C" fn(
             literals: *const clingo_literal_t,
@@ -6886,16 +6836,16 @@ pub struct clingo_ground_program_observer {
             data: *mut ::std::os::raw::c_void,
         ) -> bool,
     >,
-    #[doc = " Observe heuristic directives passed to the solver."]
-    #[doc = ""]
-    #[doc = " @param[in] atom the target atom"]
-    #[doc = " @param[in] type the type of the heuristic modification"]
-    #[doc = " @param[in] bias the heuristic bias"]
-    #[doc = " @param[in] priority the heuristic priority"]
-    #[doc = " @param[in] condition the condition under which to apply the heuristic modification"]
-    #[doc = " @param[in] size the number of atoms in the condition"]
-    #[doc = " @param[in] data user data for the callback"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Observe heuristic directives passed to the solver."]
+    #[doc = "!"]
+    #[doc = "! @param[in] atom the target atom"]
+    #[doc = "! @param[in] type the type of the heuristic modification"]
+    #[doc = "! @param[in] bias the heuristic bias"]
+    #[doc = "! @param[in] priority the heuristic priority"]
+    #[doc = "! @param[in] condition the condition under which to apply the heuristic modification"]
+    #[doc = "! @param[in] size the number of atoms in the condition"]
+    #[doc = "! @param[in] data user data for the callback"]
+    #[doc = "! @return whether the call was successful"]
     pub heuristic: ::std::option::Option<
         unsafe extern "C" fn(
             atom: clingo_atom_t,
@@ -6907,14 +6857,14 @@ pub struct clingo_ground_program_observer {
             data: *mut ::std::os::raw::c_void,
         ) -> bool,
     >,
-    #[doc = " Observe edge directives passed to the solver."]
-    #[doc = ""]
-    #[doc = " @param[in] node_u the start vertex of the edge"]
-    #[doc = " @param[in] node_v the end vertex of the edge"]
-    #[doc = " @param[in] condition the condition under which the edge is part of the graph"]
-    #[doc = " @param[in] size the number of atoms in the condition"]
-    #[doc = " @param[in] data user data for the callback"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Observe edge directives passed to the solver."]
+    #[doc = "!"]
+    #[doc = "! @param[in] node_u the start vertex of the edge"]
+    #[doc = "! @param[in] node_v the end vertex of the edge"]
+    #[doc = "! @param[in] condition the condition under which the edge is part of the graph"]
+    #[doc = "! @param[in] size the number of atoms in the condition"]
+    #[doc = "! @param[in] data user data for the callback"]
+    #[doc = "! @return whether the call was successful"]
     pub acyc_edge: ::std::option::Option<
         unsafe extern "C" fn(
             node_u: ::std::os::raw::c_int,
@@ -6924,12 +6874,12 @@ pub struct clingo_ground_program_observer {
             data: *mut ::std::os::raw::c_void,
         ) -> bool,
     >,
-    #[doc = " Observe numeric theory terms."]
-    #[doc = ""]
-    #[doc = " @param[in] term_id the id of the term"]
-    #[doc = " @param[in] number the value of the term"]
-    #[doc = " @param[in] data user data for the callback"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Observe numeric theory terms."]
+    #[doc = "!"]
+    #[doc = "! @param[in] term_id the id of the term"]
+    #[doc = "! @param[in] number the value of the term"]
+    #[doc = "! @param[in] data user data for the callback"]
+    #[doc = "! @return whether the call was successful"]
     pub theory_term_number: ::std::option::Option<
         unsafe extern "C" fn(
             term_id: clingo_id_t,
@@ -6937,12 +6887,12 @@ pub struct clingo_ground_program_observer {
             data: *mut ::std::os::raw::c_void,
         ) -> bool,
     >,
-    #[doc = " Observe string theory terms."]
-    #[doc = ""]
-    #[doc = " @param[in] term_id the id of the term"]
-    #[doc = " @param[in] name the value of the term"]
-    #[doc = " @param[in] data user data for the callback"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Observe string theory terms."]
+    #[doc = "!"]
+    #[doc = "! @param[in] term_id the id of the term"]
+    #[doc = "! @param[in] name the value of the term"]
+    #[doc = "! @param[in] data user data for the callback"]
+    #[doc = "! @return whether the call was successful"]
     pub theory_term_string: ::std::option::Option<
         unsafe extern "C" fn(
             term_id: clingo_id_t,
@@ -6950,20 +6900,20 @@ pub struct clingo_ground_program_observer {
             data: *mut ::std::os::raw::c_void,
         ) -> bool,
     >,
-    #[doc = " Observe compound theory terms."]
-    #[doc = ""]
-    #[doc = " The name_id_or_type gives the type of the compound term:"]
-    #[doc = " - if it is -1, then it is a tuple"]
-    #[doc = " - if it is -2, then it is a set"]
-    #[doc = " - if it is -3, then it is a list"]
-    #[doc = " - otherwise, it is a function and name_id_or_type refers to the id of the name (in form of a string term)"]
-    #[doc = ""]
-    #[doc = " @param[in] term_id the id of the term"]
-    #[doc = " @param[in] name_id_or_type the name or type of the term"]
-    #[doc = " @param[in] arguments the arguments of the term"]
-    #[doc = " @param[in] size the number of arguments"]
-    #[doc = " @param[in] data user data for the callback"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Observe compound theory terms."]
+    #[doc = "!"]
+    #[doc = "! The name_id_or_type gives the type of the compound term:"]
+    #[doc = "! - if it is -1, then it is a tuple"]
+    #[doc = "! - if it is -2, then it is a set"]
+    #[doc = "! - if it is -3, then it is a list"]
+    #[doc = "! - otherwise, it is a function and name_id_or_type refers to the id of the name (in form of a string term)"]
+    #[doc = "!"]
+    #[doc = "! @param[in] term_id the id of the term"]
+    #[doc = "! @param[in] name_id_or_type the name or type of the term"]
+    #[doc = "! @param[in] arguments the arguments of the term"]
+    #[doc = "! @param[in] size the number of arguments"]
+    #[doc = "! @param[in] data user data for the callback"]
+    #[doc = "! @return whether the call was successful"]
     pub theory_term_compound: ::std::option::Option<
         unsafe extern "C" fn(
             term_id: clingo_id_t,
@@ -6973,15 +6923,15 @@ pub struct clingo_ground_program_observer {
             data: *mut ::std::os::raw::c_void,
         ) -> bool,
     >,
-    #[doc = " Observe theory elements."]
-    #[doc = ""]
-    #[doc = " @param element_id the id of the element"]
-    #[doc = " @param terms the term tuple of the element"]
-    #[doc = " @param terms_size the number of terms in the tuple"]
-    #[doc = " @param condition the condition of the elemnt"]
-    #[doc = " @param condition_size the number of literals in the condition"]
-    #[doc = " @param[in] data user data for the callback"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Observe theory elements."]
+    #[doc = "!"]
+    #[doc = "! @param element_id the id of the element"]
+    #[doc = "! @param terms the term tuple of the element"]
+    #[doc = "! @param terms_size the number of terms in the tuple"]
+    #[doc = "! @param condition the condition of the elemnt"]
+    #[doc = "! @param condition_size the number of literals in the condition"]
+    #[doc = "! @param[in] data user data for the callback"]
+    #[doc = "! @return whether the call was successful"]
     pub theory_element: ::std::option::Option<
         unsafe extern "C" fn(
             element_id: clingo_id_t,
@@ -6992,14 +6942,14 @@ pub struct clingo_ground_program_observer {
             data: *mut ::std::os::raw::c_void,
         ) -> bool,
     >,
-    #[doc = " Observe theory atoms without guard."]
-    #[doc = ""]
-    #[doc = " @param[in] atom_id_or_zero the id of the atom or zero for directives"]
-    #[doc = " @param[in] term_id the term associated with the atom"]
-    #[doc = " @param[in] elements the elements of the atom"]
-    #[doc = " @param[in] size the number of elements"]
-    #[doc = " @param[in] data user data for the callback"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Observe theory atoms without guard."]
+    #[doc = "!"]
+    #[doc = "! @param[in] atom_id_or_zero the id of the atom or zero for directives"]
+    #[doc = "! @param[in] term_id the term associated with the atom"]
+    #[doc = "! @param[in] elements the elements of the atom"]
+    #[doc = "! @param[in] size the number of elements"]
+    #[doc = "! @param[in] data user data for the callback"]
+    #[doc = "! @return whether the call was successful"]
     pub theory_atom: ::std::option::Option<
         unsafe extern "C" fn(
             atom_id_or_zero: clingo_id_t,
@@ -7009,16 +6959,16 @@ pub struct clingo_ground_program_observer {
             data: *mut ::std::os::raw::c_void,
         ) -> bool,
     >,
-    #[doc = " Observe theory atoms with guard."]
-    #[doc = ""]
-    #[doc = " @param[in] atom_id_or_zero the id of the atom or zero for directives"]
-    #[doc = " @param[in] term_id the term associated with the atom"]
-    #[doc = " @param[in] elements the elements of the atom"]
-    #[doc = " @param[in] size the number of elements"]
-    #[doc = " @param[in] operator_id the id of the operator (a string term)"]
-    #[doc = " @param[in] right_hand_side_id the id of the term on the right hand side of the atom"]
-    #[doc = " @param[in] data user data for the callback"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Observe theory atoms with guard."]
+    #[doc = "!"]
+    #[doc = "! @param[in] atom_id_or_zero the id of the atom or zero for directives"]
+    #[doc = "! @param[in] term_id the term associated with the atom"]
+    #[doc = "! @param[in] elements the elements of the atom"]
+    #[doc = "! @param[in] size the number of elements"]
+    #[doc = "! @param[in] operator_id the id of the operator (a string term)"]
+    #[doc = "! @param[in] right_hand_side_id the id of the term on the right hand side of the atom"]
+    #[doc = "! @param[in] data user data for the callback"]
+    #[doc = "! @return whether the call was successful"]
     pub theory_atom_with_guard: ::std::option::Option<
         unsafe extern "C" fn(
             atom_id_or_zero: clingo_id_t,
@@ -7299,25 +7249,25 @@ fn bindgen_test_layout_clingo_ground_program_observer() {
     );
 }
 pub type clingo_ground_program_observer_t = clingo_ground_program_observer;
-#[doc = " Struct used to specify the program parts that have to be grounded."]
-#[doc = ""]
-#[doc = " Programs may be structured into parts, which can be grounded independently with ::clingo_control_ground."]
-#[doc = " Program parts are mainly interesting for incremental grounding and multi-shot solving."]
-#[doc = " For single-shot solving, program parts are not needed."]
-#[doc = ""]
-#[doc = " @note Parts of a logic program without an explicit <tt>\\#program</tt>"]
-#[doc = " specification are by default put into a program called `base` without"]
-#[doc = " arguments."]
-#[doc = ""]
-#[doc = " @see clingo_control_ground()"]
+#[doc = "! Struct used to specify the program parts that have to be grounded."]
+#[doc = "!"]
+#[doc = "! Programs may be structured into parts, which can be grounded independently with ::clingo_control_ground."]
+#[doc = "! Program parts are mainly interesting for incremental grounding and multi-shot solving."]
+#[doc = "! For single-shot solving, program parts are not needed."]
+#[doc = "!"]
+#[doc = "! @note Parts of a logic program without an explicit <tt>\\#program</tt>"]
+#[doc = "! specification are by default put into a program called `base` without"]
+#[doc = "! arguments."]
+#[doc = "!"]
+#[doc = "! @see clingo_control_ground()"]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct clingo_part {
-    #[doc = " name of the program part"]
+    #[doc = "!< name of the program part"]
     pub name: *const ::std::os::raw::c_char,
-    #[doc = " array of parameters"]
+    #[doc = "!< array of parameters"]
     pub params: *const clingo_symbol_t,
-    #[doc = " number of parameters"]
+    #[doc = "!< number of parameters"]
     pub size: usize,
 }
 #[test]
@@ -7364,45 +7314,45 @@ fn bindgen_test_layout_clingo_part() {
     );
 }
 pub type clingo_part_t = clingo_part;
-#[doc = " Callback function to implement external functions."]
-#[doc = ""]
-#[doc = " If an external function of form <tt>\\@name(parameters)</tt> occurs in a logic program,"]
-#[doc = " then this function is called with its location, name, parameters, and a callback to inject symbols as arguments."]
-#[doc = " The callback can be called multiple times; all symbols passed are injected."]
-#[doc = ""]
-#[doc = " If a (non-recoverable) clingo API function fails in this callback, for example, the symbol callback, the callback must return false."]
-#[doc = " In case of errors not related to clingo, this function can set error ::clingo_error_unknown and return false to stop grounding with an error."]
-#[doc = ""]
-#[doc = " @param[in] location location from which the external function was called"]
-#[doc = " @param[in] name name of the called external function"]
-#[doc = " @param[in] arguments arguments of the called external function"]
-#[doc = " @param[in] arguments_size number of arguments"]
-#[doc = " @param[in] data user data of the callback"]
-#[doc = " @param[in] symbol_callback function to inject symbols"]
-#[doc = " @param[in] symbol_callback_data user data for the symbol callback"]
-#[doc = "            (must be passed untouched)"]
-#[doc = " @return whether the call was successful"]
-#[doc = " @see clingo_control_ground()"]
-#[doc = ""]
-#[doc = " The following example implements the external function <tt>\\@f()</tt> returning 42."]
-#[doc = " ~~~~~~~~~~~~~~~{.c}"]
-#[doc = " bool"]
-#[doc = " ground_callback(clingo_location_t const *location,"]
-#[doc = "                 char const *name,"]
-#[doc = "                 clingo_symbol_t const *arguments,"]
-#[doc = "                 size_t arguments_size,"]
-#[doc = "                 void *data,"]
-#[doc = "                 clingo_symbol_callback_t symbol_callback,"]
-#[doc = "                 void *symbol_callback_data) {"]
-#[doc = "   if (strcmp(name, \"f\") == 0 && arguments_size == 0) {"]
-#[doc = "     clingo_symbol_t sym;"]
-#[doc = "     clingo_symbol_create_number(42, &sym);"]
-#[doc = "     return symbol_callback(&sym, 1, symbol_callback_data);"]
-#[doc = "   }"]
-#[doc = "   clingo_set_error(clingo_error_runtime, \"function not found\");"]
-#[doc = "   return false;"]
-#[doc = " }"]
-#[doc = " ~~~~~~~~~~~~~~~"]
+#[doc = "! Callback function to implement external functions."]
+#[doc = "!"]
+#[doc = "! If an external function of form <tt>\\@name(parameters)</tt> occurs in a logic program,"]
+#[doc = "! then this function is called with its location, name, parameters, and a callback to inject symbols as arguments."]
+#[doc = "! The callback can be called multiple times; all symbols passed are injected."]
+#[doc = "!"]
+#[doc = "! If a (non-recoverable) clingo API function fails in this callback, for example, the symbol callback, the callback must return false."]
+#[doc = "! In case of errors not related to clingo, this function can set error ::clingo_error_unknown and return false to stop grounding with an error."]
+#[doc = "!"]
+#[doc = "! @param[in] location location from which the external function was called"]
+#[doc = "! @param[in] name name of the called external function"]
+#[doc = "! @param[in] arguments arguments of the called external function"]
+#[doc = "! @param[in] arguments_size number of arguments"]
+#[doc = "! @param[in] data user data of the callback"]
+#[doc = "! @param[in] symbol_callback function to inject symbols"]
+#[doc = "! @param[in] symbol_callback_data user data for the symbol callback"]
+#[doc = "!            (must be passed untouched)"]
+#[doc = "! @return whether the call was successful"]
+#[doc = "! @see clingo_control_ground()"]
+#[doc = "!"]
+#[doc = "! The following example implements the external function <tt>\\@f()</tt> returning 42."]
+#[doc = "! ~~~~~~~~~~~~~~~{.c}"]
+#[doc = "! bool"]
+#[doc = "! ground_callback(clingo_location_t const *location,"]
+#[doc = "!                 char const *name,"]
+#[doc = "!                 clingo_symbol_t const *arguments,"]
+#[doc = "!                 size_t arguments_size,"]
+#[doc = "!                 void *data,"]
+#[doc = "!                 clingo_symbol_callback_t symbol_callback,"]
+#[doc = "!                 void *symbol_callback_data) {"]
+#[doc = "!   if (strcmp(name, \"f\") == 0 && arguments_size == 0) {"]
+#[doc = "!     clingo_symbol_t sym;"]
+#[doc = "!     clingo_symbol_create_number(42, &sym);"]
+#[doc = "!     return symbol_callback(&sym, 1, symbol_callback_data);"]
+#[doc = "!   }"]
+#[doc = "!   clingo_set_error(clingo_error_runtime, \"function not found\");"]
+#[doc = "!   return false;"]
+#[doc = "! }"]
+#[doc = "! ~~~~~~~~~~~~~~~"]
 pub type clingo_ground_callback_t = ::std::option::Option<
     unsafe extern "C" fn(
         location: *const clingo_location_t,
@@ -7419,29 +7369,29 @@ pub type clingo_ground_callback_t = ::std::option::Option<
 pub struct clingo_control {
     _unused: [u8; 0],
 }
-#[doc = " Control object holding grounding and solving state."]
+#[doc = "! Control object holding grounding and solving state."]
 pub type clingo_control_t = clingo_control;
 extern "C" {
-    #[doc = " Create a new control object."]
-    #[doc = ""]
-    #[doc = " A control object has to be freed using clingo_control_free()."]
-    #[doc = ""]
-    #[doc = " @note Only gringo options (without <code>\\-\\-output</code>) and clasp\'s options are supported as arguments,"]
-    #[doc = " except basic options such as <code>\\-\\-help</code>."]
-    #[doc = " Furthermore, a control object is blocked while a search call is active;"]
-    #[doc = " you must not call any member function during search."]
-    #[doc = ""]
-    #[doc = " If the logger is NULL, messages are printed to stderr."]
-    #[doc = ""]
-    #[doc = " @param[in] arguments C string array of command line arguments"]
-    #[doc = " @param[in] arguments_size size of the arguments array"]
-    #[doc = " @param[in] logger callback functions for warnings and info messages"]
-    #[doc = " @param[in] logger_data user data for the logger callback"]
-    #[doc = " @param[in] message_limit maximum number of times the logger callback is called"]
-    #[doc = " @param[out] control resulting control object"]
-    #[doc = " @return whether the call was successful; might set one of the following error codes:"]
-    #[doc = " - ::clingo_error_bad_alloc"]
-    #[doc = " - ::clingo_error_runtime if argument parsing fails"]
+    #[doc = "! Create a new control object."]
+    #[doc = "!"]
+    #[doc = "! A control object has to be freed using clingo_control_free()."]
+    #[doc = "!"]
+    #[doc = "! @note Only gringo options (without <code>\\-\\-output</code>) and clasp's options are supported as arguments,"]
+    #[doc = "! except basic options such as <code>\\-\\-help</code>."]
+    #[doc = "! Furthermore, a control object is blocked while a search call is active;"]
+    #[doc = "! you must not call any member function during search."]
+    #[doc = "!"]
+    #[doc = "! If the logger is NULL, messages are printed to stderr."]
+    #[doc = "!"]
+    #[doc = "! @param[in] arguments C string array of command line arguments"]
+    #[doc = "! @param[in] arguments_size size of the arguments array"]
+    #[doc = "! @param[in] logger callback functions for warnings and info messages"]
+    #[doc = "! @param[in] logger_data user data for the logger callback"]
+    #[doc = "! @param[in] message_limit maximum number of times the logger callback is called"]
+    #[doc = "! @param[out] control resulting control object"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_bad_alloc"]
+    #[doc = "! - ::clingo_error_runtime if argument parsing fails"]
     pub fn clingo_control_new(
         arguments: *const *const ::std::os::raw::c_char,
         arguments_size: usize,
@@ -7452,38 +7402,38 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Free a control object created with clingo_control_new()."]
-    #[doc = " @param[in] control the target"]
+    #[doc = "! Free a control object created with clingo_control_new()."]
+    #[doc = "! @param[in] control the target"]
     pub fn clingo_control_free(control: *mut clingo_control_t);
 }
 extern "C" {
-    #[doc = " Extend the logic program with a program in a file."]
-    #[doc = ""]
-    #[doc = " @param[in] control the target"]
-    #[doc = " @param[in] file path to the file"]
-    #[doc = " @return whether the call was successful; might set one of the following error codes:"]
-    #[doc = " - ::clingo_error_bad_alloc"]
-    #[doc = " - ::clingo_error_runtime if parsing or checking fails"]
+    #[doc = "! Extend the logic program with a program in a file."]
+    #[doc = "!"]
+    #[doc = "! @param[in] control the target"]
+    #[doc = "! @param[in] file path to the file"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_bad_alloc"]
+    #[doc = "! - ::clingo_error_runtime if parsing or checking fails"]
     pub fn clingo_control_load(
         control: *mut clingo_control_t,
         file: *const ::std::os::raw::c_char,
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Extend the logic program with the given non-ground logic program in string form."]
-    #[doc = ""]
-    #[doc = " This function puts the given program into a block of form: <tt>\\#program name(parameters).</tt>"]
-    #[doc = ""]
-    #[doc = " After extending the logic program, the corresponding program parts are typically grounded with ::clingo_control_ground."]
-    #[doc = ""]
-    #[doc = " @param[in] control the target"]
-    #[doc = " @param[in] name name of the program block"]
-    #[doc = " @param[in] parameters string array of parameters of the program block"]
-    #[doc = " @param[in] parameters_size number of parameters"]
-    #[doc = " @param[in] program string representation of the program"]
-    #[doc = " @return whether the call was successful; might set one of the following error codes:"]
-    #[doc = " - ::clingo_error_bad_alloc"]
-    #[doc = " - ::clingo_error_runtime if parsing fails"]
+    #[doc = "! Extend the logic program with the given non-ground logic program in string form."]
+    #[doc = "!"]
+    #[doc = "! This function puts the given program into a block of form: <tt>\\#program name(parameters).</tt>"]
+    #[doc = "!"]
+    #[doc = "! After extending the logic program, the corresponding program parts are typically grounded with ::clingo_control_ground."]
+    #[doc = "!"]
+    #[doc = "! @param[in] control the target"]
+    #[doc = "! @param[in] name name of the program block"]
+    #[doc = "! @param[in] parameters string array of parameters of the program block"]
+    #[doc = "! @param[in] parameters_size number of parameters"]
+    #[doc = "! @param[in] program string representation of the program"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_bad_alloc"]
+    #[doc = "! - ::clingo_error_runtime if parsing fails"]
     pub fn clingo_control_add(
         control: *mut clingo_control_t,
         name: *const ::std::os::raw::c_char,
@@ -7493,24 +7443,24 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Ground the selected @link ::clingo_part parts @endlink of the current (non-ground) logic program."]
-    #[doc = ""]
-    #[doc = " After grounding, logic programs can be solved with ::clingo_control_solve()."]
-    #[doc = ""]
-    #[doc = " @note Parts of a logic program without an explicit <tt>\\#program</tt>"]
-    #[doc = " specification are by default put into a program called `base` without"]
-    #[doc = " arguments."]
-    #[doc = ""]
-    #[doc = " @param[in] control the target"]
-    #[doc = " @param[in] parts array of parts to ground"]
-    #[doc = " @param[in] parts_size size of the parts array"]
-    #[doc = " @param[in] ground_callback callback to implement external functions"]
-    #[doc = " @param[in] ground_callback_data user data for ground_callback"]
-    #[doc = " @return whether the call was successful; might set one of the following error codes:"]
-    #[doc = " - ::clingo_error_bad_alloc"]
-    #[doc = " - error code of ground callback"]
-    #[doc = ""]
-    #[doc = " @see clingo_part"]
+    #[doc = "! Ground the selected @link ::clingo_part parts @endlink of the current (non-ground) logic program."]
+    #[doc = "!"]
+    #[doc = "! After grounding, logic programs can be solved with ::clingo_control_solve()."]
+    #[doc = "!"]
+    #[doc = "! @note Parts of a logic program without an explicit <tt>\\#program</tt>"]
+    #[doc = "! specification are by default put into a program called `base` without"]
+    #[doc = "! arguments."]
+    #[doc = "!"]
+    #[doc = "! @param[in] control the target"]
+    #[doc = "! @param[in] parts array of parts to ground"]
+    #[doc = "! @param[in] parts_size size of the parts array"]
+    #[doc = "! @param[in] ground_callback callback to implement external functions"]
+    #[doc = "! @param[in] ground_callback_data user data for ground_callback"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_bad_alloc"]
+    #[doc = "! - error code of ground callback"]
+    #[doc = "!"]
+    #[doc = "! @see clingo_part"]
     pub fn clingo_control_ground(
         control: *mut clingo_control_t,
         parts: *const clingo_part_t,
@@ -7520,20 +7470,20 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Solve the currently @link ::clingo_control_ground grounded @endlink logic program enumerating its models."]
-    #[doc = ""]
-    #[doc = " See the @ref SolveHandle module for more information."]
-    #[doc = ""]
-    #[doc = " @param[in] control the target"]
-    #[doc = " @param[in] mode configures the search mode"]
-    #[doc = " @param[in] assumptions array of assumptions to solve under"]
-    #[doc = " @param[in] assumptions_size number of assumptions"]
-    #[doc = " @param[in] notify the event handler to register"]
-    #[doc = " @param[in] data the user data for the event handler"]
-    #[doc = " @param[out] handle handle to the current search to enumerate models"]
-    #[doc = " @return whether the call was successful; might set one of the following error codes:"]
-    #[doc = " - ::clingo_error_bad_alloc"]
-    #[doc = " - ::clingo_error_runtime if solving could not be started"]
+    #[doc = "! Solve the currently @link ::clingo_control_ground grounded @endlink logic program enumerating its models."]
+    #[doc = "!"]
+    #[doc = "! See the @ref SolveHandle module for more information."]
+    #[doc = "!"]
+    #[doc = "! @param[in] control the target"]
+    #[doc = "! @param[in] mode configures the search mode"]
+    #[doc = "! @param[in] assumptions array of assumptions to solve under"]
+    #[doc = "! @param[in] assumptions_size number of assumptions"]
+    #[doc = "! @param[in] notify the event handler to register"]
+    #[doc = "! @param[in] data the user data for the event handler"]
+    #[doc = "! @param[out] handle handle to the current search to enumerate models"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_bad_alloc"]
+    #[doc = "! - ::clingo_error_runtime if solving could not be started"]
     pub fn clingo_control_solve(
         control: *mut clingo_control_t,
         mode: clingo_solve_mode_bitset_t,
@@ -7545,32 +7495,32 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Clean up the domains of clingo\'s grounding component using the solving"]
-    #[doc = " component\'s top level assignment."]
-    #[doc = ""]
-    #[doc = " This function removes atoms from domains that are false and marks atoms as"]
-    #[doc = " facts that are true.  With multi-shot solving, this can result in smaller"]
-    #[doc = " groundings because less rules have to be instantiated and more"]
-    #[doc = " simplifications can be applied."]
-    #[doc = ""]
-    #[doc = " @param[in] control the target"]
-    #[doc = " @return whether the call was successful; might set one of the following error codes:"]
-    #[doc = " - ::clingo_error_bad_alloc"]
+    #[doc = "! Clean up the domains of clingo's grounding component using the solving"]
+    #[doc = "! component's top level assignment."]
+    #[doc = "!"]
+    #[doc = "! This function removes atoms from domains that are false and marks atoms as"]
+    #[doc = "! facts that are true.  With multi-shot solving, this can result in smaller"]
+    #[doc = "! groundings because less rules have to be instantiated and more"]
+    #[doc = "! simplifications can be applied."]
+    #[doc = "!"]
+    #[doc = "! @param[in] control the target"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_bad_alloc"]
     pub fn clingo_control_cleanup(control: *mut clingo_control_t) -> bool;
 }
 extern "C" {
-    #[doc = " Assign a truth value to an external atom."]
-    #[doc = ""]
-    #[doc = " If a negative literal is passed, the corresponding atom is assigned the"]
-    #[doc = " inverted truth value."]
-    #[doc = ""]
-    #[doc = " If the atom does not exist or is not external, this is a noop."]
-    #[doc = ""]
-    #[doc = " @param[in] control the target"]
-    #[doc = " @param[in] literal literal to assign"]
-    #[doc = " @param[in] value the truth value"]
-    #[doc = " @return whether the call was successful; might set one of the following error codes:"]
-    #[doc = " - ::clingo_error_bad_alloc"]
+    #[doc = "! Assign a truth value to an external atom."]
+    #[doc = "!"]
+    #[doc = "! If a negative literal is passed, the corresponding atom is assigned the"]
+    #[doc = "! inverted truth value."]
+    #[doc = "!"]
+    #[doc = "! If the atom does not exist or is not external, this is a noop."]
+    #[doc = "!"]
+    #[doc = "! @param[in] control the target"]
+    #[doc = "! @param[in] literal literal to assign"]
+    #[doc = "! @param[in] value the truth value"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_bad_alloc"]
     pub fn clingo_control_assign_external(
         control: *mut clingo_control_t,
         literal: clingo_literal_t,
@@ -7578,37 +7528,37 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Release an external atom."]
-    #[doc = ""]
-    #[doc = " If a negative literal is passed, the corresponding atom is released."]
-    #[doc = ""]
-    #[doc = " After this call, an external atom is no longer external and subject to"]
-    #[doc = " program simplifications.  If the atom does not exist or is not external,"]
-    #[doc = " this is a noop."]
-    #[doc = ""]
-    #[doc = " @param[in] control the target"]
-    #[doc = " @param[in] literal literal to release"]
-    #[doc = " @return whether the call was successful; might set one of the following error codes:"]
-    #[doc = " - ::clingo_error_bad_alloc"]
+    #[doc = "! Release an external atom."]
+    #[doc = "!"]
+    #[doc = "! If a negative literal is passed, the corresponding atom is released."]
+    #[doc = "!"]
+    #[doc = "! After this call, an external atom is no longer external and subject to"]
+    #[doc = "! program simplifications.  If the atom does not exist or is not external,"]
+    #[doc = "! this is a noop."]
+    #[doc = "!"]
+    #[doc = "! @param[in] control the target"]
+    #[doc = "! @param[in] literal literal to release"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_bad_alloc"]
     pub fn clingo_control_release_external(
         control: *mut clingo_control_t,
         literal: clingo_literal_t,
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Register a custom propagator with the control object."]
-    #[doc = ""]
-    #[doc = " If the sequential flag is set to true, the propagator is called"]
-    #[doc = " sequentially when solving with multiple threads."]
-    #[doc = ""]
-    #[doc = " See the @ref Propagator module for more information."]
-    #[doc = ""]
-    #[doc = " @param[in] control the target"]
-    #[doc = " @param[in] propagator the propagator"]
-    #[doc = " @param[in] data user data passed to the propagator functions"]
-    #[doc = " @param[in] sequential whether the propagator should be called sequentially"]
-    #[doc = " @return whether the call was successful; might set one of the following error codes:"]
-    #[doc = " - ::clingo_error_bad_alloc"]
+    #[doc = "! Register a custom propagator with the control object."]
+    #[doc = "!"]
+    #[doc = "! If the sequential flag is set to true, the propagator is called"]
+    #[doc = "! sequentially when solving with multiple threads."]
+    #[doc = "!"]
+    #[doc = "! See the @ref Propagator module for more information."]
+    #[doc = "!"]
+    #[doc = "! @param[in] control the target"]
+    #[doc = "! @param[in] propagator the propagator"]
+    #[doc = "! @param[in] data user data passed to the propagator functions"]
+    #[doc = "! @param[in] sequential whether the propagator should be called sequentially"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_bad_alloc"]
     pub fn clingo_control_register_propagator(
         control: *mut clingo_control_t,
         propagator: *const clingo_propagator_t,
@@ -7617,162 +7567,162 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Check if the solver has determined that the internal program representation is conflicting."]
-    #[doc = ""]
-    #[doc = " If this function returns true, solve calls will return immediately with an unsatisfiable solve result."]
-    #[doc = " Note that conflicts first have to be detected, e.g. -"]
-    #[doc = " initial unit propagation results in an empty clause,"]
-    #[doc = " or later if an empty clause is resolved during solving."]
-    #[doc = " Hence, the function might return false even if the problem is unsatisfiable."]
-    #[doc = ""]
-    #[doc = " @param[in] control the target"]
-    #[doc = " @return whether the program representation is conflicting"]
-    pub fn clingo_control_is_conflicting(control: *mut clingo_control_t) -> bool;
+    #[doc = "! Check if the solver has determined that the internal program representation is conflicting."]
+    #[doc = "!"]
+    #[doc = "! If this function returns true, solve calls will return immediately with an unsatisfiable solve result."]
+    #[doc = "! Note that conflicts first have to be detected, e.g. -"]
+    #[doc = "! initial unit propagation results in an empty clause,"]
+    #[doc = "! or later if an empty clause is resolved during solving."]
+    #[doc = "! Hence, the function might return false even if the problem is unsatisfiable."]
+    #[doc = "!"]
+    #[doc = "! @param[in] control the target"]
+    #[doc = "! @return whether the program representation is conflicting"]
+    pub fn clingo_control_is_conflicting(control: *const clingo_control_t) -> bool;
 }
 extern "C" {
-    #[doc = " Get a statistics object to inspect solver statistics."]
-    #[doc = ""]
-    #[doc = " Statistics are updated after a solve call."]
-    #[doc = ""]
-    #[doc = " See the @ref Statistics module for more information."]
-    #[doc = ""]
-    #[doc = " @attention"]
-    #[doc = " The level of detail of the statistics depends on the stats option"]
-    #[doc = " (which can be set using @ref Configuration module or passed as an option when @link clingo_control_new creating the control object@endlink)."]
-    #[doc = " The default level zero only provides basic statistics,"]
-    #[doc = " level one provides extended and accumulated statistics,"]
-    #[doc = " and level two provides per-thread statistics."]
-    #[doc = ""]
-    #[doc = " @param[in] control the target"]
-    #[doc = " @param[out] statistics the statistics object"]
-    #[doc = " @return whether the call was successful; might set one of the following error codes:"]
-    #[doc = " - ::clingo_error_bad_alloc"]
+    #[doc = "! Get a statistics object to inspect solver statistics."]
+    #[doc = "!"]
+    #[doc = "! Statistics are updated after a solve call."]
+    #[doc = "!"]
+    #[doc = "! See the @ref Statistics module for more information."]
+    #[doc = "!"]
+    #[doc = "! @attention"]
+    #[doc = "! The level of detail of the statistics depends on the stats option"]
+    #[doc = "! (which can be set using @ref Configuration module or passed as an option when @link clingo_control_new creating the control object@endlink)."]
+    #[doc = "! The default level zero only provides basic statistics,"]
+    #[doc = "! level one provides extended and accumulated statistics,"]
+    #[doc = "! and level two provides per-thread statistics."]
+    #[doc = "!"]
+    #[doc = "! @param[in] control the target"]
+    #[doc = "! @param[out] statistics the statistics object"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_bad_alloc"]
     pub fn clingo_control_statistics(
-        control: *mut clingo_control_t,
+        control: *const clingo_control_t,
         statistics: *mut *const clingo_statistics_t,
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Interrupt the active solve call (or the following solve call right at the beginning)."]
-    #[doc = ""]
-    #[doc = " @param[in] control the target"]
+    #[doc = "! Interrupt the active solve call (or the following solve call right at the beginning)."]
+    #[doc = "!"]
+    #[doc = "! @param[in] control the target"]
     pub fn clingo_control_interrupt(control: *mut clingo_control_t);
 }
 extern "C" {
-    #[doc = " Get low-level access to clasp."]
-    #[doc = ""]
-    #[doc = " @attention"]
-    #[doc = " This function is intended for experimental use only and not part of the stable API."]
-    #[doc = ""]
-    #[doc = " This function may return a <code>nullptr</code>."]
-    #[doc = " Otherwise, the returned pointer can be casted to a ClaspFacade pointer."]
-    #[doc = ""]
-    #[doc = " @param[in] control the target"]
-    #[doc = " @param[out] clasp pointer to the ClaspFacade object (may be <code>nullptr</code>)"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Get low-level access to clasp."]
+    #[doc = "!"]
+    #[doc = "! @attention"]
+    #[doc = "! This function is intended for experimental use only and not part of the stable API."]
+    #[doc = "!"]
+    #[doc = "! This function may return a <code>nullptr</code>."]
+    #[doc = "! Otherwise, the returned pointer can be casted to a ClaspFacade pointer."]
+    #[doc = "!"]
+    #[doc = "! @param[in] control the target"]
+    #[doc = "! @param[out] clasp pointer to the ClaspFacade object (may be <code>nullptr</code>)"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_control_clasp_facade(
         control: *mut clingo_control_t,
         clasp: *mut *mut ::std::os::raw::c_void,
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Get a configuration object to change the solver configuration."]
-    #[doc = ""]
-    #[doc = " See the @ref Configuration module for more information."]
-    #[doc = ""]
-    #[doc = " @param[in] control the target"]
-    #[doc = " @param[out] configuration the configuration object"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Get a configuration object to change the solver configuration."]
+    #[doc = "!"]
+    #[doc = "! See the @ref Configuration module for more information."]
+    #[doc = "!"]
+    #[doc = "! @param[in] control the target"]
+    #[doc = "! @param[out] configuration the configuration object"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_control_configuration(
         control: *mut clingo_control_t,
         configuration: *mut *mut clingo_configuration_t,
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Configure how learnt constraints are handled during enumeration."]
-    #[doc = ""]
-    #[doc = " If the enumeration assumption is enabled, then all information learnt from"]
-    #[doc = " the solver\'s various enumeration modes is removed after a solve call. This"]
-    #[doc = " includes enumeration of cautious or brave consequences, enumeration of"]
-    #[doc = " answer sets with or without projection, or finding optimal models, as well"]
-    #[doc = " as clauses added with clingo_solve_control_add_clause()."]
-    #[doc = ""]
-    #[doc = " @attention For practical purposes, this option is only interesting for single-shot solving"]
-    #[doc = " or before the last solve call to squeeze out a tiny bit of performance."]
-    #[doc = " Initially, the enumeration assumption is enabled."]
-    #[doc = ""]
-    #[doc = " @param[in] control the target"]
-    #[doc = " @param[in] enable whether to enable the assumption"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Configure how learnt constraints are handled during enumeration."]
+    #[doc = "!"]
+    #[doc = "! If the enumeration assumption is enabled, then all information learnt from"]
+    #[doc = "! the solver's various enumeration modes is removed after a solve call. This"]
+    #[doc = "! includes enumeration of cautious or brave consequences, enumeration of"]
+    #[doc = "! answer sets with or without projection, or finding optimal models, as well"]
+    #[doc = "! as clauses added with clingo_solve_control_add_clause()."]
+    #[doc = "!"]
+    #[doc = "! @attention For practical purposes, this option is only interesting for single-shot solving"]
+    #[doc = "! or before the last solve call to squeeze out a tiny bit of performance."]
+    #[doc = "! Initially, the enumeration assumption is enabled."]
+    #[doc = "!"]
+    #[doc = "! @param[in] control the target"]
+    #[doc = "! @param[in] enable whether to enable the assumption"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_control_use_enumeration_assumption(
         control: *mut clingo_control_t,
         enable: bool,
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Return the symbol for a constant definition of form: <tt>\\#const name = symbol</tt>."]
-    #[doc = ""]
-    #[doc = " @param[in] control the target"]
-    #[doc = " @param[in] name the name of the constant"]
-    #[doc = " @param[out] symbol the resulting symbol"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Return the symbol for a constant definition of form: <tt>\\#const name = symbol</tt>."]
+    #[doc = "!"]
+    #[doc = "! @param[in] control the target"]
+    #[doc = "! @param[in] name the name of the constant"]
+    #[doc = "! @param[out] symbol the resulting symbol"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_control_get_const(
-        control: *mut clingo_control_t,
+        control: *const clingo_control_t,
         name: *const ::std::os::raw::c_char,
         symbol: *mut clingo_symbol_t,
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Check if there is a constant definition for the given constant."]
-    #[doc = ""]
-    #[doc = " @param[in] control the target"]
-    #[doc = " @param[in] name the name of the constant"]
-    #[doc = " @param[out] exists whether a matching constant definition exists"]
-    #[doc = " @return whether the call was successful; might set one of the following error codes:"]
-    #[doc = " - ::clingo_error_runtime if constant definition does not exist"]
-    #[doc = ""]
-    #[doc = " @see clingo_control_get_const()"]
+    #[doc = "! Check if there is a constant definition for the given constant."]
+    #[doc = "!"]
+    #[doc = "! @param[in] control the target"]
+    #[doc = "! @param[in] name the name of the constant"]
+    #[doc = "! @param[out] exists whether a matching constant definition exists"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_runtime if constant definition does not exist"]
+    #[doc = "!"]
+    #[doc = "! @see clingo_control_get_const()"]
     pub fn clingo_control_has_const(
-        control: *mut clingo_control_t,
+        control: *const clingo_control_t,
         name: *const ::std::os::raw::c_char,
         exists: *mut bool,
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Get an object to inspect symbolic atoms (the relevant Herbrand base) used"]
-    #[doc = " for grounding."]
-    #[doc = ""]
-    #[doc = " See the @ref SymbolicAtoms module for more information."]
-    #[doc = ""]
-    #[doc = " @param[in] control the target"]
-    #[doc = " @param[out] atoms the symbolic atoms object"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Get an object to inspect symbolic atoms (the relevant Herbrand base) used"]
+    #[doc = "! for grounding."]
+    #[doc = "!"]
+    #[doc = "! See the @ref SymbolicAtoms module for more information."]
+    #[doc = "!"]
+    #[doc = "! @param[in] control the target"]
+    #[doc = "! @param[out] atoms the symbolic atoms object"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_control_symbolic_atoms(
-        control: *mut clingo_control_t,
-        atoms: *mut *mut clingo_symbolic_atoms_t,
+        control: *const clingo_control_t,
+        atoms: *mut *const clingo_symbolic_atoms_t,
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Get an object to inspect theory atoms that occur in the grounding."]
-    #[doc = ""]
-    #[doc = " See the @ref TheoryAtoms module for more information."]
-    #[doc = ""]
-    #[doc = " @param[in] control the target"]
-    #[doc = " @param[out] atoms the theory atoms object"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Get an object to inspect theory atoms that occur in the grounding."]
+    #[doc = "!"]
+    #[doc = "! See the @ref TheoryAtoms module for more information."]
+    #[doc = "!"]
+    #[doc = "! @param[in] control the target"]
+    #[doc = "! @param[out] atoms the theory atoms object"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_control_theory_atoms(
-        control: *mut clingo_control_t,
-        atoms: *mut *mut clingo_theory_atoms_t,
+        control: *const clingo_control_t,
+        atoms: *mut *const clingo_theory_atoms_t,
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Register a program observer with the control object."]
-    #[doc = ""]
-    #[doc = " @param[in] control the target"]
-    #[doc = " @param[in] observer the observer to register"]
-    #[doc = " @param[in] replace just pass the grounding to the observer but not the solver"]
-    #[doc = " @param[in] data user data passed to the observer functions"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Register a program observer with the control object."]
+    #[doc = "!"]
+    #[doc = "! @param[in] control the target"]
+    #[doc = "! @param[in] observer the observer to register"]
+    #[doc = "! @param[in] replace just pass the grounding to the observer but not the solver"]
+    #[doc = "! @param[in] data user data passed to the observer functions"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_control_register_observer(
         control: *mut clingo_control_t,
         observer: *const clingo_ground_program_observer_t,
@@ -7781,27 +7731,27 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Get an object to add ground directives to the program."]
-    #[doc = ""]
-    #[doc = " See the @ref ProgramBuilder module for more information."]
-    #[doc = ""]
-    #[doc = " @param[in] control the target"]
-    #[doc = " @param[out] backend the backend object"]
-    #[doc = " @return whether the call was successful; might set one of the following error codes:"]
-    #[doc = " - ::clingo_error_bad_alloc"]
+    #[doc = "! Get an object to add ground directives to the program."]
+    #[doc = "!"]
+    #[doc = "! See the @ref ProgramBuilder module for more information."]
+    #[doc = "!"]
+    #[doc = "! @param[in] control the target"]
+    #[doc = "! @param[out] backend the backend object"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_bad_alloc"]
     pub fn clingo_control_backend(
         control: *mut clingo_control_t,
         backend: *mut *mut clingo_backend_t,
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Get an object to add non-ground directives to the program."]
-    #[doc = ""]
-    #[doc = " See the @ref ProgramBuilder module for more information."]
-    #[doc = ""]
-    #[doc = " @param[in] control the target"]
-    #[doc = " @param[out] builder the program builder object"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Get an object to add non-ground directives to the program."]
+    #[doc = "!"]
+    #[doc = "! See the @ref ProgramBuilder module for more information."]
+    #[doc = "!"]
+    #[doc = "! @param[in] control the target"]
+    #[doc = "! @param[out] builder the program builder object"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_control_program_builder(
         control: *mut clingo_control_t,
         builder: *mut *mut clingo_program_builder_t,
@@ -7812,16 +7762,16 @@ extern "C" {
 pub struct clingo_options {
     _unused: [u8; 0],
 }
-#[doc = " Object to add command-line options."]
+#[doc = "! Object to add command-line options."]
 pub type clingo_options_t = clingo_options;
-#[doc = " Callback to customize clingo main function."]
-#[doc = ""]
-#[doc = " @param[in] control corresponding control object"]
-#[doc = " @param[in] files files passed via command line arguments"]
-#[doc = " @param[in] size number of files"]
-#[doc = " @param[in] data user data for the callback"]
-#[doc = ""]
-#[doc = " @return whether the call was successful"]
+#[doc = "! Callback to customize clingo main function."]
+#[doc = "!"]
+#[doc = "! @param[in] control corresponding control object"]
+#[doc = "! @param[in] files files passed via command line arguments"]
+#[doc = "! @param[in] size number of files"]
+#[doc = "! @param[in] data user data for the callback"]
+#[doc = "!"]
+#[doc = "! @return whether the call was successful"]
 pub type clingo_main_function_t = ::std::option::Option<
     unsafe extern "C" fn(
         control: *mut clingo_control_t,
@@ -7830,21 +7780,21 @@ pub type clingo_main_function_t = ::std::option::Option<
         data: *mut ::std::os::raw::c_void,
     ) -> bool,
 >;
-#[doc = " Callback to print a model in default format."]
-#[doc = ""]
-#[doc = " @param[in] data user data for the callback"]
-#[doc = ""]
-#[doc = " @return whether the call was successful"]
+#[doc = "! Callback to print a model in default format."]
+#[doc = "!"]
+#[doc = "! @param[in] data user data for the callback"]
+#[doc = "!"]
+#[doc = "! @return whether the call was successful"]
 pub type clingo_default_model_printer_t =
     ::std::option::Option<unsafe extern "C" fn(data: *mut ::std::os::raw::c_void) -> bool>;
-#[doc = " Callback to customize model printing."]
-#[doc = ""]
-#[doc = " @param[in] model the model"]
-#[doc = " @param[in] printer the default model printer"]
-#[doc = " @param[in] printer_data user data for the printer"]
-#[doc = " @param[in] data user data for the callback"]
-#[doc = ""]
-#[doc = " @return whether the call was successful"]
+#[doc = "! Callback to customize model printing."]
+#[doc = "!"]
+#[doc = "! @param[in] model the model"]
+#[doc = "! @param[in] printer the default model printer"]
+#[doc = "! @param[in] printer_data user data for the printer"]
+#[doc = "! @param[in] data user data for the callback"]
+#[doc = "!"]
+#[doc = "! @return whether the call was successful"]
 pub type clingo_model_printer_t = ::std::option::Option<
     unsafe extern "C" fn(
         model: *const clingo_model_t,
@@ -7853,36 +7803,36 @@ pub type clingo_model_printer_t = ::std::option::Option<
         data: *mut ::std::os::raw::c_void,
     ) -> bool,
 >;
-#[doc = " This struct contains a set of functions to customize the clingo application."]
+#[doc = "! This struct contains a set of functions to customize the clingo application."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct clingo_application {
-    #[doc = " callback to obtain program name"]
+    #[doc = "!< callback to obtain program name"]
     pub program_name: ::std::option::Option<
         unsafe extern "C" fn(data: *mut ::std::os::raw::c_void) -> *const ::std::os::raw::c_char,
     >,
-    #[doc = " callback to obtain version information"]
+    #[doc = "!< callback to obtain version information"]
     pub version: ::std::option::Option<
         unsafe extern "C" fn(data: *mut ::std::os::raw::c_void) -> *const ::std::os::raw::c_char,
     >,
-    #[doc = " callback to obtain message limit"]
+    #[doc = "!< callback to obtain message limit"]
     pub message_limit: ::std::option::Option<
         unsafe extern "C" fn(data: *mut ::std::os::raw::c_void) -> ::std::os::raw::c_uint,
     >,
-    #[doc = " callback to override clingo\'s main function"]
+    #[doc = "!< callback to override clingo's main function"]
     pub main: clingo_main_function_t,
-    #[doc = " callback to override default logger"]
+    #[doc = "!< callback to override default logger"]
     pub logger: clingo_logger_t,
-    #[doc = " callback to override default model printing"]
+    #[doc = "!< callback to override default model printing"]
     pub printer: clingo_model_printer_t,
-    #[doc = " callback to register options"]
+    #[doc = "!< callback to register options"]
     pub register_options: ::std::option::Option<
         unsafe extern "C" fn(
             options: *mut clingo_options_t,
             data: *mut ::std::os::raw::c_void,
         ) -> bool,
     >,
-    #[doc = " callback validate options"]
+    #[doc = "!< callback validate options"]
     pub validate_options:
         ::std::option::Option<unsafe extern "C" fn(data: *mut ::std::os::raw::c_void) -> bool>,
 }
@@ -7987,25 +7937,25 @@ fn bindgen_test_layout_clingo_application() {
 }
 pub type clingo_application_t = clingo_application;
 extern "C" {
-    #[doc = " Add an option that is processed with a custom parser."]
-    #[doc = ""]
-    #[doc = " Note that the parser also has to take care of storing the semantic value of"]
-    #[doc = " the option somewhere."]
-    #[doc = ""]
-    #[doc = " Parameter option specifies the name(s) of the option."]
-    #[doc = " For example, \"ping,p\" adds the short option \"-p\" and its long form \"--ping\"."]
-    #[doc = " It is also possible to associate an option with a help level by adding \"@l\" to the option specification."]
-    #[doc = " Options with a level greater than zero are only shown if the argument to help is greater or equal to l."]
-    #[doc = ""]
-    #[doc = " @param[in] options object to register the option with"]
-    #[doc = " @param[in] group options are grouped into sections as given by this string"]
-    #[doc = " @param[in] option specifies the command line option"]
-    #[doc = " @param[in] description the description of the option"]
-    #[doc = " @param[in] parse callback to parse the value of the option"]
-    #[doc = " @param[in] data user data for the callback"]
-    #[doc = " @param[in] multi whether the option can appear multiple times on the command-line"]
-    #[doc = " @param[in] argument optional string to change the value name in the generated help output"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Add an option that is processed with a custom parser."]
+    #[doc = "!"]
+    #[doc = "! Note that the parser also has to take care of storing the semantic value of"]
+    #[doc = "! the option somewhere."]
+    #[doc = "!"]
+    #[doc = "! Parameter option specifies the name(s) of the option."]
+    #[doc = "! For example, \"ping,p\" adds the short option \"-p\" and its long form \"--ping\"."]
+    #[doc = "! It is also possible to associate an option with a help level by adding \"@l\" to the option specification."]
+    #[doc = "! Options with a level greater than zero are only shown if the argument to help is greater or equal to l."]
+    #[doc = "!"]
+    #[doc = "! @param[in] options object to register the option with"]
+    #[doc = "! @param[in] group options are grouped into sections as given by this string"]
+    #[doc = "! @param[in] option specifies the command line option"]
+    #[doc = "! @param[in] description the description of the option"]
+    #[doc = "! @param[in] parse callback to parse the value of the option"]
+    #[doc = "! @param[in] data user data for the callback"]
+    #[doc = "! @param[in] multi whether the option can appear multiple times on the command-line"]
+    #[doc = "! @param[in] argument optional string to change the value name in the generated help output"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_options_add(
         options: *mut clingo_options_t,
         group: *const ::std::os::raw::c_char,
@@ -8023,17 +7973,17 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Add an option that is a simple flag."]
-    #[doc = ""]
-    #[doc = " This function is similar to @ref clingo_options_add() but simpler because it only supports flags, which do not have values."]
-    #[doc = " If a flag is passed via the command-line the parameter target is set to true."]
-    #[doc = ""]
-    #[doc = " @param[in] options object to register the option with"]
-    #[doc = " @param[in] group options are grouped into sections as given by this string"]
-    #[doc = " @param[in] option specifies the command line option"]
-    #[doc = " @param[in] description the description of the option"]
-    #[doc = " @param[in] target boolean set to true if the flag is given on the command-line"]
-    #[doc = " @return whether the call was successful"]
+    #[doc = "! Add an option that is a simple flag."]
+    #[doc = "!"]
+    #[doc = "! This function is similar to @ref clingo_options_add() but simpler because it only supports flags, which do not have values."]
+    #[doc = "! If a flag is passed via the command-line the parameter target is set to true."]
+    #[doc = "!"]
+    #[doc = "! @param[in] options object to register the option with"]
+    #[doc = "! @param[in] group options are grouped into sections as given by this string"]
+    #[doc = "! @param[in] option specifies the command line option"]
+    #[doc = "! @param[in] description the description of the option"]
+    #[doc = "! @param[in] target boolean set to true if the flag is given on the command-line"]
+    #[doc = "! @return whether the call was successful"]
     pub fn clingo_options_add_flag(
         options: *mut clingo_options_t,
         group: *const ::std::os::raw::c_char,
@@ -8043,13 +7993,13 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = " Run clingo with a customized main function (similar to python and lua embedding)."]
-    #[doc = ""]
-    #[doc = " @param[in] application struct with callbacks to override default clingo functionality"]
-    #[doc = " @param[in] arguments command line arguments"]
-    #[doc = " @param[in] size number of arguments"]
-    #[doc = " @param[in] data user data to pass to callbacks in application"]
-    #[doc = " @return exit code to return from main function"]
+    #[doc = "! Run clingo with a customized main function (similar to python and lua embedding)."]
+    #[doc = "!"]
+    #[doc = "! @param[in] application struct with callbacks to override default clingo functionality"]
+    #[doc = "! @param[in] arguments command line arguments"]
+    #[doc = "! @param[in] size number of arguments"]
+    #[doc = "! @param[in] data user data to pass to callbacks in application"]
+    #[doc = "! @return exit code to return from main function"]
     pub fn clingo_main(
         application: *mut clingo_application_t,
         arguments: *const *const ::std::os::raw::c_char,

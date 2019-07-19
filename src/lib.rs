@@ -1627,6 +1627,8 @@ pub trait Propagator {
     ///
     /// * `control` - control object for the target solver
     /// * `changes` - the change set
+    ///
+    /// **Returns** whether the call was successful
     fn undo(&mut self, _control: &mut PropagateControl, _changes: &[Literal]) -> bool {
         true
     }
