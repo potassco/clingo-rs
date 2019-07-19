@@ -740,7 +740,8 @@ pub trait Logger {
     ) -> Result<(), Error> {
         let code = Warning::try_from(code)?;
         let message = message.to_str()?;
-        Ok(self.log(code, message))
+        self.log(code, message);
+        Ok(())
     }
 }
 
@@ -5911,22 +5912,22 @@ impl ToSymbol for bool {
 }
 impl ToSymbol for u8 {
     fn symbol(&self) -> Result<Symbol, Error> {
-        Ok(Symbol::create_number(*self as i32))
+        Ok(Symbol::create_number(i32::from(*self)))
     }
 }
 impl ToSymbol for i8 {
     fn symbol(&self) -> Result<Symbol, Error> {
-        Ok(Symbol::create_number(*self as i32))
+        Ok(Symbol::create_number(i32::from(*self)))
     }
 }
 impl ToSymbol for u16 {
     fn symbol(&self) -> Result<Symbol, Error> {
-        Ok(Symbol::create_number(*self as i32))
+        Ok(Symbol::create_number(i32::from(*self)))
     }
 }
 impl ToSymbol for i16 {
     fn symbol(&self) -> Result<Symbol, Error> {
-        Ok(Symbol::create_number(*self as i32))
+        Ok(Symbol::create_number(i32::from(*self)))
     }
 }
 impl ToSymbol for u32 {
@@ -5955,7 +5956,7 @@ impl<T: ToSymbol> ToSymbol for &T {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Default)]
 pub struct FactBase {
     // facts: Vec<Symbol>,
     facts: HashSet<Symbol>,
@@ -5964,10 +5965,8 @@ impl FactBase {
     pub fn len(&self) -> usize {
         self.facts.len()
     }
-    pub fn new() -> FactBase {
-        FactBase {
-            facts: HashSet::new(),
-        }
+    pub fn is_empty(&self) -> bool {
+        self.facts.is_empty()
     }
     pub fn iter(&self) -> std::collections::hash_set::Iter<'_, Symbol> {
         self.facts.iter()
