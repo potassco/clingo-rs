@@ -1,5 +1,4 @@
 use std::env;
-use std::path::Path;
 use std::path::PathBuf;
 use std::process::Command;
 
@@ -32,32 +31,32 @@ fn main() {
                 .unwrap();
         }
 
-        if !Path::new("bindings.rs").exists() {
-            let bindings = bindgen::Builder::default()
-                .header(clingo_dir.join("libclingo/clingo.h").to_str().unwrap())
-                .no_copy("clingo_solve_control")
-                .no_copy("clingo_model")
-                .no_copy("clingo_solve_handle")
-                .no_copy("clingo_program_builder")
-                .no_copy("clingo_control")
-                .no_copy("clingo_options")
-                .no_copy("clingo_symbolic_atoms")
-                .no_copy("clingo_theory_atoms")
-                .no_copy("clingo_assignment")
-                .no_copy("clingo_propagate_init")
-                .no_copy("clingo_propagate_control")
-                .no_copy("clingo_backend")
-                .no_copy("clingo_configuration")
-                .no_copy("clingo_statistic")
-                .blacklist_type("max_align_t") // https://github.com/rust-lang/rust-bindgen/issues/550
-                .generate()
-                .expect("Unable to generate bindings");
+        // if !Path::new("bindings.rs").exists() {
+        //     let bindings = bindgen::Builder::default()
+        //         .header(clingo_dir.join("libclingo/clingo.h").to_str().unwrap())
+        //         .no_copy("clingo_solve_control")
+        //         .no_copy("clingo_model")
+        //         .no_copy("clingo_solve_handle")
+        //         .no_copy("clingo_program_builder")
+        //         .no_copy("clingo_control")
+        //         .no_copy("clingo_options")
+        //         .no_copy("clingo_symbolic_atoms")
+        //         .no_copy("clingo_theory_atoms")
+        //         .no_copy("clingo_assignment")
+        //         .no_copy("clingo_propagate_init")
+        //         .no_copy("clingo_propagate_control")
+        //         .no_copy("clingo_backend")
+        //         .no_copy("clingo_configuration")
+        //         .no_copy("clingo_statistic")
+        //         .blacklist_type("max_align_t") // https://github.com/rust-lang/rust-bindgen/issues/550
+        //         .generate()
+        //         .expect("Unable to generate bindings");
         
-            // Write the bindings to the bindings.rs file.
-            bindings
-                .write_to_file("bindings.rs")
-                .expect("Couldn't write bindings!");
-        }
+        //     // Write the bindings to the bindings.rs file.
+        //     bindings
+        //         .write_to_file("bindings.rs")
+        //         .expect("Couldn't write bindings!");
+        // }
 
         // libpotassco
         cc::Build::new()
