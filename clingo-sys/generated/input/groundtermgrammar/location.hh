@@ -1,8 +1,8 @@
-// A Bison parser, made by GNU Bison 3.2.
+// A Bison parser, made by GNU Bison 3.3.2.
 
 // Locations for Bison parsers in C++
 
-// Copyright (C) 2002-2015, 2018 Free Software Foundation, Inc.
+// Copyright (C) 2002-2015, 2018-2019 Free Software Foundation, Inc.
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -31,12 +31,12 @@
 // version 2.2 of Bison.
 
 /**
- ** \file /home/sthiele/Projects/clingo/mybuild/libgringo/src/input/groundtermgrammar/location.hh
+ ** \file /home/sthiele/Projects/clingo/build/libgringo/src/input/groundtermgrammar/location.hh
  ** Define the Gringo::Input::GroundTermGrammar::location class.
  */
 
-#ifndef YY_GRINGOGROUNDTERMGRAMMAR_HOME_STHIELE_PROJECTS_CLINGO_MYBUILD_LIBGRINGO_SRC_INPUT_GROUNDTERMGRAMMAR_LOCATION_HH_INCLUDED
-# define YY_GRINGOGROUNDTERMGRAMMAR_HOME_STHIELE_PROJECTS_CLINGO_MYBUILD_LIBGRINGO_SRC_INPUT_GROUNDTERMGRAMMAR_LOCATION_HH_INCLUDED
+#ifndef YY_GRINGOGROUNDTERMGRAMMAR_HOME_STHIELE_PROJECTS_CLINGO_LIBGRINGO_SRC_INPUT_GROUNDTERMGRAMMAR_LOCATION_HH_INCLUDED
+# define YY_GRINGOGROUNDTERMGRAMMAR_HOME_STHIELE_PROJECTS_CLINGO_LIBGRINGO_SRC_INPUT_GROUNDTERMGRAMMAR_LOCATION_HH_INCLUDED
 
 # include <algorithm> // std::max
 # include <iostream>
@@ -56,8 +56,8 @@
 
 #line 26 "/home/sthiele/Projects/clingo/libgringo/src/input/groundtermgrammar.yy" // location.cc:339
 namespace Gringo { namespace Input { namespace GroundTermGrammar {
-#line 60 "/home/sthiele/Projects/clingo/mybuild/libgringo/src/input/groundtermgrammar/location.hh" // location.cc:339
-  /// Abstract a position.
+#line 60 "/home/sthiele/Projects/clingo/build/libgringo/src/input/groundtermgrammar/location.hh" // location.cc:339
+  /// A point in a source file.
   class position
   {
   public:
@@ -176,7 +176,7 @@ namespace Gringo { namespace Input { namespace GroundTermGrammar {
     return ostr << pos.line << '.' << pos.column;
   }
 
-  /// Abstract a location.
+  /// Two points in a source file.
   class location
   {
   public:
@@ -318,5 +318,5 @@ namespace Gringo { namespace Input { namespace GroundTermGrammar {
 
 #line 26 "/home/sthiele/Projects/clingo/libgringo/src/input/groundtermgrammar.yy" // location.cc:339
 } } } // Gringo::Input::GroundTermGrammar
-#line 322 "/home/sthiele/Projects/clingo/mybuild/libgringo/src/input/groundtermgrammar/location.hh" // location.cc:339
-#endif // !YY_GRINGOGROUNDTERMGRAMMAR_HOME_STHIELE_PROJECTS_CLINGO_MYBUILD_LIBGRINGO_SRC_INPUT_GROUNDTERMGRAMMAR_LOCATION_HH_INCLUDED
+#line 322 "/home/sthiele/Projects/clingo/build/libgringo/src/input/groundtermgrammar/location.hh" // location.cc:339
+#endif // !YY_GRINGOGROUNDTERMGRAMMAR_HOME_STHIELE_PROJECTS_CLINGO_LIBGRINGO_SRC_INPUT_GROUNDTERMGRAMMAR_LOCATION_HH_INCLUDED
