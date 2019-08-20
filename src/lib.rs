@@ -1634,7 +1634,7 @@ pub trait Propagator {
     }
     #[doc(hidden)]
     unsafe extern "C" fn unsafe_undo<T: Propagator>(
-        control: *mut clingo_propagate_control_t,
+        control: *const clingo_propagate_control_t,
         changes: *const clingo_literal_t,
         size: usize,
         propagator: *mut c_void,
@@ -1682,6 +1682,52 @@ pub trait Propagator {
         let propagator = &mut *(propagator as *mut T);
 
         propagator.check(control)
+    }
+    /// This function allows a propagator to implement domain-specific heuristics.
+    ///
+    /// It is called whenever propagation reaches a fixed point and
+    /// should return a free solver literal that is to be assigned true.
+    /// In case multiple propagators are registered,
+    /// this function can return 0 to let a propagator registered later make a decision.
+    /// If all propagators return 0, then the fallback literal is
+    ///
+    /// # Arguments
+    ///
+    /// * `thread_id` - the solver's thread id
+    /// * `assignment` -  the assignment of the solver
+    /// * `fallback` -  the literal choosen by the solver's heuristic
+    /// * `decision` -  the literal to make true
+    ///
+    /// **Returns** whether the call was successful
+    fn decide(
+        &mut self,
+        _thread_id: Id,
+        _assignment: &Assignment,
+        _fallback: Literal,
+        _decision: &mut Literal,
+    ) -> bool {
+        true
+    }
+
+    #[doc(hidden)]
+    unsafe extern "C" fn unsafe_decide<T: Propagator>(
+        thread_id: clingo_id_t,
+        assignment: *const clingo_assignment_t,
+        fallback: clingo_literal_t,
+        propagator: *mut ::std::os::raw::c_void,
+        decision: *mut clingo_literal_t,
+    ) -> bool {
+        // check for null pointers
+        if assignment.is_null() | propagator.is_null() | decision.is_null() {
+            set_internal_error(ErrorType::Runtime, "unsafe_check() got a null pointer.");
+            return false;
+        }
+        let assignment = &*(assignment as *const Assignment);
+        let fallback = Literal(fallback);
+        let propagator = &mut *(propagator as *mut T);
+        let decision = &mut *(decision as *mut Literal);
+
+        propagator.decide(Id(thread_id), assignment, fallback, decision)
     }
 }
 
@@ -2186,6 +2232,7 @@ impl Control {
             propagate: Some(T::unsafe_propagate::<T>),
             undo: Some(T::unsafe_undo::<T>),
             check: Some(T::unsafe_check::<T>),
+            decide: Some(T::unsafe_decide::<T>),
         };
         if !unsafe {
             clingo_control_register_propagator(
@@ -2352,7 +2399,7 @@ impl Control {
 
     /// Get an object to inspect symbolic atoms (the relevant Herbrand base) used
     pub fn symbolic_atoms(&self) -> Result<&SymbolicAtoms, ClingoError> {
-        let mut atoms = std::ptr::null_mut();
+        let mut atoms = std::ptr::null();
         if !unsafe { clingo_control_symbolic_atoms(self.ctl.as_ptr(), &mut atoms) } {
             return Err(ClingoError::new(
                 "Call to clingo_control_symbolic_atoms() failed.",
@@ -2368,7 +2415,7 @@ impl Control {
 
     /// Get an object to inspect theory atoms that occur in the grounding.
     pub fn theory_atoms(&self) -> Result<&TheoryAtoms, ClingoError> {
-        let mut atoms = std::ptr::null_mut();
+        let mut atoms = std::ptr::null();
         if !unsafe { clingo_control_theory_atoms(self.ctl.as_ptr(), &mut atoms) } {
             return Err(ClingoError::new(
                 "Call to clingo_control_theory_atoms() failed.",
@@ -4283,7 +4330,7 @@ impl SolveControl {
 
     /// Get an object to inspect the symbolic atoms.
     pub fn symbolic_atoms(&mut self) -> Result<&SymbolicAtoms, ClingoError> {
-        let mut atoms = std::ptr::null_mut() as *mut clingo_symbolic_atoms_t;
+        let mut atoms = std::ptr::null() as *const clingo_symbolic_atoms_t;
         if !unsafe { clingo_solve_control_symbolic_atoms(&mut self.0, &mut atoms) } {
             return Err(ClingoError::new(
                 "Call to clingo_assignment_level() failed.",
@@ -4314,7 +4361,12 @@ impl Assignment {
     pub fn decision_level(&self) -> u32 {
         unsafe { clingo_assignment_decision_level(&self.0) }
     }
-
+    /// Get the current root level.
+    ///
+    /// Decisions levels smaller or equal to the root level are not backtracked during solving.
+    pub fn root_level(&self) -> u32 {
+        unsafe { clingo_assignment_root_level(&self.0) }
+    }
     /// Check whether the given assignment is conflicting.
     pub fn has_conflict(&self) -> bool {
         unsafe { clingo_assignment_has_conflict(&self.0) }
@@ -4673,7 +4725,7 @@ impl PropagateInit {
 
     /// Get an object to inspect the symbolic atoms.
     pub fn symbolic_atoms(&self) -> Result<&SymbolicAtoms, ClingoError> {
-        let mut atoms_ptr = std::ptr::null_mut() as *mut clingo_symbolic_atoms_t;
+        let mut atoms_ptr = std::ptr::null() as *const clingo_symbolic_atoms_t;
         if !unsafe { clingo_propagate_init_symbolic_atoms(&self.0, &mut atoms_ptr) } {
             return Err(ClingoError::new(
                 "Call to clingo_propagate_init_symbolic_atoms() failed.",
@@ -4689,7 +4741,7 @@ impl PropagateInit {
 
     /// Get an object to inspect the theory atoms.
     pub fn theory_atoms(&self) -> Result<&TheoryAtoms, ClingoError> {
-        let mut atoms_ptr = std::ptr::null_mut() as *mut clingo_theory_atoms_t;
+        let mut atoms_ptr = std::ptr::null() as *const clingo_theory_atoms_t;
         if !unsafe { clingo_propagate_init_theory_atoms(&self.0, &mut atoms_ptr) } {
             return Err(ClingoError::new(
                 "Call to clingo_propagate_init_symbolic_atoms() failed.",
@@ -5973,7 +6025,7 @@ impl FactBase {
     pub fn iter(&self) -> std::collections::hash_set::Iter<'_, Symbol> {
         self.facts.iter()
     }
-    pub fn insert(&mut self, fact: &ToSymbol) {
+    pub fn insert(&mut self, fact: &dyn ToSymbol) {
         self.facts.insert(fact.symbol().unwrap());
         // self.facts.sort();
     }

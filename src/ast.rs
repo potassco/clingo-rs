@@ -354,11 +354,30 @@ impl BodyLiteral {
 #[derive(Copy, Clone)]
 pub struct External(clingo_ast_external_t);
 impl External {
-    pub fn new(Atom(atom): Atom, body: &[BodyLiteral]) -> External {
+    pub fn new(Atom(atom): Atom, body: &[BodyLiteral], flag: bool) -> External {
+        let mut symbol = 0 as clingo_symbol_t;
+        if flag {
+            let name = CString::new("false").unwrap();
+            if !unsafe { clingo_symbol_create_id(name.as_ptr(), true, &mut symbol) } {
+                panic!("Failed to create false symbol");
+            }
+        } else {
+            let name = CString::new("true").unwrap();
+            if !unsafe { clingo_symbol_create_id(name.as_ptr(), true, &mut symbol) } {
+                panic!("Failed to create true symbol");
+            }
+        }
         let ext = clingo_ast_external {
             atom,
             body: body.as_ptr() as *const clingo_ast_body_literal_t,
             size: body.len(),
+            type_: clingo_sys::clingo_ast_term {
+                location: Location::new("<rewrite>", "<rewrite>", 0, 0, 0, 0)
+                    .unwrap()
+                    .0,
+                type_: TermType::Symbol as clingo_ast_term_type_t,
+                __bindgen_anon_1: clingo_ast_term__bindgen_ty_1 { symbol },
+            },
         };
         External(ext)
     }

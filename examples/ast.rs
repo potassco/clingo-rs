@@ -124,8 +124,8 @@ fn main() {
         parse_program("a :- not b. b :- not a.", &mut data)
             .expect("Failed to parse logic program.");
 
-        // add the external statement: #external enable.
-        let ext = ast::External::new(atom, &[]);
+        // add the external statement: #external enable. [false]
+        let ext = ast::External::new(atom, &[], false);
 
         let stm = ext.ast_statement(location);
         data.builder
