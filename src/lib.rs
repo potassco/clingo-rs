@@ -5954,13 +5954,14 @@ pub fn add_facts(ctl: &mut Control, facts: &FactBase) {
 
         // initilize atom to add
         let atom = ast::Term::from(*sym);
+
         // create literal
         let lit = ast::Literal::from_term(ast::Sign::None, &atom);
 
-        // add atom enable to the rule body
+        // create headliteral
         let hlit = ast::HeadLiteral::from(&lit);
 
-        // initialize the rule
+        // create (fact) rule
         let rule = ast::Rule::new(hlit, &[]);
 
         // initialize the statement

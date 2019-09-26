@@ -1,11 +1,24 @@
-error[E0382]: use of moved value: `hlit`
- --> $DIR/ast_rule.rs:9:10
-  |
-7 |     let hlit = ast::HeadLiteral::from(&lit);
-  |         ---- move occurs because `hlit` has type `clingo::ast::HeadLiteral<'_>`, which does not implement the `Copy` trait
-8 |     let rule = ast::Rule::new(hlit, &[]);
-  |                               ---- value moved here
-9 |     drop(hlit);
-  |          ^^^^ value used here after move
+error[E0505]: cannot move out of `body` because it is borrowed
+  --> $DIR/ast_rule.rs:12:10
+   |
+10 |     let rule = ast::Rule::new(hlit, &body);
+   |                                     ----- borrow of `body` occurs here
+11 |     drop(blit);
+12 |     drop(body);
+   |          ^^^^ move out of `body` occurs here
+13 |     drop(lit);
+14 |     let _end = rule;
+   |                ---- borrow later used here
 
-For more information about this error, try `rustc --explain E0382`.
+error[E0505]: cannot move out of `lit` because it is borrowed
+  --> $DIR/ast_rule.rs:13:10
+   |
+7  |     let hlit = ast::HeadLiteral::from(&lit);
+   |                                       ---- borrow of `lit` occurs here
+...
+13 |     drop(lit);
+   |          ^^^ move out of `lit` occurs here
+14 |     let _end = rule;
+   |                ---- borrow later used here
+
+For more information about this error, try `rustc --explain E0505`.

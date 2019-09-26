@@ -1,0 +1,11 @@
+error[E0505]: cannot move out of `args2` because it is borrowed
+  --> $DIR/ast_disjunction.rs:13:10
+   |
+12 |     let dis = ast::Disjunction::new(&args2);
+   |                                     ------ borrow of `args2` occurs here
+13 |     drop(args2);
+   |          ^^^^^ move out of `args2` occurs here
+14 |     let _end = dis;
+   |                --- borrow later used here
+
+For more information about this error, try `rustc --explain E0505`.

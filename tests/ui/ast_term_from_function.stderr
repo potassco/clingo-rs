@@ -1,0 +1,21 @@
+error[E0505]: cannot move out of `fun` because it is borrowed
+  --> $DIR/ast_term_from_function.rs:10:10
+   |
+9  |     let term3 = ast::Term::from(&fun);
+   |                                 ---- borrow of `fun` occurs here
+10 |     drop(fun);
+   |          ^^^ move out of `fun` occurs here
+11 |     println!("{:?}",term3);
+   |                     ----- borrow later used here
+
+error[E0505]: cannot move out of `fun2` because it is borrowed
+  --> $DIR/ast_term_from_function.rs:14:10
+   |
+13 |     let term4 = ast::Term::external_function(&fun2);
+   |                                              ----- borrow of `fun2` occurs here
+14 |     drop(fun2);
+   |          ^^^^ move out of `fun2` occurs here
+15 |     println!("{:?}",term4);
+   |                     ----- borrow later used here
+
+For more information about this error, try `rustc --explain E0505`.

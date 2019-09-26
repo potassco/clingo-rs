@@ -1,5 +1,5 @@
 error[E0505]: cannot move out of `op` because it is borrowed
- --> $DIR/ast_term_2.rs:8:10
+ --> $DIR/ast_term_from_unary_operation.rs:8:10
   |
 7 |     let term2 = ast::Term::from(&op);
   |                                 --- borrow of `op` occurs here

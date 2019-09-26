@@ -7,9 +7,11 @@ fn main() {
     let mut args = vec![term1,term2];
     let fun = ast::Function::new("name", &mut args).unwrap();
     let term3 = ast::Term::from(&fun);
-    let term4 = ast::Term::from(sym);
-    args.push(term4);
-    drop(args);
     drop(fun);
-    let _end = term3;
+    println!("{:?}",term3);
+    let fun2 = ast::Function::new("name2", &mut args).unwrap();
+    let term4 = ast::Term::external_function(&fun2);
+    drop(fun2);
+    println!("{:?}",term4);
+
 }

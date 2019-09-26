@@ -270,15 +270,19 @@ fn theory_ast_rule_test2() {
 #[test]
 fn ui() {
     let t = trybuild::TestCases::new();
-    t.compile_fail("tests/ui/ast_term.rs");
-    t.compile_fail("tests/ui/ast_term_2.rs");
-    t.compile_fail("tests/ui/ast_term_3.rs");
-    t.compile_fail("tests/ui/ast_term_4.rs");
+    // t.compile_fail("tests/ui/ast_term_from_symbol.rs");
+    t.compile_fail("tests/ui/ast_term_from_unary_operation.rs");
+    t.compile_fail("tests/ui/ast_term_from_binary_operation.rs");
+    t.compile_fail("tests/ui/ast_term_from_function.rs");
+    t.compile_fail("tests/ui/ast_term_from_pool.rs");
     t.compile_fail("tests/ui/ast_unary_operation.rs");
     t.compile_fail("tests/ui/ast_binary_operation.rs");
     t.compile_fail("tests/ui/ast_function.rs");
     t.compile_fail("tests/ui/ast_interval.rs");
+    t.compile_fail("tests/ui/ast_pool.rs");
     t.compile_fail("tests/ui/ast_literal.rs");
+    t.compile_fail("tests/ui/ast_conditional_literal.rs");
+    t.compile_fail("tests/ui/ast_disjunction.rs");
     t.compile_fail("tests/ui/ast_head_literal.rs");
     t.compile_fail("tests/ui/ast_body_literal.rs");
     t.compile_fail("tests/ui/ast_rule.rs");

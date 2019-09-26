@@ -6,5 +6,5 @@ fn main() {
     let term = ast::Term::from(sym);
     drop(string);
     drop(sym);
-    let _end = term;
+    println!("{:?}",term);
 }
