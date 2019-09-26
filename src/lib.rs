@@ -1,5 +1,5 @@
 #![doc(html_root_url = "https://docs.rs/clingo/0.4.3")]
-//! This crate provides bindings to the [clingo](https://github.com/potassco/clingo) library version 5.3.0.
+//! This crate provides bindings to the [clingo](https://github.com/potassco/clingo) library version 5.4.0.
 //!
 //! ## `clingo_derive` crate
 //!
@@ -670,7 +670,7 @@ pub trait AstStatementHandler {
     /// Callback function called on an ast statement while traversing the ast.
     ///
     /// **Returns** whether the call was successful
-    fn on_statement<T>(&mut self, arg1: &AstStatement<T>) -> bool;
+    fn on_statement(&mut self, arg1: &ast::AstStatement) -> bool;
     #[doc(hidden)]
     unsafe extern "C" fn unsafe_ast_callback<T: AstStatementHandler>(
         stm: *const clingo_ast_statement_t,
@@ -684,7 +684,7 @@ pub trait AstStatementHandler {
             );
             return false;
         }
-        let stm = &*(stm as *const AstStatement<T>);
+        let stm = &*(stm as *const ast::AstStatement);
         let event_handler = &mut *(event_handler as *mut T);
 
         event_handler.on_statement(stm)
@@ -907,6 +907,18 @@ impl WeightedLiteral {
 #[derive(Debug, Copy, Clone)]
 pub struct Location(clingo_location);
 impl Location {
+    /// Create a default location.
+    fn default() -> clingo_location {
+        let file = CString::new("").unwrap();
+        clingo_location {
+            begin_line: 0,
+            end_line: 0,
+            begin_column: 0,
+            end_column: 0,
+            begin_file: file.as_ptr(),
+            end_file: file.as_ptr(),
+        }
+    }
     /// Create a new location.
     ///
     /// # Arguments
@@ -1012,6 +1024,10 @@ impl Hash for Signature {
     }
 }
 impl Signature {
+    fn into(self) -> clingo_signature_t {
+        let Signature(sig) = self;
+        sig
+    }
     /// Create a new signature.
     ///
     /// # Arguments
@@ -1036,20 +1052,20 @@ impl Signature {
     }
 
     /// Create a statement for the signature.
-    pub fn ast_statement(&self, Location(loc): Location) -> AstStatement<Signature> {
-        let _bg_union_2 = clingo_ast_statement__bindgen_ty_1 {
-            project_signature: self.0 as clingo_signature_t,
-        };
-        let stm = clingo_ast_statement_t {
-            location: loc,
-            type_: ast::StatementType::ProjectAtomSignature as clingo_ast_statement_type_t,
-            __bindgen_anon_1: _bg_union_2,
-        };
-        AstStatement {
-            data: stm,
-            phantom: PhantomData,
-        }
-    }
+    // pub fn ast_statement<'a>(&'a self) -> Option<ast::AstStatement<'a>> {
+    //     let mut stm = clingo_ast_statement_t {
+    //         location: Location::default(),
+    //         type_: clingo_ast_statement_type_clingo_ast_statement_type_project_atom_signature
+    //             as i32,
+    //         __bindgen_anon_1: clingo_ast_statement__bindgen_ty_1 {
+    //             project_signature: self.0 as clingo_signature_t,
+    //         },
+    //     };
+    //     Some(ast::AstStatement {
+    //         data: std::ptr::NonNull::new(&mut stm)?,
+    //         phantom: PhantomData,
+    //     })
+    // }
 
     // TODO: should i return empty string vs Error
     /// Get the name of a signature.
@@ -2499,7 +2515,7 @@ impl Control {
     }
 
     /// Get an object to add non-ground directives to the program.
-    pub fn program_builder(&mut self) -> Result<ProgramBuilder, ClingoError> {
+    pub fn program_builder<'a>(&'a mut self) -> Result<ProgramBuilder<'a>, ClingoError> {
         let mut builder = std::ptr::null_mut();
         if !unsafe { clingo_control_program_builder(self.ctl.as_ptr(), &mut builder) } {
             return Err(ClingoError::new(
@@ -2525,147 +2541,6 @@ impl Control {
     // NODO: pub fn clingo_control_clasp_facade()
 }
 
-/// Representation of a program statement.
-#[derive(Clone)]
-pub struct AstStatement<'a, T: 'a> {
-    data: clingo_ast_statement_t,
-    phantom: PhantomData<&'a T>,
-}
-impl<'a, T> AstStatement<'a, T> {
-    /// Get the location of the statement.
-    pub fn location(&self) -> Location {
-        Location(self.data.location)
-    }
-
-    /// Get the type of the statement.
-    pub fn statement_type(&self) -> Result<ast::StatementType, ClingoError> {
-        match self.data.type_ as u32 {
-            clingo_ast_statement_type_clingo_ast_statement_type_rule => {
-                Ok(ast::StatementType::Rule)
-            }
-            clingo_ast_statement_type_clingo_ast_statement_type_const => {
-                Ok(ast::StatementType::Const)
-            }
-            clingo_ast_statement_type_clingo_ast_statement_type_show_signature => {
-                Ok(ast::StatementType::ShowSignature)
-            }
-            clingo_ast_statement_type_clingo_ast_statement_type_show_term => {
-                Ok(ast::StatementType::ShowTerm)
-            }
-            clingo_ast_statement_type_clingo_ast_statement_type_minimize => {
-                Ok(ast::StatementType::Minimize)
-            }
-            clingo_ast_statement_type_clingo_ast_statement_type_script => {
-                Ok(ast::StatementType::Script)
-            }
-            clingo_ast_statement_type_clingo_ast_statement_type_program => {
-                Ok(ast::StatementType::Program)
-            }
-            clingo_ast_statement_type_clingo_ast_statement_type_external => {
-                Ok(ast::StatementType::External)
-            }
-            clingo_ast_statement_type_clingo_ast_statement_type_edge => {
-                Ok(ast::StatementType::Edge)
-            }
-            clingo_ast_statement_type_clingo_ast_statement_type_heuristic => {
-                Ok(ast::StatementType::Heuristic)
-            }
-            clingo_ast_statement_type_clingo_ast_statement_type_project_atom => {
-                Ok(ast::StatementType::ProjectAtom)
-            }
-            clingo_ast_statement_type_clingo_ast_statement_type_project_atom_signature => {
-                Ok(ast::StatementType::ProjectAtomSignature)
-            }
-            clingo_ast_statement_type_clingo_ast_statement_type_theory_definition => {
-                Ok(ast::StatementType::TheoryDefinition)
-            }
-            x => {
-                eprintln!("Failed to match clingo_ast_statement_type: {}.", x);
-                Err(ClingoError::new(
-                    "Failed to match clingo_ast_statement_type.",
-                ))
-            }
-        }
-    }
-
-    /// Get a reference to the rule if the statement is a rule.
-    ///
-    /// # Errors
-    ///
-    /// - [`LogicError`](struct.LogicError.html) if the [statement type](#method.statement_type) is not [`Rule`](ast/enum.StatementType.html#variant.Rule)
-    /// - [`ClingoError`](struct.ClingoError.html)
-    pub fn rule(&self) -> Result<&ast::Rule, Error> {
-        match self.statement_type()? {
-            ast::StatementType::Rule => {
-                let rule = unsafe { self.data.__bindgen_anon_1.rule as *const clingo_ast_rule_t };
-                match unsafe { (rule as *const ast::Rule).as_ref() } {
-                    Some(reference) => Ok(reference),
-                    None => Err(ClingoError::new(
-                        "Tried casting a null pointer to &ast::Rule.",
-                    ))?,
-                }
-            }
-            x => {
-                eprintln!("Wrong StatementType: {:?}, expected Rule.", x);
-                Err(LogicError {
-                    msg: "Wrong StatementType, expected Rule.",
-                })?
-            }
-        }
-    }
-
-    /// Get a reference to the external if the [statement type](#method.statement_type) is [`External`](ast/enum.StatementType.html#variant.External).
-    ///
-    /// # Errors
-    ///
-    /// - [`LogicError`](struct.LogicError.html) if the [statement type](#method.statement_type) is not [`External`](ast/enum.StatementType.html#variant.External)
-    /// - [`ClingoError`](struct.ClingoError.html)
-    pub fn external(&self) -> Result<&ast::External, Error> {
-        match self.statement_type()? {
-            ast::StatementType::External => {
-                let external =
-                    unsafe { self.data.__bindgen_anon_1.external as *const clingo_ast_external_t };
-                match unsafe { (external as *const ast::External).as_ref() } {
-                    Some(reference) => Ok(reference),
-                    None => Err(ClingoError::new(
-                        "Tried casting a null pointer to &ast::External.",
-                    ))?,
-                }
-            }
-            x => {
-                eprintln!("Wrong StatementType: {:?}, expected External.", x);
-                Err(LogicError {
-                    msg: "Wrong StatementType, expected External.",
-                })?
-            }
-        }
-    }
-
-    /// Get project signature if the [statement type](#method.statement_type) is [`ProjectAtomSignature`](ast/enum.StatementType.html#variant.ProjectAtomSignature).
-    ///
-    /// # Errors
-    ///
-    /// - [`LogicError`](struct.LogicError.html) if the [statement type](#method.statement_type) is not [`ProjectAtomSignature`](ast/enum.StatementType.html#variant.ProjectAtomSignature)
-    /// - [`ClingoError`](struct.ClingoError.html)
-    pub fn project_signature(&self) -> Result<Signature, Error> {
-        match self.statement_type()? {
-            ast::StatementType::ProjectAtomSignature => {
-                let project_signature = unsafe { self.data.__bindgen_anon_1.project_signature };
-                Ok(Signature(project_signature))
-            }
-            x => {
-                eprintln!(
-                    "Wrong StatementType: {:?}, expected ProjectAtomSignature.",
-                    x
-                );
-                Err(LogicError {
-                    msg: "Wrong StatementType, expected ProjectAtomSignature.",
-                })?
-            }
-        }
-    }
-}
-
 /// Object to build non-ground programs.
 pub struct ProgramBuilder<'a> {
     theref: &'a mut clingo_program_builder_t,
@@ -2684,8 +2559,8 @@ impl<'a> ProgramBuilder<'a> {
     ///
     /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) for statements of invalid form
     /// or [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
-    pub fn add<T>(&mut self, stm: &AstStatement<T>) -> Result<(), ClingoError> {
-        if !unsafe { clingo_program_builder_add(self.theref, &stm.data) } {
+    pub fn add(&mut self, stm: &ast::AstStatement) -> Result<(), ClingoError> {
+        if !unsafe { clingo_program_builder_add(self.theref, ast::get_data_ref(stm)) } {
             return Err(ClingoError::new(
                 "Call to clingo_program_builder_add() failed.",
             ));
@@ -3309,7 +3184,7 @@ impl Statistics {
         let mut size = 0 as usize;
         if !unsafe { clingo_statistics_array_size(&self.0, key, &mut size) } {
             return Err(ClingoError::new(
-                "Call to clingo_statistics_array_at() failed.",
+                "Call to clingo_statistics_array_size() failed.",
             ));
         }
         Ok(size)
@@ -3326,7 +3201,7 @@ impl Statistics {
     ///
     /// * `key` - the key
     /// * `offset` - the offset in the array
-    pub fn statistics_array_at(&self, key: u64, offset: usize) -> Result<u64, ClingoError> {
+    pub fn array_at(&self, key: u64, offset: usize) -> Result<u64, ClingoError> {
         let mut subkey = 0 as u64;
         if !unsafe { clingo_statistics_array_at(&self.0, key, offset, &mut subkey) } {
             return Err(ClingoError::new(
@@ -4799,6 +4674,34 @@ impl PropagateInit {
             )),
         }
     }
+
+    /// Add the given clause to the solver.
+    ///
+    /// This method sets its result to false if the clause is causing a conflict.
+    ///
+    /// # Arguments
+    ///
+    /// * `clause` - the clause to add
+    ///
+    /// # Errors
+    ///
+    /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    pub fn add_clause(&mut self, clause: &[Literal]) -> Result<bool, ClingoError> {
+        let mut result = false;
+        if !unsafe {
+            clingo_propagate_init_add_clause(
+                &mut self.0,
+                clause.as_ptr() as *const clingo_literal_t,
+                clause.len(),
+                &mut result,
+            )
+        } {
+            return Err(ClingoError::new(
+                "Call to clingo_propagate_init_add_clause() failed.",
+            ));
+        }
+        Ok(result)
+    }
 }
 
 /// Search handle to a solve call.
@@ -6046,26 +5949,22 @@ pub fn add_facts(ctl: &mut Control, facts: &FactBase) {
     // get the program builder
     let mut builder = ctl.program_builder().ok();
 
-    // initialize the location
-    let location = Location::new("<rewrite>", "<rewrite>", 0, 0, 0, 0).unwrap();
-
     for sym in facts.iter() {
         // print!("{}",sym.to_string().unwrap());
 
         // initilize atom to add
-        let atom = ast::Atom::from_symbol(location, *sym);
-
+        let atom = ast::Term::from(*sym);
         // create literal
-        let lit = ast::Literal::from_atom(location, ast::Sign::None, &atom);
+        let lit = ast::Literal::from_term(ast::Sign::None, &atom);
 
         // add atom enable to the rule body
-        let hlit = ast::HeadLiteral::new(atom.location(), ast::HeadLiteralType::Literal, &lit);
+        let hlit = ast::HeadLiteral::from(&lit);
 
         // initialize the rule
         let rule = ast::Rule::new(hlit, &[]);
 
         // initialize the statement
-        let stm = rule.ast_statement(location);
+        let stm = rule.ast_statement().unwrap();
 
         // add the rewritten statement to the program
         builder

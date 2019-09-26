@@ -1,14 +1,14 @@
 use clingo::*;
 use std::env;
 
-pub struct OnStatementData<'a> {
-    atom: ast::Atom,
+pub struct OnStatementData<'a, 'b> {
+    atom: &'b ast::Term<'b>,
     builder: Option<ProgramBuilder<'a>>,
 }
 
-impl<'a> AstStatementHandler for OnStatementData<'a> {
+impl<'a, 'b> AstStatementHandler for OnStatementData<'a, 'b> {
     // adds atom enable to all rule bodies
-    fn on_statement<T>(&mut self, stm: &AstStatement<T>) -> bool {
+    fn on_statement(&mut self, stm: &ast::AstStatement) -> bool {
         // pass through all statements that are not rules
         if stm.statement_type().unwrap() != ast::StatementType::Rule {
             self.builder
@@ -28,14 +28,9 @@ impl<'a> AstStatementHandler for OnStatementData<'a> {
             }
 
             // create atom enable
-            let lit = ast::Literal::from_atom(self.atom.location(), ast::Sign::None, &self.atom);
+            let lit = ast::Literal::from_term(ast::Sign::None, &self.atom);
             // add atom enable to the rule body
-            let blit = ast::BodyLiteral::new(
-                self.atom.location(),
-                ast::Sign::None,
-                ast::BodyLiteralType::Literal,
-                &lit,
-            );
+            let blit = ast::BodyLiteral::from_literal(ast::Sign::None, &lit);
             extended_body.push(blit);
 
             // initialize the rule
@@ -43,7 +38,7 @@ impl<'a> AstStatementHandler for OnStatementData<'a> {
             let rule = ast::Rule::new(head, &extended_body);
 
             // initialize the statement
-            let stm2 = rule.ast_statement(stm.location());
+            let stm2 = rule.ast_statement().unwrap();
 
             // add the rewritten statement to the program
             self.builder
@@ -106,18 +101,10 @@ fn main() {
     let sym = Symbol::create_id("enable", true).unwrap();
 
     {
-        // get the program builder
-        let builder = ctl.program_builder().ok();
-
-        // initialize the location
-        let location = Location::new("<rewrite>", "<rewrite>", 0, 0, 0, 0).unwrap();
-
-        // initilize atom to add
-        let atom = ast::Atom::from_symbol(location, sym);
-
+        // initilize atom to add and the program builder
         let mut data = OnStatementData {
-            atom: atom,
-            builder: builder,
+            atom: &ast::Term::from(sym),
+            builder: ctl.program_builder().ok(),
         };
 
         // get the AST of the program
@@ -125,9 +112,9 @@ fn main() {
             .expect("Failed to parse logic program.");
 
         // add the external statement: #external enable. [false]
-        let ext = ast::External::new(atom, &[], false);
+        let ext = ast::External::new(ast::Term::from(sym), &[]);
 
-        let stm = ext.ast_statement(location);
+        let stm = ext.ast_statement().unwrap();
         data.builder
             .as_mut()
             .unwrap()

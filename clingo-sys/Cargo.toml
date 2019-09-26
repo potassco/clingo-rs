@@ -24,4 +24,5 @@ libc = "0.2"
 
 [build-dependencies]
 cc = "1.0"
-# bindgen = "0.50.0"
+bindgen = "0.51"
+pkg-config = "0.3"

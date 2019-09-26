@@ -1,0 +1,11 @@
+error[E0505]: cannot move out of `lit` because it is borrowed
+ --> $DIR/ast_head_literal.rs:8:10
+  |
+7 |     let hlit = ast::HeadLiteral::from(&lit);
+  |                                       ---- borrow of `lit` occurs here
+8 |     drop(lit);
+  |          ^^^ move out of `lit` occurs here
+9 |     let _end = hlit;
+  |                ---- borrow later used here
+
+For more information about this error, try `rustc --explain E0505`.

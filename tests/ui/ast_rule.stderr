@@ -1,0 +1,11 @@
+error[E0382]: use of moved value: `hlit`
+ --> $DIR/ast_rule.rs:9:10
+  |
+7 |     let hlit = ast::HeadLiteral::from(&lit);
+  |         ---- move occurs because `hlit` has type `clingo::ast::HeadLiteral<'_>`, which does not implement the `Copy` trait
+8 |     let rule = ast::Rule::new(hlit, &[]);
+  |                               ---- value moved here
+9 |     drop(hlit);
+  |          ^^^^ value used here after move
+
+For more information about this error, try `rustc --explain E0382`.
