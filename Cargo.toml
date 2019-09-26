@@ -28,5 +28,8 @@ failure = "0.1"
 failure_derive = "0.1"
 bitflags = "1.0"
 
+[dev-dependencies]
+trybuild = "1.0"
+clingo-sys = { path ="./clingo-sys" , version="0.4.3" }
 
 
