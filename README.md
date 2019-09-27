@@ -75,4 +75,6 @@ clingo = { version = "0.4.3", features = ["dynamic_linking"] }
 
 ## Contribution
 
+[How to make a contribution to `clingo-rs`?](https://github.com/potassco/clingo-rs/blob/master/CONTRIBUTING.md)
+
 Any contribution intentionally submitted for inclusion in the work by you, shall be licensed under the terms of the MIT license without any additional terms or conditions.
