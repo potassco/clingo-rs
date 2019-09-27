@@ -1,6 +1,6 @@
 # Contributing
 
-Thank you for considering contributing to this distribution. 
+Thank you for considering contributing to `clingo-rs`. 
 This file contains instructions that will help you to make a contribution.
 
 ## How to make a contribution
