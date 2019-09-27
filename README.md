@@ -32,7 +32,7 @@ Clingo version 5.3.0.
 
 ## `clingo_derive` crate
 
-The [`clingo_derive`](https://docs.rs/clingo_derive) crate helps easing the use of rust data types as facts.
+The [`clingo_derive`](https://crates.io/crates/clingo-derive) crate helps easing the use of rust data types as facts.
 
 In your `Cargo.toml` add:
 
