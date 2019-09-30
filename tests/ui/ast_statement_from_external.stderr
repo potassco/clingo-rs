@@ -1,7 +1,7 @@
 error[E0505]: cannot move out of `ext` because it is borrowed
- --> $DIR/ast_statement.rs:8:10
+ --> $DIR/ast_statement_from_external.rs:8:10
   |
-7 |     let stmt = ext.ast_statement().unwrap();
+7 |     let stmt = ext.ast_statement();
   |                --- borrow of `ext` occurs here
 8 |     drop(ext);
   |          ^^^ move out of `ext` occurs here

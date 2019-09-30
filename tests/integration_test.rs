@@ -152,120 +152,56 @@ fn theory_atoms_test() {
     }
 }
 
-#[test]
-fn theory_ast_external_test() {
+fn test_statement(stmt: &ast::AstStatement, string: &str) {
     let mut ctl = Control::new(vec![]).unwrap();
-
-    let sym = Symbol::create_id("test", true).unwrap();
 
     // get the program builder
     let mut builder = ctl.program_builder().unwrap();
 
-    // initilize atom to add
-    let atom = ast::Term::from(sym);
-
-    let ext = ast::External::new(atom, &[]);
-
-    let stm = ext.ast_statement().unwrap();
     builder
-        .add(&stm)
+        .add(&stmt)
         .expect("Failed to add statement to ProgramBuilder.");
 
     // finish building a program
     builder.end().expect("Failed to finish building a program.");
-
+    println!("{:?} {}", stmt, string);
+    let string2 = format!("{:?}", stmt);
+    assert_eq!(string2, string);
     // ground the base part
     let part = Part::new("base", &[]).unwrap();
     let parts = vec![part];
     ctl.ground(&parts)
         .expect("Failed to ground a logic program.");
 
-    // get the program literal corresponding to the external atom
     let atoms = ctl.symbolic_atoms().unwrap();
     let mut atoms_iterator = atoms.iter().unwrap();
     while let Some(item) = atoms_iterator.next() {
         let symbol = item.symbol().unwrap();
-        let string = symbol.to_string().unwrap();
-        assert_eq!("test", string);
+        let string2 = symbol.to_string().unwrap();
+        println!("{}", string2);
     }
+}
+
+#[test]
+fn theory_ast_external_test() {
+    let sym = Symbol::create_id("test", true).unwrap();
+    let atom = ast::Term::from(sym);
+    let ext = ast::External::new(atom, &[]);
+    let stm = ext.ast_statement();
+    test_statement(&stm, "AstStatement.external: External.atom: Term.symbol: test, body: []");
 }
 
 #[test]
 fn theory_ast_rule_test() {
-    let mut ctl = Control::new(vec![]).unwrap();
-
     let sym = Symbol::create_id("test", true).unwrap();
-
-    // get the program builder
-    let mut builder = ctl.program_builder().unwrap();
-
-    // initilize atom to add
     let atom = ast::Term::from(sym);
     let lit = ast::Literal::from_term(ast::Sign::None, &atom);
     let hlit = ast::HeadLiteral::from(&lit);
-
-    let rule = ast::Rule::new(hlit, &[]);
-
+    let blit = ast::BodyLiteral::from_literal(ast::Sign::None, &lit);
+    let body = vec![blit];
+    let rule = ast::Rule::new(hlit, &body);
     let stm = rule.ast_statement().unwrap();
-    builder
-        .add(&stm)
-        .expect("Failed to add statement to ProgramBuilder.");
-
-    // finish building a program
-    builder.end().expect("Failed to finish building a program.");
-
-    // ground the base part
-    let part = Part::new("base", &[]).unwrap();
-    let parts = vec![part];
-    ctl.ground(&parts)
-        .expect("Failed to ground a logic program.");
-
-    // get the program literal corresponding to the external atom
-    let atoms = ctl.symbolic_atoms().unwrap();
-    let mut atoms_iterator = atoms.iter().unwrap();
-    while let Some(item) = atoms_iterator.next() {
-        let symbol = item.symbol().unwrap();
-        let string = symbol.to_string().unwrap();
-        assert_eq!("test", string);
-    }
-}
-
-#[test]
-fn theory_ast_rule_test2() {
-    let mut ctl = Control::new(vec![]).unwrap();
-
-    let sym = Symbol::create_id("test", true).unwrap();
-
-    // get the program builder
-    let mut builder = ctl.program_builder().unwrap();
-
-    // initilize atom to add
-    let atom = ast::Term::from(sym);
-    let lit = ast::Literal::from_term(ast::Sign::None, &atom);
-    let hlit = ast::HeadLiteral::from(&lit);
-    let rule = ast::Rule::new(hlit, &[]);
-    let stm = rule.ast_statement().unwrap();
-    builder
-        .add(&stm)
-        .expect("Failed to add statement to ProgramBuilder.");
-
-    // finish building a program
-    builder.end().expect("Failed to finish building a program.");
-
-    // ground the base part
-    let part = Part::new("base", &[]).unwrap();
-    let parts = vec![part];
-    ctl.ground(&parts)
-        .expect("Failed to ground a logic program.");
-
-    // get the program literal corresponding to the external atom
-    let atoms = ctl.symbolic_atoms().unwrap();
-    let mut atoms_iterator = atoms.iter().unwrap();
-    while let Some(item) = atoms_iterator.next() {
-        let symbol = item.symbol().unwrap();
-        let string = symbol.to_string().unwrap();
-        assert_eq!("test", string);
-    }
+    test_statement(&stm, "AstStatement.rule: Rule.head: HeadLiteral.sign: literal: Literal.symbol: Term.symbol: test, body: [BodyLiteral.literal: Literal.symbol: Term.symbol: test]");
 }
 #[test]
 fn ui() {
@@ -275,18 +211,24 @@ fn ui() {
     t.compile_fail("tests/ui/ast_term_from_binary_operation.rs");
     t.compile_fail("tests/ui/ast_term_from_function.rs");
     t.compile_fail("tests/ui/ast_term_from_pool.rs");
-    t.compile_fail("tests/ui/ast_unary_operation.rs");
-    t.compile_fail("tests/ui/ast_binary_operation.rs");
+    t.compile_fail("tests/ui/ast_csp_product_term.rs");
+    // t.compile_fail("tests/ui/ast_comparison.rs"); // terms are copied
+    // t.compile_fail("tests/ui/ast_unary_operation.rs"); // terms are copied
+    // t.compile_fail("tests/ui/ast_binary_operation.rs");// terms are copied
+    // t.compile_fail("tests/ui/ast_aggregate_guard.rs");// terms are copied
     t.compile_fail("tests/ui/ast_function.rs");
-    t.compile_fail("tests/ui/ast_interval.rs");
+    // t.compile_fail("tests/ui/ast_interval.rs");// terms are copied
     t.compile_fail("tests/ui/ast_pool.rs");
-    t.compile_fail("tests/ui/ast_literal.rs");
+    // t.compile_fail("tests/ui/ast_literal_from_boolean.rs"); //bool is copy
+    t.compile_fail("tests/ui/ast_literal_from_term.rs");
+    t.compile_fail("tests/ui/ast_literal_from_comparison.rs");
     t.compile_fail("tests/ui/ast_conditional_literal.rs");
     t.compile_fail("tests/ui/ast_disjunction.rs");
     t.compile_fail("tests/ui/ast_head_literal.rs");
-    t.compile_fail("tests/ui/ast_body_literal.rs");
+    t.compile_fail("tests/ui/ast_body_literal_from_term.rs");
     t.compile_fail("tests/ui/ast_rule.rs");
-    t.compile_fail("tests/ui/ast_external.rs");
-    t.compile_fail("tests/ui/ast_statement.rs");
+    // t.compile_fail("tests/ui/ast_external.rs");// terms are copied
+    t.compile_fail("tests/ui/ast_statement_from_external.rs");
+    t.compile_fail("tests/ui/ast_statement_from_rule.rs");
     //check builder.add(stmt)
 }

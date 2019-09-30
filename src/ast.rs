@@ -132,6 +132,23 @@ pub struct AstStatement<'a> {
 pub fn get_data_ref<'a>(stm: &'a AstStatement) -> &'a clingo_ast_statement_t {
     &stm.data
 }
+impl fmt::Debug for AstStatement<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self.data.type_ as u32 {
+            clingo_ast_statement_type_clingo_ast_statement_type_rule => {
+                let rule = unsafe { self.data.__bindgen_anon_1.rule } as *const Rule;
+                let rule = unsafe { rule.as_ref() }.unwrap();
+                write!(f, "AstStatement.rule: {:?}", rule)
+            }
+            clingo_ast_statement_type_clingo_ast_statement_type_external => {
+                let ext = unsafe { self.data.__bindgen_anon_1.external } as *const External;
+                let ext = unsafe { ext.as_ref() }.unwrap();
+                write!(f, "AstStatement.external: {:?}", ext)
+            }
+            _ => unimplemented!(),
+        }
+    }
+}
 impl<'a> AstStatement<'a> {
     /// Get the location of the statement.
     // pub fn location(&self) -> Location {
@@ -277,7 +294,7 @@ impl fmt::Debug for HeadLiteral<'_> {
             clingo_ast_head_literal_type_clingo_ast_head_literal_type_literal => {
                 let literal = unsafe { self.data.__bindgen_anon_1.literal } as *const Literal;
                 let literal = unsafe { literal.as_ref() }.unwrap();
-                write!(f, "HeadLiteral.sign: ,literal {:?}", literal)
+                write!(f, "HeadLiteral.sign: literal: {:?}", literal)
             }
             _ => unimplemented!(),
         }
@@ -301,42 +318,38 @@ impl<'a> From<&'a Disjunction<'_>> for HeadLiteral<'a> {
             data: clingo_ast_head_literal_t {
                 location: Location::default(),
                 type_: clingo_ast_head_literal_type_clingo_ast_head_literal_type_disjunction as i32,
-                __bindgen_anon_1: clingo_ast_head_literal__bindgen_ty_1 { disjunction: &dis.data },
+                __bindgen_anon_1: clingo_ast_head_literal__bindgen_ty_1 {
+                    disjunction: &dis.data,
+                },
             },
             _lifetime: PhantomData,
         }
     }
 }
-impl<'a> HeadLiteral<'a> {
-    pub fn location(&self) -> Location {
-        Location(self.data.location)
-    }
-    pub fn print_lit(&self) -> Option<&clingo_sys::clingo_ast_literal> {
-        unsafe { self.data.__bindgen_anon_1.literal.as_ref() }
+impl<'a> From<&'a Aggregate<'_>> for HeadLiteral<'a> {
+    fn from(agg: &'a Aggregate) -> HeadLiteral<'a> {
+        HeadLiteral {
+            data: clingo_ast_head_literal_t {
+                location: Location::default(),
+                type_: clingo_ast_head_literal_type_clingo_ast_head_literal_type_aggregate as i32,
+                __bindgen_anon_1: clingo_ast_head_literal__bindgen_ty_1 {
+                    aggregate: &agg.data,
+                },
+            },
+            _lifetime: PhantomData,
+        }
     }
 }
-// impl From<Disjunction> for HeadLiteral {
-//     fn from(dis: Disjunction) -> Self {
-//         let dis = Disjunction::into(dis);
-//         HeadLiteral::Literal(clingo_ast_head_literal_t {
-//             location: Location::default(),
-//             type_: clingo_ast_head_literal_type_clingo_ast_head_literal_type_disjunction as i32,
-//             __bindgen_anon_1: clingo_ast_head_literal__bindgen_ty_1 {
-//                 disjunction: &dis as *const clingo_ast_disjunction_t,
+// impl<'a> From<&'a HeadAggregate<'_>> for HeadLiteral<'a> {
+//     fn from(agg: &'a HeadAggregate) -> HeadLiteral<'a> {
+//         HeadLiteral {
+//             data: clingo_ast_head_literal_t {
+//                 location: Location::default(),
+//                 type_: clingo_ast_head_literal_type_clingo_ast_head_literal_type_head_aggregate as i32,
+//                 __bindgen_anon_1: clingo_ast_head_literal__bindgen_ty_1 { head_aggregate: &agg.data },
 //             },
-//         })
-//     }
-// }
-// impl From<Aggregate> for HeadLiteral {
-//     fn from(agg: Aggregate) -> Self {
-//         let agg = Aggregate::into(agg);
-//         HeadLiteral::Literal(clingo_ast_head_literal_t {
-//             location: Location::default(),
-//             type_: clingo_ast_head_literal_type_clingo_ast_head_literal_type_aggregate as i32,
-//             __bindgen_anon_1: clingo_ast_head_literal__bindgen_ty_1 {
-//                 aggregate: &agg as *const clingo_ast_aggregate,
-//             },
-//         })
+//             _lifetime: PhantomData,
+//         }
 //     }
 // }
 // impl From<HeadAggregate> for HeadLiteral {
@@ -363,10 +376,30 @@ impl<'a> HeadLiteral<'a> {
 //         })
 //     }
 // }
-#[derive(Copy, Clone)]
+impl<'a> HeadLiteral<'a> {
+    pub fn location(&self) -> Location {
+        Location(self.data.location)
+    }
+    pub fn print_lit(&self) -> Option<&clingo_sys::clingo_ast_literal> {
+        unsafe { self.data.__bindgen_anon_1.literal.as_ref() }
+    }
+}
+
+// #[derive(Copy, Clone)]
 pub struct Rule<'a> {
     data: clingo_ast_rule_t,
     _lifetime: PhantomData<&'a ()>,
+}
+impl fmt::Debug for Rule<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        // let head = (self.data.head) as *const HeadLiteral;
+        let head = HeadLiteral {
+            data: self.data.head,
+            _lifetime: PhantomData,
+        };
+        let body = unsafe { std::slice::from_raw_parts(self.data.body as *const BodyLiteral, self.data.size) };
+        write!(f, "Rule.head: {:?}, body: {:?}", head, &body)
+    }
 }
 impl<'a> Rule<'a> {
     pub fn new(head: HeadLiteral<'a>, body: &'a [BodyLiteral]) -> Rule<'a> {
@@ -556,6 +589,23 @@ pub struct BodyLiteral<'a> {
     data: clingo_ast_body_literal_t,
     _lifetime: PhantomData<&'a ()>,
 }
+impl fmt::Debug for BodyLiteral<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self.data.type_ as u32 {
+            clingo_ast_body_literal_type_clingo_ast_body_literal_type_literal => {
+                let lit = unsafe { self.data.__bindgen_anon_1.literal } as *const Literal;
+                let lit = unsafe { lit.as_ref() }.unwrap();
+                write!(f, "BodyLiteral.literal: {:?}", lit)
+            }
+            clingo_ast_body_literal_type_clingo_ast_body_literal_type_aggregate => {
+                let agg = unsafe { self.data.__bindgen_anon_1.aggregate } as *const Aggregate;
+                let agg = unsafe { agg.as_ref() }.unwrap();
+                write!(f, "AstStatement.external: {:?}", agg)
+            }
+            _ => unimplemented!(),
+        }
+    }
+}
 impl<'a> BodyLiteral<'a> {
     pub fn from_literal(sign: Sign, lit: &'a Literal) -> BodyLiteral<'a> {
         BodyLiteral {
@@ -638,10 +688,20 @@ impl<'a> BodyLiteral<'a> {
     //     }
     // }
 }
-#[derive(Copy, Clone)]
+// #[derive(Copy,Clone)]
 pub struct External<'a> {
     data: clingo_ast_external_t,
     _lifetime: PhantomData<&'a u32>,
+}
+impl fmt::Debug for External<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let atom = Term {
+            data: self.data.atom,
+            _lifetime: PhantomData,
+        };
+        let body = unsafe { std::slice::from_raw_parts(self.data.body as *const BodyLiteral, self.data.size) };
+        write!(f, "External.atom: {:?}, body: {:?}", atom, &body)
+    }
 }
 impl<'a> External<'a> {
     /// Create an external atom default initialization with false
@@ -685,8 +745,8 @@ impl<'a> External<'a> {
         unsafe { std::slice::from_raw_parts(self.data.body as *const BodyLiteral, self.data.size) }
     }
     /// Create a statement for the external.
-    pub fn ast_statement(&'a self) -> Option<AstStatement<'a>> {
-        Some(AstStatement {
+    pub fn ast_statement(&'a self) -> AstStatement<'a> {
+        AstStatement {
             data: clingo_ast_statement_t {
                 location: Location::default(),
                 type_: StatementType::External as clingo_ast_statement_type_t,
@@ -695,7 +755,7 @@ impl<'a> External<'a> {
                 },
             },
             _lifetime: PhantomData,
-        })
+        }
     }
 }
 #[derive(Copy, Clone)]
@@ -791,6 +851,7 @@ impl Project {
 //     ExternalFunction(clingo_ast_term_t),
 //     Pool(clingo_ast_term_t),
 // }
+#[derive(Copy, Clone)]
 pub struct Term<'a> {
     data: clingo_ast_term_t,
     _lifetime: PhantomData<&'a ()>,
@@ -799,9 +860,9 @@ impl fmt::Debug for Term<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self.data.type_ as u32 {
             clingo_ast_term_type_clingo_ast_term_type_symbol => {
-                write!(f, "Term.symbol: {}", unsafe {
-                    self.data.__bindgen_anon_1.symbol
-                })
+                let sym = Symbol(unsafe { self.data.__bindgen_anon_1.symbol });
+                let string = sym.to_string().unwrap();
+                write!(f, "Term.symbol: {}", string)
             }
             _ => unimplemented!(),
         }
@@ -829,7 +890,7 @@ impl<'a> Term<'a> {
     //     };
     //     Ok(Term::Variable(term))
     // }
-    
+
     /// Create a term from an external function
     pub fn external_function(fun: &'a Function) -> Self {
         Term {
@@ -924,6 +985,8 @@ impl<'a> From<&'a Pool<'_>> for Term<'a> {
         }
     }
 }
+
+// #[derive(Copy, Clone)]
 pub struct Literal<'a> {
     data: clingo_ast_literal_t,
     _lifetime: PhantomData<&'a ()>,
@@ -941,32 +1004,18 @@ impl fmt::Debug for Literal<'_> {
     }
 }
 impl<'a> Literal<'a> {
-    // fn into(self) -> clingo_ast_literal_t {
-    //     match self {
-    //         Literal::Boolean(lit) => lit,
-    //         Literal::Symbolic(lit) => lit,
-    //         Literal::Comparison(lit) => lit,
-    //         Literal::CSP(lit) => lit,
-    //     }
-    // }
-    // fn from(lit: clingo_ast_literal_t) -> Literal {
-    //     match lit.type_ as u32 {
-    //         clingo_ast_literal_type_clingo_ast_literal_type_boolean => Literal::Boolean(lit),
-    //         clingo_ast_literal_type_clingo_ast_literal_type_symbolic => Literal::Symbolic(lit),
-    //         clingo_ast_literal_type_clingo_ast_literal_type_comparison => Literal::Comparison(lit),
-    //         clingo_ast_literal_type_clingo_ast_literal_type_csp => Literal::CSP(lit),
-    //         x => panic!("Failed to match clingo_ast_head_literal_t: {}.", x),
-    //     }
-    // }
-    // pub fn from_bool(sign: Sign, boolean: bool) -> Literal {
-    //     Literal::Boolean(clingo_ast_literal_t {
-    //         location: Location::default(),
-    //         type_: clingo_ast_literal_type_clingo_ast_literal_type_boolean as i32,
-    //         sign: sign as clingo_ast_sign_t,
-    //         __bindgen_anon_1: clingo_ast_literal__bindgen_ty_1 { boolean },
-    //     })
-    // }
-
+    /// Create a literal from a boolean
+    pub fn from_bool(sign: Sign, boolean: bool) -> Literal<'a> {
+        Literal {
+            data: clingo_ast_literal {
+                location: Location::default(),
+                sign: sign as i32,
+                type_: clingo_ast_literal_type_clingo_ast_literal_type_boolean as i32,
+                __bindgen_anon_1: clingo_ast_literal__bindgen_ty_1 { boolean },
+            },
+            _lifetime: PhantomData,
+        }
+    }
     /// Create a literal from a term and sign.
     pub fn from_term(sign: Sign, term: &'a Term) -> Literal<'a> {
         Literal {
@@ -975,6 +1024,20 @@ impl<'a> Literal<'a> {
                 sign: sign as i32,
                 type_: clingo_ast_literal_type_clingo_ast_literal_type_symbolic as i32,
                 __bindgen_anon_1: clingo_ast_literal__bindgen_ty_1 { symbol: &term.data },
+            },
+            _lifetime: PhantomData,
+        }
+    }
+    /// Create a literal from a term and sign.
+    pub fn from_comparison(sign: Sign, comp: &'a Comparison) -> Literal<'a> {
+        Literal {
+            data: clingo_ast_literal {
+                location: Location::default(),
+                sign: sign as i32,
+                type_: clingo_ast_literal_type_clingo_ast_literal_type_comparison as i32,
+                __bindgen_anon_1: clingo_ast_literal__bindgen_ty_1 {
+                    comparison: &comp.data,
+                },
             },
             _lifetime: PhantomData,
         }
@@ -1275,14 +1338,16 @@ pub struct CspProductTerm<'a> {
     _lifetime: PhantomData<&'a ()>,
 }
 impl<'a> CspProductTerm<'a> {
-    // pub fn new(coefficient: &Term, variable: &[Term]) -> CspProductTerm {
-    //     let coefficient = Term::into(*coefficient);
-    //     CspProductTerm(clingo_ast_csp_product_term {
-    //         location: Location::default(),
-    //         coefficient: coefficient,
-    //         variable: variable.as_ptr() as *const clingo_ast_term_t,
-    //     })
-    // }
+    pub fn new(coefficient: Term<'a>, variable: &'a Term) -> CspProductTerm<'a> {
+        CspProductTerm {
+            data: clingo_ast_csp_product_term {
+                location: Location::default(),
+                coefficient: coefficient.data,
+                variable: &variable.data,
+            },
+            _lifetime: PhantomData,
+        }
+    }
     pub fn location(&self) -> Location {
         Location(self.data.location)
     }
@@ -1423,81 +1488,84 @@ impl Id {
         }
     }
 }
-pub enum Comparison {
-    GreaterThan(clingo_ast_comparison),
-    LessThan(clingo_ast_comparison),
-    LessEqual(clingo_ast_comparison),
-    GreaterEqual(clingo_ast_comparison),
-    NotEqual(clingo_ast_comparison),
-    Equal(clingo_ast_comparison),
+pub struct Comparison<'a> {
+    data: clingo_ast_comparison,
+    _lifetime: PhantomData<&'a ()>,
 }
-impl Comparison {
-    // pub fn gt(left: &Term, right: &Term) -> Comparison {
-    //     let left = Term::into(*left);
-    //     let right = Term::into(*right);
-    //     Comparison::GreaterThan(clingo_ast_comparison {
-    //         comparison: clingo_ast_comparison_operator_clingo_ast_comparison_operator_greater_than
-    //             as i32,
-    //         left,
-    //         right,
-    //     })
+impl<'a> Comparison<'a> {
+    pub fn gt(left: Term<'a>, right: Term<'a>) -> Comparison<'a> {
+        Comparison {
+            data: clingo_ast_comparison {
+                comparison:
+                    clingo_ast_comparison_operator_clingo_ast_comparison_operator_greater_than
+                        as i32,
+                left: left.data,
+                right: right.data,
+            },
+            _lifetime: PhantomData,
+        }
+    }
+    pub fn lt(left: Term<'a>, right: Term<'a>) -> Comparison<'a> {
+        Comparison {
+            data: clingo_ast_comparison {
+                comparison: clingo_ast_comparison_operator_clingo_ast_comparison_operator_less_than
+                    as i32,
+                left: left.data,
+                right: right.data,
+            },
+            _lifetime: PhantomData,
+        }
+    }
+    pub fn le(left: Term<'a>, right: Term<'a>) -> Comparison<'a> {
+        Comparison {
+            data: clingo_ast_comparison {
+                comparison: clingo_ast_comparison_operator_clingo_ast_comparison_operator_less_equal
+                    as i32,
+                left: left.data,
+                right: right.data,
+            },
+            _lifetime: PhantomData,
+        }
+    }
+    pub fn ge(left: Term<'a>, right: Term<'a>) -> Comparison<'a> {
+        Comparison {
+            data: clingo_ast_comparison {
+                comparison:
+                    clingo_ast_comparison_operator_clingo_ast_comparison_operator_greater_equal
+                        as i32,
+                left: left.data,
+                right: right.data,
+            },
+            _lifetime: PhantomData,
+        }
+    }
+    pub fn ne(left: Term<'a>, right: Term<'a>) -> Comparison<'a> {
+        Comparison {
+            data: clingo_ast_comparison {
+                comparison: clingo_ast_comparison_operator_clingo_ast_comparison_operator_not_equal
+                    as i32,
+                left: left.data,
+                right: right.data,
+            },
+            _lifetime: PhantomData,
+        }
+    }
+    pub fn eq(left: Term<'a>, right: Term<'a>) -> Comparison<'a> {
+        Comparison {
+            data: clingo_ast_comparison {
+                comparison: clingo_ast_comparison_operator_clingo_ast_comparison_operator_equal
+                    as i32,
+                left: left.data,
+                right: right.data,
+            },
+            _lifetime: PhantomData,
+        }
+    }
+    // pub fn left(&self) -> &Term {
+    //     &self.data.left
     // }
-    // pub fn lt(left: &Term, right: &Term) -> Comparison {
-    //     let left = Term::into(*left);
-    //     let right = Term::into(*right);
-    //     Comparison::LessThan(clingo_ast_comparison {
-    //         comparison: clingo_ast_comparison_operator_clingo_ast_comparison_operator_less_than
-    //             as i32,
-    //         left,
-    //         right,
-    //     })
-    // }
-    // pub fn le(left: &Term, right: &Term) -> Comparison {
-    //     let left = Term::into(*left);
-    //     let right = Term::into(*right);
-    //     Comparison::LessEqual(clingo_ast_comparison {
-    //         comparison: clingo_ast_comparison_operator_clingo_ast_comparison_operator_less_equal
-    //             as i32,
-    //         left,
-    //         right,
-    //     })
-    // }
-    // pub fn ge(left: &Term, right: &Term) -> Comparison {
-    //     let left = Term::into(*left);
-    //     let right = Term::into(*right);
-    //     Comparison::GreaterEqual(clingo_ast_comparison {
-    //         comparison: clingo_ast_comparison_operator_clingo_ast_comparison_operator_greater_equal
-    //             as i32,
-    //         left,
-    //         right,
-    //     })
-    // }
-    // pub fn ne(left: &Term, right: &Term) -> Comparison {
-    //     let left = Term::into(*left);
-    //     let right = Term::into(*right);
-    //     Comparison::NotEqual(clingo_ast_comparison {
-    //         comparison: clingo_ast_comparison_operator_clingo_ast_comparison_operator_not_equal
-    //             as i32,
-    //         left,
-    //         right,
-    //     })
-    // }
-    // pub fn eq(left: &Term, right: &Term) -> Comparison {
-    //     let left = Term::into(*left);
-    //     let right = Term::into(*right);
-    //     Comparison::Equal(clingo_ast_comparison {
-    //         comparison: clingo_ast_comparison_operator_clingo_ast_comparison_operator_equal as i32,
-    //         left,
-    //         right,
-    //     })
-    // }
-    // pub fn left(&self) -> Term {
-    //     let comp = Comparison::into(*self);
-    //     Term::from(comp.left)
-    // }
-    // pub fn right(&self) -> Term {
-    //     let comp = Comparison::into(*self);
-    //     Term::from(comp.left)
+    // pub fn right(&self) -> &Term {
+    //     &self.data.right
     // }
 }
 #[derive(Copy, Clone)]
@@ -1506,66 +1574,70 @@ pub struct AggregateGuard<'a> {
     _lifetime: PhantomData<&'a ()>,
 }
 impl<'a> AggregateGuard<'a> {
-    // fn into(self) -> clingo_ast_aggregate_guard {
-    //     match self {
-    //         AggregateGuard::GreaterThan(guard) => guard,
-    //         AggregateGuard::LessThan(guard) => guard,
-    //         AggregateGuard::LessEqual(guard) => guard,
-    //         AggregateGuard::GreaterEqual(guard) => guard,
-    //         AggregateGuard::NotEqual(guard) => guard,
-    //         AggregateGuard::Equal(guard) => guard,
-    //     }
-    // }
-    // pub fn gt(term: &Term) -> AggregateGuard {
-    //     let term = Term::into(*term);
-    //     AggregateGuard::GreaterThan(clingo_ast_aggregate_guard {
-    //         comparison: clingo_ast_comparison_operator_clingo_ast_comparison_operator_greater_than
-    //             as i32,
-    //         term,
-    //     })
-    // }
-    // pub fn lt(term: &Term) -> AggregateGuard {
-    //     let term = Term::into(*term);
-    //     AggregateGuard::LessThan(clingo_ast_aggregate_guard {
-    //         comparison: clingo_ast_comparison_operator_clingo_ast_comparison_operator_less_than
-    //             as i32,
-    //         term,
-    //     })
-    // }
-    // pub fn le(term: &Term) -> AggregateGuard {
-    //     let term = Term::into(*term);
-    //     AggregateGuard::LessEqual(clingo_ast_aggregate_guard {
-    //         comparison: clingo_ast_comparison_operator_clingo_ast_comparison_operator_less_equal
-    //             as i32,
-    //         term,
-    //     })
-    // }
-    // pub fn ge(term: &Term) -> AggregateGuard {
-    //     let term = Term::into(*term);
-    //     AggregateGuard::GreaterEqual(clingo_ast_aggregate_guard {
-    //         comparison: clingo_ast_comparison_operator_clingo_ast_comparison_operator_greater_equal
-    //             as i32,
-    //         term,
-    //     })
-    // }
-    // pub fn ne(term: &Term) -> AggregateGuard {
-    //     let term = Term::into(*term);
-    //     AggregateGuard::NotEqual(clingo_ast_aggregate_guard {
-    //         comparison: clingo_ast_comparison_operator_clingo_ast_comparison_operator_not_equal
-    //             as i32,
-    //         term,
-    //     })
-    // }
-    // pub fn eq(term: &Term) -> AggregateGuard {
-    //     let term = Term::into(*term);
-    //     AggregateGuard::Equal(clingo_ast_aggregate_guard {
-    //         comparison: clingo_ast_comparison_operator_clingo_ast_comparison_operator_equal as i32,
-    //         term,
-    //     })
-    // }
-    // pub fn term(&self) -> Term {
-    //     let guard = AggregateGuard::into(*self);
-    //     Term::from(guard.term)
+    pub fn gt(term: Term<'a>) -> AggregateGuard<'a> {
+        AggregateGuard {
+            data: clingo_ast_aggregate_guard {
+                comparison:
+                    clingo_ast_comparison_operator_clingo_ast_comparison_operator_greater_than
+                        as i32,
+                term: term.data,
+            },
+            _lifetime: PhantomData,
+        }
+    }
+    pub fn lt(term: Term<'a>) -> AggregateGuard<'a> {
+        AggregateGuard {
+            data: clingo_ast_aggregate_guard {
+                comparison: clingo_ast_comparison_operator_clingo_ast_comparison_operator_less_than
+                    as i32,
+                term: term.data,
+            },
+            _lifetime: PhantomData,
+        }
+    }
+    pub fn le(term: Term<'a>) -> AggregateGuard<'a> {
+        AggregateGuard {
+            data: clingo_ast_aggregate_guard {
+                comparison: clingo_ast_comparison_operator_clingo_ast_comparison_operator_less_equal
+                    as i32,
+                term: term.data,
+            },
+            _lifetime: PhantomData,
+        }
+    }
+    pub fn ge(term: Term<'a>) -> AggregateGuard<'a> {
+        AggregateGuard {
+            data: clingo_ast_aggregate_guard {
+                comparison:
+                    clingo_ast_comparison_operator_clingo_ast_comparison_operator_greater_equal
+                        as i32,
+                term: term.data,
+            },
+            _lifetime: PhantomData,
+        }
+    }
+    pub fn ne(term: Term<'a>) -> AggregateGuard<'a> {
+        AggregateGuard {
+            data: clingo_ast_aggregate_guard {
+                comparison: clingo_ast_comparison_operator_clingo_ast_comparison_operator_not_equal
+                    as i32,
+                term: term.data,
+            },
+            _lifetime: PhantomData,
+        }
+    }
+    pub fn eq(term: Term<'a>) -> AggregateGuard<'a> {
+        AggregateGuard {
+            data: clingo_ast_aggregate_guard {
+                comparison: clingo_ast_comparison_operator_clingo_ast_comparison_operator_equal
+                    as i32,
+                term: term.data,
+            },
+            _lifetime: PhantomData,
+        }
+    }
+    // pub fn term(&self) -> &Term {
+    //     &(self.data.term as Term)
     // }
 }
 #[derive(Copy, Clone)]
@@ -1575,13 +1647,13 @@ pub struct ConditionalLiteral<'a> {
 }
 impl<'a> ConditionalLiteral<'a> {
     pub fn new(literal: &'a Literal, condition: &'a [Literal]) -> ConditionalLiteral<'a> {
-        ConditionalLiteral{
+        ConditionalLiteral {
             data: clingo_ast_conditional_literal {
                 literal: literal.data,
                 condition: condition.as_ptr() as *const clingo_ast_literal_t,
                 size: condition.len(),
             },
-            _lifetime: PhantomData
+            _lifetime: PhantomData,
         }
     }
     // pub fn literal(&self) -> Literal {
@@ -1592,27 +1664,36 @@ impl<'a> ConditionalLiteral<'a> {
     // }
 }
 #[derive(Debug)]
-pub struct Aggregate(clingo_ast_aggregate);
-impl Aggregate {
+pub struct Aggregate<'a> {
+    data: clingo_ast_aggregate,
+    _lifetime: PhantomData<&'a ()>,
+}
+impl<'a> Aggregate<'a> {
     pub fn new(
-        elements: &[ConditionalLiteral],
-        left_guard: &AggregateGuard,
-        right_guard: &AggregateGuard,
-    ) -> Aggregate {
-        Aggregate(clingo_ast_aggregate {
-            elements: elements.as_ptr() as *const clingo_ast_conditional_literal_t,
-            size: elements.len(),
-            left_guard: &left_guard.data,
-            right_guard: &right_guard.data,
-        })
+        elements: &'a [ConditionalLiteral],
+        left_guard: &'a AggregateGuard,
+        right_guard: &'a AggregateGuard,
+    ) -> Aggregate<'a> {
+        Aggregate {
+            data: clingo_ast_aggregate {
+                elements: elements.as_ptr() as *const clingo_ast_conditional_literal_t,
+                size: elements.len(),
+                left_guard: &left_guard.data,
+                right_guard: &right_guard.data,
+            },
+            _lifetime: PhantomData,
+        }
     }
     pub fn elements(&self) -> &[ConditionalLiteral] {
         unsafe {
-            std::slice::from_raw_parts(self.0.elements as *const ConditionalLiteral, self.0.size)
+            std::slice::from_raw_parts(
+                self.data.elements as *const ConditionalLiteral,
+                self.data.size,
+            )
         }
     }
     pub fn left_guard(&self) -> Result<&AggregateGuard, ClingoError> {
-        match unsafe { (self.0.left_guard as *const AggregateGuard).as_ref() } {
+        match unsafe { (self.data.left_guard as *const AggregateGuard).as_ref() } {
             Some(x) => Ok(x),
             None => Err(ClingoError::new(
                 "tried casting a null pointer to &AggregateGuard.",
@@ -1620,7 +1701,7 @@ impl Aggregate {
         }
     }
     pub fn right_guard(&self) -> Result<&AggregateGuard, ClingoError> {
-        match unsafe { (self.0.right_guard as *const AggregateGuard).as_ref() } {
+        match unsafe { (self.data.right_guard as *const AggregateGuard).as_ref() } {
             Some(x) => Ok(x),
             None => Err(ClingoError::new(
                 "tried casting a null pointer to &AggregateGuard.",
@@ -1791,18 +1872,21 @@ pub struct Disjunction<'a> {
     _lifetime: PhantomData<&'a ()>,
 }
 impl<'a> Disjunction<'a> {
-    pub fn new(elements: &'a[ConditionalLiteral]) -> Disjunction<'a> {
-        Disjunction{
+    pub fn new(elements: &'a [ConditionalLiteral]) -> Disjunction<'a> {
+        Disjunction {
             data: clingo_ast_disjunction {
-            elements: elements.as_ptr() as *const clingo_ast_conditional_literal_t,
-            size: elements.len(),
+                elements: elements.as_ptr() as *const clingo_ast_conditional_literal_t,
+                size: elements.len(),
             },
             _lifetime: PhantomData,
-            }
+        }
     }
     pub fn elements(&'a self) -> &'a [ConditionalLiteral] {
         unsafe {
-            std::slice::from_raw_parts(self.data.elements as *const ConditionalLiteral, self.data.size)
+            std::slice::from_raw_parts(
+                self.data.elements as *const ConditionalLiteral,
+                self.data.size,
+            )
         }
     }
 }

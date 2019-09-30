@@ -114,7 +114,7 @@ fn main() {
         // add the external statement: #external enable. [false]
         let ext = ast::External::new(ast::Term::from(sym), &[]);
 
-        let stm = ext.ast_statement().unwrap();
+        let stm = ext.ast_statement();
         data.builder
             .as_mut()
             .unwrap()
