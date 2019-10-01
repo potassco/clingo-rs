@@ -3286,7 +3286,7 @@ fn bindgen_test_layout_clingo_ast_interval() {
 #[derive(Debug, Copy, Clone)]
 pub struct clingo_ast_function {
     pub name: *const ::std::os::raw::c_char,
-    pub arguments: *mut clingo_ast_term_t,
+    pub arguments: *const clingo_ast_term_t,
     pub size: usize,
 }
 #[test]
@@ -3335,7 +3335,7 @@ fn bindgen_test_layout_clingo_ast_function() {
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct clingo_ast_pool {
-    pub arguments: *mut clingo_ast_term_t,
+    pub arguments: *const clingo_ast_term_t,
     pub size: usize,
 }
 #[test]
@@ -3978,7 +3978,7 @@ pub type clingo_ast_aggregate_t = clingo_ast_aggregate;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct clingo_ast_body_aggregate_element {
-    pub tuple: *mut clingo_ast_term_t,
+    pub tuple: *const clingo_ast_term_t,
     pub tuple_size: usize,
     pub condition: *const clingo_ast_literal_t,
     pub condition_size: usize,

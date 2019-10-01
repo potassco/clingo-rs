@@ -1,0 +1,11 @@
+error[E0505]: cannot move out of `ext` because it is borrowed
+ --> $DIR/ast_statement.rs:8:10
+  |
+7 |     let stmt = ext.ast_statement().unwrap();
+  |                --- borrow of `ext` occurs here
+8 |     drop(ext);
+  |          ^^^ move out of `ext` occurs here
+9 |     let _end = stmt;
+  |                ---- borrow later used here
+
+For more information about this error, try `rustc --explain E0505`.

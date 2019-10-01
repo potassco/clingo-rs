@@ -2291,7 +2291,7 @@ impl Control {
     /// # Errors
     ///
     /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
-    pub fn statistics(&self) -> Result<&Statistics, ClingoError> {
+    pub fn statistics<'a>(&'a self) -> Result<&'a Statistics, ClingoError> {
         let mut stat = std::ptr::null();
         if !unsafe { clingo_control_statistics(self.ctl.as_ptr(), &mut stat) } {
             return Err(ClingoError::new(
@@ -2314,7 +2314,7 @@ impl Control {
     }
 
     /// Get a configuration object to change the solver configuration.
-    pub fn configuration_mut(&mut self) -> Result<&mut Configuration, ClingoError> {
+    pub fn configuration_mut<'a>(&'a mut self) -> Result<&'a mut Configuration, ClingoError> {
         let mut conf = std::ptr::null_mut();
         if !unsafe { clingo_control_configuration(self.ctl.as_ptr(), &mut conf) } {
             return Err(ClingoError::new(
@@ -2330,7 +2330,7 @@ impl Control {
     }
 
     /// Get a configuration object to change the solver configuration.
-    pub fn configuration(&self) -> Result<&Configuration, ClingoError> {
+    pub fn configuration<'a>(&'a self) -> Result<&'a Configuration, ClingoError> {
         let mut conf = std::ptr::null_mut();
         if !unsafe { clingo_control_configuration(self.ctl.as_ptr(), &mut conf) } {
             return Err(ClingoError::new(
@@ -2414,7 +2414,7 @@ impl Control {
     }
 
     /// Get an object to inspect symbolic atoms (the relevant Herbrand base) used
-    pub fn symbolic_atoms(&self) -> Result<&SymbolicAtoms, ClingoError> {
+    pub fn symbolic_atoms<'a>(&self) -> Result<&'a SymbolicAtoms, ClingoError> {
         let mut atoms = std::ptr::null();
         if !unsafe { clingo_control_symbolic_atoms(self.ctl.as_ptr(), &mut atoms) } {
             return Err(ClingoError::new(
@@ -2430,7 +2430,7 @@ impl Control {
     }
 
     /// Get an object to inspect theory atoms that occur in the grounding.
-    pub fn theory_atoms(&self) -> Result<&TheoryAtoms, ClingoError> {
+    pub fn theory_atoms<'a>(&'a self) -> Result<&'a TheoryAtoms, ClingoError> {
         let mut atoms = std::ptr::null();
         if !unsafe { clingo_control_theory_atoms(self.ctl.as_ptr(), &mut atoms) } {
             return Err(ClingoError::new(
@@ -2496,7 +2496,7 @@ impl Control {
     /// # Errors
     ///
     /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
-    pub fn backend(&mut self) -> Result<Backend, ClingoError> {
+    pub fn backend<'a>(&'a mut self) -> Result<Backend<'a>, ClingoError> {
         let mut backend = std::ptr::null_mut();
         if !unsafe { clingo_control_backend(self.ctl.as_ptr(), &mut backend) } {
             return Err(ClingoError::new("Call to clingo_control_backend() failed."));
@@ -2559,7 +2559,7 @@ impl<'a> ProgramBuilder<'a> {
     ///
     /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) for statements of invalid form
     /// or [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
-    pub fn add(&mut self, stm: &ast::AstStatement) -> Result<(), ClingoError> {
+    pub fn add(&mut self, stm: &'a ast::AstStatement<'a>) -> Result<(), ClingoError> {
         if !unsafe { clingo_program_builder_add(self.theref, ast::get_data_ref(stm)) } {
             return Err(ClingoError::new(
                 "Call to clingo_program_builder_add() failed.",
@@ -2624,7 +2624,7 @@ impl Configuration {
     ///
     /// - [`ClingoError`](struct.ClingoError.html)
     /// - [`Utf8Error`](https://doc.rust-lang.org/std/str/struct.Utf8Error.html)
-    pub fn description(&self, Id(key): Id) -> Result<&str, Error> {
+    pub fn description<'a>(&'a self, Id(key): Id) -> Result<&'a str, Error> {
         let mut description_ptr = std::ptr::null();
         if !unsafe { clingo_configuration_description(&self.0, key, &mut description_ptr) } {
             Err(ClingoError::new(
@@ -2739,7 +2739,7 @@ impl Configuration {
     ///
     /// - [`ClingoError`](struct.ClingoError.html)
     /// - [`Utf8Error`](https://doc.rust-lang.org/std/str/struct.Utf8Error.html)
-    pub fn map_subkey_name(&self, Id(key): Id, offset: usize) -> Result<&str, Error> {
+    pub fn map_subkey_name<'a>(&'a self, Id(key): Id, offset: usize) -> Result<&'a str, Error> {
         let mut name_ptr = std::ptr::null();
         if !unsafe { clingo_configuration_map_subkey_name(&self.0, key, offset, &mut name_ptr) } {
             Err(ClingoError::new(
@@ -2813,7 +2813,7 @@ impl Configuration {
     ///
     /// - [`ClingoError`](struct.ClingoError.html)
     /// - [`Utf8Error`](https://doc.rust-lang.org/std/str/struct.Utf8Error.html)
-    pub fn value_get(&self, Id(key): Id) -> Result<String, Error> {
+    pub fn value_get<'a>(&'a self, Id(key): Id) -> Result<String, Error> {
         let mut size = 0;
         if !unsafe { clingo_configuration_value_get_size(&self.0, key, &mut size) } {
             Err(ClingoError::new(
@@ -3302,7 +3302,7 @@ impl Statistics {
     ///
     /// - [`ClingoError`](struct.ClingoError.html)
     /// - [`Utf8Error`](https://doc.rust-lang.org/std/str/struct.Utf8Error.html)
-    pub fn map_subkey_name(&self, key: u64, offset: usize) -> Result<&str, Error> {
+    pub fn map_subkey_name<'a>(&'a self, key: u64, offset: usize) -> Result<&'a str, Error> {
         let mut name = std::ptr::null();
         if !unsafe { clingo_statistics_map_subkey_name(&self.0, key, offset, &mut name) } {
             Err(ClingoError::new(
@@ -3718,7 +3718,7 @@ impl TheoryAtoms {
     /// # Arguments
     ///
     /// * `term` - id of the term
-    pub fn term_arguments(&self, Id(term): Id) -> Result<&[Id], ClingoError> {
+    pub fn term_arguments<'a>(&'a self, Id(term): Id) -> Result<&'a [Id], ClingoError> {
         let mut size = 0;
         let mut c_ptr = std::ptr::null();
         if !unsafe { clingo_theory_atoms_term_arguments(&self.0, term, &mut c_ptr, &mut size) } {
@@ -4156,7 +4156,7 @@ impl Model {
     /// Get the associated solve control object of a model.
     ///
     /// This object allows for adding clauses during model enumeration.
-    pub fn context(&self) -> Result<&mut SolveControl, ClingoError> {
+    pub fn context<'a>(&'a self) -> Result<&'a mut SolveControl, ClingoError> {
         let control_ptr = std::ptr::null_mut();
         if !unsafe { clingo_model_context(&self.0, control_ptr) } {
             return Err(ClingoError::new("Call to clingo_model_context() failed."));
@@ -4204,9 +4204,9 @@ impl SolveControl {
     }
 
     /// Get an object to inspect the symbolic atoms.
-    pub fn symbolic_atoms(&mut self) -> Result<&SymbolicAtoms, ClingoError> {
+    pub fn symbolic_atoms(&self) -> Result<&SymbolicAtoms, ClingoError> {
         let mut atoms = std::ptr::null() as *const clingo_symbolic_atoms_t;
-        if !unsafe { clingo_solve_control_symbolic_atoms(&mut self.0, &mut atoms) } {
+        if !unsafe { clingo_solve_control_symbolic_atoms(&self.0, &mut atoms) } {
             return Err(ClingoError::new(
                 "Call to clingo_assignment_level() failed.",
             ));
@@ -4380,8 +4380,8 @@ impl PropagateControl {
     /// Get the id of the underlying solver thread.
     ///
     /// Thread ids are consecutive numbers starting with zero.
-    pub fn thread_id(&mut self) -> u32 {
-        unsafe { clingo_propagate_control_thread_id(&mut self.0) }
+    pub fn thread_id(&self) -> u32 {
+        unsafe { clingo_propagate_control_thread_id(&self.0) }
     }
 
     /// Get the assignment associated with the underlying solver.
@@ -4665,9 +4665,8 @@ impl PropagateInit {
     /// Get the top level assignment solver.
     ///
     /// **Returns** the assignment
-    pub fn assignment(&mut self) -> Result<&mut Assignment, ClingoError> {
-        match unsafe { (clingo_propagate_init_assignment(&mut self.0) as *mut Assignment).as_mut() }
-        {
+    pub fn assignment(&self) -> Result<&Assignment, ClingoError> {
+        match unsafe { (clingo_propagate_init_assignment(&self.0) as *const Assignment).as_ref() } {
             Some(stm) => Ok(stm),
             None => Err(ClingoError::new(
                 "Tried casting a null pointer to &mut Assignment.",
@@ -4928,6 +4927,19 @@ pub fn add_string(string: &str) -> Result<&'static str, Error> {
     }
     let out_cstr = unsafe { CStr::from_ptr(out_ptr) };
     Ok(out_cstr.to_str()?)
+}
+fn internalize_string(string: &str) -> Result<*const c_char, Error> {
+    let in_cstr = CString::new(string)?;
+    let mut out_ptr = std::ptr::null() as *const c_char;
+    if !unsafe { clingo_add_string(in_cstr.as_ptr(), &mut out_ptr) } {
+        Err(ClingoError::new("Call to clingo_add_string failed."))?
+    }
+    if out_ptr.is_null() {
+        Err(ClingoError::new(
+            "clingo_add_string returned a null pointer.",
+        ))?
+    }
+    Ok(out_ptr)
 }
 
 /// Parse a term in string form.
@@ -5915,10 +5927,14 @@ impl<T: ToSymbol> ToSymbol for &T {
 
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct FactBase {
-    // facts: Vec<Symbol>,
     facts: HashSet<Symbol>,
 }
 impl FactBase {
+    pub fn new() -> FactBase {
+        FactBase {
+            facts: HashSet::new(),
+        }
+    }
     pub fn len(&self) -> usize {
         self.facts.len()
     }
@@ -5946,9 +5962,6 @@ impl FactBase {
 }
 
 pub fn add_facts(ctl: &mut Control, facts: &FactBase) {
-    // get the program builder
-    let mut builder = ctl.program_builder().ok();
-
     for sym in facts.iter() {
         // print!("{}",sym.to_string().unwrap());
 
@@ -5965,13 +5978,16 @@ pub fn add_facts(ctl: &mut Control, facts: &FactBase) {
         let rule = ast::Rule::new(hlit, &[]);
 
         // initialize the statement
-        let stm = rule.ast_statement().unwrap();
+        let stm = rule.ast_statement();
+
+        // get the program builder
+        let mut builder = ctl.program_builder().unwrap();
 
         // add the rewritten statement to the program
         builder
-            .as_mut()
-            .unwrap()
             .add(&stm)
             .expect("Failed to add statement to ProgramBuilder.");
+
+        builder.end().expect("Failed to finish building a program.");
     }
 }

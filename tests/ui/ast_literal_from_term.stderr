@@ -1,11 +1,10 @@
 error[E0506]: cannot assign to `term` because it is borrowed
- --> $DIR/ast_literal_from_term.rs:7:5
+ --> $DIR/ast_literal_from_term.rs:8:5
   |
 6 |     let lit = ast::Literal::from_term(ast::Sign::None, &term);
   |                                                        ----- borrow of `term` occurs here
-7 |     term = ast::Term::from(sym);
+7 |     
+8 |     term = ast::Term::from(sym);
   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^ assignment to borrowed `term` occurs here
-8 |     let _end = (lit,term);
+9 |     let _end = (lit,term);
   |                 --- borrow later used here
-
-For more information about this error, try `rustc --explain E0506`.

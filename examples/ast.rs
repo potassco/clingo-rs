@@ -3,17 +3,16 @@ use std::env;
 
 pub struct OnStatementData<'a, 'b> {
     atom: &'b ast::Term<'b>,
-    builder: Option<ProgramBuilder<'a>>,
+    control: &'a mut Control,
 }
 
 impl<'a, 'b> AstStatementHandler for OnStatementData<'a, 'b> {
     // adds atom enable to all rule bodies
     fn on_statement(&mut self, stm: &ast::AstStatement) -> bool {
         // pass through all statements that are not rules
+        let mut builder = self.control.program_builder().unwrap();
         if stm.statement_type().unwrap() != ast::StatementType::Rule {
-            self.builder
-                .as_mut()
-                .unwrap()
+            builder
                 .add(stm)
                 .expect("Failed to add statement to ProgramBuilder.");
             return true;
@@ -35,15 +34,13 @@ impl<'a, 'b> AstStatementHandler for OnStatementData<'a, 'b> {
 
             // initialize the rule
             let head = rule.head();
-            let rule = ast::Rule::new(head, &extended_body);
+            let rule = ast::Rule::new(*head, &extended_body);
 
             // initialize the statement
-            let stm2 = rule.ast_statement().unwrap();
+            let stm2 = rule.ast_statement();
 
             // add the rewritten statement to the program
-            self.builder
-                .as_mut()
-                .unwrap()
+            builder
                 .add(&stm2)
                 .expect("Failed to add statement to ProgramBuilder.");
             return true;
@@ -104,7 +101,7 @@ fn main() {
         // initilize atom to add and the program builder
         let mut data = OnStatementData {
             atom: &ast::Term::from(sym),
-            builder: ctl.program_builder().ok(),
+            control: &mut ctl,
         };
 
         // get the AST of the program
@@ -113,20 +110,14 @@ fn main() {
 
         // add the external statement: #external enable. [false]
         let ext = ast::External::new(ast::Term::from(sym), &[]);
-
+        let mut builder = ctl.program_builder().unwrap();
         let stm = ext.ast_statement();
-        data.builder
-            .as_mut()
-            .unwrap()
+        builder
             .add(&stm)
             .expect("Failed to add statement to ProgramBuilder.");
 
         // finish building a program
-        data.builder
-            .take()
-            .unwrap()
-            .end()
-            .expect("Failed to finish building a program.");
+        builder.end().expect("Failed to finish building a program.");
     }
 
     // ground the base part
