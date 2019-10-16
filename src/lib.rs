@@ -46,6 +46,7 @@
 //! clingo = { version = "0.4.3", features = ["dynamic_linking"] }
 //! ```
 #![allow(non_upper_case_globals)]
+#![allow(clippy::try_err)]
 use bitflags::bitflags;
 use clingo_sys::*;
 use failure::*;
@@ -55,7 +56,6 @@ use std::ffi::CStr;
 use std::ffi::CString;
 use std::ffi::NulError;
 use std::hash::{Hash, Hasher};
-use std::marker::PhantomData;
 use std::os::raw::c_char;
 use std::os::raw::c_void;
 use std::ptr::NonNull;
@@ -666,13 +666,13 @@ pub trait SolveEventHandler {
 
 type AstCallback =
     unsafe extern "C" fn(arg1: *const clingo_ast_statement_t, arg2: *mut c_void) -> bool;
-pub trait AstStatementHandler {
+pub trait StatementHandler {
     /// Callback function called on an ast statement while traversing the ast.
     ///
     /// **Returns** whether the call was successful
-    fn on_statement(&mut self, arg1: &ast::AstStatement) -> bool;
+    fn on_statement(&mut self, arg1: &ast::Statement) -> bool;
     #[doc(hidden)]
-    unsafe extern "C" fn unsafe_ast_callback<T: AstStatementHandler>(
+    unsafe extern "C" fn unsafe_ast_callback<T: StatementHandler>(
         stm: *const clingo_ast_statement_t,
         event_handler: *mut c_void,
     ) -> bool {
@@ -684,7 +684,7 @@ pub trait AstStatementHandler {
             );
             return false;
         }
-        let stm = &*(stm as *const ast::AstStatement);
+        let stm = &*(stm as *const ast::Statement);
         let event_handler = &mut *(event_handler as *mut T);
 
         event_handler.on_statement(stm)
@@ -1024,10 +1024,6 @@ impl Hash for Signature {
     }
 }
 impl Signature {
-    fn into(self) -> clingo_signature_t {
-        let Signature(sig) = self;
-        sig
-    }
     /// Create a new signature.
     ///
     /// # Arguments
@@ -1050,22 +1046,6 @@ impl Signature {
         }
         Ok(Signature(signature))
     }
-
-    /// Create a statement for the signature.
-    // pub fn ast_statement<'a>(&'a self) -> Option<ast::AstStatement<'a>> {
-    //     let mut stm = clingo_ast_statement_t {
-    //         location: Location::default(),
-    //         type_: clingo_ast_statement_type_clingo_ast_statement_type_project_atom_signature
-    //             as i32,
-    //         __bindgen_anon_1: clingo_ast_statement__bindgen_ty_1 {
-    //             project_signature: self.0 as clingo_signature_t,
-    //         },
-    //     };
-    //     Some(ast::AstStatement {
-    //         data: std::ptr::NonNull::new(&mut stm)?,
-    //         phantom: PhantomData,
-    //     })
-    // }
 
     // TODO: should i return empty string vs Error
     /// Get the name of a signature.
@@ -1234,17 +1214,6 @@ impl Symbol {
         }
         Ok(Symbol(symbol))
     }
-
-    //     pub fn term(&self, Location(location): Location) -> ast::Term {
-    //         let _bg_union_1 = clingo_ast_term__bindgen_ty_1 { symbol: self.0 };
-    //         let term = clingo_ast_term_t {
-    //             location: location,
-    //             type_: ast::TermType::Symbol as clingo_ast_term_type_t,
-    //             __bindgen_anon_1: _bg_union_1,
-    //         };
-    //         ast::Term(term)
-    //     }
-
     /// Get the number of a symbol.
     ///
     /// # Errors
@@ -1399,14 +1368,14 @@ impl Symbol {
 /// # Arguments
 ///
 /// * `program` - the program in gringo syntax
-/// * `handler` - implementing the trait [`AstStatementHandler`](trait.AstStatementHandler.html)
+/// * `handler` - implementing the trait [`StatementHandler`](trait.StatementHandler.html)
 ///
 /// # Errors
 ///
 /// - [`NulError`](https://doc.rust-lang.org/std/ffi/struct.NulError.html) - if `program` contains a nul byte
 /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if parsing fails
 ///  or with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
-pub fn parse_program<T: AstStatementHandler>(program: &str, handler: &mut T) -> Result<(), Error> {
+pub fn parse_program<T: StatementHandler>(program: &str, handler: &mut T) -> Result<(), Error> {
     let logger = None;
     let logger_data = std::ptr::null_mut();
     let program = CString::new(program)?;
@@ -1431,7 +1400,7 @@ pub fn parse_program<T: AstStatementHandler>(program: &str, handler: &mut T) -> 
 /// # Arguments
 ///
 /// * `program` - the program in gringo syntax
-/// * `handler` - implementating the trait [`AstStatementHandler`](trait.AstStatementHandler.html)
+/// * `handler` - implementating the trait [`StatementHandler`](trait.StatementHandler.html)
 /// * `logger` - implementing the trait [`Logger`](trait.Logger.html) to report messages during parsing
 /// * `message_limit` - the maximum number of times the logger is called
 ///
@@ -1440,7 +1409,7 @@ pub fn parse_program<T: AstStatementHandler>(program: &str, handler: &mut T) -> 
 /// - [`NulError`](https://doc.rust-lang.org/std/ffi/struct.NulError.html) - if `program` contains a nul byte
 /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if parsing fails
 /// or [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
-pub fn parse_program_with_logger<T: AstStatementHandler, L: Logger>(
+pub fn parse_program_with_logger<T: StatementHandler, L: Logger>(
     program: &str,
     handler: &mut T,
     logger: &mut L,
@@ -1759,6 +1728,9 @@ impl Drop for Control {
     }
 }
 impl Control {
+    fn get_ctl(&mut self) -> NonNull<clingo_control_t> {
+        self.ctl
+    }
     /// Create a new control object.
     ///
     /// **Note:** Only gringo options (without `--output`) and clasp's options are supported as
@@ -2514,72 +2486,8 @@ impl Control {
         }
     }
 
-    /// Get an object to add non-ground directives to the program.
-    pub fn program_builder<'a>(&'a mut self) -> Result<ProgramBuilder<'a>, ClingoError> {
-        let mut builder = std::ptr::null_mut();
-        if !unsafe { clingo_control_program_builder(self.ctl.as_ptr(), &mut builder) } {
-            return Err(ClingoError::new(
-                "Call to clingo_control_program_builder() failed.",
-            ));
-        }
-        // begin building the program
-        if !unsafe { clingo_program_builder_begin(builder) } {
-            return Err(ClingoError::new(
-                "Call to clingo_program_builder_begin() failed.",
-            ));
-        }
-        match unsafe { builder.as_mut() } {
-            Some(builder_ref) => Ok(ProgramBuilder {
-                theref: builder_ref,
-            }),
-            None => Err(ClingoError::new(
-                "Call to tried casting a null pointer to &mut clingo_program_builder.",
-            )),
-        }
-    }
-
     // NODO: pub fn clingo_control_clasp_facade()
 }
-
-/// Object to build non-ground programs.
-pub struct ProgramBuilder<'a> {
-    theref: &'a mut clingo_program_builder_t,
-}
-impl<'a> ProgramBuilder<'a> {
-    /// Adds a statement to the program.
-    ///
-    /// **Attention:** The [`end()`](struct.ProgramBuilder.html#method.end) must be called after
-    /// all statements have been added.
-    ///
-    /// # Arguments
-    ///
-    /// * `statement` - the statement to add
-    ///
-    /// # Errors
-    ///
-    /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) for statements of invalid form
-    /// or [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
-    pub fn add(&mut self, stm: &'a ast::AstStatement<'a>) -> Result<(), ClingoError> {
-        if !unsafe { clingo_program_builder_add(self.theref, ast::get_data_ref(stm)) } {
-            return Err(ClingoError::new(
-                "Call to clingo_program_builder_add() failed.",
-            ));
-        }
-        Ok(())
-    }
-
-    /// End building a program.
-    /// The method consumes the program builder.
-    pub fn end(self) -> Result<(), ClingoError> {
-        if !unsafe { clingo_program_builder_end(self.theref) } {
-            return Err(ClingoError::new(
-                "Call to clingo_program_builder_end() failed.",
-            ));
-        }
-        Ok(())
-    }
-}
-
 /// Handle for the solver configuration.
 #[derive(Debug)]
 pub struct Configuration(clingo_configuration_t);
@@ -5981,7 +5889,7 @@ pub fn add_facts(ctl: &mut Control, facts: &FactBase) {
         let stm = rule.ast_statement();
 
         // get the program builder
-        let mut builder = ctl.program_builder().unwrap();
+        let mut builder = ast::ProgramBuilder::from(ctl).unwrap();
 
         // add the rewritten statement to the program
         builder

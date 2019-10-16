@@ -7,7 +7,6 @@ fn main() {
     let term2 = ast::Term::from(sym);
     let args = vec![term1,term2];
     let fun = ast::Function::new(&name, &args).unwrap();
-    drop(name);
     drop(args);
     println!("{:?}",fun);
 }
