@@ -1,4 +1,4 @@
-#![doc(html_root_url = "https://docs.rs/clingo/0.4.3")]
+#![doc(html_root_url = "https://docs.rs/clingo/0.5.0")]
 //! This crate provides bindings to the [clingo](https://github.com/potassco/clingo) library version 5.4.0.
 //!
 //! ## `clingo_derive` crate
@@ -9,7 +9,7 @@
 //!
 //! ```toml
 //! [dependencies]
-//! clingo-rs = "0.4.3"
+//! clingo-rs = "0.5.0"
 //! clingo-derive = "*"
 //! ```
 //!
@@ -43,7 +43,7 @@
 //!
 //! ```toml
 //! [dependencies]
-//! clingo = { version = "0.4.3", features = ["dynamic_linking"] }
+//! clingo = { version = "0.5.0", features = ["dynamic_linking"] }
 //! ```
 #![allow(non_upper_case_globals)]
 #![allow(clippy::try_err)]

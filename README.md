@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/potassco/clingo-rs.svg?branch=master)](https://travis-ci.org/potassco/clingo-rs)
 
 Rust bindings to the [clingo](https://github.com/potassco/clingo) library.
-Clingo version 5.3.0.
+Clingo version 5.4.0.
 
 ## Requirements
 
@@ -37,7 +37,7 @@ The [`clingo_derive`](https://docs.rs/clingo_derive) crate helps easing the use 
 In your `Cargo.toml` add:
 
     [dependencies]
-    clingo-rs = "0.4.3"
+    clingo-rs = "0.5.0"
     clingo-derive = "*"
 
 In your source write:
@@ -70,7 +70,7 @@ follows.
 
 ```toml
 [dependencies]
-clingo = { version = "0.4.3", features = ["dynamic_linking"] }
+clingo = { version = "0.5.0", features = ["dynamic_linking"] }
 ```
 
 ## Contribution
