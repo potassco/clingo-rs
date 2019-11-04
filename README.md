@@ -12,9 +12,8 @@ Clingo version 5.4.0.
   - [clang](http://clang.llvm.org/) version 3.1 (using either libstdc++
     provided by gcc 4.9 or libc++)
 
-## Compile & Test
-    cargo build
-    cargo test
+## Examples
+
     cargo run --example=ast 0
     cargo run --example=backend 0
     cargo run --example=configuration
@@ -29,6 +28,10 @@ Clingo version 5.4.0.
     cargo run --example=inject-terms 0
     cargo run --example=version
 
+
+## Documentation
+
+- [`clingo-rs`](https://docs.rs/clingo)
 
 ## `clingo_derive` crate
 
