@@ -1,6 +1,71 @@
 use clingo::*;
 use std::env;
 
+fn print_prefix(depth: u8) {
+    println!();
+    for _ in 0..depth {
+        print!("  ");
+    }
+}
+
+// recursively print the configuartion object
+fn print_configuration(conf: &Configuration, key: Id, depth: u8) {
+    // get the type of an entry and switch over its various values
+    let configuration_type = conf.configuration_type(key).unwrap();
+    match configuration_type {
+        // print values
+        ConfigurationType::VALUE => {
+            let value = conf
+                .value_get(key)
+                .expect("Failed to retrieve statistics value.");
+
+            println!("{}", value);
+        }
+
+        // print arrays
+        ConfigurationType::ARRAY => {
+            // loop over array elements
+            let size = conf
+                .array_size(key)
+                .expect("Failed to retrieve statistics array size.");
+            for i in 0..size {
+                // print array offset (with prefix for readability)
+                let subkey = conf
+                    .array_at(key, i)
+                    .expect("Failed to retrieve statistics array.");
+                print_prefix(depth);
+                print!("{}:", i);
+
+                // recursively print subentry
+                print_configuration(conf, subkey, depth + 1);
+            }
+        }
+
+        // print maps
+        ConfigurationType::MAP => {
+            // loop over map elements
+            let size = conf.map_size(key).unwrap();
+            for i in 0..size {
+                // get and print map name (with prefix for readability)
+                let name = conf.map_subkey_name(key, i).unwrap();
+                let subkey = conf.map_at(key, name).unwrap();
+                print_prefix(depth);
+                print!("{}:", name);
+
+                // recursively print subentry
+                print_configuration(conf, subkey, depth + 1);
+            }
+        }
+
+        // this case won't occur if the configuration are traversed like this
+        _ => {
+            let bla = conf.value_get(key).unwrap();
+            print!(" {}", bla);
+            // println!("Unknown ConfigurationType");
+        }
+    }
+}
+
 fn print_model(model: &Model) {
     // retrieve the symbols in the model
     let atoms = model
@@ -52,14 +117,14 @@ fn main() {
         // get the configuration object and its root key
         let conf = ctl.configuration_mut().unwrap();
         let root_key = conf.root().unwrap();
+
+        print_configuration(conf, root_key, 0);
         let mut sub_key;
 
         // configure to enumerate all models
         sub_key = conf.map_at(root_key, "solve.models").unwrap();
         conf.value_set(sub_key, "0")
             .expect("Failed to set solve.models to 0.");
-        let bla = conf.value_get(sub_key).unwrap();
-        println!("bla:{}", bla);
 
         // configure the first solver to use the berkmin heuristic
         sub_key = conf.map_at(root_key, "solver").unwrap();

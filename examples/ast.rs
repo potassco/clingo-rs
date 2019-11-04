@@ -1,59 +1,51 @@
 use clingo::*;
 use std::env;
 
-pub struct OnStatementData<'a> {
-    atom: ast::Atom,
-    builder: Option<ProgramBuilder<'a>>,
+pub struct OnStatementData<'a, 'b> {
+    atom: &'b ast::Term<'b>,
+    control: &'a mut Control,
 }
 
-impl<'a> AstStatementHandler for OnStatementData<'a> {
+impl<'a, 'b> StatementHandler for OnStatementData<'a, 'b> {
     // adds atom enable to all rule bodies
-    fn on_statement<T>(&mut self, stm: &AstStatement<T>) -> bool {
+    fn on_statement(&mut self, stm: &ast::Statement) -> bool {
         // pass through all statements that are not rules
-        if stm.statement_type().unwrap() != ast::StatementType::Rule {
-            self.builder
-                .as_mut()
-                .unwrap()
-                .add(stm)
-                .expect("Failed to add statement to ProgramBuilder.");
-            return true;
-        }
+        let mut builder = ast::ProgramBuilder::from(self.control).unwrap();
 
-        // copy the current rule body
-        if let Ok(rule) = stm.rule() {
-            let body = rule.body();
-            let mut extended_body = std::vec::Vec::with_capacity(body.len() + 1);
-            for e in body {
-                extended_body.push(e.clone());
+        match stm.statement_type() {
+            ast::StatementType::Rule(rule) => {
+                let body = rule.body();
+                let mut extended_body = std::vec::Vec::with_capacity(body.len() + 1);
+                for e in body {
+                    extended_body.push(e.clone());
+                }
+
+                // create atom enable
+                let lit = ast::Literal::from_term(ast::Sign::None, &self.atom);
+                // add atom enable to the rule body
+                let blit = ast::BodyLiteral::from_literal(ast::Sign::None, &lit);
+                extended_body.push(blit);
+
+                // initialize the rule
+                let head = rule.head();
+                let rule = ast::Rule::new(*head, &extended_body);
+
+                // initialize the statement
+                let stm2 = rule.ast_statement();
+
+                // add the rewritten statement to the program
+                builder
+                    .add(&stm2)
+                    .expect("Failed to add statement to ProgramBuilder.");
+                true
             }
-
-            // create atom enable
-            let lit = ast::Literal::from_atom(self.atom.location(), ast::Sign::None, &self.atom);
-            // add atom enable to the rule body
-            let blit = ast::BodyLiteral::new(
-                self.atom.location(),
-                ast::Sign::None,
-                ast::BodyLiteralType::Literal,
-                &lit,
-            );
-            extended_body.push(blit);
-
-            // initialize the rule
-            let head = rule.head();
-            let rule = ast::Rule::new(head, &extended_body);
-
-            // initialize the statement
-            let stm2 = rule.ast_statement(stm.location());
-
-            // add the rewritten statement to the program
-            self.builder
-                .as_mut()
-                .unwrap()
-                .add(&stm2)
-                .expect("Failed to add statement to ProgramBuilder.");
-            return true;
+            _ => {
+                builder
+                    .add(stm)
+                    .expect("Failed to add statement to ProgramBuilder.");
+                true
+            }
         }
-        false
     }
 }
 
@@ -106,40 +98,26 @@ fn main() {
     let sym = Symbol::create_id("enable", true).unwrap();
 
     {
-        // get the program builder
-        let builder = ctl.program_builder().ok();
-
-        // initialize the location
-        let location = Location::new("<rewrite>", "<rewrite>", 0, 0, 0, 0).unwrap();
-
-        // initilize atom to add
-        let atom = ast::Atom::from_symbol(location, sym);
-
+        // initilize atom to add and the program builder
         let mut data = OnStatementData {
-            atom: atom,
-            builder: builder,
+            atom: &ast::Term::from(sym),
+            control: &mut ctl,
         };
 
         // get the AST of the program
         parse_program("a :- not b. b :- not a.", &mut data)
             .expect("Failed to parse logic program.");
 
-        // add the external statement: #external enable.
-        let ext = ast::External::new(atom, &[]);
-
-        let stm = ext.ast_statement(location);
-        data.builder
-            .as_mut()
-            .unwrap()
+        // add the external statement: #external enable. [false]
+        let ext = ast::External::new(ast::Term::from(sym), &[]);
+        let mut builder = ast::ProgramBuilder::from(&mut ctl).unwrap();
+        let stm = ext.ast_statement();
+        builder
             .add(&stm)
             .expect("Failed to add statement to ProgramBuilder.");
 
         // finish building a program
-        data.builder
-            .take()
-            .unwrap()
-            .end()
-            .expect("Failed to finish building a program.");
+        builder.end().expect("Failed to finish building a program.");
     }
 
     // ground the base part

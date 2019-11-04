@@ -2,6 +2,7 @@ use clingo::*;
 use std::env;
 
 fn print_prefix(depth: u8) {
+    println!();
     for _ in 0..depth {
         print!("  ");
     }
@@ -17,10 +18,7 @@ fn print_statistics(stats: &Statistics, key: u64, depth: u8) {
             let value = stats
                 .value_get(key)
                 .expect("Failed to retrieve statistics value.");
-
-            // print value (with prefix for readability)
-            print_prefix(depth);
-            println!("{}", value);
+            print!(" {}", value);
         }
 
         // print arrays
@@ -32,10 +30,10 @@ fn print_statistics(stats: &Statistics, key: u64, depth: u8) {
             for i in 0..size {
                 // print array offset (with prefix for readability)
                 let subkey = stats
-                    .statistics_array_at(key, i)
+                    .array_at(key, i)
                     .expect("Failed to retrieve statistics array.");
                 print_prefix(depth);
-                println!("{} zu:", i);
+                print!("{} zu:", i);
 
                 // recursively print subentry
                 print_statistics(stats, subkey, depth + 1);
@@ -51,7 +49,7 @@ fn print_statistics(stats: &Statistics, key: u64, depth: u8) {
                 let name = stats.map_subkey_name(key, i).unwrap();
                 let subkey = stats.map_at(key, name).unwrap();
                 print_prefix(depth);
-                print!("{}", name);
+                print!("{}:", name);
 
                 // recursively print subentry
                 print_statistics(stats, subkey, depth + 1);

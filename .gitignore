@@ -1,3 +1,4 @@
 /target/
+/clingo-sys/target/
 Cargo.lock
 .directory

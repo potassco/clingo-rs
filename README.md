@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/potassco/clingo-rs.svg?branch=master)](https://travis-ci.org/potassco/clingo-rs)
 
 Rust bindings to the [clingo](https://github.com/potassco/clingo) library.
-Clingo version 5.3.0.
+Clingo version 5.4.0.
 
 ## Requirements
 
@@ -12,9 +12,8 @@ Clingo version 5.3.0.
   - [clang](http://clang.llvm.org/) version 3.1 (using either libstdc++
     provided by gcc 4.9 or libc++)
 
-## Compile & Test
-    cargo build
-    cargo test
+## Examples
+
     cargo run --example=ast 0
     cargo run --example=backend 0
     cargo run --example=configuration
@@ -30,6 +29,10 @@ Clingo version 5.3.0.
     cargo run --example=version
 
 
+## Documentation
+
+- [`clingo-rs`](https://docs.rs/clingo)
+
 ## `clingo_derive` crate
 
 The [`clingo_derive`](https://crates.io/crates/clingo-derive) crate helps easing the use of rust data types as facts.
@@ -37,7 +40,7 @@ The [`clingo_derive`](https://crates.io/crates/clingo-derive) crate helps easing
 In your `Cargo.toml` add:
 
     [dependencies]
-    clingo-rs = "0.4.3"
+    clingo-rs = "0.5.0"
     clingo-derive = "*"
 
 In your source write:
@@ -70,7 +73,7 @@ follows.
 
 ```toml
 [dependencies]
-clingo = { version = "0.4.3", features = ["dynamic_linking"] }
+clingo = { version = "0.5.0", features = ["dynamic_linking"] }
 ```
 
 ## Contribution

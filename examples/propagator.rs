@@ -113,7 +113,7 @@ impl Propagator for PropagatorT {
 
                 if pass == 1 {
                     // allocate memory for the assignment literal -> hole mapping
-                    self.pigeons = vec![0; max + 1];;
+                    self.pigeons = vec![0; max + 1];
                 }
 
                 while let Some(item) = atoms_iterator.next() {

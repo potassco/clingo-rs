@@ -1,0 +1,11 @@
+error[E0382]: use of moved value: `term`
+ --> $DIR/ast_aggregate_guard.rs:7:10
+  |
+5 |     let term = ast::Term::from(sym);
+  |         ---- move occurs because `term` has type `clingo::ast::Term<'_>`, which does not implement the `Copy` trait
+6 |     let op = ast::AggregateGuard::gt(term);
+  |                                      ---- value moved here
+7 |     drop(term);
+  |          ^^^^ value used here after move
+
+For more information about this error, try `rustc --explain E0382`.

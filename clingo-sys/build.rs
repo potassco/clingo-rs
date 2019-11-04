@@ -1,10 +1,19 @@
 use std::env;
 use std::path::PathBuf;
 use std::process::Command;
+extern crate pkg_config;
 
 fn main() {
     if cfg!(feature = "dynamic_linking") {
-        println!("cargo:rustc-link-lib=dylib=clingo");
+
+        match pkg_config::Config::new().atleast_version("5.4.0").probe("clingo"){
+            Ok(_lib) => {println!("cargo:rustc-link-lib=dylib=clingo");},
+            Err(e) => {
+                println!("\nError: {}", e);
+                panic!(e);
+            }
+        }
+        
     } else {
         // build clingo for static linking
 
@@ -13,13 +22,13 @@ fn main() {
 
         if !clingo_dir.exists() {
             Command::new("git")
-                .args(&["clone", "https://github.com/sthiele/clingo.git"])
+                .args(&["clone", "https://github.com/potassco/clingo.git"])
                 .current_dir(out_dir.to_str().unwrap())
                 .status()
                 .unwrap();
 
             Command::new("git")
-                .args(&["checkout", "mod_v5.3.0"])
+                .args(&["checkout", "v5.4.0"])
                 .current_dir(clingo_dir.to_str().unwrap())
                 .status()
                 .unwrap();
@@ -32,30 +41,34 @@ fn main() {
         }
 
         // if !Path::new("bindings.rs").exists() {
-        //     let bindings = bindgen::Builder::default()
-        //         .header("clingo/libclingo/clingo.h")
-        //         .no_copy("clingo_solve_control")
-        //         .no_copy("clingo_model")
-        //         .no_copy("clingo_solve_handle")
-        //         .no_copy("clingo_program_builder")
-        //         .no_copy("clingo_control")
-        //         .no_copy("clingo_options")
-        //         .no_copy("clingo_symbolic_atoms")
-        //         .no_copy("clingo_theory_atoms")
-        //         .no_copy("clingo_assignment")
-        //         .no_copy("clingo_propagate_init")
-        //         .no_copy("clingo_propagate_control")
-        //         .no_copy("clingo_backend")
-        //         .no_copy("clingo_configuration")
-        //         .no_copy("clingo_statistic")
-        //         .blacklist_type("max_align_t") // https://github.com/rust-lang/rust-bindgen/issues/550
-        //         .generate()
-        //         .expect("Unable to generate bindings");
-        //
-        //     // Write the bindings to the bindings.rs file.
-        //     bindings
-        //         .write_to_file("bindings.rs")
-        //         .expect("Couldn't write bindings!");
+            // let bindings = bindgen::Builder::default()
+            //     .header(clingo_dir.join("libclingo/clingo.h").to_str().unwrap())
+            //     .no_copy("clingo_solve_control")
+            //     .no_copy("clingo_model")
+            //     .no_copy("clingo_solve_handle")
+            //     .no_copy("clingo_program_builder")
+            //     .no_copy("clingo_control")
+            //     .no_copy("clingo_options")
+            //     .no_copy("clingo_symbolic_atoms")
+            //     .no_copy("clingo_theory_atoms")
+            //     .no_copy("clingo_assignment")
+            //     .no_copy("clingo_propagate_init")
+            //     .no_copy("clingo_propagate_control")
+            //     .no_copy("clingo_backend")
+            //     .no_copy("clingo_configuration")
+            //     .no_copy("clingo_statistic")
+            //     // .no_copy("clingo_ast_term")
+            //     // .no_copy("clingo_ast_function")
+            //     // .no_copy("clingo_ast_pool")
+            //     // .no_copy("clingo_ast_csp_product_term_t")
+            //     .blacklist_type("max_align_t") // https://github.com/rust-lang/rust-bindgen/issues/550
+            //     .generate()
+            //     .expect("Unable to generate bindings");
+        
+            // // Write the bindings to the bindings.rs file.
+            // bindings
+            //     .write_to_file("bindings.rs")
+            //     .expect("Couldn't write bindings!");
         // }
 
         // libpotassco

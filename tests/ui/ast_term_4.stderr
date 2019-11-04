@@ -1,0 +1,11 @@
+error[E0505]: cannot move out of `fun` because it is borrowed
+  --> $DIR/ast_term_4.rs:10:10
+   |
+9  |     let term3 = ast::Term::from(&fun);
+   |                                 ---- borrow of `fun` occurs here
+10 |     drop(fun);
+   |          ^^^ move out of `fun` occurs here
+11 |     println!("{:?}",term3);
+   |                     ----- borrow later used here
+
+For more information about this error, try `rustc --explain E0505`.

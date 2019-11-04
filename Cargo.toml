@@ -1,6 +1,6 @@
 [package]
 name = "clingo"
-version = "0.4.3"
+version = "0.5.0"
 authors = ["sthiele <sthiele78@gmail.com>"]
 edition = "2018"
 description = "Rust idiomatic bindings to the clingo library"
@@ -22,11 +22,13 @@ path = "src/lib.rs"
 dynamic_linking = ["clingo-sys/dynamic_linking"]
 
 [dependencies]
-clingo-sys = "0.4.2"
-rand = "0.6"
+clingo-sys = "0.5.0"
+rand = "0.7"
 failure = "0.1"
 failure_derive = "0.1"
-bitflags = "1.0"
+bitflags = "1.2"
 
+[dev-dependencies]
+trybuild = "1.0"
 
 

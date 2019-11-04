@@ -1,0 +1,11 @@
+error[E0505]: cannot move out of `op` because it is borrowed
+ --> $DIR/ast_term_2.rs:8:10
+  |
+7 |     let term2 = ast::Term::from(&op);
+  |                                 --- borrow of `op` occurs here
+8 |     drop(op);
+  |          ^^ move out of `op` occurs here
+9 |     let _end = term2;
+  |                ----- borrow later used here
+
+For more information about this error, try `rustc --explain E0505`.

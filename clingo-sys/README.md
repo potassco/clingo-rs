@@ -1,6 +1,6 @@
 # clingo-sys
 Rust external FFI bindings to the [clingo](https://github.com/potassco/clingo) library.
-Clingo version 5.3.0.
+Clingo version 5.4.0.
 
 
 ## Requirements

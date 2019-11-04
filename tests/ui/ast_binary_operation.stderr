@@ -1,0 +1,23 @@
+error[E0382]: use of moved value: `term1`
+ --> $DIR/ast_binary_operation.rs:8:10
+  |
+5 |     let term1 = ast::Term::from(sym);
+  |         ----- move occurs because `term1` has type `clingo::ast::Term<'_>`, which does not implement the `Copy` trait
+6 |     let term2 = ast::Term::from(sym);
+7 |     let op = ast::BinaryOperation::xor(term1, term2);
+  |                                        ----- value moved here
+8 |     drop(term1);
+  |          ^^^^^ value used here after move
+
+error[E0382]: use of moved value: `term2`
+ --> $DIR/ast_binary_operation.rs:9:10
+  |
+6 |     let term2 = ast::Term::from(sym);
+  |         ----- move occurs because `term2` has type `clingo::ast::Term<'_>`, which does not implement the `Copy` trait
+7 |     let op = ast::BinaryOperation::xor(term1, term2);
+  |                                               ----- value moved here
+8 |     drop(term1);
+9 |     drop(term2);
+  |          ^^^^^ value used here after move
+
+For more information about this error, try `rustc --explain E0382`.

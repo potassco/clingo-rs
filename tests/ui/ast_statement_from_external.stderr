@@ -1,0 +1,10 @@
+error[E0506]: cannot assign to `ext` because it is borrowed
+  --> $DIR/ast_statement_from_external.rs:9:5
+   |
+7  |     let stmt = ext.ast_statement();
+   |                --- borrow of `ext` occurs here
+8  |     
+9  |     ext = ast::External::new(term, &[]);
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ assignment to borrowed `ext` occurs here
+10 |     let _end = (stmt, ext);
+   |                 ---- borrow later used here
