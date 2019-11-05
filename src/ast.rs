@@ -496,7 +496,11 @@ impl fmt::Debug for Definition<'_> {
     }
 }
 impl<'a> Definition<'a> {
-    pub fn new(name: &str, value: Term<'a>, is_default: bool) -> Result<Definition<'a>, Error> {
+    pub fn new(
+        name: &str,
+        value: Term<'a>,
+        is_default: bool,
+    ) -> Result<Definition<'a>, ClingoError> {
         let name = internalize_string(name)?;
         Ok(Definition {
             data: clingo_ast_definition {
@@ -692,7 +696,7 @@ impl fmt::Debug for Program<'_> {
     }
 }
 impl<'a> Program<'a> {
-    pub fn new(name: &str, parameters: &'a [Id]) -> Result<Program<'a>, Error> {
+    pub fn new(name: &str, parameters: &'a [Id]) -> Result<Program<'a>, ClingoError> {
         let name = internalize_string(name)?;
         Ok(Program {
             data: clingo_ast_program {
@@ -1208,7 +1212,7 @@ impl<'a> Term<'a> {
     /// # Errors
     ///
     /// - [`NulError`](https://doc.rust-lang.org/std/ffi/struct.NulError.html) - if `string` contains a nul byte
-    pub fn variable(name: &str) -> Result<Term<'a>, Error> {
+    pub fn variable(name: &str) -> Result<Term<'a>, ClingoError> {
         let variable = internalize_string(name)?;
         Ok(Term {
             data: clingo_ast_term {
@@ -1632,7 +1636,7 @@ impl fmt::Debug for Function<'_> {
     }
 }
 impl<'a> Function<'a> {
-    pub fn new(name: &str, arguments: &'a [Term<'a>]) -> Result<Function<'a>, Error> {
+    pub fn new(name: &str, arguments: &'a [Term<'a>]) -> Result<Function<'a>, ClingoError> {
         let name = internalize_string(name)?;
         Ok(Function {
             data: clingo_ast_function {
@@ -2613,7 +2617,7 @@ impl<'a> From<&'a TheoryUnparsedTerm<'a>> for TheoryTerm<'a> {
     }
 }
 impl<'a> TheoryTerm<'a> {
-    pub fn variable(name: &str) -> Result<TheoryTerm<'a>, Error> {
+    pub fn variable(name: &str) -> Result<TheoryTerm<'a>, ClingoError> {
         let variable = internalize_string(name)?;
         Ok(TheoryTerm {
             data: clingo_ast_theory_term {
@@ -2746,7 +2750,10 @@ impl fmt::Debug for TheoryFunction<'_> {
     }
 }
 impl<'a> TheoryFunction<'a> {
-    pub fn new(name: &str, arguments: &'a [TheoryTerm<'a>]) -> Result<TheoryFunction<'a>, Error> {
+    pub fn new(
+        name: &str,
+        arguments: &'a [TheoryTerm<'a>],
+    ) -> Result<TheoryFunction<'a>, ClingoError> {
         let name = internalize_string(name)?;
         Ok(TheoryFunction {
             data: clingo_ast_theory_function {
@@ -2897,7 +2904,7 @@ impl fmt::Debug for TheoryGuard<'_> {
     }
 }
 impl<'a> TheoryGuard<'a> {
-    pub fn new(operator_name: &str, term: TheoryTerm<'a>) -> Result<TheoryGuard<'a>, Error> {
+    pub fn new(operator_name: &str, term: TheoryTerm<'a>) -> Result<TheoryGuard<'a>, ClingoError> {
         let operator_name = internalize_string(operator_name)?;
         Ok(TheoryGuard {
             data: clingo_ast_theory_guard {
@@ -3059,7 +3066,7 @@ impl<'a> TheoryTermDefinition<'a> {
     pub fn new(
         name: &str,
         operators: &'a [TheoryOperatorDefinition<'a>],
-    ) -> Result<TheoryTermDefinition<'a>, Error> {
+    ) -> Result<TheoryTermDefinition<'a>, ClingoError> {
         let name = internalize_string(name)?;
         Ok(TheoryTermDefinition {
             data: clingo_ast_theory_term_definition {
@@ -3107,7 +3114,7 @@ impl<'a> TheoryGuardDefinition<'a> {
     pub fn new(
         term: &str,
         operators: &'a [*const c_char],
-    ) -> Result<TheoryGuardDefinition<'a>, Error> {
+    ) -> Result<TheoryGuardDefinition<'a>, ClingoError> {
         let term = internalize_string(term)?;
         Ok(TheoryGuardDefinition {
             data: clingo_ast_theory_guard_definition {
@@ -3178,7 +3185,7 @@ impl<'a> TheoryAtomDefinition<'a> {
         arity: u32,
         elements: &str,
         guard: &'a TheoryGuardDefinition<'a>,
-    ) -> Result<TheoryAtomDefinition<'a>, Error> {
+    ) -> Result<TheoryAtomDefinition<'a>, ClingoError> {
         let name = internalize_string(name)?;
         let elements = internalize_string(elements)?;
         Ok(TheoryAtomDefinition {
@@ -3263,7 +3270,7 @@ impl<'a> TheoryDefinition<'a> {
         name: &str,
         terms: &'a [TheoryTermDefinition<'a>],
         atoms: &'a [TheoryAtomDefinition<'a>],
-    ) -> Result<TheoryDefinition<'a>, Error> {
+    ) -> Result<TheoryDefinition<'a>, ClingoError> {
         let name = internalize_string(name)?;
         Ok(TheoryDefinition {
             data: clingo_ast_theory_definition {
@@ -3310,23 +3317,21 @@ impl<'a> ProgramBuilder<'a> {
     pub fn from(ctl: &'a mut Control) -> Result<ProgramBuilder<'a>, ClingoError> {
         let mut builder = std::ptr::null_mut();
         if !unsafe { clingo_control_program_builder(ctl.get_ctl().as_mut(), &mut builder) } {
-            return Err(ClingoError::new(
-                "Call to clingo_control_program_builder() failed.",
+            return Err(ClingoError::new_internal("Call to clingo_control_program_builder() failed.",
             ));
         }
         // begin building the program
         if !unsafe { clingo_program_builder_begin(builder) } {
-            return Err(ClingoError::new(
-                "Call to clingo_program_builder_begin() failed.",
+            return Err(ClingoError::new_internal("Call to clingo_program_builder_begin() failed",
             ));
         }
         match unsafe { builder.as_mut() } {
             Some(builder_ref) => Ok(ProgramBuilder {
                 theref: builder_ref,
             }),
-            None => Err(ClingoError::new(
-                "Call to tried casting a null pointer to &mut clingo_program_builder.",
-            )),
+            None => Err(ClingoError::FFIError {
+                msg: "tried casting a null pointer to &mut clingo_program_builder.",
+            }),
         }
     }
     /// Adds a statement to the program.
@@ -3344,9 +3349,7 @@ impl<'a> ProgramBuilder<'a> {
     /// or [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     pub fn add(&mut self, stm: &'a Statement<'a>) -> Result<(), ClingoError> {
         if !unsafe { clingo_program_builder_add(self.theref, &stm.data) } {
-            return Err(ClingoError::new(
-                "Call to clingo_program_builder_add() failed.",
-            ));
+            return Err(ClingoError::new_internal("Call to clingo_program_builder_add() failed"));
         }
         Ok(())
     }
@@ -3355,9 +3358,7 @@ impl<'a> ProgramBuilder<'a> {
     /// The method consumes the program builder.
     pub fn end(self) -> Result<(), ClingoError> {
         if !unsafe { clingo_program_builder_end(self.theref) } {
-            return Err(ClingoError::new(
-                "Call to clingo_program_builder_end() failed.",
-            ));
+            return Err(ClingoError::new_internal("Call to clingo_program_builder_end() failed"));
         }
         Ok(())
     }

@@ -1,6 +1,7 @@
 # clingo-rs
-
 [![Build Status](https://travis-ci.org/potassco/clingo-rs.svg?branch=master)](https://travis-ci.org/potassco/clingo-rs)
+[![Latest Version](https://img.shields.io/crates/v/clingo.svg)](https://crates.io/crates/clingo)
+[![Rust Documentation](https://img.shields.io/badge/api-rustdoc-blue.svg)](https://docs.rs/clingo)
 
 Rust bindings to the [clingo](https://github.com/potassco/clingo) library.
 Clingo version 5.4.0.
@@ -28,24 +29,18 @@ Clingo version 5.4.0.
     cargo run --example=inject-terms 0
     cargo run --example=version
 
-
-## Documentation
-
-- [`clingo-rs`](https://docs.rs/clingo)
-
-## `clingo_derive` crate
+## `derive` macro
 
 The [`clingo_derive`](https://crates.io/crates/clingo-derive) crate helps easing the use of rust data types as facts.
+
 
 In your `Cargo.toml` add:
 
     [dependencies]
-    clingo-rs = "0.5.0"
-    clingo-derive = "*"
-
+    clingo = {version = "0.6", features = ["derive"]
+    
 In your source write:
 
-    use clingo_derive::*;
     use clingo::FactBase;
 
     #[derive(ToSymbol)]
@@ -59,7 +54,7 @@ In your source write:
     fb.insert(p);
 
 
-## --dynamic_linking
+## dynamic_linking
 
 The crate defines a [Cargo feature] that allows to use the clingo library via dynamic linking.
 
@@ -73,7 +68,7 @@ follows.
 
 ```toml
 [dependencies]
-clingo = { version = "0.5.0", features = ["dynamic_linking"] }
+clingo = { version = "0.6.0", features = ["derive", "dynamic_linking"] }
 ```
 
 ## Contribution

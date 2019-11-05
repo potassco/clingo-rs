@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## v0.6.0 - unreleased
+### Changed
+- refactor ClingoError
+
 ## v0.5.0 - Nov 4, 2019
 ### Changed
 - use clingo-sys 0.5.0
