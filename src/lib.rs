@@ -1,50 +1,62 @@
-#![doc(html_root_url = "https://docs.rs/clingo/0.5.0")]
+#![doc(html_root_url = "https://docs.rs/clingo/0.6.0")]
 //! This crate provides bindings to the [clingo](https://github.com/potassco/clingo) library version 5.4.0.
 //!
-//! ## `clingo_derive` crate
+//! ## Requirements
 //!
-//! The [`clingo_derive`](https://docs.rs/clingo_derive) crate helps easing the use of rust data types as facts.
+//! - a c++14 conforming compiler
+//!   - *at least* [gcc](https://gcc.gnu.org/) version 4.9
+//!   - [clang](http://clang.llvm.org/) version 3.1 (using either libstdc++
+//!     provided by gcc 4.9 or libc++)
+//!
+//!
+//! ## Using `derive` macro
+//!
+//! The crate provides a derive macro to help easing the use of rust data types as facts.
+//!
 //!
 //! In your `Cargo.toml` add:
-//!
 //! ```toml
 //! [dependencies]
-//! clingo-rs = "0.5.0"
-//! clingo-derive = "*"
+//! clingo = { version = "0.6", features = ["derive"] }
 //! ```
-//!
+//!      
 //! In your source write:
 //! ```ignore
-//! use clingo_derive::*;
+//! use clingo::ToSymbol;
+//! use clingo::ClingoError;
 //! use clingo::FactBase;
 //!
 //! #[derive(ToSymbol)]
-//! struct Point {
-//!    x: i32,
-//!    y: i32,
-//!  }
+//! struct MyPoint {
+//!     x: i32,
+//!     y: i32,
+//! }
 //!
-//! let p = Point{ x:4, y:2 };
+//! let p = MyPoint{ x:4, y:2 };
 //! let fb = FactBase::new();
 //! fb.insert(p);
 //! ```
-
-//! ## --dynamic_linking
 //!
-//! The `clingo` crate defines a [Cargo feature] that allows to use the clingo library via dynamic linking.
+//! The macro performs a conversion to snake case. This means the corresponing fact for `MyPoint{x:4,y:2}` is `my_point(4,2)`.
+//!
+//!
+//! ## Using `dynamic_linking`
+//!
+//! The crate defines a [Cargo feature] that allows to use the clingo library via dynamic linking.
 //!
 //! [Cargo feature]: https://doc.rust-lang.org/cargo/reference/manifest.html#the-features-section
 //!
 //! With dynamic linking enabled the clingo library is not build for static linking but it is assumed that a
-//! shared clingo library is installed on the system.
+//! clingo dynamic library is installed on the system.
 //!
 //! The recommended way to use the optional dynamic linking support is as
 //! follows.
 //!
 //! ```toml
 //! [dependencies]
-//! clingo = { version = "0.5.0", features = ["dynamic_linking"] }
+//! clingo = { version = "0.6.0", features = ["derive", "dynamic_linking"] }
 //! ```
+//!
 #![allow(non_upper_case_globals)]
 #![allow(clippy::try_err)]
 use bitflags::bitflags;
@@ -1758,9 +1770,6 @@ impl Drop for Control {
     }
 }
 impl Control {
-    fn get_ctl(&mut self) -> NonNull<clingo_control_t> {
-        self.ctl
-    }
     /// Create a new control object.
     ///
     /// **Note:** Only gringo options (without `--output`) and clasp's options are supported as
@@ -1939,7 +1948,36 @@ impl Control {
         }
         Ok(())
     }
+    pub fn add_facts(&mut self, facts: &FactBase) {
+        for sym in facts.iter() {
+            // print!("{}",sym.to_string().unwrap());
 
+            // initilize atom to add
+            let atom = ast::Term::from(*sym);
+
+            // create literal
+            let lit = ast::Literal::from_term(ast::Sign::None, &atom);
+
+            // create headliteral
+            let hlit = ast::HeadLiteral::from(&lit);
+
+            // create (fact) rule
+            let rule = ast::Rule::new(hlit, &[]);
+
+            // initialize the statement
+            let stm = rule.ast_statement();
+
+            // get the program builder
+            let mut builder = ast::ProgramBuilder::from(self).unwrap();
+
+            // add the rewritten statement to the program
+            builder
+                .add(&stm)
+                .expect("Failed to add statement to ProgramBuilder.");
+
+            builder.end().expect("Failed to finish building a program.");
+        }
+    }
     /// Ground the selected [parts](struct.Part.html) of the current (non-ground) logic
     /// program.
     ///
@@ -5969,37 +6007,6 @@ impl FactBase {
             print!("{}.", fact.to_string().unwrap());
         }
         println!();
-    }
-}
-
-pub fn add_facts(ctl: &mut Control, facts: &FactBase) {
-    for sym in facts.iter() {
-        // print!("{}",sym.to_string().unwrap());
-
-        // initilize atom to add
-        let atom = ast::Term::from(*sym);
-
-        // create literal
-        let lit = ast::Literal::from_term(ast::Sign::None, &atom);
-
-        // create headliteral
-        let hlit = ast::HeadLiteral::from(&lit);
-
-        // create (fact) rule
-        let rule = ast::Rule::new(hlit, &[]);
-
-        // initialize the statement
-        let stm = rule.ast_statement();
-
-        // get the program builder
-        let mut builder = ast::ProgramBuilder::from(ctl).unwrap();
-
-        // add the rewritten statement to the program
-        builder
-            .add(&stm)
-            .expect("Failed to add statement to ProgramBuilder.");
-
-        builder.end().expect("Failed to finish building a program.");
     }
 }
 

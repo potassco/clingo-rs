@@ -3316,13 +3316,15 @@ impl<'a> ProgramBuilder<'a> {
     /// Get an object to add non-ground directives to the program.
     pub fn from(ctl: &'a mut Control) -> Result<ProgramBuilder<'a>, ClingoError> {
         let mut builder = std::ptr::null_mut();
-        if !unsafe { clingo_control_program_builder(ctl.get_ctl().as_mut(), &mut builder) } {
-            return Err(ClingoError::new_internal("Call to clingo_control_program_builder() failed.",
+        if !unsafe { clingo_control_program_builder(ctl.ctl.as_mut(), &mut builder) } {
+            return Err(ClingoError::new_internal(
+                "Call to clingo_control_program_builder() failed.",
             ));
         }
         // begin building the program
         if !unsafe { clingo_program_builder_begin(builder) } {
-            return Err(ClingoError::new_internal("Call to clingo_program_builder_begin() failed",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_program_builder_begin() failed",
             ));
         }
         match unsafe { builder.as_mut() } {
@@ -3349,7 +3351,9 @@ impl<'a> ProgramBuilder<'a> {
     /// or [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     pub fn add(&mut self, stm: &'a Statement<'a>) -> Result<(), ClingoError> {
         if !unsafe { clingo_program_builder_add(self.theref, &stm.data) } {
-            return Err(ClingoError::new_internal("Call to clingo_program_builder_add() failed"));
+            return Err(ClingoError::new_internal(
+                "Call to clingo_program_builder_add() failed",
+            ));
         }
         Ok(())
     }
@@ -3358,7 +3362,9 @@ impl<'a> ProgramBuilder<'a> {
     /// The method consumes the program builder.
     pub fn end(self) -> Result<(), ClingoError> {
         if !unsafe { clingo_program_builder_end(self.theref) } {
-            return Err(ClingoError::new_internal("Call to clingo_program_builder_end() failed"));
+            return Err(ClingoError::new_internal(
+                "Call to clingo_program_builder_end() failed",
+            ));
         }
         Ok(())
     }

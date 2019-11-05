@@ -29,32 +29,36 @@ Clingo version 5.4.0.
     cargo run --example=inject-terms 0
     cargo run --example=version
 
-## `derive` macro
+## Using `derive` macro
 
-The [`clingo_derive`](https://crates.io/crates/clingo-derive) crate helps easing the use of rust data types as facts.
+The crate provides a derive macro to help easing the use of rust data types as facts.
 
 
 In your `Cargo.toml` add:
 
     [dependencies]
-    clingo = {version = "0.6", features = ["derive"]
+    clingo = { version = "0.6", features = ["derive"] }
     
 In your source write:
 
+    use clingo::ToSymbol;
+    use clingo::ClingoError;
     use clingo::FactBase;
 
     #[derive(ToSymbol)]
-    struct Point {
+    struct MyPoint {
         x: i32,
         y: i32,
     }
 
-    let p = Point{ x:4, y:2 };
+    let p = MyPoint{ x:4, y:2 };
     let fb = FactBase::new();
     fb.insert(p);
 
+The macro performs a conversion to snake case. This means the corresponing fact for `MyPoint{x:4,y:2}` is `my_point(4,2)`.
 
-## dynamic_linking
+
+## Using `dynamic_linking`
 
 The crate defines a [Cargo feature] that allows to use the clingo library via dynamic linking.
 
