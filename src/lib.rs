@@ -97,6 +97,8 @@ pub enum ClingoError {
         code: ErrorCode,
         last: &'static str,
     },
+    #[error("ExternalError: ")]
+    ExternalError(#[from] ExternalError),
 }
 impl ClingoError {
     fn new_internal(msg: &'static str) -> ClingoError {
@@ -106,6 +108,11 @@ impl ClingoError {
             last: error_message(),
         }
     }
+}
+#[derive(Error, Debug)]
+#[error("ExternalError: {msg}")]
+pub struct ExternalError {
+    pub msg: &'static str,
 }
 
 /// Enumeration of clingo error types
@@ -824,7 +831,7 @@ pub trait ExternalFunctionHandler {
         location: &Location,
         name: &str,
         arguments: &[Symbol],
-    ) -> Result<Vec<Symbol>, ClingoError>;
+    ) -> Result<Vec<Symbol>, ExternalError>;
     #[doc(hidden)]
     unsafe extern "C" fn unsafe_ground_callback<T: ExternalFunctionHandler>(
         location: *const clingo_location_t,

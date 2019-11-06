@@ -24,11 +24,11 @@ impl ExternalFunctionHandler for MyEFH {
         _location: &Location,
         name: &str,
         arguments: &[Symbol],
-    ) -> Result<Vec<Symbol>, ClingoError> {
+    ) -> Result<Vec<Symbol>, ExternalError> {
         if name == "c" && arguments.len() == 0 {
             Ok(vec![Symbol::create_number(42), Symbol::create_number(43)])
         } else {
-            return Err(ClingoError::FFIError {
+            return Err(ExternalError {
                 msg: "function not found",
             });
         }
