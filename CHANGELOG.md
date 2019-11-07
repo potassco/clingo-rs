@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 ## v0.6.0 - unreleased
 ### Changed
 - refactor ClingoError
+- use clingo-sys 0.5.1 which includes clingo via git submodule
 
 ## v0.5.0 - Nov 4, 2019
 ### Changed
