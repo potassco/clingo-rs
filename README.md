@@ -38,7 +38,7 @@ In your `Cargo.toml` add:
 
     [dependencies]
     clingo = { version = "0.6", features = ["derive"] }
-    
+
 In your source write:
 
     use clingo::ToSymbol;
