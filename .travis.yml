@@ -2,6 +2,10 @@ language: rust
 rust:
   - stable
 cache: cargo
+before_cache:
+  - rm -rfv target/debug
+  - cargo clean -p clingo
+
 matrix:
   include:
     - os: linux
