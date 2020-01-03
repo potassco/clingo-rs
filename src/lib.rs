@@ -1988,7 +1988,7 @@ impl Control {
     /// Ground the selected [parts](struct.Part.html) of the current (non-ground) logic
     /// program.
     ///
-    /// After grounding, logic programs can be solved with [`solve()`](struct.Control.html.method.solve).
+    /// After grounding, logic programs can be solved with [`solve()`](struct.Control.html#method.solve).
     ///
     /// **Note:** Parts of a logic program without an explicit `#program`
     /// specification are by default put into a program called `base` - without
@@ -2027,7 +2027,7 @@ impl Control {
     /// Ground the selected [parts](struct.Part.html) of the current (non-ground) logic
     /// program.
     ///
-    /// After grounding, logic programs can be solved with [`solve()`](struct.Control.html.method.solve).
+    /// After grounding, logic programs can be solved with [`solve()`](struct.Control.html#method.solve).
     ///
     /// **Note:** Parts of a logic program without an explicit `#program`
     /// specification are by default put into a program called `base` - without
