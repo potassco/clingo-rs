@@ -1,6 +1,6 @@
 [package]
 name = "clingo"
-version = "0.5.0"
+version = "0.6.0"
 authors = ["sthiele <sthiele78@gmail.com>"]
 edition = "2018"
 description = "Rust idiomatic bindings to the clingo library"
@@ -21,14 +21,16 @@ path = "src/lib.rs"
 [features]
 dynamic_linking = ["clingo-sys/dynamic_linking"]
 
+# Provide derive(ToSymbol) macro.
+derive = ["clingo-derive"]
+
 [dependencies]
-clingo-sys = "0.5.0"
+clingo-sys = { version = "0.5.1" }
+clingo-derive = { version = "0.2.0", optional = true }
 rand = "0.7"
-failure = "0.1"
-failure_derive = "0.1"
+thiserror = "1.0"
 bitflags = "1.2"
 
 [dev-dependencies]
 trybuild = "1.0"
-
-
+clingo-derive = { version = "0.2.0" }

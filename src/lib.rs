@@ -1,55 +1,66 @@
-#![doc(html_root_url = "https://docs.rs/clingo/0.5.0")]
+#![doc(html_root_url = "https://docs.rs/clingo/0.6.0")]
 //! This crate provides bindings to the [clingo](https://github.com/potassco/clingo) library version 5.4.0.
 //!
-//! ## `clingo_derive` crate
+//! ## Requirements
 //!
-//! The [`clingo_derive`](https://docs.rs/clingo_derive) crate helps easing the use of rust data types as facts.
+//! - a c++14 conforming compiler
+//!   - *at least* [gcc](https://gcc.gnu.org/) version 4.9
+//!   - [clang](http://clang.llvm.org/) version 3.1 (using either libstdc++
+//!     provided by gcc 4.9 or libc++)
+//!
+//!
+//! ## Using `derive` macro
+//!
+//! The crate provides a derive macro to help easing the use of rust data types as facts.
+//!
 //!
 //! In your `Cargo.toml` add:
-//!
 //! ```toml
 //! [dependencies]
-//! clingo-rs = "0.5.0"
-//! clingo-derive = "*"
+//! clingo = { version = "0.6", features = ["derive"] }
 //! ```
-//!
+//!      
 //! In your source write:
 //! ```ignore
-//! use clingo_derive::*;
+//! use clingo::ToSymbol;
+//! use clingo::ClingoError;
 //! use clingo::FactBase;
 //!
 //! #[derive(ToSymbol)]
-//! struct Point {
-//!    x: i32,
-//!    y: i32,
-//!  }
+//! struct MyPoint {
+//!     x: i32,
+//!     y: i32,
+//! }
 //!
-//! let p = Point{ x:4, y:2 };
+//! let p = MyPoint{ x:4, y:2 };
 //! let fb = FactBase::new();
 //! fb.insert(p);
 //! ```
-
-//! ## --dynamic_linking
 //!
-//! The `clingo` crate defines a [Cargo feature] that allows to use the clingo library via dynamic linking.
+//! The macro performs a conversion to snake case. This means the corresponing fact for `MyPoint{x:4,y:2}` is `my_point(4,2)`.
+//!
+//!
+//! ## Using `dynamic_linking`
+//!
+//! The crate defines a [Cargo feature] that allows to use the clingo library via dynamic linking.
 //!
 //! [Cargo feature]: https://doc.rust-lang.org/cargo/reference/manifest.html#the-features-section
 //!
 //! With dynamic linking enabled the clingo library is not build for static linking but it is assumed that a
-//! shared clingo library is installed on the system.
+//! clingo dynamic library is installed on the system.
 //!
 //! The recommended way to use the optional dynamic linking support is as
 //! follows.
 //!
 //! ```toml
 //! [dependencies]
-//! clingo = { version = "0.5.0", features = ["dynamic_linking"] }
+//! clingo = { version = "0.6.0", features = ["derive", "dynamic_linking"] }
 //! ```
+//!
 #![allow(non_upper_case_globals)]
 #![allow(clippy::try_err)]
 use bitflags::bitflags;
 use clingo_sys::*;
-use failure::*;
 use std::cmp::Ordering;
 use std::collections::HashSet;
 use std::ffi::CStr;
@@ -60,38 +71,48 @@ use std::os::raw::c_char;
 use std::os::raw::c_void;
 use std::ptr::NonNull;
 use std::str::Utf8Error;
+use thiserror::Error;
 
 /// Functions and data structures to work with program ASTs.
 pub mod ast;
 
-/// Error in the rust wrapper, like null pointers or failed matches of C enums.
+/// ClingoError in the rust wrapper, like null pointers or failed matches of C enums.
 ///
-/// Includes last error from the clingo library.
+/// Includes internal error from the clingo library.
 ///
 /// **Note:** Errors can only be recovered from if explicitly mentioned; most
 /// functions do not provide strong exception guarantees.  This means that in
 /// case of errors associated objects cannot be used further.
-#[derive(Debug, Fail)]
-#[fail(display = "ClingoError: {}", msg)]
-pub struct ClingoError {
-    pub msg: &'static str,
-    pub code: ErrorCode,
-    pub last: &'static str,
+#[derive(Error, Debug)]
+pub enum ClingoError {
+    #[error("NulError: ")]
+    NulError(#[from] NulError),
+    #[error("Utf8Error: ")]
+    Utf8Error(#[from] Utf8Error),
+    #[error("FFIError: {msg}")]
+    FFIError { msg: &'static str },
+    #[error("InternalError: {msg}, code: {code:?}, last: {last}")]
+    InternalError {
+        msg: &'static str,
+        code: ErrorCode,
+        last: &'static str,
+    },
+    #[error("ExternalError: ")]
+    ExternalError(#[from] ExternalError),
 }
 impl ClingoError {
-    fn new(msg: &'static str) -> ClingoError {
-        ClingoError {
+    fn new_internal(msg: &'static str) -> ClingoError {
+        ClingoError::InternalError {
             msg,
             code: error_code(),
             last: error_message(),
         }
     }
 }
-/// Wrong usage of the clingo API
-#[derive(Debug, Fail)]
-#[fail(display = "LogicError: {}", msg)]
-pub struct LogicError {
-    msg: &'static str,
+#[derive(Error, Debug)]
+#[error("ExternalError: {msg}")]
+pub struct ExternalError {
+    pub msg: &'static str,
 }
 
 /// Enumeration of clingo error types
@@ -109,7 +130,7 @@ pub enum ErrorType {
     /// Errors unrelated to clingo
     Unknown = clingo_error_clingo_error_unknown as isize,
 }
-/// Enumeration of clingo error codes for [`ClingoError`](struct.ClingoError.html).
+/// Enumeration of clingo error codes for [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError).
 #[derive(Debug, Copy, Clone)]
 pub enum ErrorCode {
     /// Successful API calls
@@ -173,7 +194,7 @@ fn error_message() -> &'static str {
 ///
 /// # Errors
 ///
-/// - [`NulError`](https://doc.rust-lang.org/std/ffi/struct.NulError.html) - if `message` contains a nul byte
+/// - [`ClingoError::NulError`](enum.ClingoError.html#variant.NulError) - if `message` contains a nul byte
 pub fn set_error(code: ErrorType, message: &str) -> Result<(), NulError> {
     let message = CString::new(message)?;
     unsafe { clingo_set_error(code as clingo_error_t, message.as_ptr()) }
@@ -210,7 +231,9 @@ impl TruthValue {
                     column!(),
                     x
                 );
-                Err(ClingoError::new("Failed to match clingo_truth_value."))
+                Err(ClingoError::FFIError {
+                    msg: "Failed to match clingo_truth_value.",
+                })
             }
         }
     }
@@ -258,7 +281,9 @@ impl SolveEventType {
                     column!(),
                     x
                 );
-                Err(ClingoError::new("Failed to match clingo_solve_event_type."))
+                Err(ClingoError::FFIError {
+                    msg: "Failed to match clingo_solve_event_type.",
+                })
             }
         }
     }
@@ -291,7 +316,9 @@ impl StatisticsType {
                     column!(),
                     x
                 );
-                Err(ClingoError::new("Failed to match clingo_statistics_type."))
+                Err(ClingoError::FFIError {
+                    msg: "Failed to match clingo_statistics_type.",
+                })
             }
         }
     }
@@ -327,7 +354,9 @@ impl SymbolType {
                     column!(),
                     x
                 );
-                Err(ClingoError::new("Failed to match clingo_symbol_type."))
+                Err(ClingoError::FFIError {
+                    msg: "Failed to match clingo_symbol_type.",
+                })
             }
         }
     }
@@ -369,7 +398,9 @@ impl Warning {
                     column!(),
                     x
                 );
-                Err(ClingoError::new("Failed to match clingo_warning."))
+                Err(ClingoError::FFIError {
+                    msg: "Failed to match clingo_warning.",
+                })
             }
         }
     }
@@ -402,7 +433,9 @@ impl ExternalType {
                     column!(),
                     x
                 );
-                Err(ClingoError::new("Failed to match clingo_external_type."))
+                Err(ClingoError::FFIError {
+                    msg: "Failed to match clingo_external_type.",
+                })
             }
         }
     }
@@ -440,7 +473,9 @@ impl HeuristicType {
                     column!(),
                     x
                 );
-                Err(ClingoError::new("Failed to match clingo_heuristic_type."))
+                Err(ClingoError::FFIError {
+                    msg: "Failed to match clingo_heuristic_type.",
+                })
             }
         }
     }
@@ -481,7 +516,9 @@ impl TheoryTermType {
                     column!(),
                     x
                 );
-                Err(ClingoError::new("Failed to match clingo_theory_term_type."))
+                Err(ClingoError::FFIError {
+                    msg: "Failed to match clingo_theory_term_type.",
+                })
             }
         }
     }
@@ -515,7 +552,9 @@ impl ModelType {
                     column!(),
                     x
                 );
-                Err(ClingoError::new("Failed to match clingo_model_type."))
+                Err(ClingoError::FFIError {
+                    msg: "Failed to match clingo_model_type.",
+                })
             }
         }
     }
@@ -551,9 +590,9 @@ impl PropagatorCheckMode {
                     column!(),
                     x
                 );
-                Err(ClingoError::new(
-                    "Failed to match clingo_propagator_check_mode.",
-                ))
+                Err(ClingoError::FFIError {
+                    msg: "Failed to match clingo_propagator_check_mode.",
+                })
             }
         }
     }
@@ -737,7 +776,7 @@ pub trait Logger {
         &mut self,
         code: clingo_warning_t,
         message: &CStr,
-    ) -> Result<(), Error> {
+    ) -> Result<(), ClingoError> {
         let code = Warning::try_from(code)?;
         let message = message.to_str()?;
         self.log(code, message);
@@ -792,7 +831,7 @@ pub trait ExternalFunctionHandler {
         location: &Location,
         name: &str,
         arguments: &[Symbol],
-    ) -> Result<Vec<Symbol>, Error>;
+    ) -> Result<Vec<Symbol>, ExternalError>;
     #[doc(hidden)]
     unsafe extern "C" fn unsafe_ground_callback<T: ExternalFunctionHandler>(
         location: *const clingo_location_t,
@@ -847,7 +886,7 @@ pub trait ExternalFunctionHandler {
         arguments: &[Symbol],
         symbol_callback: clingo_symbol_callback_t,
         symbol_callback_data: *mut c_void,
-    ) -> Result<bool, Error> {
+    ) -> Result<bool, ClingoError> {
         let name = name.to_str()?;
         let symbols = self.on_external_function(location, name, arguments)?;
         if let Some(symbol_callback) = symbol_callback {
@@ -932,7 +971,7 @@ impl Location {
     ///
     /// # Errors
     ///
-    /// - [`NulError`](https://doc.rust-lang.org/std/ffi/struct.NulError.html) - if `begin_file` `end_file` or contain a nul byte
+    /// - [`ClingoError::NulError`](enum.ClingoError.html#variant.NulError) - if `begin_file` `end_file` or contain a nul byte
     pub fn new(
         begin_file: &str,
         end_file: &str,
@@ -1034,15 +1073,15 @@ impl Signature {
     ///
     /// # Errors
     ///
-    /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
-    /// - [`NulError`](https://doc.rust-lang.org/std/ffi/struct.NulError.html) - if `name` contains a nul byte
-    pub fn new(name: &str, arity: u32, positive: bool) -> Result<Signature, Error> {
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    /// - [`ClingoError::NulError`](enum.ClingoError.html#variant.NulError) - if `name` contains a nul byte
+    pub fn new(name: &str, arity: u32, positive: bool) -> Result<Signature, ClingoError> {
         let name = CString::new(name)?;
         let mut signature = 0;
         if !unsafe { clingo_signature_create(name.as_ptr(), arity, positive, &mut signature) } {
-            Err(ClingoError::new(
-                "Call to clingo_signature_create() failed.",
-            ))?
+            return Err(ClingoError::new_internal(
+                "Call to clingo_signature_create() failed",
+            ));
         }
         Ok(Signature(signature))
     }
@@ -1139,15 +1178,15 @@ impl Symbol {
     ///
     /// #  Errors:
     ///
-    /// - [`NulError`](https://doc.rust-lang.org/std/ffi/struct.NulError.html) - if `string` contains a nul byte
-    /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
-    pub fn create_string(string: &str) -> Result<Symbol, Error> {
+    /// - [`ClingoError::NulError`](enum.ClingoError.html#variant.NulError) - if `string` contains a nul byte
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    pub fn create_string(string: &str) -> Result<Symbol, ClingoError> {
         let mut symbol = 0 as clingo_symbol_t;
         let c_str = CString::new(string)?;
         if !unsafe { clingo_symbol_create_string(c_str.as_ptr(), &mut symbol) } {
-            Err(ClingoError::new(
-                "Call to clingo_symbol_create_string() failed.",
-            ))?
+            return Err(ClingoError::new_internal(
+                "Call to clingo_symbol_create_string() failed",
+            ));
         }
         Ok(Symbol(symbol))
     }
@@ -1164,15 +1203,15 @@ impl Symbol {
     ///
     /// # Errors
     ///
-    /// - [`NulError`](https://doc.rust-lang.org/std/ffi/struct.NulError.html) - if `name` contains a nul byte
-    /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
-    pub fn create_id(name: &str, positive: bool) -> Result<Symbol, Error> {
+    /// - [`ClingoError::NulError`](enum.ClingoError.html#variant.NulError) - if `name` contains a nul byte
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    pub fn create_id(name: &str, positive: bool) -> Result<Symbol, ClingoError> {
         let mut symbol = 0 as clingo_symbol_t;
         let name = CString::new(name)?;
         if !unsafe { clingo_symbol_create_id(name.as_ptr(), positive, &mut symbol) } {
-            Err(ClingoError::new(
-                "Call to clingo_symbol_create_id() failed.",
-            ))?
+            return Err(ClingoError::new_internal(
+                "Call to clingo_symbol_create_id() failed",
+            ));
         }
         Ok(Symbol(symbol))
     }
@@ -1190,13 +1229,13 @@ impl Symbol {
     ///
     /// # Errors
     ///
-    /// - [`NulError`](https://doc.rust-lang.org/std/ffi/struct.NulError.html) - if `name` contains a nul byte
-    /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    /// - [`ClingoError::NulError`](enum.ClingoError.html#variant.NulError) - if `name` contains a nul byte
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     pub fn create_function(
         name: &str,
         arguments: &[Symbol],
         positive: bool,
-    ) -> Result<Symbol, Error> {
+    ) -> Result<Symbol, ClingoError> {
         let mut symbol = 0 as clingo_symbol_t;
         let name = CString::new(name)?;
         if !unsafe {
@@ -1208,9 +1247,9 @@ impl Symbol {
                 &mut symbol,
             )
         } {
-            Err(ClingoError::new(
-                "Call to clingo_symbol_create_function() failed.",
-            ))?
+            return Err(ClingoError::new_internal(
+                "Call to clingo_symbol_create_function() failed",
+            ));
         }
         Ok(Symbol(symbol))
     }
@@ -1218,11 +1257,13 @@ impl Symbol {
     ///
     /// # Errors
     ///
-    /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if symbol is not of type [`SymbolType::Number`](enum.SymbolType.html#variant.Number)
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if symbol is not of type [`SymbolType::Number`](enum.SymbolType.html#variant.Number)
     pub fn number(self) -> Result<i32, ClingoError> {
         let mut number = 0;
         if !unsafe { clingo_symbol_number(self.0, &mut number) } {
-            return Err(ClingoError::new("Call to clingo_symbol_number() failed."));
+            return Err(ClingoError::new_internal(
+                "Call to clingo_symbol_number() failed",
+            ));
         }
         Ok(number)
     }
@@ -1231,17 +1272,19 @@ impl Symbol {
     ///
     /// # Errors
     ///
-    /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if symbol is not of type [`SymbolType::Function`](enum.SymbolType.html#variant.Function)
-    /// - [`Utf8Error`](https://doc.rust-lang.org/std/str/struct.Utf8Error.html)
-    pub fn name(&self) -> Result<&str, Error> {
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if symbol is not of type [`SymbolType::Function`](enum.SymbolType.html#variant.Function)
+    /// - [`ClingoError::Utf8Error`](enum.ClingoError.html#variant.Utf8Error)
+    pub fn name(&self) -> Result<&str, ClingoError> {
         let mut char_ptr = std::ptr::null();
         if !unsafe { clingo_symbol_name(self.0, &mut char_ptr) } {
-            Err(ClingoError::new("Call to clingo_symbol_name() failed."))?
+            return Err(ClingoError::new_internal(
+                "Call to clingo_symbol_name() failed",
+            ));
         }
         if char_ptr.is_null() {
-            Err(ClingoError::new(
+            return Err(ClingoError::new_internal(
                 "clingo_symbol_name() returned a null pointer.",
-            ))?
+            ));
         }
         let c_str = unsafe { CStr::from_ptr(char_ptr) };
         Ok(c_str.to_str()?)
@@ -1251,17 +1294,19 @@ impl Symbol {
     ///
     /// # Errors
     ///
-    /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if symbol is not of type [`SymbolType::String`](enum.SymbolType.html#variant.String)
-    /// - [`Utf8Error`](https://doc.rust-lang.org/std/str/struct.Utf8Error.html)
-    pub fn string(&self) -> Result<&str, Error> {
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if symbol is not of type [`SymbolType::String`](enum.SymbolType.html#variant.String)
+    /// - [`ClingoError::Utf8Error`](enum.ClingoError.html#variant.Utf8Error)
+    pub fn string(&self) -> Result<&str, ClingoError> {
         let mut char_ptr = std::ptr::null();
         if !unsafe { clingo_symbol_string(self.0, &mut char_ptr) } {
-            Err(ClingoError::new("Call to clingo_symbol_string() failed."))?
+            return Err(ClingoError::new_internal(
+                "Call to clingo_symbol_string() failed",
+            ));
         }
         if char_ptr.is_null() {
-            Err(ClingoError::new(
-                "clingo_symbol_string() returned a null pointer.",
-            ))?
+            return Err(ClingoError::FFIError {
+                msg: "clingo_symbol_string() returned a null pointer.",
+            });
         }
         let c_str = unsafe { CStr::from_ptr(char_ptr) };
         Ok(c_str.to_str()?)
@@ -1271,12 +1316,12 @@ impl Symbol {
     ///
     /// # Errors
     ///
-    /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if symbol is not of type [`SymbolType::Function`](enum.SymbolType.html#variant.Function)
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if symbol is not of type [`SymbolType::Function`](enum.SymbolType.html#variant.Function)
     pub fn is_positive(self) -> Result<bool, ClingoError> {
         let mut positive = false;
         if !unsafe { clingo_symbol_is_positive(self.0, &mut positive) } {
-            return Err(ClingoError::new(
-                "Call to clingo_symbol_is_positive() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_symbol_is_positive() failed",
             ));
         }
         Ok(positive)
@@ -1286,12 +1331,12 @@ impl Symbol {
     ///
     /// # Errors
     ///
-    /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if symbol is not of type [`SymbolType::Function`](enum.SymbolType.html#variant.Function)
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if symbol is not of type [`SymbolType::Function`](enum.SymbolType.html#variant.Function)
     pub fn is_negative(self) -> Result<bool, ClingoError> {
         let mut negative = false;
         if !unsafe { clingo_symbol_is_negative(self.0, &mut negative) } {
-            return Err(ClingoError::new(
-                "Call to clingo_symbol_is_negative() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_symbol_is_negative() failed",
             ));
         }
         Ok(negative)
@@ -1301,13 +1346,13 @@ impl Symbol {
     ///
     /// # Errors
     ///
-    /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if symbol is not of type [`SymbolType::Function`](enum.SymbolType.html#variant.Function)
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if symbol is not of type [`SymbolType::Function`](enum.SymbolType.html#variant.Function)
     pub fn arguments(self) -> Result<Vec<Symbol>, ClingoError> {
         let mut symbol_ptr = std::ptr::null();
         let mut size: usize = 0;
         if !unsafe { clingo_symbol_arguments(self.0, &mut symbol_ptr, &mut size) } {
-            return Err(ClingoError::new(
-                "Call to clingo_symbol_arguments() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_symbol_arguments() failed",
             ));
         }
         let mut symbols = Vec::<Symbol>::with_capacity(size);
@@ -1317,9 +1362,9 @@ impl Symbol {
 
         for _ in 0..size {
             if symbol_ptr.is_null() {
-                return Err(ClingoError::new(
-                    "clingo_symbol_arguments() returned a null pointer.",
-                ));
+                return Err(ClingoError::FFIError {
+                    msg: "clingo_symbol_arguments() returned a null pointer.",
+                });
             }
             let nsymbol = unsafe { *symbol_ptr };
             symbols.push(Symbol(nsymbol));
@@ -1332,7 +1377,7 @@ impl Symbol {
     ///
     /// # Errors
     ///
-    /// - [`ClingoError`](struct.ClingoError.html) - may failed to match clingo symbol type
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) - may failed to match clingo symbol type
     pub fn symbol_type(self) -> Result<SymbolType, ClingoError> {
         SymbolType::try_from(unsafe { clingo_symbol_type(self.0) })
     }
@@ -1341,21 +1386,21 @@ impl Symbol {
     ///
     /// # Errors
     ///
-    /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
-    /// - [`Utf8Error`](https://doc.rust-lang.org/std/str/struct.Utf8Error.html)
-    pub fn to_string(self) -> Result<String, Error> {
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    /// - [`ClingoError::Utf8Error`](enum.ClingoError.html#variant.Utf8Error)
+    pub fn to_string(self) -> Result<String, ClingoError> {
         let mut size: usize = 0;
         if !unsafe { clingo_symbol_to_string_size(self.0, &mut size) } {
-            Err(ClingoError::new(
-                "Call to clingo_symbol_to_string_size() failed.",
-            ))?
+            return Err(ClingoError::new_internal(
+                "Call to clingo_symbol_to_string_size() failed",
+            ));
         }
         let mut string = Vec::with_capacity(size);
         let string_ptr = string.as_mut_ptr();
         if !unsafe { clingo_symbol_to_string(self.0, string_ptr, size) } {
-            Err(ClingoError::new(
-                "Call to clingo_symbol_to_string() failed.",
-            ))?
+            return Err(ClingoError::new_internal(
+                "Call to clingo_symbol_to_string() failed",
+            ));
         }
         let c_str: &CStr = unsafe { CStr::from_ptr(string_ptr) };
         let str_slice: &str = c_str.to_str()?;
@@ -1372,10 +1417,13 @@ impl Symbol {
 ///
 /// # Errors
 ///
-/// - [`NulError`](https://doc.rust-lang.org/std/ffi/struct.NulError.html) - if `program` contains a nul byte
-/// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if parsing fails
+/// - [`ClingoError::NulError`](enum.ClingoError.html#variant.NulError) - if `program` contains a nul byte
+/// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if parsing fails
 ///  or with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
-pub fn parse_program<T: StatementHandler>(program: &str, handler: &mut T) -> Result<(), Error> {
+pub fn parse_program<T: StatementHandler>(
+    program: &str,
+    handler: &mut T,
+) -> Result<(), ClingoError> {
     let logger = None;
     let logger_data = std::ptr::null_mut();
     let program = CString::new(program)?;
@@ -1390,7 +1438,9 @@ pub fn parse_program<T: StatementHandler>(program: &str, handler: &mut T) -> Res
             0,
         )
     } {
-        Err(ClingoError::new("Call to clingo_parse_program() failed."))?
+        return Err(ClingoError::new_internal(
+            "Call to clingo_parse_program() failed",
+        ));
     }
     Ok(())
 }
@@ -1406,15 +1456,15 @@ pub fn parse_program<T: StatementHandler>(program: &str, handler: &mut T) -> Res
 ///
 /// # Errors
 ///
-/// - [`NulError`](https://doc.rust-lang.org/std/ffi/struct.NulError.html) - if `program` contains a nul byte
-/// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if parsing fails
+/// - [`ClingoError::NulError`](enum.ClingoError.html#variant.NulError) - if `program` contains a nul byte
+/// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if parsing fails
 /// or [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
 pub fn parse_program_with_logger<T: StatementHandler, L: Logger>(
     program: &str,
     handler: &mut T,
     logger: &mut L,
     message_limit: u32,
-) -> Result<(), Error> {
+) -> Result<(), ClingoError> {
     let handler = handler as *mut T;
     let logger = logger as *mut L;
     let program = CString::new(program)?;
@@ -1428,7 +1478,9 @@ pub fn parse_program_with_logger<T: StatementHandler, L: Logger>(
             message_limit,
         )
     } {
-        Err(ClingoError::new("Call to clingo_parse_program() failed."))?
+        return Err(ClingoError::new_internal(
+            "Call to clingo_parse_program() failed",
+        ));
     }
     Ok(())
 }
@@ -1470,10 +1522,10 @@ impl<'a> Part<'a> {
     ///
     /// # Errors
     ///
-    /// - [`NulError`](https://doc.rust-lang.org/std/ffi/struct.NulError.html) - if `name` contains a nul byte
-    /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    /// - [`ClingoError::NulError`](enum.ClingoError.html#variant.NulError) - if `name` contains a nul byte
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if argument parsing fails
-    pub fn new(name: &str, params: &'a [Symbol]) -> Result<Part<'a>, Error> {
+    pub fn new(name: &str, params: &'a [Symbol]) -> Result<Part<'a>, ClingoError> {
         Ok(Part {
             name: CString::new(name)?,
             params,
@@ -1515,10 +1567,7 @@ pub trait Propagator {
     ) -> bool {
         // check for null pointers
         if init.is_null() | propagator.is_null() {
-            set_internal_error(
-                ErrorType::Runtime,
-                "clingo_propagate_init_t() got a null pointer.",
-            );
+            set_internal_error(ErrorType::Runtime, "unsafe_init() got a null pointer.");
             return false;
         }
         let init = &mut *(init as *mut PropagateInit);
@@ -1704,7 +1753,7 @@ pub trait Propagator {
     ) -> bool {
         // check for null pointers
         if assignment.is_null() | propagator.is_null() | decision.is_null() {
-            set_internal_error(ErrorType::Runtime, "unsafe_check() got a null pointer.");
+            set_internal_error(ErrorType::Runtime, "unsafe_decide() got a null pointer.");
             return false;
         }
         let assignment = &*(assignment as *const Assignment);
@@ -1728,9 +1777,6 @@ impl Drop for Control {
     }
 }
 impl Control {
-    fn get_ctl(&mut self) -> NonNull<clingo_control_t> {
-        self.ctl
-    }
     /// Create a new control object.
     ///
     /// **Note:** Only gringo options (without `--output`) and clasp's options are supported as
@@ -1746,10 +1792,10 @@ impl Control {
     ///
     /// # Errors
     ///
-    /// - [`NulError`](https://doc.rust-lang.org/std/ffi/struct.NulError.html) - if an argument contains a nul byte
-    /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    /// - [`ClingoError::NulError`](enum.ClingoError.html#variant.NulError) - if an argument contains a nul byte
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if argument parsing fails
-    pub fn new(arguments: std::vec::Vec<String>) -> Result<Control, Error> {
+    pub fn new(arguments: std::vec::Vec<String>) -> Result<Control, ClingoError> {
         let logger = None;
         let logger_data = std::ptr::null_mut();
 
@@ -1777,13 +1823,15 @@ impl Control {
                 &mut ctl_ptr,
             )
         } {
-            Err(ClingoError::new("Call to clingo_control_new() failed."))?
+            return Err(ClingoError::new_internal(
+                "Call to clingo_control_new() failed",
+            ));
         }
         match NonNull::new(ctl_ptr) {
             Some(ctl) => Ok(Control { ctl }),
-            None => Err(ClingoError::new(
-                "Tried creating NonNull from a null pointer.",
-            ))?,
+            None => Err(ClingoError::FFIError {
+                msg: "Tried creating NonNull from a null pointer.",
+            })?,
         }
     }
 
@@ -1803,14 +1851,14 @@ impl Control {
     ///
     /// # Errors
     ///
-    /// - [`NulError`](https://doc.rust-lang.org/std/ffi/struct.NulError.html) - if an argument contains a nul byte
-    /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    /// - [`ClingoError::NulError`](enum.ClingoError.html#variant.NulError) - if an argument contains a nul byte
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if argument parsing fails
     pub fn new_with_logger<L: Logger>(
         arguments: Vec<String>,
         logger: &mut L,
         message_limit: u32,
-    ) -> Result<Control, Error> {
+    ) -> Result<Control, ClingoError> {
         let mut args = vec![];
         for arg in arguments {
             args.push(CString::new(arg)?);
@@ -1835,13 +1883,15 @@ impl Control {
                 &mut ctl_ptr,
             )
         } {
-            Err(ClingoError::new("Call to clingo_control_new() failed."))?
+            return Err(ClingoError::new_internal(
+                "Call to clingo_control_new() failed",
+            ));
         }
         match NonNull::new(ctl_ptr) {
             Some(ctl) => Ok(Control { ctl }),
-            None => Err(ClingoError::new(
-                "Tried creating NonNull from a null pointer.",
-            ))?,
+            None => Err(ClingoError::FFIError {
+                msg: "Tried creating NonNull from a null pointer.",
+            })?,
         }
     }
 
@@ -1862,10 +1912,15 @@ impl Control {
     ///
     /// # Errors
     ///
-    /// - [`NulError`](https://doc.rust-lang.org/std/ffi/struct.NulError.html) - if a any argument contains a nul byte
-    /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    /// - [`ClingoError::NulError`](enum.ClingoError.html#variant.NulError) - if a any argument contains a nul byte
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if parsing fails
-    pub fn add(&mut self, name: &str, parameters: &[&str], program: &str) -> Result<(), Error> {
+    pub fn add(
+        &mut self,
+        name: &str,
+        parameters: &[&str],
+        program: &str,
+    ) -> Result<(), ClingoError> {
         let name = CString::new(name)?;
 
         let program = CString::new(program)?;
@@ -1894,11 +1949,42 @@ impl Control {
                 program_ptr,
             )
         } {
-            Err(ClingoError::new("Call to clingo_control_add() failed."))?
+            return Err(ClingoError::new_internal(
+                "Call to clingo_control_add() failed",
+            ));
         }
         Ok(())
     }
+    pub fn add_facts(&mut self, facts: &FactBase) {
+        for sym in facts.iter() {
+            // print!("{}",sym.to_string().unwrap());
 
+            // initilize atom to add
+            let atom = ast::Term::from(*sym);
+
+            // create literal
+            let lit = ast::Literal::from_term(ast::Sign::None, &atom);
+
+            // create headliteral
+            let hlit = ast::HeadLiteral::from(&lit);
+
+            // create (fact) rule
+            let rule = ast::Rule::new(hlit, &[]);
+
+            // initialize the statement
+            let stm = rule.ast_statement();
+
+            // get the program builder
+            let mut builder = ast::ProgramBuilder::from(self).unwrap();
+
+            // add the rewritten statement to the program
+            builder
+                .add(&stm)
+                .expect("Failed to add statement to ProgramBuilder.");
+
+            builder.end().expect("Failed to finish building a program.");
+        }
+    }
     /// Ground the selected [parts](struct.Part.html) of the current (non-ground) logic
     /// program.
     ///
@@ -1914,7 +2000,7 @@ impl Control {
     ///
     /// # Errors
     ///
-    /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     pub fn ground(&mut self, parts: &[Part]) -> Result<(), ClingoError> {
         let parts_size = parts.len();
         let parts = parts
@@ -1931,7 +2017,9 @@ impl Control {
                 std::ptr::null_mut(),
             )
         } {
-            return Err(ClingoError::new("Call to clingo_control_ground() failed."));
+            return Err(ClingoError::new_internal(
+                "Call to clingo_control_ground() failed",
+            ));
         }
         Ok(())
     }
@@ -1952,7 +2040,7 @@ impl Control {
     ///
     /// # Errors
     ///
-    /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     pub fn ground_with_event_handler<T: ExternalFunctionHandler>(
         &mut self,
         parts: &[Part],
@@ -1974,7 +2062,9 @@ impl Control {
                 handler as *mut c_void,
             )
         } {
-            return Err(ClingoError::new("Call to clingo_control_ground() failed."));
+            return Err(ClingoError::new_internal(
+                "Call to clingo_control_ground() failed",
+            ));
         }
         Ok(())
     }
@@ -1989,7 +2079,7 @@ impl Control {
     ///
     /// # Errors
     ///
-    /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if solving could not be started
     pub fn solve(
         &mut self,
@@ -2008,13 +2098,15 @@ impl Control {
                 &mut handle,
             )
         } {
-            return Err(ClingoError::new("Call to clingo_control_solve() failed."));
+            return Err(ClingoError::new_internal(
+                "Call to clingo_control_solve() failed",
+            ));
         }
         match unsafe { handle.as_mut() } {
             Some(handle_ref) => Ok(SolveHandle { theref: handle_ref }),
-            None => Err(ClingoError::new(
-                "Tried casting a null pointer to &mut clingo_solve_handle.",
-            )),
+            None => Err(ClingoError::FFIError {
+                msg: "Tried casting a null pointer to &mut clingo_solve_handle.",
+            }),
         }
     }
 
@@ -2023,7 +2115,7 @@ impl Control {
     ///
     /// # Errors
     ///
-    /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if solving could not be started
     pub fn all_models(&mut self) -> Result<AllModels, ClingoError> {
         let mut handle = std::ptr::null_mut();
@@ -2038,13 +2130,15 @@ impl Control {
                 &mut handle,
             )
         } {
-            return Err(ClingoError::new("Call to clingo_control_solve() failed."));
+            return Err(ClingoError::new_internal(
+                "Call to clingo_control_solve() failed",
+            ));
         }
         match unsafe { handle.as_mut() } {
             Some(handle_ref) => Ok(AllModels(SolveHandle { theref: handle_ref })),
-            None => Err(ClingoError::new(
-                "Tried casting a null pointer to &mut clingo_solve_handle.",
-            )),
+            None => Err(ClingoError::FFIError {
+                msg: "Tried casting a null pointer to &mut clingo_solve_handle.",
+            }),
         }
     }
 
@@ -2053,7 +2147,7 @@ impl Control {
     ///
     /// # Errors
     ///
-    /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if solving could not be started
     pub fn optimal_models(&mut self) -> Result<OptimalModels, ClingoError> {
         let mut handle = std::ptr::null_mut();
@@ -2068,13 +2162,15 @@ impl Control {
                 &mut handle,
             )
         } {
-            return Err(ClingoError::new("Call to clingo_control_solve() failed."));
+            return Err(ClingoError::new_internal(
+                "Call to clingo_control_solve() failed",
+            ));
         }
         match unsafe { handle.as_mut() } {
             Some(handle_ref) => Ok(OptimalModels(SolveHandle { theref: handle_ref })),
-            None => Err(ClingoError::new(
-                "Tried casting a null pointer to &mut clingo_solve_handle.",
-            )),
+            None => Err(ClingoError::FFIError {
+                msg: "Tried casting a null pointer to &mut clingo_solve_handle.",
+            }),
         }
     }
 
@@ -2089,7 +2185,7 @@ impl Control {
     ///
     /// # Errors
     ///
-    /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if solving could not be started
     pub fn solve_with_event_handler<T: SolveEventHandler>(
         &mut self,
@@ -2110,13 +2206,15 @@ impl Control {
                 &mut handle,
             )
         } {
-            return Err(ClingoError::new("Call to clingo_control_solve() failed."));
+            return Err(ClingoError::new_internal(
+                "Call to clingo_control_solve() failed",
+            ));
         }
         match unsafe { handle.as_mut() } {
             Some(handle_ref) => Ok(SolveHandle { theref: handle_ref }),
-            None => Err(ClingoError::new(
-                "Tried casting a null pointer to &mut clingo_solve_handle.",
-            )),
+            None => Err(ClingoError::FFIError {
+                msg: "Tried casting a null pointer to &mut clingo_solve_handle.",
+            }),
         }
     }
 
@@ -2130,10 +2228,12 @@ impl Control {
     ///
     /// # Errors
     ///
-    /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     pub fn cleanup(&mut self) -> Result<(), ClingoError> {
         if !unsafe { clingo_control_cleanup(self.ctl.as_ptr()) } {
-            return Err(ClingoError::new("Call to clingo_control_cleanup() failed."));
+            return Err(ClingoError::new_internal(
+                "Call to clingo_control_cleanup() failed",
+            ));
         }
         Ok(())
     }
@@ -2152,7 +2252,7 @@ impl Control {
     ///
     /// # Errors
     ///
-    /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     pub fn assign_external(
         &mut self,
         literal: Literal,
@@ -2165,8 +2265,8 @@ impl Control {
                 value as clingo_truth_value_t,
             )
         } {
-            return Err(ClingoError::new(
-                "Call to clingo_control_assign_external() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_control_assign_external() failed",
             ));
         }
         Ok(())
@@ -2186,11 +2286,11 @@ impl Control {
     ///
     /// # Errors
     ///
-    /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     pub fn release_external(&mut self, Literal(literal): Literal) -> Result<(), ClingoError> {
         if !unsafe { clingo_control_release_external(self.ctl.as_ptr(), literal) } {
-            return Err(ClingoError::new(
-                "Call to clingo_control_release_external() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_control_release_external() failed",
             ));
         }
         Ok(())
@@ -2208,7 +2308,7 @@ impl Control {
     ///
     /// # Errors
     ///
-    /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     pub fn register_propagator<T: Propagator>(
         &mut self,
         propagator: &mut T,
@@ -2230,8 +2330,8 @@ impl Control {
                 sequential,
             )
         } {
-            return Err(ClingoError::new(
-                "Call to clingo_control_register_propagator() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_control_register_propagator() failed",
             ));
         }
         Ok(())
@@ -2262,19 +2362,19 @@ impl Control {
     ///
     /// # Errors
     ///
-    /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     pub fn statistics<'a>(&'a self) -> Result<&'a Statistics, ClingoError> {
         let mut stat = std::ptr::null();
         if !unsafe { clingo_control_statistics(self.ctl.as_ptr(), &mut stat) } {
-            return Err(ClingoError::new(
-                "Call to clingo_control_statistics() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_control_statistics() failed",
             ));
         }
         match unsafe { (stat as *mut Statistics).as_ref() } {
             Some(x) => Ok(x),
-            None => Err(ClingoError::new(
-                "Tried casting a null pointer to &Statistics.",
-            )),
+            None => Err(ClingoError::FFIError {
+                msg: "Tried casting a null pointer to &Statistics.",
+            }),
         }
     }
 
@@ -2289,15 +2389,15 @@ impl Control {
     pub fn configuration_mut<'a>(&'a mut self) -> Result<&'a mut Configuration, ClingoError> {
         let mut conf = std::ptr::null_mut();
         if !unsafe { clingo_control_configuration(self.ctl.as_ptr(), &mut conf) } {
-            return Err(ClingoError::new(
-                "Call to clingo_control_configuration() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_control_configuration() failed",
             ));
         }
         match unsafe { (conf as *mut Configuration).as_mut() } {
             Some(x) => Ok(x),
-            None => Err(ClingoError::new(
-                "Tried casting a null pointer to &mut Configuration.",
-            )),
+            None => Err(ClingoError::FFIError {
+                msg: "Tried casting a null pointer to &mut Configuration.",
+            }),
         }
     }
 
@@ -2305,15 +2405,15 @@ impl Control {
     pub fn configuration<'a>(&'a self) -> Result<&'a Configuration, ClingoError> {
         let mut conf = std::ptr::null_mut();
         if !unsafe { clingo_control_configuration(self.ctl.as_ptr(), &mut conf) } {
-            return Err(ClingoError::new(
-                "Call to clingo_control_configuration() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_control_configuration() failed",
             ));
         }
         match unsafe { (conf as *const Configuration).as_ref() } {
             Some(x) => Ok(x),
-            None => Err(ClingoError::new(
-                "Tried casting a null pointer to &Configuration.",
-            )),
+            None => Err(ClingoError::FFIError {
+                msg: "Tried casting a null pointer to &Configuration.",
+            }),
         }
     }
 
@@ -2334,8 +2434,8 @@ impl Control {
     /// * `enable` - whether to enable the assumption
     pub fn use_enumeration_assumption(&mut self, enable: bool) -> Result<(), ClingoError> {
         if !unsafe { clingo_control_use_enumeration_assumption(self.ctl.as_ptr(), enable) } {
-            return Err(ClingoError::new(
-                "Call to clingo_control_use_enumeration_assumption() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_control_use_enumeration_assumption() failed",
             ));
         }
         Ok(())
@@ -2349,15 +2449,15 @@ impl Control {
     ///
     /// # Errors
     ///
-    /// - [`NulError`](https://doc.rust-lang.org/std/ffi/struct.NulError.html) - if `name` contains a nul byte
-    /// - [`ClingoError`](struct.ClingoError.html)
-    pub fn get_const(&self, name: &str) -> Result<Symbol, Error> {
+    /// - [`ClingoError::NulError`](enum.ClingoError.html#variant.NulError) - if `name` contains a nul byte
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError)
+    pub fn get_const(&self, name: &str) -> Result<Symbol, ClingoError> {
         let name = CString::new(name)?;
         let mut symbol = 0 as clingo_symbol_t;
         if !unsafe { clingo_control_get_const(self.ctl.as_ptr(), name.as_ptr(), &mut symbol) } {
-            Err(ClingoError::new(
-                "Call to clingo_control_get_const() failed.",
-            ))?
+            return Err(ClingoError::new_internal(
+                "Call to clingo_control_get_const() failed",
+            ));
         }
         Ok(Symbol(symbol))
     }
@@ -2370,17 +2470,17 @@ impl Control {
     ///
     /// # Errors
     ///
-    /// - [`NulError`](https://doc.rust-lang.org/std/ffi/struct.NulError.html) - if `name` contains a nul byte
-    /// - [`ClingoError`](struct.ClingoError.html)
+    /// - [`ClingoError::NulError`](enum.ClingoError.html#variant.NulError) - if `name` contains a nul byte
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError)
     ///
     /// **See:** [`Part::get_const()`](struct.Part.html#method.get_const)
-    pub fn has_const(&self, name: &str) -> Result<bool, Error> {
+    pub fn has_const(&self, name: &str) -> Result<bool, ClingoError> {
         let name = CString::new(name)?;
         let mut exist = false;
         if !unsafe { clingo_control_has_const(self.ctl.as_ptr(), name.as_ptr(), &mut exist) } {
-            Err(ClingoError::new(
-                "Call to clingo_control_has_const() failed.",
-            ))?
+            return Err(ClingoError::new_internal(
+                "Call to clingo_control_has_const() failed",
+            ));
         }
         Ok(exist)
     }
@@ -2389,15 +2489,15 @@ impl Control {
     pub fn symbolic_atoms<'a>(&self) -> Result<&'a SymbolicAtoms, ClingoError> {
         let mut atoms = std::ptr::null();
         if !unsafe { clingo_control_symbolic_atoms(self.ctl.as_ptr(), &mut atoms) } {
-            return Err(ClingoError::new(
-                "Call to clingo_control_symbolic_atoms() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_control_symbolic_atoms() failed",
             ));
         }
         match unsafe { (atoms as *const SymbolicAtoms).as_ref() } {
             Some(x) => Ok(x),
-            None => Err(ClingoError::new(
-                "Tried casting a null pointer to &SymbolicAtoms.",
-            )),
+            None => Err(ClingoError::FFIError {
+                msg: "Tried casting a null pointer to &SymbolicAtoms.",
+            }),
         }
     }
 
@@ -2405,15 +2505,15 @@ impl Control {
     pub fn theory_atoms<'a>(&'a self) -> Result<&'a TheoryAtoms, ClingoError> {
         let mut atoms = std::ptr::null();
         if !unsafe { clingo_control_theory_atoms(self.ctl.as_ptr(), &mut atoms) } {
-            return Err(ClingoError::new(
-                "Call to clingo_control_theory_atoms() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_control_theory_atoms() failed",
             ));
         }
         match unsafe { (atoms as *const TheoryAtoms).as_ref() } {
             Some(x) => Ok(x),
-            None => Err(ClingoError::new(
-                "Tried casting a null pointer to &TheoryAtoms.",
-            )),
+            None => Err(ClingoError::FFIError {
+                msg: "Tried casting a null pointer to &TheoryAtoms.",
+            }),
         }
     }
 
@@ -2467,22 +2567,26 @@ impl Control {
     ///
     /// # Errors
     ///
-    /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     pub fn backend<'a>(&'a mut self) -> Result<Backend<'a>, ClingoError> {
         let mut backend = std::ptr::null_mut();
         if !unsafe { clingo_control_backend(self.ctl.as_ptr(), &mut backend) } {
-            return Err(ClingoError::new("Call to clingo_control_backend() failed."));
+            return Err(ClingoError::new_internal(
+                "Call to clingo_control_backend() failed",
+            ));
         }
         if !unsafe { clingo_backend_begin(backend) } {
-            return Err(ClingoError::new("Call to clingo_backend_begin() failed."));
+            return Err(ClingoError::new_internal(
+                "Call to clingo_backend_begin() failed",
+            ));
         }
         match unsafe { backend.as_mut() } {
             Some(backend_ref) => Ok(Backend {
                 theref: backend_ref,
             }),
-            None => Err(ClingoError::new(
-                "Tried casting a null pointer to &mut clingo_backend.",
-            )),
+            None => Err(ClingoError::FFIError {
+                msg: "Tried casting a null pointer to &mut clingo_backend.",
+            }),
         }
     }
 
@@ -2496,8 +2600,8 @@ impl Configuration {
     pub fn root(&self) -> Result<Id, ClingoError> {
         let mut root_key = 0 as clingo_id_t;
         if !unsafe { clingo_configuration_root(&self.0, &mut root_key) } {
-            return Err(ClingoError::new(
-                "Call to clingo_configuration_root() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_configuration_root() failed",
             ));
         }
         Ok(Id(root_key))
@@ -2508,8 +2612,8 @@ impl Configuration {
     pub fn configuration_type(&self, Id(key): Id) -> Result<ConfigurationType, ClingoError> {
         let mut ctype = 0 as clingo_configuration_type_bitset_t;
         if !unsafe { clingo_configuration_type(&self.0, key, &mut ctype) } {
-            return Err(ClingoError::new(
-                "Call to clingo_configuration_type() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_configuration_type() failed",
             ));
         }
         match ConfigurationType::from_bits(ctype) {
@@ -2519,9 +2623,9 @@ impl Configuration {
                     "Failed to match to clingo_configuration_type_bitset_t {}.",
                     ctype
                 );
-                Err(ClingoError::new(
-                    "Failed to match to clingo_configuration_type_bitset_t.",
-                ))
+                Err(ClingoError::FFIError {
+                    msg: "Failed to match to clingo_configuration_type_bitset_t.",
+                })
             }
         }
     }
@@ -2530,19 +2634,19 @@ impl Configuration {
     ///
     /// # Errors
     ///
-    /// - [`ClingoError`](struct.ClingoError.html)
-    /// - [`Utf8Error`](https://doc.rust-lang.org/std/str/struct.Utf8Error.html)
-    pub fn description<'a>(&'a self, Id(key): Id) -> Result<&'a str, Error> {
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError)
+    /// - [`ClingoError::Utf8Error`](enum.ClingoError.html#variant.Utf8Error)
+    pub fn description<'a>(&'a self, Id(key): Id) -> Result<&'a str, ClingoError> {
         let mut description_ptr = std::ptr::null();
         if !unsafe { clingo_configuration_description(&self.0, key, &mut description_ptr) } {
-            Err(ClingoError::new(
-                "Call to clingo_configuration_description() failed.",
-            ))?
+            return Err(ClingoError::new_internal(
+                "Call to clingo_configuration_description() failed",
+            ));
         }
         if description_ptr.is_null() {
-            Err(ClingoError::new(
-                "clingo_configuration_description() returned a null pointer.",
-            ))?
+            return Err(ClingoError::FFIError {
+                msg: "clingo_configuration_description() returned a null pointer.",
+            });
         }
         let cstr = unsafe { CStr::from_ptr(description_ptr) };
         Ok(cstr.to_str()?)
@@ -2556,8 +2660,8 @@ impl Configuration {
     pub fn array_size(&self, Id(key): Id) -> Result<usize, ClingoError> {
         let mut size = 0;
         if !unsafe { clingo_configuration_array_size(&self.0, key, &mut size) } {
-            return Err(ClingoError::new(
-                "Call to clingo_configuration_array_size() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_configuration_array_size() failed",
             ));
         }
         Ok(size)
@@ -2579,8 +2683,8 @@ impl Configuration {
     pub fn array_at(&self, Id(key): Id, offset: usize) -> Result<Id, ClingoError> {
         let mut nkey = 0 as clingo_id_t;
         if !unsafe { clingo_configuration_array_at(&self.0, key, offset, &mut nkey) } {
-            return Err(ClingoError::new(
-                "Call to clingo_configuration_array_at() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_configuration_array_at() failed",
             ));
         }
         Ok(Id(nkey))
@@ -2594,8 +2698,8 @@ impl Configuration {
     pub fn map_size(&self, Id(key): Id) -> Result<usize, ClingoError> {
         let mut size = 0;
         if !unsafe { clingo_configuration_map_size(&self.0, key, &mut size) } {
-            return Err(ClingoError::new(
-                "Call to clingo_configuration_map_size() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_configuration_map_size() failed",
             ));
         }
         Ok(size)
@@ -2616,18 +2720,18 @@ impl Configuration {
     ///
     /// # Errors
     ///
-    /// - [`ClingoError`](struct.ClingoError.html)
-    /// - [`NulError`](https://doc.rust-lang.org/std/ffi/struct.NulError.html) - if `name` contains a nul byte
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError)
+    /// - [`ClingoError::NulError`](enum.ClingoError.html#variant.NulError) - if `name` contains a nul byte
     ///
     /// **Returns** whether the key is in the map
-    pub fn map_has_subkey(&self, Id(key): Id, name: &str) -> Result<bool, Error> {
+    pub fn map_has_subkey(&self, Id(key): Id, name: &str) -> Result<bool, ClingoError> {
         let mut result = false;
         let name = CString::new(name)?;
         if !unsafe { clingo_configuration_map_has_subkey(&self.0, key, name.as_ptr(), &mut result) }
         {
-            Err(ClingoError::new(
-                "Call to clingo_configuration_map_has_subkey() failed.",
-            ))?
+            return Err(ClingoError::new_internal(
+                "Call to clingo_configuration_map_has_subkey() failed",
+            ));
         }
         Ok(result)
     }
@@ -2645,19 +2749,23 @@ impl Configuration {
     ///
     /// # Errors
     ///
-    /// - [`ClingoError`](struct.ClingoError.html)
-    /// - [`Utf8Error`](https://doc.rust-lang.org/std/str/struct.Utf8Error.html)
-    pub fn map_subkey_name<'a>(&'a self, Id(key): Id, offset: usize) -> Result<&'a str, Error> {
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError)
+    /// - [`ClingoError::Utf8Error`](enum.ClingoError.html#variant.Utf8Error)
+    pub fn map_subkey_name<'a>(
+        &'a self,
+        Id(key): Id,
+        offset: usize,
+    ) -> Result<&'a str, ClingoError> {
         let mut name_ptr = std::ptr::null();
         if !unsafe { clingo_configuration_map_subkey_name(&self.0, key, offset, &mut name_ptr) } {
-            Err(ClingoError::new(
-                "Call to clingo_configuration_map_subkey_name() failed.",
-            ))?
+            return Err(ClingoError::new_internal(
+                "Call to clingo_configuration_map_subkey_name() failed",
+            ));
         }
         if name_ptr.is_null() {
-            Err(ClingoError::new(
-                "clingo_configuration_map_subkey_name() returned a null pointer.",
-            ))?
+            return Err(ClingoError::FFIError {
+                msg: "clingo_configuration_map_subkey_name() returned a null pointer.",
+            });
         }
         let cstr = unsafe { CStr::from_ptr(name_ptr) };
         Ok(cstr.to_str()?)
@@ -2671,17 +2779,17 @@ impl Configuration {
     ///
     /// # Errors
     ///
-    /// - [`ClingoError`](struct.ClingoError.html)
-    /// - [`NulError`](https://doc.rust-lang.org/std/ffi/struct.NulError.html) - if `name` contains a nul byte
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError)
+    /// - [`ClingoError::NulError`](enum.ClingoError.html#variant.NulError) - if `name` contains a nul byte
     ///
     /// **Note:** Multiple levels can be looked up by concatenating keys with a period.
-    pub fn map_at(&self, Id(key): Id, name: &str) -> Result<Id, Error> {
+    pub fn map_at(&self, Id(key): Id, name: &str) -> Result<Id, ClingoError> {
         let mut nkey = 0 as clingo_id_t;
         let name = CString::new(name)?;
         if !unsafe { clingo_configuration_map_at(&self.0, key, name.as_ptr(), &mut nkey) } {
-            Err(ClingoError::new(
-                "Call to clingo_configuration_value_is_assigned() failed.",
-            ))?
+            return Err(ClingoError::new_internal(
+                "Call to clingo_configuration_value_is_assigned() failed",
+            ));
         }
         Ok(Id(nkey))
     }
@@ -2698,8 +2806,8 @@ impl Configuration {
     pub fn value_is_assigned(&self, Id(key): Id) -> Result<bool, ClingoError> {
         let mut assigned = false;
         if !unsafe { clingo_configuration_value_is_assigned(&self.0, key, &mut assigned) } {
-            return Err(ClingoError::new(
-                "Call to clingo_configuration_value_is_assigned() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_configuration_value_is_assigned() failed",
             ));
         }
         Ok(assigned)
@@ -2719,21 +2827,21 @@ impl Configuration {
     ///
     /// # Errors
     ///
-    /// - [`ClingoError`](struct.ClingoError.html)
-    /// - [`Utf8Error`](https://doc.rust-lang.org/std/str/struct.Utf8Error.html)
-    pub fn value_get<'a>(&'a self, Id(key): Id) -> Result<String, Error> {
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError)
+    /// - [`ClingoError::Utf8Error`](enum.ClingoError.html#variant.Utf8Error)
+    pub fn value_get<'a>(&'a self, Id(key): Id) -> Result<String, ClingoError> {
         let mut size = 0;
         if !unsafe { clingo_configuration_value_get_size(&self.0, key, &mut size) } {
-            Err(ClingoError::new(
-                "Call to clingo_configuration_value_get_size() failed.",
-            ))?
+            return Err(ClingoError::new_internal(
+                "Call to clingo_configuration_value_get_size() failed",
+            ));
         }
         let mut string = Vec::with_capacity(size);
         let string_ptr = string.as_mut_ptr();
         if !unsafe { clingo_configuration_value_get(&self.0, key, string_ptr, size) } {
-            Err(ClingoError::new(
-                "Call to clingo_configuration_value_get() failed.",
-            ))?
+            return Err(ClingoError::new_internal(
+                "Call to clingo_configuration_value_get() failed",
+            ));
         }
         let c_str: &CStr = unsafe { CStr::from_ptr(string_ptr) };
         let str_slice: &str = c_str.to_str()?;
@@ -2753,14 +2861,14 @@ impl Configuration {
     ///
     /// # Errors
     ///
-    /// - [`NulError`](https://doc.rust-lang.org/std/ffi/struct.NulError.html) - if `value` contains a nul byte
-    /// - [`ClingoError`](struct.ClingoError.html)
-    pub fn value_set(&mut self, Id(key): Id, value: &str) -> Result<(), Error> {
+    /// - [`ClingoError::NulError`](enum.ClingoError.html#variant.NulError) - if `value` contains a nul byte
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError)
+    pub fn value_set(&mut self, Id(key): Id, value: &str) -> Result<(), ClingoError> {
         let value = CString::new(value)?;
         if !unsafe { clingo_configuration_value_set(&mut self.0, key, value.as_ptr()) } {
-            Err(ClingoError::new(
-                "Call to clingo_configuration_value_set() failed.",
-            ))?
+            return Err(ClingoError::new_internal(
+                "Call to clingo_configuration_value_set() failed",
+            ));
         }
         Ok(())
     }
@@ -2776,7 +2884,7 @@ impl<'a> Drop for Backend<'a> {
     fn drop(&mut self) {
         // println!("drop Backend");
         if !unsafe { clingo_backend_end(self.theref) } {
-            panic!("Call to clingo_backend_end() failed.");
+            panic!("Call to clingo_backend_end() failed");
         }
     }
 }
@@ -2791,7 +2899,7 @@ impl<'a> Backend<'a> {
     ///
     /// # Errors
     ///
-    /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     pub fn rule(
         &mut self,
         choice: bool,
@@ -2808,7 +2916,9 @@ impl<'a> Backend<'a> {
                 body.len(),
             )
         } {
-            return Err(ClingoError::new("Call to clingo_backend_rule() failed."));
+            return Err(ClingoError::new_internal(
+                "Call to clingo_backend_rule() failed",
+            ));
         }
         Ok(())
     }
@@ -2825,7 +2935,7 @@ impl<'a> Backend<'a> {
     ///
     /// # Errors
     ///
-    /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     pub fn weight_rule(
         &mut self,
         choice: bool,
@@ -2844,8 +2954,8 @@ impl<'a> Backend<'a> {
                 body.len(),
             )
         } {
-            return Err(ClingoError::new(
-                "Call to clingo_backend_weight_rule() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_backend_weight_rule() failed",
             ));
         }
         Ok(())
@@ -2860,7 +2970,7 @@ impl<'a> Backend<'a> {
     ///
     /// # Errors
     ///
-    /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     pub fn minimize(
         &mut self,
         priority: i32,
@@ -2874,8 +2984,8 @@ impl<'a> Backend<'a> {
                 literals.len(),
             )
         } {
-            return Err(ClingoError::new(
-                "Call to clingo_backend_minimize() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_backend_minimize() failed",
             ));
         }
         Ok(())
@@ -2889,7 +2999,7 @@ impl<'a> Backend<'a> {
     ///
     /// # Errors
     ///
-    /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     pub fn project(&mut self, atoms: &[Atom]) -> Result<(), ClingoError> {
         if !unsafe {
             clingo_backend_project(
@@ -2898,7 +3008,9 @@ impl<'a> Backend<'a> {
                 atoms.len(),
             )
         } {
-            return Err(ClingoError::new("Call to clingo_backend_project() failed."));
+            return Err(ClingoError::new_internal(
+                "Call to clingo_backend_project() failed",
+            ));
         }
         Ok(())
     }
@@ -2912,12 +3024,12 @@ impl<'a> Backend<'a> {
     ///
     /// # Errors
     ///
-    /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     pub fn external(&mut self, atom: Atom, type_: ExternalType) -> Result<(), ClingoError> {
         if !unsafe { clingo_backend_external(self.theref, atom.0, type_ as clingo_external_type_t) }
         {
-            return Err(ClingoError::new(
-                "Call to clingo_backend_external() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_backend_external() failed",
             ));
         }
         Ok(())
@@ -2932,7 +3044,7 @@ impl<'a> Backend<'a> {
     ///
     /// # Errors
     ///
-    /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     pub fn assume(&mut self, literals: &[Literal]) -> Result<(), ClingoError> {
         let size = literals.len();
         if !unsafe {
@@ -2942,7 +3054,9 @@ impl<'a> Backend<'a> {
                 size,
             )
         } {
-            return Err(ClingoError::new("Call to clingo_backend_assume() failed."));
+            return Err(ClingoError::new_internal(
+                "Call to clingo_backend_assume() failed",
+            ));
         }
         Ok(())
     }
@@ -2959,7 +3073,7 @@ impl<'a> Backend<'a> {
     ///
     /// # Errors
     ///
-    /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     pub fn heuristic(
         &mut self,
         atom: Atom,
@@ -2980,8 +3094,8 @@ impl<'a> Backend<'a> {
                 size,
             )
         } {
-            return Err(ClingoError::new(
-                "Call to clingo_backend_heuristic() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_backend_heuristic() failed",
             ));
         }
         Ok(())
@@ -2997,7 +3111,7 @@ impl<'a> Backend<'a> {
     ///
     /// # Errors
     ///
-    /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     pub fn acyc_edge(
         &mut self,
         node_u: i32,
@@ -3014,8 +3128,8 @@ impl<'a> Backend<'a> {
                 size,
             )
         } {
-            return Err(ClingoError::new(
-                "Call to clingo_backend_acyc_edge() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_backend_acyc_edge() failed",
             ));
         }
         Ok(())
@@ -3032,8 +3146,8 @@ impl<'a> Backend<'a> {
                 if unsafe { clingo_backend_add_atom(self.theref, &mut symbol, &mut atom) } {
                     Ok(Atom(atom))
                 } else {
-                    Err(ClingoError::new(
-                        "Call to clingo_backend_add_atom() failed.",
+                    Err(ClingoError::new_internal(
+                        "Call to clingo_backend_add_atom() failed",
                     ))
                 }
             }
@@ -3043,8 +3157,8 @@ impl<'a> Backend<'a> {
                 if unsafe { clingo_backend_add_atom(self.theref, null, &mut atom) } {
                     Ok(Atom(atom))
                 } else {
-                    Err(ClingoError::new(
-                        "Call to clingo_backend_add_atom() failed.",
+                    Err(ClingoError::new_internal(
+                        "Call to clingo_backend_add_atom() failed",
                     ))
                 }
             }
@@ -3060,7 +3174,9 @@ impl Statistics {
     pub fn root(&self) -> Result<u64, ClingoError> {
         let mut root_key = 0 as u64;
         if !unsafe { clingo_statistics_root(&self.0, &mut root_key) } {
-            return Err(ClingoError::new("Call to clingo_statistics_root() failed."));
+            return Err(ClingoError::new_internal(
+                "Call to clingo_statistics_root() failed",
+            ));
         }
         Ok(root_key)
     }
@@ -3073,7 +3189,9 @@ impl Statistics {
     pub fn statistics_type(&self, key: u64) -> Result<StatisticsType, ClingoError> {
         let mut stype = 0 as clingo_statistics_type_t;
         if !unsafe { clingo_statistics_type(&self.0, key, &mut stype) } {
-            return Err(ClingoError::new("Call to clingo_statistics_type() failed."));
+            return Err(ClingoError::new_internal(
+                "Call to clingo_statistics_type() failed",
+            ));
         }
         StatisticsType::try_from(stype)
     }
@@ -3091,8 +3209,8 @@ impl Statistics {
     pub fn array_size(&self, key: u64) -> Result<usize, ClingoError> {
         let mut size = 0 as usize;
         if !unsafe { clingo_statistics_array_size(&self.0, key, &mut size) } {
-            return Err(ClingoError::new(
-                "Call to clingo_statistics_array_size() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_statistics_array_size() failed",
             ));
         }
         Ok(size)
@@ -3112,8 +3230,8 @@ impl Statistics {
     pub fn array_at(&self, key: u64, offset: usize) -> Result<u64, ClingoError> {
         let mut subkey = 0 as u64;
         if !unsafe { clingo_statistics_array_at(&self.0, key, offset, &mut subkey) } {
-            return Err(ClingoError::new(
-                "Call to clingo_statistics_array_at() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_statistics_array_at() failed",
             ));
         }
         Ok(subkey)
@@ -3140,8 +3258,8 @@ impl Statistics {
                 &mut subkey,
             )
         } {
-            return Err(ClingoError::new(
-                "Call to clingo_statistics_array_push() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_statistics_array_push() failed",
             ));
         }
         Ok(subkey)
@@ -3160,8 +3278,8 @@ impl Statistics {
     pub fn map_size(&self, key: u64) -> Result<usize, ClingoError> {
         let mut size = 0 as usize;
         if !unsafe { clingo_statistics_map_size(&self.0, key, &mut size) } {
-            return Err(ClingoError::new(
-                "Call to clingo_statistics_map_size() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_statistics_map_size() failed",
             ));
         }
         Ok(size)
@@ -3181,15 +3299,15 @@ impl Statistics {
     ///
     /// # Errors
     ///
-    /// - [`ClingoError`](struct.ClingoError.html)
-    /// - [`NulError`](https://doc.rust-lang.org/std/ffi/struct.NulError.html) - if `name` contains a nul byte
-    pub fn map_has_subkey(&self, key: u64, name: &str) -> Result<bool, Error> {
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError)
+    /// - [`ClingoError::NulError`](enum.ClingoError.html#variant.NulError) - if `name` contains a nul byte
+    pub fn map_has_subkey(&self, key: u64, name: &str) -> Result<bool, ClingoError> {
         let mut result = false;
         let name = CString::new(name)?;
         if !unsafe { clingo_statistics_map_has_subkey(&self.0, key, name.as_ptr(), &mut result) } {
-            Err(ClingoError::new(
-                "Call to clingo_statistics_map_has_subkey() failed.",
-            ))?
+            return Err(ClingoError::new_internal(
+                "Call to clingo_statistics_map_has_subkey() failed",
+            ));
         }
         Ok(result)
     }
@@ -3208,19 +3326,19 @@ impl Statistics {
     ///
     /// # Errors
     ///
-    /// - [`ClingoError`](struct.ClingoError.html)
-    /// - [`Utf8Error`](https://doc.rust-lang.org/std/str/struct.Utf8Error.html)
-    pub fn map_subkey_name<'a>(&'a self, key: u64, offset: usize) -> Result<&'a str, Error> {
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError)
+    /// - [`ClingoError::Utf8Error`](enum.ClingoError.html#variant.Utf8Error)
+    pub fn map_subkey_name<'a>(&'a self, key: u64, offset: usize) -> Result<&'a str, ClingoError> {
         let mut name = std::ptr::null();
         if !unsafe { clingo_statistics_map_subkey_name(&self.0, key, offset, &mut name) } {
-            Err(ClingoError::new(
-                "Call to clingo_statistics_map_subkey_name() failed.",
-            ))?
+            return Err(ClingoError::new_internal(
+                "Call to clingo_statistics_map_subkey_name() failed",
+            ));
         }
         if name.is_null() {
-            Err(ClingoError::new(
-                "clingo_statistics_map_subkey_name() returned a null pointer.",
-            ))?
+            return Err(ClingoError::FFIError {
+                msg: "clingo_statistics_map_subkey_name() returned a null pointer.",
+            });
         }
         Ok(unsafe { CStr::from_ptr(name) }.to_str()?)
     }
@@ -3241,15 +3359,15 @@ impl Statistics {
     ///
     /// # Errors
     ///
-    /// - [`ClingoError`](struct.ClingoError.html)
-    /// - [`NulError`](https://doc.rust-lang.org/std/ffi/struct.NulError.html) - if `name` contains a nul byte
-    pub fn map_at(&self, key: u64, name: &str) -> Result<u64, Error> {
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError)
+    /// - [`ClingoError::NulError`](enum.ClingoError.html#variant.NulError) - if `name` contains a nul byte
+    pub fn map_at(&self, key: u64, name: &str) -> Result<u64, ClingoError> {
         let mut subkey = 0 as u64;
         let name = CString::new(name)?;
         if !unsafe { clingo_statistics_map_at(&self.0, key, name.as_ptr(), &mut subkey) } {
-            Err(ClingoError::new(
-                "Call to clingo_statistics_map_at() failed.",
-            ))?
+            return Err(ClingoError::new_internal(
+                "Call to clingo_statistics_map_at() failed",
+            ));
         }
         Ok(subkey)
     }
@@ -3269,8 +3387,8 @@ impl Statistics {
     ///
     /// # Errors
     ///
-    /// - [`ClingoError`](struct.ClingoError.html)
-    /// - [`NulError`](https://doc.rust-lang.org/std/ffi/struct.NulError.html) - if `name` contains a nul byte
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError)
+    /// - [`ClingoError::NulError`](enum.ClingoError.html#variant.NulError) - if `name` contains a nul byte
     ///
     /// **Returns** the index of the resulting subkey
     pub fn map_add_subkey(
@@ -3278,7 +3396,7 @@ impl Statistics {
         key: u64,
         name: &str,
         stype: StatisticsType,
-    ) -> Result<u64, Error> {
+    ) -> Result<u64, ClingoError> {
         let mut subkey = 0 as u64;
         let name = CString::new(name)?;
         if !unsafe {
@@ -3290,9 +3408,9 @@ impl Statistics {
                 &mut subkey,
             )
         } {
-            Err(ClingoError::new(
-                "Call to clingo_statistics_map_add_subkey() failed.",
-            ))?
+            return Err(ClingoError::new_internal(
+                "Call to clingo_statistics_map_add_subkey() failed",
+            ));
         }
         Ok(subkey)
     }
@@ -3310,8 +3428,8 @@ impl Statistics {
     pub fn value_get(&self, key: u64) -> Result<f64, ClingoError> {
         let mut value = 0.0 as f64;
         if !unsafe { clingo_statistics_value_get(&self.0, key, &mut value) } {
-            return Err(ClingoError::new(
-                "Call to clingo_symbolic_atoms_size() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_symbolic_atoms_size() failed",
             ));
         }
         Ok(value)
@@ -3345,8 +3463,8 @@ impl SymbolicAtoms {
     pub fn size(&self) -> Result<usize, ClingoError> {
         let mut size = 0 as usize;
         if !unsafe { clingo_symbolic_atoms_size(&self.0, &mut size) } {
-            return Err(ClingoError::new(
-                "Call to clingo_symbolic_atoms_size() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_symbolic_atoms_size() failed",
             ));
         }
         Ok(size)
@@ -3356,14 +3474,14 @@ impl SymbolicAtoms {
     pub fn iter(&self) -> Result<SymbolicAtomsIterator, ClingoError> {
         let mut begin = 0 as clingo_symbolic_atom_iterator_t;
         if !unsafe { clingo_symbolic_atoms_begin(&self.0, std::ptr::null(), &mut begin) } {
-            return Err(ClingoError::new(
-                "Call to clingo_symbolic_atoms_begin() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_symbolic_atoms_begin() failed",
             ));
         }
         let mut end = 0 as clingo_symbolic_atom_iterator_t;
         if !unsafe { clingo_symbolic_atoms_end(&self.0, &mut end) } {
-            return Err(ClingoError::new(
-                "Call to clingo_symbolic_atoms_end() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_symbolic_atoms_end() failed",
             ));
         }
         Ok(SymbolicAtomsIterator {
@@ -3383,14 +3501,14 @@ impl SymbolicAtoms {
     ) -> Result<SymbolicAtomsIterator, ClingoError> {
         let mut begin = 0 as clingo_symbolic_atom_iterator_t;
         if !unsafe { clingo_symbolic_atoms_begin(&self.0, &sig.0, &mut begin) } {
-            return Err(ClingoError::new(
-                "Call to clingo_symbolic_atoms_begin() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_symbolic_atoms_begin() failed",
             ));
         }
         let mut end = 0 as clingo_symbolic_atom_iterator_t;
         if !unsafe { clingo_symbolic_atoms_end(&self.0, &mut end) } {
-            return Err(ClingoError::new(
-                "Call to clingo_symbolic_atoms_end() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_symbolic_atoms_end() failed",
             ));
         }
         Ok(SymbolicAtomsIterator {
@@ -3406,13 +3524,13 @@ impl SymbolicAtoms {
     ///
     /// # Errors
     ///
-    /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if the size is too small
     pub fn signatures(&self) -> Result<Vec<Signature>, ClingoError> {
         let mut size = 0;
         if !unsafe { clingo_symbolic_atoms_signatures_size(&self.0, &mut size) } {
-            return Err(ClingoError::new(
-                "Call to clingo_symbolic_atoms_signatures_size() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_symbolic_atoms_signatures_size() failed",
             ));
         }
         let mut signatures = vec![Signature(0); size];
@@ -3423,8 +3541,8 @@ impl SymbolicAtoms {
                 size,
             )
         } {
-            return Err(ClingoError::new(
-                "Call to clingo_symbolic_atoms_signatures() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_symbolic_atoms_signatures() failed",
             ));
         }
         Ok(signatures)
@@ -3480,8 +3598,8 @@ impl<'a> SymbolicAtom<'a> {
     pub fn is_fact(&self) -> Result<bool, ClingoError> {
         let mut fact = false;
         if !unsafe { clingo_symbolic_atoms_is_fact(self.atoms, self.cur, &mut fact) } {
-            return Err(ClingoError::new(
-                "Call to clingo_symbolic_atoms_is_fact() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_symbolic_atoms_is_fact() failed",
             ));
         }
         Ok(fact)
@@ -3494,8 +3612,8 @@ impl<'a> SymbolicAtom<'a> {
     pub fn is_external(&self) -> Result<bool, ClingoError> {
         let mut external = false;
         if !unsafe { clingo_symbolic_atoms_is_external(self.atoms, self.cur, &mut external) } {
-            return Err(ClingoError::new(
-                "Call to clingo_symbolic_atoms_is_external() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_symbolic_atoms_is_external() failed",
             ));
         }
         Ok(external)
@@ -3505,8 +3623,8 @@ impl<'a> SymbolicAtom<'a> {
     pub fn symbol(&self) -> Result<Symbol, ClingoError> {
         let mut symbol = 0 as clingo_symbol_t;
         if !unsafe { clingo_symbolic_atoms_symbol(self.atoms, self.cur, &mut symbol) } {
-            return Err(ClingoError::new(
-                "Call to clingo_symbolic_atoms_symbol() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_symbolic_atoms_symbol() failed",
             ));
         }
         Ok(Symbol(symbol))
@@ -3519,8 +3637,8 @@ impl<'a> SymbolicAtom<'a> {
     pub fn literal(&self) -> Result<Literal, ClingoError> {
         let mut literal = 0 as clingo_literal_t;
         if !unsafe { clingo_symbolic_atoms_literal(self.atoms, self.cur, &mut literal) } {
-            return Err(ClingoError::new(
-                "Call to clingo_symbolic_atoms_literal() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_symbolic_atoms_literal() failed",
             ));
         }
         Ok(Literal(literal))
@@ -3537,8 +3655,8 @@ impl TheoryAtoms {
     pub fn size(&self) -> Result<usize, ClingoError> {
         let mut size = 0 as usize;
         if !unsafe { clingo_theory_atoms_size(&self.0, &mut size) } {
-            return Err(ClingoError::new(
-                "Call to clingo_theory_atoms_size() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_theory_atoms_size() failed",
             ));
         }
         Ok(size)
@@ -3560,7 +3678,7 @@ impl TheoryAtoms {
     pub fn term_type(&self, Id(term): Id) -> Result<TheoryTermType, ClingoError> {
         let mut ttype = 0 as clingo_theory_term_type_t;
         if !unsafe { clingo_theory_atoms_term_type(&self.0, term, &mut ttype) } {
-            return Err(ClingoError::new(
+            return Err(ClingoError::new_internal(
                 "Call to clingo_theory_atoms_term_type() failed",
             ));
         }
@@ -3579,7 +3697,7 @@ impl TheoryAtoms {
     pub fn term_number(&self, Id(term): Id) -> Result<i32, ClingoError> {
         let mut number = 0;
         if !unsafe { clingo_theory_atoms_term_number(&self.0, term, &mut number) } {
-            return Err(ClingoError::new(
+            return Err(ClingoError::new_internal(
                 "Call to clingo_theory_atoms_term_number() failed",
             ));
         }
@@ -3599,19 +3717,19 @@ impl TheoryAtoms {
     ///
     /// # Errors
     ///
-    /// - [`ClingoError`](struct.ClingoError.html)
-    /// - [`Utf8Error`](https://doc.rust-lang.org/std/str/struct.Utf8Error.html)
-    pub fn term_name<'a>(&self, Id(term): Id) -> Result<&'a str, Error> {
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError)
+    /// - [`ClingoError::Utf8Error`](enum.ClingoError.html#variant.Utf8Error)
+    pub fn term_name<'a>(&self, Id(term): Id) -> Result<&'a str, ClingoError> {
         let mut char_ptr = std::ptr::null();
         if !unsafe { clingo_theory_atoms_term_name(&self.0, term, &mut char_ptr) } {
-            Err(ClingoError::new(
-                "Call to clingo_theory_atoms_term_name() failed.",
-            ))?
+            return Err(ClingoError::new_internal(
+                "Call to clingo_theory_atoms_term_name() failed",
+            ));
         }
         if char_ptr.is_null() {
-            Err(ClingoError::new(
-                "clingo_theory_atoms_term_name() returned a null pointer.",
-            ))?
+            return Err(ClingoError::FFIError {
+                msg: "clingo_theory_atoms_term_name() returned a null pointer.",
+            });
         }
         let c_str = unsafe { CStr::from_ptr(char_ptr) };
         Ok(c_str.to_str()?)
@@ -3630,9 +3748,9 @@ impl TheoryAtoms {
         let mut size = 0;
         let mut c_ptr = std::ptr::null();
         if !unsafe { clingo_theory_atoms_term_arguments(&self.0, term, &mut c_ptr, &mut size) } {
-            Err(ClingoError::new(
-                "Call to clingo_theory_atoms_term_arguments() failed.",
-            ))?
+            return Err(ClingoError::new_internal(
+                "Call to clingo_theory_atoms_term_arguments() failed",
+            ));
         }
         let arguments_ref = unsafe { std::slice::from_raw_parts(c_ptr as *const Id, size) };
         Ok(arguments_ref)
@@ -3648,22 +3766,22 @@ impl TheoryAtoms {
     ///
     /// # Errors
     ///
-    /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if the size is too small
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if the size is too small
     /// or [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
-    /// - [`Utf8Error`](https://doc.rust-lang.org/std/str/struct.Utf8Error.html)
-    pub fn term_to_string(&self, Id(term): Id) -> Result<String, Error> {
+    /// - [`ClingoError::Utf8Error`](enum.ClingoError.html#variant.Utf8Error)
+    pub fn term_to_string(&self, Id(term): Id) -> Result<String, ClingoError> {
         let mut size = 0;
         if !unsafe { clingo_theory_atoms_term_to_string_size(&self.0, term, &mut size) } {
-            Err(ClingoError::new(
-                "Call to clingo_theory_atoms_term_to_string_size() failed.",
-            ))?
+            return Err(ClingoError::new_internal(
+                "Call to clingo_theory_atoms_term_to_string_size() failed",
+            ));
         }
         let mut string = Vec::with_capacity(size);
         let string_ptr = string.as_mut_ptr();
         if !unsafe { clingo_theory_atoms_term_to_string(&self.0, term, string_ptr, size) } {
-            Err(ClingoError::new(
-                "Call to clingo_theory_atoms_term_to_string() failed.",
-            ))?
+            return Err(ClingoError::new_internal(
+                "Call to clingo_theory_atoms_term_to_string() failed",
+            ));
         }
         let c_str: &CStr = unsafe { CStr::from_ptr(string_ptr) };
         let str_slice: &str = c_str.to_str()?;
@@ -3681,8 +3799,8 @@ impl TheoryAtoms {
         if !unsafe {
             clingo_theory_atoms_element_tuple(&self.0, element, &mut tuple_ptr, &mut size)
         } {
-            return Err(ClingoError::new(
-                "Call to clingo_theory_atoms_element_tuple() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_theory_atoms_element_tuple() failed",
             ));
         }
         let tuple_ref = unsafe { std::slice::from_raw_parts(tuple_ptr as *const Id, size) };
@@ -3700,8 +3818,8 @@ impl TheoryAtoms {
         if !unsafe {
             clingo_theory_atoms_element_condition(&self.0, element, &mut condition_ptr, &mut size)
         } {
-            return Err(ClingoError::new(
-                "Call to clingo_theory_atoms_element_condition() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_theory_atoms_element_condition() failed",
             ));
         }
         let condition_ref =
@@ -3722,14 +3840,14 @@ impl TheoryAtoms {
     pub fn element_condition_id(&self, Id(element): Id) -> Result<Literal, ClingoError> {
         let condition_ptr = std::ptr::null_mut();
         if !unsafe { clingo_theory_atoms_element_condition_id(&self.0, element, condition_ptr) } {
-            return Err(ClingoError::new(
-                "Call to clingo_theory_atoms_element_condition_id() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_theory_atoms_element_condition_id() failed",
             ));
         }
         if condition_ptr.is_null() {
-            return Err(ClingoError::new(
-                "clingo_theory_atoms_element_condition_id() returned a null pointer.",
-            ));
+            return Err(ClingoError::FFIError {
+                msg: "clingo_theory_atoms_element_condition_id() returned a null pointer.",
+            });
         }
         Ok(Literal(unsafe { *condition_ptr }))
     }
@@ -3744,22 +3862,22 @@ impl TheoryAtoms {
     ///
     /// # Errors
     ///
-    /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if the size is too small
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if the size is too small
     /// or [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
-    /// - [`Utf8Error`](https://doc.rust-lang.org/std/str/struct.Utf8Error.html)
-    pub fn element_to_string(&self, Id(element): Id) -> Result<String, Error> {
+    /// - [`ClingoError::Utf8Error`](enum.ClingoError.html#variant.Utf8Error)
+    pub fn element_to_string(&self, Id(element): Id) -> Result<String, ClingoError> {
         let mut size = 0;
         if !unsafe { clingo_theory_atoms_element_to_string_size(&self.0, element, &mut size) } {
-            Err(ClingoError::new(
-                "Call to clingo_theory_atoms_element_to_string_size() failed.",
-            ))?
+            return Err(ClingoError::new_internal(
+                "Call to clingo_theory_atoms_element_to_string_size() failed",
+            ));
         }
         let mut string = Vec::with_capacity(size);
         let string_ptr = string.as_mut_ptr();
         if !unsafe { clingo_theory_atoms_element_to_string(&self.0, element, string_ptr, size) } {
-            Err(ClingoError::new(
-                "Call to clingo_theory_atoms_element_to_string() failed.",
-            ))?
+            return Err(ClingoError::new_internal(
+                "Call to clingo_theory_atoms_element_to_string() failed",
+            ));
         }
         let c_str: &CStr = unsafe { CStr::from_ptr(string_ptr) };
         let str_slice: &str = c_str.to_str()?;
@@ -3774,8 +3892,8 @@ impl TheoryAtoms {
     pub fn atom_term(&self, Id(atom): Id) -> Result<Id, ClingoError> {
         let mut term = 0 as clingo_id_t;
         if !unsafe { clingo_theory_atoms_atom_term(&self.0, atom, &mut term) } {
-            return Err(ClingoError::new(
-                "Call to clingo_theory_atoms_atom_term() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_theory_atoms_atom_term() failed",
             ));
         }
         Ok(Id(term))
@@ -3792,8 +3910,8 @@ impl TheoryAtoms {
         if !unsafe {
             clingo_theory_atoms_atom_elements(&self.0, atom, &mut elements_ptr, &mut size)
         } {
-            return Err(ClingoError::new(
-                "Call to clingo_theory_atoms_atom_elements() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_theory_atoms_atom_elements() failed",
             ));
         }
         let elements = unsafe { std::slice::from_raw_parts(elements_ptr as *const Id, size) };
@@ -3808,8 +3926,8 @@ impl TheoryAtoms {
     pub fn atom_has_guard(&self, Id(atom): Id) -> Result<bool, ClingoError> {
         let mut has_guard = false;
         if !unsafe { clingo_theory_atoms_atom_has_guard(&self.0, atom, &mut has_guard) } {
-            return Err(ClingoError::new(
-                "Call to clingo_theory_atoms_atom_has_guard() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_theory_atoms_atom_has_guard() failed",
             ));
         }
         Ok(has_guard)
@@ -3823,20 +3941,20 @@ impl TheoryAtoms {
     ///
     /// # Errors
     ///
-    /// - [`Utf8Error`](https://doc.rust-lang.org/std/str/struct.Utf8Error.html)
-    /// - [`ClingoError`](struct.ClingoError.html)
-    pub fn atom_guard(&self, Id(atom): Id) -> Result<(&str, Id), Error> {
+    /// - [`ClingoError::Utf8Error`](enum.ClingoError.html#variant.Utf8Error)
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError)
+    pub fn atom_guard(&self, Id(atom): Id) -> Result<(&str, Id), ClingoError> {
         let mut c_ptr = std::ptr::null() as *const c_char;
         let mut term = 0 as clingo_id_t;
         if !unsafe { clingo_theory_atoms_atom_guard(&self.0, atom, &mut c_ptr, &mut term) } {
-            Err(ClingoError::new(
-                "Call to clingo_theory_atoms_atom_guard() failed.",
-            ))?
+            return Err(ClingoError::new_internal(
+                "Call to clingo_theory_atoms_atom_guard() failed",
+            ));
         }
         if c_ptr.is_null() {
-            Err(ClingoError::new(
-                "clingo_theory_atoms_atom_guard() returned a null pointer.",
-            ))?
+            return Err(ClingoError::FFIError {
+                msg: "clingo_theory_atoms_atom_guard() returned a null pointer.",
+            });
         }
         let cstr = unsafe { CStr::from_ptr(c_ptr) };
         Ok((cstr.to_str()?, Id(term)))
@@ -3850,9 +3968,9 @@ impl TheoryAtoms {
     pub fn atom_literal(&self, Id(atom): Id) -> Result<Literal, ClingoError> {
         let mut literal = 0 as clingo_literal_t;
         if !unsafe { clingo_theory_atoms_atom_literal(&self.0, atom, &mut literal) } {
-            Err(ClingoError::new(
-                "Call to clingo_theory_atoms_atom_literal() failed.",
-            ))?
+            return Err(ClingoError::new_internal(
+                "Call to clingo_theory_atoms_atom_literal() failed",
+            ));
         }
         Ok(Literal(literal))
     }
@@ -3867,22 +3985,22 @@ impl TheoryAtoms {
     ///
     /// # Errors
     ///
-    /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if the size is too small
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if the size is too small
     /// or [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
-    /// - [`Utf8Error`](https://doc.rust-lang.org/std/str/struct.Utf8Error.html)
-    pub fn atom_to_string(&self, Id(atom): Id) -> Result<String, Error> {
+    /// - [`ClingoError::Utf8Error`](enum.ClingoError.html#variant.Utf8Error)
+    pub fn atom_to_string(&self, Id(atom): Id) -> Result<String, ClingoError> {
         let mut size = 0;
         if !unsafe { clingo_theory_atoms_atom_to_string_size(&self.0, atom, &mut size) } {
-            Err(ClingoError::new(
-                "Call to clingo_theory_atoms_atom_to_string_size() failed.",
-            ))?
+            return Err(ClingoError::new_internal(
+                "Call to clingo_theory_atoms_atom_to_string_size() failed",
+            ));
         }
         let mut string = Vec::with_capacity(size);
         let string_ptr = string.as_mut_ptr();
         if !unsafe { clingo_theory_atoms_atom_to_string(&self.0, atom, string_ptr, size) } {
-            Err(ClingoError::new(
-                "Call to clingo_theory_atoms_atom_to_string() failed.",
-            ))?
+            return Err(ClingoError::new_internal(
+                "Call to clingo_theory_atoms_atom_to_string() failed",
+            ));
         }
         let c_str: &CStr = unsafe { CStr::from_ptr(string_ptr) };
         let str_slice: &str = c_str.to_str()?;
@@ -3919,7 +4037,9 @@ impl Model {
     pub fn model_type(&self) -> Result<ModelType, ClingoError> {
         let mut mtype = 0 as clingo_model_type_t;
         if !unsafe { clingo_model_type(&self.0, &mut mtype) } {
-            return Err(ClingoError::new("Call to clingo_model_type() failed."));
+            return Err(ClingoError::new_internal(
+                "Call to clingo_model_type() failed",
+            ));
         }
         ModelType::try_from(mtype)
     }
@@ -3928,7 +4048,9 @@ impl Model {
     pub fn number(&self) -> Result<u64, ClingoError> {
         let mut number = 0;
         if !unsafe { clingo_model_number(&self.0, &mut number) } {
-            return Err(ClingoError::new("Call to clingo_model_number() failed."));
+            return Err(ClingoError::new_internal(
+                "Call to clingo_model_number() failed",
+            ));
         }
         Ok(number)
     }
@@ -3947,13 +4069,13 @@ impl Model {
     ///
     /// # Errors
     ///
-    /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if the size is too small
     pub fn symbols(&self, show: ShowType) -> Result<Vec<Symbol>, ClingoError> {
         let mut size: usize = 0;
         if !unsafe { clingo_model_symbols_size(&self.0, show.bits(), &mut size) } {
-            return Err(ClingoError::new(
-                "Call to clingo_model_symbols_size() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_model_symbols_size() failed",
             ));
         }
         let symbols = vec![Symbol(0); size];
@@ -3965,7 +4087,9 @@ impl Model {
                 size,
             )
         } {
-            return Err(ClingoError::new("Call to clingo_model_symbols() failed."));
+            return Err(ClingoError::new_internal(
+                "Call to clingo_model_symbols() failed",
+            ));
         }
         Ok(symbols)
     }
@@ -3978,7 +4102,9 @@ impl Model {
     pub fn contains(&self, Symbol(atom): Symbol) -> Result<bool, ClingoError> {
         let mut contained = false;
         if !unsafe { clingo_model_contains(&self.0, atom, &mut contained) } {
-            return Err(ClingoError::new("Call to clingo_model_contains() failed."));
+            return Err(ClingoError::new_internal(
+                "Call to clingo_model_contains() failed",
+            ));
         }
         Ok(contained)
     }
@@ -3991,7 +4117,9 @@ impl Model {
     pub fn is_true(&self, literal: Literal) -> Result<bool, ClingoError> {
         let mut is_true = false;
         if !unsafe { clingo_model_is_true(&self.0, literal.0, &mut is_true) } {
-            return Err(ClingoError::new("Call to clingo_model_is_true() failed."));
+            return Err(ClingoError::new_internal(
+                "Call to clingo_model_is_true() failed",
+            ));
         }
         Ok(is_true)
     }
@@ -4002,18 +4130,22 @@ impl Model {
     ///
     /// # Errors
     ///
-    /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if the size is too small
     ///
     /// **See:** [`Model::optimality_proven()`](struct.Model.html#method.optimality_proven)
     pub fn cost(&self) -> Result<Vec<i64>, ClingoError> {
         let mut size: usize = 0;
         if !unsafe { clingo_model_cost_size(&self.0, &mut size) } {
-            return Err(ClingoError::new("Call to clingo_model_cost_size() failed."));
+            return Err(ClingoError::new_internal(
+                "Call to clingo_model_cost_size() failed",
+            ));
         }
         let mut cost = vec![0; size];
         if !unsafe { clingo_model_cost(&self.0, cost.as_mut_ptr(), size) } {
-            return Err(ClingoError::new("Call to clingo_model_cost() failed."));
+            return Err(ClingoError::new_internal(
+                "Call to clingo_model_cost() failed",
+            ));
         }
         Ok(cost)
     }
@@ -4024,8 +4156,8 @@ impl Model {
     pub fn optimality_proven(&self) -> Result<bool, ClingoError> {
         let mut proven = false;
         if !unsafe { clingo_model_optimality_proven(&self.0, &mut proven) } {
-            return Err(ClingoError::new(
-                "Call to clingo_model_optimality_proven() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_model_optimality_proven() failed",
             ));
         }
         Ok(proven)
@@ -4035,7 +4167,9 @@ impl Model {
     pub fn thread_id(&self) -> Result<Id, ClingoError> {
         let mut id = 0 as clingo_id_t;
         if !unsafe { clingo_model_thread_id(&self.0, &mut id) } {
-            return Err(ClingoError::new("Call to clingo_model_thread_id() failed."));
+            return Err(ClingoError::new_internal(
+                "Call to clingo_model_thread_id() failed",
+            ));
         }
         Ok(Id(id))
     }
@@ -4067,12 +4201,14 @@ impl Model {
     pub fn context<'a>(&'a self) -> Result<&'a mut SolveControl, ClingoError> {
         let control_ptr = std::ptr::null_mut();
         if !unsafe { clingo_model_context(&self.0, control_ptr) } {
-            return Err(ClingoError::new("Call to clingo_model_context() failed."));
+            return Err(ClingoError::new_internal(
+                "Call to clingo_model_context() failed",
+            ));
         }
         if control_ptr.is_null() {
-            return Err(ClingoError::new(
-                "clingo_model_context() returned a null pointer.",
-            ));
+            return Err(ClingoError::FFIError {
+                msg: "clingo_model_context() returned a null pointer.",
+            });
         }
         unsafe { Ok(&mut *(control_ptr as *mut SolveControl)) }
     }
@@ -4094,7 +4230,7 @@ impl SolveControl {
     ///
     /// # Errors
     ///
-    /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if adding the clause fails
     pub fn add_clause(&mut self, clause: &[Literal]) -> Result<(), ClingoError> {
         if !unsafe {
@@ -4104,8 +4240,8 @@ impl SolveControl {
                 clause.len(),
             )
         } {
-            return Err(ClingoError::new(
-                "Call to clingo_solve_control_add_clause() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_solve_control_add_clause() failed",
             ));
         }
         Ok(())
@@ -4115,15 +4251,15 @@ impl SolveControl {
     pub fn symbolic_atoms(&self) -> Result<&SymbolicAtoms, ClingoError> {
         let mut atoms = std::ptr::null() as *const clingo_symbolic_atoms_t;
         if !unsafe { clingo_solve_control_symbolic_atoms(&self.0, &mut atoms) } {
-            return Err(ClingoError::new(
-                "Call to clingo_assignment_level() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_assignment_level() failed",
             ));
         }
         match unsafe { (atoms as *const SymbolicAtoms).as_ref() } {
             Some(stm) => Ok(stm),
-            None => Err(ClingoError::new(
-                "Tried casting a null pointer to &SymbolicAtoms.",
-            )),
+            None => Err(ClingoError::FFIError {
+                msg: "Tried casting a null pointer to &SymbolicAtoms.",
+            }),
         }
     }
 }
@@ -4174,8 +4310,8 @@ impl Assignment {
     pub fn level(&self, literal: Literal) -> Result<u32, ClingoError> {
         let mut level = 0;
         if !unsafe { clingo_assignment_level(&self.0, literal.0, &mut level) } {
-            return Err(ClingoError::new(
-                "Call to clingo_assignment_level() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_assignment_level() failed",
             ));
         }
         Ok(level)
@@ -4191,8 +4327,8 @@ impl Assignment {
     pub fn decision(&self, level: u32) -> Result<Literal, ClingoError> {
         let mut lit = 0 as clingo_literal_t;
         if !unsafe { clingo_assignment_decision(&self.0, level, &mut lit) } {
-            return Err(ClingoError::new(
-                "Call to clingo_assignment_decision() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_assignment_decision() failed",
             ));
         }
         Ok(Literal(lit))
@@ -4208,8 +4344,8 @@ impl Assignment {
     pub fn is_fixed(&self, literal: Literal) -> Result<bool, ClingoError> {
         let mut is_fixed = false;
         if !unsafe { clingo_assignment_is_fixed(&self.0, literal.0, &mut is_fixed) } {
-            return Err(ClingoError::new(
-                "Call to clingo_assignment_is_fixed() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_assignment_is_fixed() failed",
             ));
         }
         Ok(is_fixed)
@@ -4224,8 +4360,8 @@ impl Assignment {
     pub fn is_true(&self, literal: Literal) -> Result<bool, ClingoError> {
         let mut is_true = false;
         if !unsafe { clingo_assignment_is_true(&self.0, literal.0, &mut is_true) } {
-            return Err(ClingoError::new(
-                "Call to clingo_assignment_is_true() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_assignment_is_true() failed",
             ));
         }
         Ok(is_true)
@@ -4240,8 +4376,8 @@ impl Assignment {
     pub fn is_false(&self, literal: Literal) -> Result<bool, ClingoError> {
         let mut is_false = false;
         if !unsafe { clingo_assignment_is_false(&self.0, literal.0, &mut is_false) } {
-            return Err(ClingoError::new(
-                "Call to clingo_assignment_is_false() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_assignment_is_false() failed",
             ));
         }
         Ok(is_false)
@@ -4258,8 +4394,8 @@ impl Assignment {
     pub fn truth_value(&self, literal: Literal) -> Result<TruthValue, ClingoError> {
         let mut value = 0;
         if !unsafe { clingo_assignment_truth_value(&self.0, literal.0, &mut value) } {
-            return Err(ClingoError::new(
-                "Call to clingo_assignment_truth_value() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_assignment_truth_value() failed",
             ));
         }
         TruthValue::try_from(value)
@@ -4298,9 +4434,9 @@ impl PropagateControl {
             (clingo_propagate_control_assignment(&self.0) as *const Assignment).as_ref()
         } {
             Some(stm) => Ok(stm),
-            None => Err(ClingoError::new(
-                "Tried casting a null pointer to &Assignment.",
-            )),
+            None => Err(ClingoError::FFIError {
+                msg: "Tried casting a null pointer to &Assignment.",
+            }),
         }
     }
 
@@ -4309,9 +4445,9 @@ impl PropagateControl {
         match unsafe { (clingo_propagate_control_assignment(&self.0) as *mut Assignment).as_mut() }
         {
             Some(stm) => Ok(stm),
-            None => Err(ClingoError::new(
-                "Tried casting a null pointer to &mut Assignment.",
-            )),
+            None => Err(ClingoError::FFIError {
+                msg: "Tried casting a null pointer to &mut Assignment.",
+            }),
         }
     }
 
@@ -4326,12 +4462,12 @@ impl PropagateControl {
     ///
     /// **Errors:**
     ///
-    /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     /// or [`ErrorCode::Logic`](enum.ErrorCode.html#variant.Logic) if the assignment is conflicting
     pub fn add_literal(&mut self, result: &mut Literal) -> Result<(), ClingoError> {
         if !unsafe { clingo_propagate_control_add_literal(&mut self.0, &mut result.0) } {
-            return Err(ClingoError::new(
-                "Call to clingo_propagate_control_add_literal() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_propagate_control_add_literal() failed",
             ));
         }
         Ok(())
@@ -4347,14 +4483,14 @@ impl PropagateControl {
     ///
     /// **Errors:**
     ///
-    /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     /// or [`ErrorCode::Logic`](enum.ErrorCode.html#variant.Logic) if the literal is invalid
     ///
     /// **See:** [`PropagateControl::remove_watch()`](struct.PropagateControl.html#method.remove_watch)
     pub fn add_watch(&mut self, literal: Literal) -> Result<(), ClingoError> {
         if !unsafe { clingo_propagate_control_add_watch(&mut self.0, literal.0) } {
-            return Err(ClingoError::new(
-                "Call to clingo_propagate_control_add_watch() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_propagate_control_add_watch() failed",
             ));
         }
         Ok(())
@@ -4393,7 +4529,7 @@ impl PropagateControl {
     ///
     /// # Errors
     ///
-    /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     pub fn add_clause(
         &mut self,
         clause: &[Literal],
@@ -4409,8 +4545,8 @@ impl PropagateControl {
                 &mut result,
             )
         } {
-            return Err(ClingoError::new(
-                "Call to clingo_propagate_control_add_clause() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_propagate_control_add_clause() failed",
             ));
         }
         Ok(result)
@@ -4428,12 +4564,12 @@ impl PropagateControl {
     ///
     /// # Errors
     ///
-    /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     pub fn propagate(&mut self) -> Result<bool, ClingoError> {
         let mut result = false;
         if !unsafe { clingo_propagate_control_propagate(&mut self.0, &mut result) } {
-            return Err(ClingoError::new(
-                "Call to clingo_propagate_control_propagate() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_propagate_control_propagate() failed",
             ));
         }
         Ok(result)
@@ -4464,8 +4600,8 @@ impl PropagateInit {
         if !unsafe {
             clingo_propagate_init_solver_literal(&self.0, aspif_literal, &mut solver_literal)
         } {
-            return Err(ClingoError::new(
-                "Call to clingo_propagate_init_solver_literal() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_propagate_init_solver_literal() failed",
             ));
         }
         Ok(Literal(solver_literal))
@@ -4478,8 +4614,8 @@ impl PropagateInit {
     /// * `solver_literal` - the solver literal
     pub fn add_watch(&mut self, Literal(solver_literal): Literal) -> Result<(), ClingoError> {
         if !unsafe { clingo_propagate_init_add_watch(&mut self.0, solver_literal) } {
-            return Err(ClingoError::new(
-                "Call to clingo_propagate_init_add_watch() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_propagate_init_add_watch() failed",
             ));
         }
         Ok(())
@@ -4499,8 +4635,8 @@ impl PropagateInit {
         if !unsafe {
             clingo_propagate_init_add_watch_to_thread(&mut self.0, solver_literal, thread_id)
         } {
-            return Err(ClingoError::new(
-                "Call to clingo_propagate_init_add_watch_to_thread() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_propagate_init_add_watch_to_thread() failed",
             ));
         }
         Ok(())
@@ -4510,15 +4646,15 @@ impl PropagateInit {
     pub fn symbolic_atoms(&self) -> Result<&SymbolicAtoms, ClingoError> {
         let mut atoms_ptr = std::ptr::null() as *const clingo_symbolic_atoms_t;
         if !unsafe { clingo_propagate_init_symbolic_atoms(&self.0, &mut atoms_ptr) } {
-            return Err(ClingoError::new(
-                "Call to clingo_propagate_init_symbolic_atoms() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_propagate_init_symbolic_atoms() failed",
             ));
         }
         match unsafe { (atoms_ptr as *const SymbolicAtoms).as_ref() } {
             Some(x) => Ok(x),
-            None => Err(ClingoError::new(
-                "Tried casting a null pointer to &SymbolicAtoms.",
-            )),
+            None => Err(ClingoError::FFIError {
+                msg: "Tried casting a null pointer to &SymbolicAtoms.",
+            }),
         }
     }
 
@@ -4526,15 +4662,15 @@ impl PropagateInit {
     pub fn theory_atoms(&self) -> Result<&TheoryAtoms, ClingoError> {
         let mut atoms_ptr = std::ptr::null() as *const clingo_theory_atoms_t;
         if !unsafe { clingo_propagate_init_theory_atoms(&self.0, &mut atoms_ptr) } {
-            return Err(ClingoError::new(
-                "Call to clingo_propagate_init_symbolic_atoms() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_propagate_init_symbolic_atoms() failed",
             ));
         }
         match unsafe { (atoms_ptr as *const TheoryAtoms).as_ref() } {
             Some(x) => Ok(x),
-            None => Err(ClingoError::new(
-                "Tried casting a null pointer to &TheoryAtoms.",
-            )),
+            None => Err(ClingoError::FFIError {
+                msg: "Tried casting a null pointer to &TheoryAtoms.",
+            }),
         }
     }
 
@@ -4576,9 +4712,9 @@ impl PropagateInit {
     pub fn assignment(&self) -> Result<&Assignment, ClingoError> {
         match unsafe { (clingo_propagate_init_assignment(&self.0) as *const Assignment).as_ref() } {
             Some(stm) => Ok(stm),
-            None => Err(ClingoError::new(
-                "Tried casting a null pointer to &mut Assignment.",
-            )),
+            None => Err(ClingoError::FFIError {
+                msg: "Tried casting a null pointer to &mut Assignment.",
+            }),
         }
     }
 
@@ -4592,7 +4728,7 @@ impl PropagateInit {
     ///
     /// # Errors
     ///
-    /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     pub fn add_clause(&mut self, clause: &[Literal]) -> Result<bool, ClingoError> {
         let mut result = false;
         if !unsafe {
@@ -4603,8 +4739,8 @@ impl PropagateInit {
                 &mut result,
             )
         } {
-            return Err(ClingoError::new(
-                "Call to clingo_propagate_init_add_clause() failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_propagate_init_add_clause() failed",
             ));
         }
         Ok(result)
@@ -4625,18 +4761,22 @@ impl<'a> SolveHandle<'a> {
     ///
     /// # Errors
     ///
-    /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if solving fails
     pub fn get(&mut self) -> Result<SolveResult, ClingoError> {
         let mut result = 0;
         if !unsafe { clingo_solve_handle_get(self.theref, &mut result) } {
-            return Err(ClingoError::new("Call to clingo_solve_handle_get failed."));
+            return Err(ClingoError::new_internal(
+                "Call to clingo_solve_handle_get() failed",
+            ));
         }
         if let Some(res) = SolveResult::from_bits(result) {
             Ok(res)
         } else {
             eprintln!("Unknown bitflag in clingo_solve_result: {}.", result);
-            Err(ClingoError::new("Unknown bitflag in clingo_solve_result."))
+            Err(ClingoError::FFIError {
+                msg: "Unknown bitflag in clingo_solve_result.",
+            })
         }
     }
 
@@ -4658,13 +4798,13 @@ impl<'a> SolveHandle<'a> {
     ///
     /// # Errors
     ///
-    /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if solving fails
     pub fn model(&mut self) -> Result<Option<&Model>, ClingoError> {
         let mut model = std::ptr::null_mut() as *const clingo_model_t;
         if !unsafe { clingo_solve_handle_model(self.theref, &mut model) } {
-            return Err(ClingoError::new(
-                "Call to clingo_solve_handle_model failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_solve_handle_model() failed",
             ));
         }
         Ok(unsafe { (model as *const Model).as_ref() })
@@ -4674,20 +4814,20 @@ impl<'a> SolveHandle<'a> {
     ///
     /// # Errors
     ///
-    /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if solving fails
     pub fn model_mut(&mut self) -> Result<&mut Model, ClingoError> {
         let mut model = std::ptr::null_mut() as *const clingo_model_t;
         if !unsafe { clingo_solve_handle_model(self.theref, &mut model) } {
-            return Err(ClingoError::new(
-                "Call to clingo_solve_handle_model failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_solve_handle_model() failed",
             ));
         }
         match unsafe { (model as *mut Model).as_mut() } {
             Some(x) => Ok(x),
-            None => Err(ClingoError::new(
-                "Tried casting a null pointer to &mut Model.",
-            )),
+            None => Err(ClingoError::FFIError {
+                msg: "Tried casting a null pointer to &mut Model.",
+            }),
         }
     }
     /// Discards the last model and starts the search for the next one.
@@ -4699,12 +4839,12 @@ impl<'a> SolveHandle<'a> {
     ///
     /// # Errors
     ///
-    /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if solving fails
     pub fn resume(&mut self) -> Result<(), ClingoError> {
         if !unsafe { clingo_solve_handle_resume(self.theref) } {
-            return Err(ClingoError::new(
-                "Call to clingo_solve_handle_resume failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_solve_handle_resume() failed",
             ));
         }
         Ok(())
@@ -4714,12 +4854,12 @@ impl<'a> SolveHandle<'a> {
     ///
     /// # Errors
     ///
-    /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if solving fails
     pub fn cancel(&mut self) -> Result<(), ClingoError> {
         if !unsafe { clingo_solve_handle_cancel(self.theref) } {
-            return Err(ClingoError::new(
-                "Call to clingo_solve_handle_cancel failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_solve_handle_cancel() failed",
             ));
         }
         Ok(())
@@ -4732,12 +4872,12 @@ impl<'a> SolveHandle<'a> {
     ///
     /// # Errors
     ///
-    /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if solving fails
     pub fn close(self) -> Result<(), ClingoError> {
         if !unsafe { clingo_solve_handle_close(self.theref) } {
-            return Err(ClingoError::new(
-                "Call to clingo_solve_handle_close failed.",
+            return Err(ClingoError::new_internal(
+                "Call to clingo_solve_handle_close() failed",
             ));
         }
         Ok(())
@@ -4820,32 +4960,36 @@ pub struct MModel {
 ///
 /// # Errors
 ///
-/// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
-/// - [`Utf8Error`](https://doc.rust-lang.org/std/str/struct.Utf8Error.html)
-pub fn add_string(string: &str) -> Result<&'static str, Error> {
+/// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+/// - [`ClingoError::Utf8Error`](enum.ClingoError.html#variant.Utf8Error)
+pub fn add_string(string: &str) -> Result<&'static str, ClingoError> {
     let in_cstr = CString::new(string)?;
     let mut out_ptr = std::ptr::null() as *const c_char;
     if !unsafe { clingo_add_string(in_cstr.as_ptr(), &mut out_ptr) } {
-        Err(ClingoError::new("Call to clingo_add_string failed."))?
+        return Err(ClingoError::new_internal(
+            "Call to clingo_add_string() failed",
+        ));
     }
     if out_ptr.is_null() {
-        Err(ClingoError::new(
-            "clingo_add_string returned a null pointer.",
-        ))?
+        return Err(ClingoError::FFIError {
+            msg: "clingo_add_string returned a null pointer.",
+        });
     }
     let out_cstr = unsafe { CStr::from_ptr(out_ptr) };
     Ok(out_cstr.to_str()?)
 }
-fn internalize_string(string: &str) -> Result<*const c_char, Error> {
+fn internalize_string(string: &str) -> Result<*const c_char, ClingoError> {
     let in_cstr = CString::new(string)?;
     let mut out_ptr = std::ptr::null() as *const c_char;
     if !unsafe { clingo_add_string(in_cstr.as_ptr(), &mut out_ptr) } {
-        Err(ClingoError::new("Call to clingo_add_string failed."))?
+        return Err(ClingoError::new_internal(
+            "Call to clingo_add_string() failed",
+        ));
     }
     if out_ptr.is_null() {
-        Err(ClingoError::new(
-            "clingo_add_string returned a null pointer.",
-        ))?
+        Err(ClingoError::FFIError {
+            msg: "clingo_add_string returned a null pointer.",
+        })?
     }
     Ok(out_ptr)
 }
@@ -4861,14 +5005,16 @@ fn internalize_string(string: &str) -> Result<*const c_char, Error> {
 ///
 /// # Errors
 ///
-/// - [`NulError`](https://doc.rust-lang.org/std/ffi/struct.NulError.html) - if `string` contains a nul byte
-/// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+/// - [`ClingoError::NulError`](enum.ClingoError.html#variant.NulError) - if `string` contains a nul byte
+/// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
 /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if parsing fails
-pub fn parse_term(string: &str) -> Result<Symbol, Error> {
+pub fn parse_term(string: &str) -> Result<Symbol, ClingoError> {
     let c_str = CString::new(string)?;
     let mut symbol = 0 as clingo_symbol_t;
     if !unsafe { clingo_parse_term(c_str.as_ptr(), None, std::ptr::null_mut(), 0, &mut symbol) } {
-        Err(ClingoError::new("Call to clingo_parse_term failed."))?
+        return Err(ClingoError::new_internal(
+            "Call to clingo_parse_term() failed",
+        ));
     }
     Ok(Symbol(symbol))
 }
@@ -4886,14 +5032,14 @@ pub fn parse_term(string: &str) -> Result<Symbol, Error> {
 ///
 /// # Errors
 ///
-/// - [`NulError`](https://doc.rust-lang.org/std/ffi/struct.NulError.html) - if `string` contains a nul byte
-/// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+/// - [`ClingoError::NulError`](enum.ClingoError.html#variant.NulError) - if `string` contains a nul byte
+/// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
 /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if parsing fails
 pub fn parse_term_with_logger<L: Logger>(
     string: &str,
     logger: &mut L,
     message_limit: u32,
-) -> Result<Symbol, Error> {
+) -> Result<Symbol, ClingoError> {
     let c_str = CString::new(string)?;
     let logger = logger as *mut L;
     let mut symbol = 0 as clingo_symbol_t;
@@ -4906,7 +5052,9 @@ pub fn parse_term_with_logger<L: Logger>(
             &mut symbol,
         )
     } {
-        Err(ClingoError::new("Call to clingo_parse_term failed."))?
+        return Err(ClingoError::new_internal(
+            "Call to clingo_parse_term() failed",
+        ));
     }
     Ok(Symbol(symbol))
 }
@@ -5556,11 +5704,11 @@ pub trait GroundProgramObserver {
 /// helper types and traits to simplify conversion from structs to clingo symbols
 
 pub trait ToSymbol {
-    fn symbol(&self) -> Result<Symbol, Error>;
+    fn symbol(&self) -> Result<Symbol, ClingoError>;
 }
 
 impl ToSymbol for Symbol {
-    fn symbol(&self) -> Result<Symbol, Error> {
+    fn symbol(&self) -> Result<Symbol, ClingoError> {
         Ok(*self)
     }
 }
@@ -5568,17 +5716,17 @@ impl ToSymbol for Symbol {
 // Due to a temporary restriction in Rust's type system, these function are only implemented on tuples of arity 12 or less.
 // In the future, this may change.
 impl ToSymbol for () {
-    fn symbol(&self) -> Result<Symbol, Error> {
+    fn symbol(&self) -> Result<Symbol, ClingoError> {
         Symbol::create_function("", &[], true)
     }
 }
 impl<A: ToSymbol, B: ToSymbol> ToSymbol for (A, B) {
-    fn symbol(&self) -> Result<Symbol, Error> {
+    fn symbol(&self) -> Result<Symbol, ClingoError> {
         Symbol::create_function("", &[self.0.symbol()?, self.1.symbol()?], true)
     }
 }
 impl<A: ToSymbol, B: ToSymbol, C: ToSymbol> ToSymbol for (A, B, C) {
-    fn symbol(&self) -> Result<Symbol, Error> {
+    fn symbol(&self) -> Result<Symbol, ClingoError> {
         let mut tempvec = vec![];
         tempvec.push(self.0.symbol()?);
         tempvec.push(self.1.symbol()?);
@@ -5587,7 +5735,7 @@ impl<A: ToSymbol, B: ToSymbol, C: ToSymbol> ToSymbol for (A, B, C) {
     }
 }
 impl<A: ToSymbol, B: ToSymbol, C: ToSymbol, D: ToSymbol> ToSymbol for (A, B, C, D) {
-    fn symbol(&self) -> Result<Symbol, Error> {
+    fn symbol(&self) -> Result<Symbol, ClingoError> {
         let mut tempvec = vec![];
         tempvec.push(self.0.symbol()?);
         tempvec.push(self.1.symbol()?);
@@ -5598,7 +5746,7 @@ impl<A: ToSymbol, B: ToSymbol, C: ToSymbol, D: ToSymbol> ToSymbol for (A, B, C, 
 }
 
 impl<A: ToSymbol, B: ToSymbol, C: ToSymbol, D: ToSymbol, E: ToSymbol> ToSymbol for (A, B, C, D, E) {
-    fn symbol(&self) -> Result<Symbol, Error> {
+    fn symbol(&self) -> Result<Symbol, ClingoError> {
         let mut tempvec = vec![];
         tempvec.push(self.0.symbol()?);
         tempvec.push(self.1.symbol()?);
@@ -5611,7 +5759,7 @@ impl<A: ToSymbol, B: ToSymbol, C: ToSymbol, D: ToSymbol, E: ToSymbol> ToSymbol f
 impl<A: ToSymbol, B: ToSymbol, C: ToSymbol, D: ToSymbol, E: ToSymbol, F: ToSymbol> ToSymbol
     for (A, B, C, D, E, F)
 {
-    fn symbol(&self) -> Result<Symbol, Error> {
+    fn symbol(&self) -> Result<Symbol, ClingoError> {
         let mut tempvec = vec![];
         tempvec.push(self.0.symbol()?);
         tempvec.push(self.1.symbol()?);
@@ -5625,7 +5773,7 @@ impl<A: ToSymbol, B: ToSymbol, C: ToSymbol, D: ToSymbol, E: ToSymbol, F: ToSymbo
 impl<A: ToSymbol, B: ToSymbol, C: ToSymbol, D: ToSymbol, E: ToSymbol, F: ToSymbol, G: ToSymbol>
     ToSymbol for (A, B, C, D, E, F, G)
 {
-    fn symbol(&self) -> Result<Symbol, Error> {
+    fn symbol(&self) -> Result<Symbol, ClingoError> {
         let mut tempvec = vec![];
         tempvec.push(self.0.symbol()?);
         tempvec.push(self.1.symbol()?);
@@ -5648,7 +5796,7 @@ impl<
         H: ToSymbol,
     > ToSymbol for (A, B, C, D, E, F, G, H)
 {
-    fn symbol(&self) -> Result<Symbol, Error> {
+    fn symbol(&self) -> Result<Symbol, ClingoError> {
         let mut tempvec = vec![];
         tempvec.push(self.0.symbol()?);
         tempvec.push(self.1.symbol()?);
@@ -5674,7 +5822,7 @@ impl<
         I: ToSymbol,
     > ToSymbol for (A, B, C, D, E, F, G, H, I)
 {
-    fn symbol(&self) -> Result<Symbol, Error> {
+    fn symbol(&self) -> Result<Symbol, ClingoError> {
         let mut tempvec = vec![];
         tempvec.push(self.0.symbol()?);
         tempvec.push(self.1.symbol()?);
@@ -5701,7 +5849,7 @@ impl<
         J: ToSymbol,
     > ToSymbol for (A, B, C, D, E, F, G, H, I, J)
 {
-    fn symbol(&self) -> Result<Symbol, Error> {
+    fn symbol(&self) -> Result<Symbol, ClingoError> {
         let mut tempvec = vec![];
         tempvec.push(self.0.symbol()?);
         tempvec.push(self.1.symbol()?);
@@ -5730,7 +5878,7 @@ impl<
         K: ToSymbol,
     > ToSymbol for (A, B, C, D, E, F, G, H, I, J, K)
 {
-    fn symbol(&self) -> Result<Symbol, Error> {
+    fn symbol(&self) -> Result<Symbol, ClingoError> {
         let mut tempvec = vec![];
         tempvec.push(self.0.symbol()?);
         tempvec.push(self.1.symbol()?);
@@ -5761,7 +5909,7 @@ impl<
         L: ToSymbol,
     > ToSymbol for (A, B, C, D, E, F, G, H, I, J, K, L)
 {
-    fn symbol(&self) -> Result<Symbol, Error> {
+    fn symbol(&self) -> Result<Symbol, ClingoError> {
         let mut tempvec = vec![];
         tempvec.push(self.0.symbol()?);
         tempvec.push(self.1.symbol()?);
@@ -5779,7 +5927,7 @@ impl<
     }
 }
 impl ToSymbol for bool {
-    fn symbol(&self) -> Result<Symbol, Error> {
+    fn symbol(&self) -> Result<Symbol, ClingoError> {
         if *self {
             Symbol::create_id("true", true)
         } else {
@@ -5788,47 +5936,47 @@ impl ToSymbol for bool {
     }
 }
 impl ToSymbol for u8 {
-    fn symbol(&self) -> Result<Symbol, Error> {
+    fn symbol(&self) -> Result<Symbol, ClingoError> {
         Ok(Symbol::create_number(i32::from(*self)))
     }
 }
 impl ToSymbol for i8 {
-    fn symbol(&self) -> Result<Symbol, Error> {
+    fn symbol(&self) -> Result<Symbol, ClingoError> {
         Ok(Symbol::create_number(i32::from(*self)))
     }
 }
 impl ToSymbol for u16 {
-    fn symbol(&self) -> Result<Symbol, Error> {
+    fn symbol(&self) -> Result<Symbol, ClingoError> {
         Ok(Symbol::create_number(i32::from(*self)))
     }
 }
 impl ToSymbol for i16 {
-    fn symbol(&self) -> Result<Symbol, Error> {
+    fn symbol(&self) -> Result<Symbol, ClingoError> {
         Ok(Symbol::create_number(i32::from(*self)))
     }
 }
 impl ToSymbol for u32 {
-    fn symbol(&self) -> Result<Symbol, Error> {
+    fn symbol(&self) -> Result<Symbol, ClingoError> {
         Ok(Symbol::create_number(*self as i32))
     }
 }
 impl ToSymbol for i32 {
-    fn symbol(&self) -> Result<Symbol, Error> {
+    fn symbol(&self) -> Result<Symbol, ClingoError> {
         Ok(Symbol::create_number(*self))
     }
 }
 impl ToSymbol for String {
-    fn symbol(&self) -> Result<Symbol, Error> {
+    fn symbol(&self) -> Result<Symbol, ClingoError> {
         Symbol::create_string(self)
     }
 }
 impl ToSymbol for str {
-    fn symbol(&self) -> Result<Symbol, Error> {
+    fn symbol(&self) -> Result<Symbol, ClingoError> {
         Symbol::create_string(self)
     }
 }
 impl<T: ToSymbol> ToSymbol for &T {
-    fn symbol(&self) -> Result<Symbol, Error> {
+    fn symbol(&self) -> Result<Symbol, ClingoError> {
         (*self).symbol()
     }
 }
@@ -5869,33 +6017,7 @@ impl FactBase {
     }
 }
 
-pub fn add_facts(ctl: &mut Control, facts: &FactBase) {
-    for sym in facts.iter() {
-        // print!("{}",sym.to_string().unwrap());
-
-        // initilize atom to add
-        let atom = ast::Term::from(*sym);
-
-        // create literal
-        let lit = ast::Literal::from_term(ast::Sign::None, &atom);
-
-        // create headliteral
-        let hlit = ast::HeadLiteral::from(&lit);
-
-        // create (fact) rule
-        let rule = ast::Rule::new(hlit, &[]);
-
-        // initialize the statement
-        let stm = rule.ast_statement();
-
-        // get the program builder
-        let mut builder = ast::ProgramBuilder::from(ctl).unwrap();
-
-        // add the rewritten statement to the program
-        builder
-            .add(&stm)
-            .expect("Failed to add statement to ProgramBuilder.");
-
-        builder.end().expect("Failed to finish building a program.");
-    }
-}
+// Re-export #[derive(ToSymbol)].
+#[cfg(feature = "derive")]
+#[allow(unused_imports)]
+pub use clingo_derive::*;

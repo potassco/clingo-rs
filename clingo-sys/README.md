@@ -1,5 +1,5 @@
 # clingo-sys
-Rust external FFI bindings to the [clingo](https://github.com/potassco/clingo) library.
+Rust bindings to the [clingo](https://github.com/potassco/clingo) library.
 Clingo version 5.4.0.
 
 
