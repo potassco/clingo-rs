@@ -675,7 +675,7 @@ pub trait SolveEventHandler {
     #[doc(hidden)]
     unsafe extern "C" fn unsafe_solve_callback<T: SolveEventHandler>(
         etype: clingo_solve_event_type_t,
-        event: *mut c_void,
+        _event: *mut c_void,
         event_handler: *mut c_void,
         goon: *mut bool,
     ) -> bool {
