@@ -6270,12 +6270,12 @@ impl FromSymbol for i32 {
 }
 impl FromSymbol for u64 {
     fn from_symbol(symbol: &Symbol) -> Result<Self, ClingoError> {
-        symbol.number().map(|n| n as u64)
+        Ok(symbol.number()? as u64)
     }
 }
 impl FromSymbol for String {
     fn from_symbol(symbol: &Symbol) -> Result<Self, ClingoError> {
-        symbol.string().map(|s| s.into())
+        Ok(symbol.string()?.into())
     }
 }
 
