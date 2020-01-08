@@ -5833,6 +5833,288 @@ impl<T: ToSymbol> ToSymbol for &T {
     }
 }
 
+trait FromSymbol: Sized {
+    fn from_symbol(symbol: &Symbol) -> Result<Self, Error>;
+}
+
+impl FromSymbol for Symbol {
+    fn from_symbol(symbol: &Symbol) -> Result<Self, Error> {
+        Ok(*symbol)
+    }
+}
+
+fn tuple_args(symbol: &Symbol) -> Result<Vec<Symbol>, Error> {
+    if symbol.symbol_type()? != SymbolType::Function {
+        return Err(err_msg("Expected Tuple"));
+    }
+    if symbol.name()? != "" {
+        return Err(err_msg("Expected Tuple"));
+    }
+    Ok(symbol.arguments()?)
+}
+
+impl FromSymbol for () {
+    fn from_symbol(symbol: &Symbol) -> Result<Self, Error> {
+        match tuple_args(symbol)?.as_slice() {
+            [] => Ok(()),
+            _ => Err(err_msg("Expected empty tuple")),
+        }
+    }
+}
+
+impl<A: FromSymbol, B: FromSymbol> FromSymbol for (A, B) {
+    fn from_symbol(symbol: &Symbol) -> Result<Self, Error> {
+        match tuple_args(symbol)?.as_slice() {
+            [a, b] => Ok((A::from_symbol(a)?, B::from_symbol(b)?)),
+            _ => Err(err_msg("Expected tuple of length 2")),
+        }
+    }
+}
+
+impl<A: FromSymbol, B: FromSymbol, C: FromSymbol> FromSymbol for (A, B, C) {
+    fn from_symbol(symbol: &Symbol) -> Result<Self, Error> {
+        match tuple_args(symbol)?.as_slice() {
+            [a, b, c] => Ok((A::from_symbol(a)?, B::from_symbol(b)?, C::from_symbol(c)?)),
+            _ => Err(err_msg("Expected tuple of length 3")),
+        }
+    }
+}
+
+impl<A: FromSymbol, B: FromSymbol, C: FromSymbol, D: FromSymbol> FromSymbol for (A, B, C, D) {
+    fn from_symbol(symbol: &Symbol) -> Result<Self, Error> {
+        match tuple_args(symbol)?.as_slice() {
+            [a, b, c, d] => Ok((
+                A::from_symbol(a)?,
+                B::from_symbol(b)?,
+                C::from_symbol(c)?,
+                D::from_symbol(d)?,
+            )),
+            _ => Err(err_msg("Expected tuple of length 4")),
+        }
+    }
+}
+
+impl<A: FromSymbol, B: FromSymbol, C: FromSymbol, D: FromSymbol, E: FromSymbol> FromSymbol
+    for (A, B, C, D, E)
+{
+    fn from_symbol(symbol: &Symbol) -> Result<Self, Error> {
+        match tuple_args(symbol)?.as_slice() {
+            [a, b, c, d, e] => Ok((
+                A::from_symbol(a)?,
+                B::from_symbol(b)?,
+                C::from_symbol(c)?,
+                D::from_symbol(d)?,
+                E::from_symbol(e)?,
+            )),
+            _ => Err(err_msg("Expected tuple of length 5")),
+        }
+    }
+}
+
+impl<A: FromSymbol, B: FromSymbol, C: FromSymbol, D: FromSymbol, E: FromSymbol, F: FromSymbol>
+    FromSymbol for (A, B, C, D, E, F)
+{
+    fn from_symbol(symbol: &Symbol) -> Result<Self, Error> {
+        match tuple_args(symbol)?.as_slice() {
+            [a, b, c, d, e, f] => Ok((
+                A::from_symbol(a)?,
+                B::from_symbol(b)?,
+                C::from_symbol(c)?,
+                D::from_symbol(d)?,
+                E::from_symbol(e)?,
+                F::from_symbol(f)?,
+            )),
+            _ => Err(err_msg("Expected tuple of length 6")),
+        }
+    }
+}
+
+impl<
+        A: FromSymbol,
+        B: FromSymbol,
+        C: FromSymbol,
+        D: FromSymbol,
+        E: FromSymbol,
+        F: FromSymbol,
+        G: FromSymbol,
+    > FromSymbol for (A, B, C, D, E, F, G)
+{
+    fn from_symbol(symbol: &Symbol) -> Result<Self, Error> {
+        match tuple_args(symbol)?.as_slice() {
+            [a, b, c, d, e, f, g] => Ok((
+                A::from_symbol(a)?,
+                B::from_symbol(b)?,
+                C::from_symbol(c)?,
+                D::from_symbol(d)?,
+                E::from_symbol(e)?,
+                F::from_symbol(f)?,
+                G::from_symbol(g)?,
+            )),
+            _ => Err(err_msg("Expected tuple of length 7")),
+        }
+    }
+}
+
+impl<
+        A: FromSymbol,
+        B: FromSymbol,
+        C: FromSymbol,
+        D: FromSymbol,
+        E: FromSymbol,
+        F: FromSymbol,
+        G: FromSymbol,
+        H: FromSymbol,
+    > FromSymbol for (A, B, C, D, E, F, G, H)
+{
+    fn from_symbol(symbol: &Symbol) -> Result<Self, Error> {
+        match tuple_args(symbol)?.as_slice() {
+            [a, b, c, d, e, f, g, h] => Ok((
+                A::from_symbol(a)?,
+                B::from_symbol(b)?,
+                C::from_symbol(c)?,
+                D::from_symbol(d)?,
+                E::from_symbol(e)?,
+                F::from_symbol(f)?,
+                G::from_symbol(g)?,
+                H::from_symbol(h)?,
+            )),
+            _ => Err(err_msg("Expected tuple of length 8")),
+        }
+    }
+}
+
+impl<
+        A: FromSymbol,
+        B: FromSymbol,
+        C: FromSymbol,
+        D: FromSymbol,
+        E: FromSymbol,
+        F: FromSymbol,
+        G: FromSymbol,
+        H: FromSymbol,
+        I: FromSymbol,
+    > FromSymbol for (A, B, C, D, E, F, G, H, I)
+{
+    fn from_symbol(symbol: &Symbol) -> Result<Self, Error> {
+        match tuple_args(symbol)?.as_slice() {
+            [a, b, c, d, e, f, g, h, i] => Ok((
+                A::from_symbol(a)?,
+                B::from_symbol(b)?,
+                C::from_symbol(c)?,
+                D::from_symbol(d)?,
+                E::from_symbol(e)?,
+                F::from_symbol(f)?,
+                G::from_symbol(g)?,
+                H::from_symbol(h)?,
+                I::from_symbol(i)?,
+            )),
+            _ => Err(err_msg("Expected tuple of length 9")),
+        }
+    }
+}
+
+impl<
+        A: FromSymbol,
+        B: FromSymbol,
+        C: FromSymbol,
+        D: FromSymbol,
+        E: FromSymbol,
+        F: FromSymbol,
+        G: FromSymbol,
+        H: FromSymbol,
+        I: FromSymbol,
+        J: FromSymbol,
+    > FromSymbol for (A, B, C, D, E, F, G, H, I, J)
+{
+    fn from_symbol(symbol: &Symbol) -> Result<Self, Error> {
+        match tuple_args(symbol)?.as_slice() {
+            [a, b, c, d, e, f, g, h, i, j] => Ok((
+                A::from_symbol(a)?,
+                B::from_symbol(b)?,
+                C::from_symbol(c)?,
+                D::from_symbol(d)?,
+                E::from_symbol(e)?,
+                F::from_symbol(f)?,
+                G::from_symbol(g)?,
+                H::from_symbol(h)?,
+                I::from_symbol(i)?,
+                J::from_symbol(j)?,
+            )),
+            _ => Err(err_msg("Expected tuple of length 10")),
+        }
+    }
+}
+
+impl<
+        A: FromSymbol,
+        B: FromSymbol,
+        C: FromSymbol,
+        D: FromSymbol,
+        E: FromSymbol,
+        F: FromSymbol,
+        G: FromSymbol,
+        H: FromSymbol,
+        I: FromSymbol,
+        J: FromSymbol,
+        K: FromSymbol,
+    > FromSymbol for (A, B, C, D, E, F, G, H, I, J, K)
+{
+    fn from_symbol(symbol: &Symbol) -> Result<Self, Error> {
+        match tuple_args(symbol)?.as_slice() {
+            [a, b, c, d, e, f, g, h, i, j, k] => Ok((
+                A::from_symbol(a)?,
+                B::from_symbol(b)?,
+                C::from_symbol(c)?,
+                D::from_symbol(d)?,
+                E::from_symbol(e)?,
+                F::from_symbol(f)?,
+                G::from_symbol(g)?,
+                H::from_symbol(h)?,
+                I::from_symbol(i)?,
+                J::from_symbol(j)?,
+                K::from_symbol(k)?,
+            )),
+            _ => Err(err_msg("Expected tuple of length 11")),
+        }
+    }
+}
+
+impl<
+        A: FromSymbol,
+        B: FromSymbol,
+        C: FromSymbol,
+        D: FromSymbol,
+        E: FromSymbol,
+        F: FromSymbol,
+        G: FromSymbol,
+        H: FromSymbol,
+        I: FromSymbol,
+        J: FromSymbol,
+        K: FromSymbol,
+        L: FromSymbol,
+    > FromSymbol for (A, B, C, D, E, F, G, H, I, J, K, L)
+{
+    fn from_symbol(symbol: &Symbol) -> Result<Self, Error> {
+        match tuple_args(symbol)?.as_slice() {
+            [a, b, c, d, e, f, g, h, i, j, k, l] => Ok((
+                A::from_symbol(a)?,
+                B::from_symbol(b)?,
+                C::from_symbol(c)?,
+                D::from_symbol(d)?,
+                E::from_symbol(e)?,
+                F::from_symbol(f)?,
+                G::from_symbol(g)?,
+                H::from_symbol(h)?,
+                I::from_symbol(i)?,
+                J::from_symbol(j)?,
+                K::from_symbol(k)?,
+                L::from_symbol(l)?,
+            )),
+            _ => Err(err_msg("Expected tuple of length 12")),
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct FactBase {
     facts: HashSet<Symbol>,
