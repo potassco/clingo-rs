@@ -266,7 +266,7 @@ fn main() {
             solve(&mut ctl);
         }
         Err(e) => {
-            panic!("Error: {}", e.as_fail());
+            panic!("Error: {}", e);
         }
     }
 }

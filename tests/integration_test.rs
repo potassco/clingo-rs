@@ -60,7 +60,7 @@ fn symbol_test() {
     assert!(args.len() == sym6.arguments().unwrap().len());
     assert_eq!(args, sym6.arguments().unwrap());
     if let Err(e) = sym6.number() {
-        assert!(e.to_string() == "ClingoError: Call to clingo_symbol_number() failed.");
+        assert!(e.to_string() == "InternalError: Call to clingo_symbol_number() failed, code: Runtime, last: unexpected");
     }
     // comparison
     let a = Symbol::create_number(1);
