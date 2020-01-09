@@ -6299,7 +6299,11 @@ impl FromSymbol for String {
         Ok(symbol.string()?.into())
     }
 }
-
+impl FromSymbol for &'static str {
+    fn from_symbol(symbol: &Symbol) -> Result<Self, ClingoError> {
+        symbol.string()
+    }
+}
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct FactBase {
     facts: HashSet<Symbol>,
