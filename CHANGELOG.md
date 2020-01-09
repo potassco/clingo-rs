@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.7.0 - Unreleased
+
+- Properly use solve event data
+    - remove SolveEventType
+    - add SolveEvent
+    - change SolveEventHandler::on_solve_event(...)
+
 ## v0.6.0 - Jan 3, 2020
 
 ### Changed

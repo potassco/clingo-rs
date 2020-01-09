@@ -256,37 +256,14 @@ pub enum ClauseType {
 }
 
 /// Enumeration of solve events.
-#[derive(Debug, Copy, Clone, PartialEq)]
-pub enum SolveEventType {
+#[derive(Debug)]
+pub enum SolveEvent<'a> {
     /// Issued if a model is found.
-    Model = clingo_solve_event_type_clingo_solve_event_type_model as isize,
+    Model(&'a mut Model),
     /// Issued when the statistics can be updated.
-    Statistics = clingo_solve_event_type_clingo_solve_event_type_statistics as isize,
+    Statistics(&'a mut [&'a mut Statistics; 2]),
     /// Issued if the search has completed.
-    Finish = clingo_solve_event_type_clingo_solve_event_type_finish as isize,
-}
-impl SolveEventType {
-    fn try_from(code: u32) -> Result<SolveEventType, ClingoError> {
-        match code {
-            clingo_solve_event_type_clingo_solve_event_type_model => Ok(SolveEventType::Model),
-            clingo_solve_event_type_clingo_solve_event_type_statistics => {
-                Ok(SolveEventType::Statistics)
-            }
-            clingo_solve_event_type_clingo_solve_event_type_finish => Ok(SolveEventType::Finish),
-            x => {
-                eprintln!(
-                    "FFIError in {} {}, {} : Failed to match clingo_solve_event_type {}",
-                    file!(),
-                    line!(),
-                    column!(),
-                    x
-                );
-                Err(ClingoError::FFIError {
-                    msg: "Failed to match clingo_solve_event_type.",
-                })
-            }
-        }
-    }
+    Finish(&'a mut SolveResult),
 }
 
 /// Enumeration for entries of the statistics.
@@ -665,17 +642,17 @@ pub trait SolveEventHandler {
     ///
     /// # Arguments
     ///
-    /// * `etype` - the type of the solve event
+    /// * `event` - the solve event
     /// * `goon` - can be set to false to stop solving
     ///
     /// **Returns** whether the call was successful
     ///
     /// **See:** [`Control::solve()`](struct.Control.html#method.solve)
-    fn on_solve_event(&mut self, etype: SolveEventType, goon: &mut bool) -> bool;
+    fn on_solve_event(&mut self, event: SolveEvent, goon: &mut bool) -> bool;
     #[doc(hidden)]
     unsafe extern "C" fn unsafe_solve_callback<T: SolveEventHandler>(
-        etype: clingo_solve_event_type_t,
-        _event: *mut c_void,
+        event_type: clingo_solve_event_type_t,
+        event_data: *mut c_void,
         event_handler: *mut c_void,
         goon: *mut bool,
     ) -> bool {
@@ -690,15 +667,59 @@ pub trait SolveEventHandler {
         let event_handler = &mut *(event_handler as *mut T);
         let goon = &mut *goon;
 
-        match SolveEventType::try_from(etype) {
-            Err(_) => {
+        match event_type {
+            clingo_solve_event_type_clingo_solve_event_type_model => {
+                let model = &mut *(event_data as *mut Model);
+                let event = SolveEvent::Model(model);
+                event_handler.on_solve_event(event, goon)
+            }
+            clingo_solve_event_type_clingo_solve_event_type_statistics => {
+                // check for null pointers
+                if event_data.is_null() {
+                    set_internal_error(
+                        ErrorType::Runtime,
+                        "unsafe_solve_callback() got a null pointer event_data.",
+                    );
+                    return false;
+                }
+                let stats: &mut [&mut Statistics] =
+                    std::slice::from_raw_parts_mut(event_data as *mut &mut Statistics, 2);
+                use std::convert::TryInto;
+                let stats: &mut [&mut Statistics; 2] =
+                    stats.try_into().expect("slice has more than two items");
+                let event = SolveEvent::Statistics(stats);
+                event_handler.on_solve_event(event, goon)
+            }
+            clingo_solve_event_type_clingo_solve_event_type_finish => {
+                // check for null pointers
+                if event_data.is_null() {
+                    set_internal_error(
+                        ErrorType::Runtime,
+                        "unsafe_solve_callback() got a null pointer event_data.",
+                    );
+                    return false;
+                }
+                let solve_result = &mut *(event_data as *mut SolveResult);
+                let event = SolveEvent::Finish(solve_result);
+                event_handler.on_solve_event(event, goon)
+            }
+            x => {
+                eprintln!(
+                    "FFIError in {} {}, {} : Failed to match clingo_solve_event_type {}",
+                    file!(),
+                    line!(),
+                    column!(),
+                    x
+                );
                 // from the libclingo docs:
                 // If a (non-recoverable) clingo API function fails in this callback, it must return false.
                 // In case of errors not related to clingo, set error code ErrorType::Unknown and return false to stop solving with an error.
-                set_internal_error(ErrorType::Runtime, "Error in unsafe_solve_callback().");
+                set_internal_error(
+                    ErrorType::Runtime,
+                    "Error in unsafe_solve_callback(): unknown event_type.",
+                );
                 false
             }
-            Ok(etype) => event_handler.on_solve_event(etype, goon),
         }
     }
 }
