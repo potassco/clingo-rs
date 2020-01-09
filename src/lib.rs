@@ -1014,7 +1014,7 @@ impl Location {
         Ok(Location(loc))
     }
     /// the file where the location begins
-    pub fn begin_file(&self) -> Result<&str, Utf8Error> {
+    pub fn begin_file(&self) -> Result<&'static str, Utf8Error> {
         if self.0.begin_file.is_null() {
             Ok("")
         } else {
@@ -1023,7 +1023,7 @@ impl Location {
         }
     }
     /// the file where the location ends
-    pub fn end_file(&self) -> Result<&str, Utf8Error> {
+    pub fn end_file(&self) -> Result<&'static str, Utf8Error> {
         if self.0.end_file.is_null() {
             Ok("")
         } else {
@@ -1109,7 +1109,7 @@ impl Signature {
 
     // TODO: should i return empty string vs Error
     /// Get the name of a signature.
-    pub fn name(&self) -> Result<&str, Utf8Error> {
+    pub fn name(&self) -> Result<&'static str, Utf8Error> {
         let char_ptr: *const c_char = unsafe { clingo_signature_name(self.0) };
         if char_ptr.is_null() {
             Ok("")
@@ -1295,7 +1295,7 @@ impl Symbol {
     ///
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if symbol is not of type [`SymbolType::Function`](enum.SymbolType.html#variant.Function)
     /// - [`ClingoError::Utf8Error`](enum.ClingoError.html#variant.Utf8Error)
-    pub fn name(&self) -> Result<&str, ClingoError> {
+    pub fn name(&self) -> Result<&'static str, ClingoError> {
         let mut char_ptr = std::ptr::null();
         if !unsafe { clingo_symbol_name(self.0, &mut char_ptr) } {
             return Err(ClingoError::new_internal(
@@ -1317,7 +1317,7 @@ impl Symbol {
     ///
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if symbol is not of type [`SymbolType::String`](enum.SymbolType.html#variant.String)
     /// - [`ClingoError::Utf8Error`](enum.ClingoError.html#variant.Utf8Error)
-    pub fn string(&self) -> Result<&str, ClingoError> {
+    pub fn string(&self) -> Result<&'static str, ClingoError> {
         let mut char_ptr = std::ptr::null();
         if !unsafe { clingo_symbol_string(self.0, &mut char_ptr) } {
             return Err(ClingoError::new_internal(

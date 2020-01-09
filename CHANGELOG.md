@@ -8,6 +8,12 @@ All notable changes to this project will be documented in this file.
     - remove SolveEventType
     - add SolveEvent
     - change SolveEventHandler::on_solve_event(...)
+- return &'static str for internalized strings in
+    - Location::begin_file()
+    - Location::end_file()
+    - Signature::name()
+    - Symbol::name()
+    - Symbol::string()
 
 ## v0.6.0 - Jan 3, 2020
 
