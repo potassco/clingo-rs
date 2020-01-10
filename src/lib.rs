@@ -3518,7 +3518,7 @@ impl SymbolicAtoms {
     /// * `signature` - the signature
     pub fn iter_with_signature(
         &self,
-        sig: &Signature,
+        sig: Signature,
     ) -> Result<SymbolicAtomsIterator, ClingoError> {
         let mut begin = 0 as clingo_symbolic_atom_iterator_t;
         if !unsafe { clingo_symbolic_atoms_begin(&self.0, &sig.0, &mut begin) } {
@@ -4835,7 +4835,6 @@ impl PropagateInit {
         }
         Ok(result)
     }
-    
     /// Add the given literal to minimize to the solver.
     ///
     /// This corresponds to a weak constraint of form `:~ literal. [weight@priority]`.
@@ -6119,16 +6118,16 @@ impl<T: ToSymbol> ToSymbol for &T {
 }
 
 trait FromSymbol: Sized {
-    fn from_symbol(symbol: &Symbol) -> Result<Self, ClingoError>;
+    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError>;
 }
 
 impl FromSymbol for Symbol {
-    fn from_symbol(symbol: &Symbol) -> Result<Self, ClingoError> {
-        Ok(*symbol)
+    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
+        Ok(symbol)
     }
 }
 
-fn tuple_args(symbol: &Symbol) -> Result<Vec<Symbol>, ClingoError> {
+fn tuple_args(symbol: Symbol) -> Result<Vec<Symbol>, ClingoError> {
     if symbol.symbol_type()? != SymbolType::Function {
         return Err(ClingoError::new_internal("Expected Tuple"));
     }
@@ -6139,7 +6138,7 @@ fn tuple_args(symbol: &Symbol) -> Result<Vec<Symbol>, ClingoError> {
 }
 
 impl FromSymbol for () {
-    fn from_symbol(symbol: &Symbol) -> Result<Self, ClingoError> {
+    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
         match tuple_args(symbol)?.as_slice() {
             [] => Ok(()),
             _ => Err(ClingoError::new_internal("Expected empty tuple")),
@@ -6148,31 +6147,35 @@ impl FromSymbol for () {
 }
 
 impl<A: FromSymbol, B: FromSymbol> FromSymbol for (A, B) {
-    fn from_symbol(symbol: &Symbol) -> Result<Self, ClingoError> {
+    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
         match tuple_args(symbol)?.as_slice() {
-            [a, b] => Ok((A::from_symbol(a)?, B::from_symbol(b)?)),
+            [a, b] => Ok((A::from_symbol(*a)?, B::from_symbol(*b)?)),
             _ => Err(ClingoError::new_internal("Expected tuple of length 2")),
         }
     }
 }
 
 impl<A: FromSymbol, B: FromSymbol, C: FromSymbol> FromSymbol for (A, B, C) {
-    fn from_symbol(symbol: &Symbol) -> Result<Self, ClingoError> {
+    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
         match tuple_args(symbol)?.as_slice() {
-            [a, b, c] => Ok((A::from_symbol(a)?, B::from_symbol(b)?, C::from_symbol(c)?)),
+            [a, b, c] => Ok((
+                A::from_symbol(*a)?,
+                B::from_symbol(*b)?,
+                C::from_symbol(*c)?,
+            )),
             _ => Err(ClingoError::new_internal("Expected tuple of length 3")),
         }
     }
 }
 
 impl<A: FromSymbol, B: FromSymbol, C: FromSymbol, D: FromSymbol> FromSymbol for (A, B, C, D) {
-    fn from_symbol(symbol: &Symbol) -> Result<Self, ClingoError> {
+    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
         match tuple_args(symbol)?.as_slice() {
             [a, b, c, d] => Ok((
-                A::from_symbol(a)?,
-                B::from_symbol(b)?,
-                C::from_symbol(c)?,
-                D::from_symbol(d)?,
+                A::from_symbol(*a)?,
+                B::from_symbol(*b)?,
+                C::from_symbol(*c)?,
+                D::from_symbol(*d)?,
             )),
             _ => Err(ClingoError::new_internal("Expected tuple of length 4")),
         }
@@ -6182,14 +6185,14 @@ impl<A: FromSymbol, B: FromSymbol, C: FromSymbol, D: FromSymbol> FromSymbol for 
 impl<A: FromSymbol, B: FromSymbol, C: FromSymbol, D: FromSymbol, E: FromSymbol> FromSymbol
     for (A, B, C, D, E)
 {
-    fn from_symbol(symbol: &Symbol) -> Result<Self, ClingoError> {
+    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
         match tuple_args(symbol)?.as_slice() {
             [a, b, c, d, e] => Ok((
-                A::from_symbol(a)?,
-                B::from_symbol(b)?,
-                C::from_symbol(c)?,
-                D::from_symbol(d)?,
-                E::from_symbol(e)?,
+                A::from_symbol(*a)?,
+                B::from_symbol(*b)?,
+                C::from_symbol(*c)?,
+                D::from_symbol(*d)?,
+                E::from_symbol(*e)?,
             )),
             _ => Err(ClingoError::new_internal("Expected tuple of length 5")),
         }
@@ -6199,15 +6202,15 @@ impl<A: FromSymbol, B: FromSymbol, C: FromSymbol, D: FromSymbol, E: FromSymbol> 
 impl<A: FromSymbol, B: FromSymbol, C: FromSymbol, D: FromSymbol, E: FromSymbol, F: FromSymbol>
     FromSymbol for (A, B, C, D, E, F)
 {
-    fn from_symbol(symbol: &Symbol) -> Result<Self, ClingoError> {
+    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
         match tuple_args(symbol)?.as_slice() {
             [a, b, c, d, e, f] => Ok((
-                A::from_symbol(a)?,
-                B::from_symbol(b)?,
-                C::from_symbol(c)?,
-                D::from_symbol(d)?,
-                E::from_symbol(e)?,
-                F::from_symbol(f)?,
+                A::from_symbol(*a)?,
+                B::from_symbol(*b)?,
+                C::from_symbol(*c)?,
+                D::from_symbol(*d)?,
+                E::from_symbol(*e)?,
+                F::from_symbol(*f)?,
             )),
             _ => Err(ClingoError::new_internal("Expected tuple of length 6")),
         }
@@ -6224,16 +6227,16 @@ impl<
         G: FromSymbol,
     > FromSymbol for (A, B, C, D, E, F, G)
 {
-    fn from_symbol(symbol: &Symbol) -> Result<Self, ClingoError> {
+    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
         match tuple_args(symbol)?.as_slice() {
             [a, b, c, d, e, f, g] => Ok((
-                A::from_symbol(a)?,
-                B::from_symbol(b)?,
-                C::from_symbol(c)?,
-                D::from_symbol(d)?,
-                E::from_symbol(e)?,
-                F::from_symbol(f)?,
-                G::from_symbol(g)?,
+                A::from_symbol(*a)?,
+                B::from_symbol(*b)?,
+                C::from_symbol(*c)?,
+                D::from_symbol(*d)?,
+                E::from_symbol(*e)?,
+                F::from_symbol(*f)?,
+                G::from_symbol(*g)?,
             )),
             _ => Err(ClingoError::new_internal("Expected tuple of length 7")),
         }
@@ -6251,17 +6254,17 @@ impl<
         H: FromSymbol,
     > FromSymbol for (A, B, C, D, E, F, G, H)
 {
-    fn from_symbol(symbol: &Symbol) -> Result<Self, ClingoError> {
+    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
         match tuple_args(symbol)?.as_slice() {
             [a, b, c, d, e, f, g, h] => Ok((
-                A::from_symbol(a)?,
-                B::from_symbol(b)?,
-                C::from_symbol(c)?,
-                D::from_symbol(d)?,
-                E::from_symbol(e)?,
-                F::from_symbol(f)?,
-                G::from_symbol(g)?,
-                H::from_symbol(h)?,
+                A::from_symbol(*a)?,
+                B::from_symbol(*b)?,
+                C::from_symbol(*c)?,
+                D::from_symbol(*d)?,
+                E::from_symbol(*e)?,
+                F::from_symbol(*f)?,
+                G::from_symbol(*g)?,
+                H::from_symbol(*h)?,
             )),
             _ => Err(ClingoError::new_internal("Expected tuple of length 8")),
         }
@@ -6280,18 +6283,18 @@ impl<
         I: FromSymbol,
     > FromSymbol for (A, B, C, D, E, F, G, H, I)
 {
-    fn from_symbol(symbol: &Symbol) -> Result<Self, ClingoError> {
+    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
         match tuple_args(symbol)?.as_slice() {
             [a, b, c, d, e, f, g, h, i] => Ok((
-                A::from_symbol(a)?,
-                B::from_symbol(b)?,
-                C::from_symbol(c)?,
-                D::from_symbol(d)?,
-                E::from_symbol(e)?,
-                F::from_symbol(f)?,
-                G::from_symbol(g)?,
-                H::from_symbol(h)?,
-                I::from_symbol(i)?,
+                A::from_symbol(*a)?,
+                B::from_symbol(*b)?,
+                C::from_symbol(*c)?,
+                D::from_symbol(*d)?,
+                E::from_symbol(*e)?,
+                F::from_symbol(*f)?,
+                G::from_symbol(*g)?,
+                H::from_symbol(*h)?,
+                I::from_symbol(*i)?,
             )),
             _ => Err(ClingoError::new_internal("Expected tuple of length 9")),
         }
@@ -6311,19 +6314,19 @@ impl<
         J: FromSymbol,
     > FromSymbol for (A, B, C, D, E, F, G, H, I, J)
 {
-    fn from_symbol(symbol: &Symbol) -> Result<Self, ClingoError> {
+    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
         match tuple_args(symbol)?.as_slice() {
             [a, b, c, d, e, f, g, h, i, j] => Ok((
-                A::from_symbol(a)?,
-                B::from_symbol(b)?,
-                C::from_symbol(c)?,
-                D::from_symbol(d)?,
-                E::from_symbol(e)?,
-                F::from_symbol(f)?,
-                G::from_symbol(g)?,
-                H::from_symbol(h)?,
-                I::from_symbol(i)?,
-                J::from_symbol(j)?,
+                A::from_symbol(*a)?,
+                B::from_symbol(*b)?,
+                C::from_symbol(*c)?,
+                D::from_symbol(*d)?,
+                E::from_symbol(*e)?,
+                F::from_symbol(*f)?,
+                G::from_symbol(*g)?,
+                H::from_symbol(*h)?,
+                I::from_symbol(*i)?,
+                J::from_symbol(*j)?,
             )),
             _ => Err(ClingoError::new_internal("Expected tuple of length 10")),
         }
@@ -6344,20 +6347,20 @@ impl<
         K: FromSymbol,
     > FromSymbol for (A, B, C, D, E, F, G, H, I, J, K)
 {
-    fn from_symbol(symbol: &Symbol) -> Result<Self, ClingoError> {
+    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
         match tuple_args(symbol)?.as_slice() {
             [a, b, c, d, e, f, g, h, i, j, k] => Ok((
-                A::from_symbol(a)?,
-                B::from_symbol(b)?,
-                C::from_symbol(c)?,
-                D::from_symbol(d)?,
-                E::from_symbol(e)?,
-                F::from_symbol(f)?,
-                G::from_symbol(g)?,
-                H::from_symbol(h)?,
-                I::from_symbol(i)?,
-                J::from_symbol(j)?,
-                K::from_symbol(k)?,
+                A::from_symbol(*a)?,
+                B::from_symbol(*b)?,
+                C::from_symbol(*c)?,
+                D::from_symbol(*d)?,
+                E::from_symbol(*e)?,
+                F::from_symbol(*f)?,
+                G::from_symbol(*g)?,
+                H::from_symbol(*h)?,
+                I::from_symbol(*i)?,
+                J::from_symbol(*j)?,
+                K::from_symbol(*k)?,
             )),
             _ => Err(ClingoError::new_internal("Expected tuple of length 11")),
         }
@@ -6379,21 +6382,21 @@ impl<
         L: FromSymbol,
     > FromSymbol for (A, B, C, D, E, F, G, H, I, J, K, L)
 {
-    fn from_symbol(symbol: &Symbol) -> Result<Self, ClingoError> {
+    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
         match tuple_args(symbol)?.as_slice() {
             [a, b, c, d, e, f, g, h, i, j, k, l] => Ok((
-                A::from_symbol(a)?,
-                B::from_symbol(b)?,
-                C::from_symbol(c)?,
-                D::from_symbol(d)?,
-                E::from_symbol(e)?,
-                F::from_symbol(f)?,
-                G::from_symbol(g)?,
-                H::from_symbol(h)?,
-                I::from_symbol(i)?,
-                J::from_symbol(j)?,
-                K::from_symbol(k)?,
-                L::from_symbol(l)?,
+                A::from_symbol(*a)?,
+                B::from_symbol(*b)?,
+                C::from_symbol(*c)?,
+                D::from_symbol(*d)?,
+                E::from_symbol(*e)?,
+                F::from_symbol(*f)?,
+                G::from_symbol(*g)?,
+                H::from_symbol(*h)?,
+                I::from_symbol(*i)?,
+                J::from_symbol(*j)?,
+                K::from_symbol(*k)?,
+                L::from_symbol(*l)?,
             )),
             _ => Err(ClingoError::new_internal("Expected tuple of length 12")),
         }
@@ -6401,22 +6404,22 @@ impl<
 }
 
 impl FromSymbol for i32 {
-    fn from_symbol(symbol: &Symbol) -> Result<Self, ClingoError> {
+    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
         symbol.number()
     }
 }
 impl FromSymbol for u64 {
-    fn from_symbol(symbol: &Symbol) -> Result<Self, ClingoError> {
+    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
         Ok(symbol.number()? as u64)
     }
 }
 impl FromSymbol for String {
-    fn from_symbol(symbol: &Symbol) -> Result<Self, ClingoError> {
+    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
         Ok(symbol.string()?.into())
     }
 }
 impl FromSymbol for &'static str {
-    fn from_symbol(symbol: &Symbol) -> Result<Self, ClingoError> {
+    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
         symbol.string()
     }
 }

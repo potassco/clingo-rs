@@ -109,7 +109,7 @@ impl Propagator for PropagatorT {
 
                 // get an iterator for place/2 atoms
                 // (atom order corresponds to grounding order (and is unpredictable))
-                let mut atoms_iterator = atoms.iter_with_signature(&sig).unwrap();
+                let mut atoms_iterator = atoms.iter_with_signature(sig).unwrap();
 
                 if pass == 1 {
                     // allocate memory for the assignment literal -> hole mapping
