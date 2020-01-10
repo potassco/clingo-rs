@@ -1,5 +1,8 @@
+#[cfg(feature = "derive")]
 use clingo::ClingoError;
+#[cfg(feature = "derive")]
 use clingo::Symbol;
+#[cfg(feature = "derive")]
 use clingo::ToSymbol;
 
 #[cfg(feature = "derive")]

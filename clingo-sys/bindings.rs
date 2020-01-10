@@ -27,7 +27,7 @@ pub const __STDC_IEC_559_COMPLEX__: u32 = 1;
 pub const __STDC_ISO_10646__: u32 = 201706;
 pub const __GNU_LIBRARY__: u32 = 6;
 pub const __GLIBC__: u32 = 2;
-pub const __GLIBC_MINOR__: u32 = 29;
+pub const __GLIBC_MINOR__: u32 = 30;
 pub const _SYS_CDEFS_H: u32 = 1;
 pub const __glibc_c99_flexarr_available: u32 = 1;
 pub const __WORDSIZE: u32 = 64;
@@ -91,8 +91,8 @@ pub const false_: u32 = 0;
 pub const __bool_true_false_are_defined: u32 = 1;
 pub const CLINGO_VERSION_MAJOR: u32 = 5;
 pub const CLINGO_VERSION_MINOR: u32 = 4;
-pub const CLINGO_VERSION_REVISION: u32 = 0;
-pub const CLINGO_VERSION: &'static [u8; 6usize] = b"5.4.0\0";
+pub const CLINGO_VERSION_REVISION: u32 = 1;
+pub const CLINGO_VERSION: &'static [u8; 6usize] = b"5.4.1\0";
 pub type wchar_t = ::std::os::raw::c_int;
 pub type __u_char = ::std::os::raw::c_uchar;
 pub type __u_short = ::std::os::raw::c_ushort;
@@ -209,6 +209,47 @@ pub type clingo_atom_t = u32;
 pub type clingo_id_t = u32;
 #[doc = "! Signed integer type for weights in sum aggregates and minimize constraints."]
 pub type clingo_weight_t = i32;
+#[doc = "! A Literal with an associated weight."]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct clingo_weighted_literal {
+    pub literal: clingo_literal_t,
+    pub weight: clingo_weight_t,
+}
+#[test]
+fn bindgen_test_layout_clingo_weighted_literal() {
+    assert_eq!(
+        ::std::mem::size_of::<clingo_weighted_literal>(),
+        8usize,
+        concat!("Size of: ", stringify!(clingo_weighted_literal))
+    );
+    assert_eq!(
+        ::std::mem::align_of::<clingo_weighted_literal>(),
+        4usize,
+        concat!("Alignment of ", stringify!(clingo_weighted_literal))
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<clingo_weighted_literal>())).literal as *const _ as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(clingo_weighted_literal),
+            "::",
+            stringify!(literal)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<clingo_weighted_literal>())).weight as *const _ as usize },
+        4usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(clingo_weighted_literal),
+            "::",
+            stringify!(weight)
+        )
+    );
+}
+pub type clingo_weighted_literal_t = clingo_weighted_literal;
 #[doc = "!< successful API calls"]
 pub const clingo_error_clingo_error_success: clingo_error = 0;
 #[doc = "!< errors only detectable at runtime like invalid input"]
@@ -1528,20 +1569,94 @@ extern "C" {
     ) -> *const clingo_assignment_t;
 }
 extern "C" {
+    #[doc = "! Add a literal to the solver."]
+    #[doc = "!"]
+    #[doc = "! @attention If varibales were added, subsequent calls to functions adding constraints or ::clingo_propagate_init_propagate() are expensive."]
+    #[doc = "! It is best to add varables in batches."]
+    #[doc = "!"]
+    #[doc = "! @param[in] init the target"]
+    #[doc = "! @param[out] result the added literal"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_bad_alloc"]
+    pub fn clingo_propagate_init_add_literal(
+        init: *mut clingo_propagate_init_t,
+        result: *mut clingo_literal_t,
+    ) -> bool;
+}
+extern "C" {
     #[doc = "! Add the given clause to the solver."]
     #[doc = "!"]
-    #[doc = "! This method sets its result to false if the clause is causing a conflict."]
+    #[doc = "! @attention No further calls on the init object or functions on the assignment should be called when the result of this method is false."]
     #[doc = "!"]
     #[doc = "! @param[in] init the target"]
     #[doc = "! @param[in] clause the clause to add"]
     #[doc = "! @param[in] size the size of the clause"]
-    #[doc = "! @param[out] result result indicating whether the clause is conflicting"]
+    #[doc = "! @param[out] result result indicating whether the problem became unsatisfiable"]
     #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
     #[doc = "! - ::clingo_error_bad_alloc"]
     pub fn clingo_propagate_init_add_clause(
         init: *mut clingo_propagate_init_t,
         clause: *const clingo_literal_t,
         size: usize,
+        result: *mut bool,
+    ) -> bool;
+}
+extern "C" {
+    #[doc = "! Add the given weight constraint to the solver."]
+    #[doc = "!"]
+    #[doc = "! This function adds a constraint of form `literal == { lit=weight | (lit, weight) in literals } <= bound` to the solver."]
+    #[doc = "!"]
+    #[doc = "! @attention No further calls on the init object or functions on the assignment should be called when the result of this method is false."]
+    #[doc = "!"]
+    #[doc = "! @param[in] init the target"]
+    #[doc = "! @param[in] literal the literal of the constraint"]
+    #[doc = "! @param[in] literals the weighted literals"]
+    #[doc = "! @param[in] size the number of weighted literals"]
+    #[doc = "! @param[in] bound the bound of the constraint"]
+    #[doc = "! @param[in] compare_equal if true compare equal instead of less than equal"]
+    #[doc = "! @param[out] result result indicating whether the problem became unsatisfiable"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_bad_alloc"]
+    pub fn clingo_propagate_init_add_weight_constraint(
+        init: *mut clingo_propagate_init_t,
+        literal: clingo_literal_t,
+        literals: *const clingo_weighted_literal_t,
+        size: usize,
+        bound: clingo_weight_t,
+        compare_equal: bool,
+        result: *mut bool,
+    ) -> bool;
+}
+extern "C" {
+    #[doc = "! Add the given literal to minimize to the solver."]
+    #[doc = "!"]
+    #[doc = "! This corresponds to a weak constraint of form `:~ literal. [weight@priority]`."]
+    #[doc = "!"]
+    #[doc = "! @param[in] init the target"]
+    #[doc = "! @param[in] literal the literal to minimize"]
+    #[doc = "! @param[in] weight the weight of the literal"]
+    #[doc = "! @param[in] priority the priority of the literal"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_bad_alloc"]
+    pub fn clingo_propagate_init_add_minimize(
+        init: *mut clingo_propagate_init_t,
+        literal: clingo_literal_t,
+        weight: clingo_weight_t,
+        priority: clingo_weight_t,
+    ) -> bool;
+}
+extern "C" {
+    #[doc = "! Propagates consequences of the underlying problem excluding registered propagators."]
+    #[doc = "!"]
+    #[doc = "! @note The function has no effect if SAT-preprocessing is enabled."]
+    #[doc = "! @attention No further calls on the init object or functions on the assignment should be called when the result of this method is false."]
+    #[doc = "!"]
+    #[doc = "! @param[in] init the target"]
+    #[doc = "! @param[out] result result indicating whether the problem became unsatisfiable"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_bad_alloc"]
+    pub fn clingo_propagate_init_propagate(
+        init: *mut clingo_propagate_init_t,
         result: *mut bool,
     ) -> bool;
 }
@@ -1938,48 +2053,6 @@ pub type clingo_external_type = u32;
 #[doc = "! Corresponding type to ::clingo_external_type."]
 #[doc = "! @ingroup ProgramInspection"]
 pub type clingo_external_type_t = ::std::os::raw::c_int;
-#[doc = "! A Literal with an associated weight."]
-#[doc = "! @ingroup ProgramInspection"]
-#[repr(C)]
-#[derive(Debug, Copy, Clone)]
-pub struct clingo_weighted_literal {
-    pub literal: clingo_literal_t,
-    pub weight: clingo_weight_t,
-}
-#[test]
-fn bindgen_test_layout_clingo_weighted_literal() {
-    assert_eq!(
-        ::std::mem::size_of::<clingo_weighted_literal>(),
-        8usize,
-        concat!("Size of: ", stringify!(clingo_weighted_literal))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<clingo_weighted_literal>(),
-        4usize,
-        concat!("Alignment of ", stringify!(clingo_weighted_literal))
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<clingo_weighted_literal>())).literal as *const _ as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(clingo_weighted_literal),
-            "::",
-            stringify!(literal)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<clingo_weighted_literal>())).weight as *const _ as usize },
-        4usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(clingo_weighted_literal),
-            "::",
-            stringify!(weight)
-        )
-    );
-}
-pub type clingo_weighted_literal_t = clingo_weighted_literal;
 #[repr(C)]
 #[derive(Debug)]
 pub struct clingo_backend {

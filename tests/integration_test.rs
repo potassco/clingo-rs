@@ -6,7 +6,7 @@ fn version_test() {
     let (ma, mi, re) = version();
     assert!(ma == 5);
     assert!(mi == 4);
-    assert!(re == 0);
+    assert!(re == 1);
 }
 #[test]
 fn signature_test() {

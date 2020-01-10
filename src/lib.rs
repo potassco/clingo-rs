@@ -4195,11 +4195,11 @@ impl Model {
         Ok(Id(id))
     }
 
-    /// Add symbols to the model."]
+    /// Add symbols to the model.
     ///
     /// These symbols will appear in clingo\'s output, which means that this
-    /// function is only meaningful if there is an underlying clingo application."]
-    /// Only models passed to the ::clingo_solve_event_callback_t are extendable."]
+    /// function is only meaningful if there is an underlying clingo application.
+    /// Only models passed to the ::clingo_solve_event_callback_t are extendable.
     ///
     /// # Arguments
     ///
@@ -4739,13 +4739,40 @@ impl PropagateInit {
         }
     }
 
+    /// Add a literal to the solver.
+    ///
+    /// **Attention** If varibales were added, subsequent calls to functions adding constraints or ::clingo_propagate_init_propagate() are expensive.
+    /// It is best to add varables in batches.
+    ///
+    /// **Returns** the added literal
+    ///
+    /// # Errors
+    ///
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    pub fn add_literal(&mut self) -> Result<&mut Literal, ClingoError> {
+        let literal_ptr = std::ptr::null_mut() as *mut clingo_literal_t;
+        if !unsafe { clingo_propagate_init_add_literal(&mut self.0, literal_ptr) } {
+            return Err(ClingoError::new_internal(
+                "Call to clingo_propagate_init_add_literal() failed",
+            ));
+        }
+        match unsafe { (literal_ptr as *mut Literal).as_mut() } {
+            Some(x) => Ok(x),
+            None => Err(ClingoError::FFIError {
+                msg: "Tried casting a null pointer to &mut Literal.",
+            }),
+        }
+    }
+
     /// Add the given clause to the solver.
     ///
-    /// This method sets its result to false if the clause is causing a conflict.
+    /// **Attention** No further calls on the init object or functions on the assignment should be called when the result of this method is false.
     ///
     /// # Arguments
     ///
     /// * `clause` - the clause to add
+    ///
+    ///  **Returns** whether the problem became unsatisfiable
     ///
     /// # Errors
     ///
@@ -4762,6 +4789,95 @@ impl PropagateInit {
         } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_propagate_init_add_clause() failed",
+            ));
+        }
+        Ok(result)
+    }
+
+    /// Add the given weight constraint to the solver.
+    ///
+    /// This function adds a constraint of form `literal == { lit=weight | (lit, weight) in literals } <= bound` to the solver.
+    ///
+    /// **Attention** No further calls on the init object or functions on the assignment should be called when the result of this method is false.
+    ///
+    /// * `literal` - the literal of the constraint
+    /// * `literals` - the weighted literals
+    /// * `bound` - the bound of the constraint
+    /// * `compare_equal` - if true compare equal instead of less than equal
+    ///
+    /// **Returns** result indicating whether the problem became unsatisfiable
+    ///
+    /// # Errors
+    ///
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    pub fn add_weight_constraint(
+        &mut self,
+        literal: Literal,
+        literals: &[WeightedLiteral],
+        bound: i32,
+        compare_equal: bool,
+    ) -> Result<bool, ClingoError> {
+        let mut result = false;
+        if !unsafe {
+            clingo_propagate_init_add_weight_constraint(
+                &mut self.0,
+                literal.0,
+                literals.as_ptr() as *const clingo_weighted_literal_t,
+                literals.len(),
+                bound,
+                compare_equal,
+                &mut result,
+            )
+        } {
+            return Err(ClingoError::new_internal(
+                "Call to clingo_propagate_init_add_weight_constraint() failed",
+            ));
+        }
+        Ok(result)
+    }
+    
+    /// Add the given literal to minimize to the solver.
+    ///
+    /// This corresponds to a weak constraint of form `:~ literal. [weight@priority]`.
+    ///
+    /// * `literal` - the literal to minimize
+    /// * `weight` - the weight of the literal
+    /// * `priority` - the priority of the literal
+    ///
+    /// # Errors
+    ///
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    pub fn add_minimize(
+        &mut self,
+        literal: Literal,
+        weight: i32,
+        priority: i32,
+    ) -> Result<(), ClingoError> {
+        if !unsafe { clingo_propagate_init_add_minimize(&mut self.0, literal.0, weight, priority) }
+        {
+            return Err(ClingoError::new_internal(
+                "Call to clingo_propagate_init_add_minimize() failed",
+            ));
+        }
+        Ok(())
+    }
+
+    /// Propagates consequences of the underlying problem excluding registered propagators.
+    ///
+    /// **Note** The function has no effect if SAT-preprocessing is enabled.
+    ///
+    /// **Attention** No further calls on the init object or functions on the assignment should be called when the result of this method is false.
+    ///
+    /// **Returns** result indicating whether the problem became unsatisfiable
+    ///
+    /// # Errors
+    ///
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    pub fn propagate(&mut self) -> Result<bool, ClingoError> {
+        let mut result = false;
+        if !unsafe { clingo_propagate_init_propagate(&mut self.0, &mut result) } {
+            return Err(ClingoError::new_internal(
+                "Call to clingo_propagate_init_propagate() failed",
             ));
         }
         Ok(result)

@@ -3,7 +3,7 @@ extern crate pkg_config;
 fn main() {
     if cfg!(feature = "dynamic_linking") {
 
-        match pkg_config::Config::new().atleast_version("5.4.0").probe("clingo"){
+        match pkg_config::Config::new().atleast_version("5.4.1").probe("clingo"){
             Ok(_lib) => {println!("cargo:rustc-link-lib=dylib=clingo");},
             Err(e) => {
                 println!("\nError: {}", e);
@@ -13,10 +13,7 @@ fn main() {
         
     } else {
 
-        // download clingo / clasp from github
-        
-        // git clone https://github.com/potassco/clingo.git
-        // git checkout v5.4.0
+        // update clingo submodule
         // git submodule update --init --recursive
 
 
@@ -24,7 +21,7 @@ fn main() {
 
         // if !Path::new("bindings.rs").exists() {
         //     let bindings = bindgen::Builder::default()
-        //         .header("clingo/libclingo/clingo.h").to_str().unwrap())
+        //         .header("clingo/libclingo/clingo.h")
         //         .no_copy("clingo_solve_control")
         //         .no_copy("clingo_model")
         //         .no_copy("clingo_solve_handle")
@@ -126,7 +123,7 @@ fn main() {
             .flag("-std=c++14")
             .warnings(false)
             .define("NDEBUG", Some("1"))
-            .file("clingo/libgringo/src/backend.cc")
+            // .file("clingo/libgringo/src/backend.cc")
             .file("clingo/libgringo/src/primes.cc")
             .file("clingo/libgringo/src/symbol.cc")
             .file("clingo/libgringo/src/term.cc")
