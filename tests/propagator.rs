@@ -1,60 +1,12 @@
 use clingo::*;
 use std::cell::RefCell;
-use std::env;
 use std::rc::Rc;
 
-fn print_model(model: &Model) {
-    // retrieve the symbols in the model
-    let atoms = model
-        .symbols(ShowType::SHOWN)
-        .expect("Failed to retrieve symbols in the model.");
-
-    print!("Model:");
-
-    for atom in atoms {
-        // retrieve and print the symbol's string
-        print!(" {}", atom.to_string().unwrap());
-    }
-    println!();
-}
-
-fn solve(ctl: &mut Control) {
-    // get a solve handle
-    let mut handle = ctl
-        .solve(SolveMode::YIELD, &[])
-        .expect("Failed to retrieve solve handle.");
-
-    // loop over all models
-    loop {
-        handle.resume().expect("Failed resume on solve handle.");
-        match handle.model() {
-            // print the model
-            Ok(Some(model)) => print_model(model),
-            // stop if there are no more models
-            Ok(None) => break,
-            Err(e) => panic!("Error: {}", e),
-        }
-    }
-
-    // close the solve handle
-    handle.close().expect("Failed to close solve handle.");
-}
-
-// state information for individual solving threads
 #[derive(Debug)]
 struct StateT {
     // assignment of pigeons to holes
     // (hole number -> pigeon placement literal or zero)
     holes: Vec<Option<Literal>>,
-}
-
-// state information for the propagator
-struct PropagatorT {
-    // mapping from solver literals capturing pigeon placements to hole numbers
-    // (solver literal -> hole number or zero)
-    pigeons: Vec<i32>,
-    // array of states
-    states: Vec<Rc<RefCell<StateT>>>,
 }
 
 // returns the offset'th numeric argument of the function symbol sym
@@ -65,7 +17,15 @@ fn get_arg(sym: &Symbol, offset: usize) -> Result<i32, ClingoError> {
     args[offset as usize].number()
 }
 
-impl Propagator for PropagatorT {
+struct PigeonPropagator {
+    // mapping from solver literals capturing pigeon placements to hole numbers
+    // (solver literal -> hole number or zero)
+    pigeons: Vec<i32>,
+    // array of states
+    states: Vec<Rc<RefCell<StateT>>>,
+}
+
+impl Propagator for PigeonPropagator {
     fn init(&mut self, init: &mut PropagateInit) -> bool {
         // stores the (numeric) maximum of the solver literals capturing pigeon placements
         // note that the code below assumes that this literal is not negative
@@ -219,53 +179,96 @@ impl Propagator for PropagatorT {
     }
 }
 
-fn main() {
-    // collect clingo options from the command line
-    let options = env::args().skip(1).collect();
+fn solve(ctl: &mut Control) -> Vec<Vec<String>> {
+    let mut ret = Vec::<Vec<String>>::new();
+    // get a solve handle
+    let mut handle = ctl
+        .solve(SolveMode::YIELD, &[])
+        .expect("Failed to retrieve solve handle.");
 
-    // create a propagator with the functions above
-    // using the default implementation for the model check
-    let mut prop = PropagatorT {
+    // loop over all models
+    loop {
+        handle.resume().expect("Failed resume on solve handle.");
+        match handle.model() {
+            // get the model
+            Ok(Some(model)) => ret.push(string_model(model)),
+            // stop if there are no more models
+            Ok(None) => break,
+            Err(e) => panic!("Error: {}", e),
+        }
+    }
+    // close the solve handle
+    // handle.close().expect("Failed to close solve handle.");
+    ret
+}
+fn string_model(model: &Model) -> Vec<String> {
+    let mut ret = Vec::<String>::new();
+    // retrieve the symbols in the model
+    let atoms = model
+        .symbols(ShowType::SHOWN)
+        .expect("Failed to retrieve symbols in the model.");
+    for atom in atoms {
+        // retrieve the symbol's string
+        ret.push(atom.to_string().unwrap());
+    }
+    ret
+}
+#[test]
+fn pigeon_propagator_unsat() {
+    let mut ctl = Control::new(vec!["0".into()]).unwrap();
+    let mut prop = PigeonPropagator {
         pigeons: vec![],
         states: vec![],
     };
+    ctl.register_propagator(&mut prop, false)
+        .expect("Failed to register propagator.");
+    ctl.add(
+        "pigeon",
+        &vec!["h", "p"],
+        "1 { place(P,H) : H = 1..h } 1 :- P = 1..p.",
+    )
+    .expect("Failed to add a logic program.");
 
-    // create a control object and pass command line arguments
-    match Control::new(options) {
-        Ok(mut ctl) => {
-            // register the propagator
-            ctl.register_propagator(&mut prop, false)
-                .expect("Failed to register propagator.");
+    // let place = |p, h| Symbol::create_function("place", &[p, h], true);
 
-            // add a logic program to the pigeon part
-            // parameters for the pigeon part
-            ctl.add(
-                "pigeon",
-                &vec!["h", "p"],
-                "1 { place(P,H) : H = 1..h } 1 :- P = 1..p.",
-            )
-            .expect("Failed to add a logic program.");
+    let arg0 = Symbol::create_number(5);
+    let arg1 = Symbol::create_number(6);
+    let args = vec![arg0, arg1];
+    let part = Part::new("pigeon", &args).unwrap();
+    let parts = vec![part];
+    ctl.ground(&parts)
+        .expect("Failed to ground a logic program.");
 
-            // ground the pigeon part
+    let models = solve(&mut ctl);
+    assert!(models.is_empty());
+}
+#[test]
+fn pigeon_propagator_sat() {
+    let mut ctl = Control::new(vec!["0".into()]).unwrap();
+    let mut prop = PigeonPropagator {
+        pigeons: vec![],
+        states: vec![],
+    };
+    ctl.register_propagator(&mut prop, false)
+        .expect("Failed to register propagator.");
+    ctl.add(
+        "pigeon",
+        &vec!["h", "p"],
+        "1 { place(P,H) : H = 1..h } 1 :- P = 1..p.",
+    )
+    .expect("Failed to add a logic program.");
 
-            // set the number of holes
-            let arg0 = Symbol::create_number(3);
-            // set the number of pigeons
-            let arg1 = Symbol::create_number(2);
+    let arg0 = Symbol::create_number(2);
+    let arg1 = Symbol::create_number(2);
+    let args = vec![arg0, arg1];
+    let part = Part::new("pigeon", &args).unwrap();
+    let parts = vec![part];
+    ctl.ground(&parts)
+        .expect("Failed to ground a logic program.");
 
-            let args = vec![arg0, arg1];
-
-            // the pigeon program part having the number of holes and pigeons as parameters
-            let part = Part::new("pigeon", &args).unwrap();
-            let parts = vec![part];
-            ctl.ground(&parts)
-                .expect("Failed to ground a logic program.");
-
-            // solve using a model callback
-            solve(&mut ctl);
-        }
-        Err(e) => {
-            panic!("Error: {}", e);
-        }
-    }
+    let models = solve(&mut ctl);
+    assert_eq!(
+        models,
+        [["place(1,2)", "place(2,1)"], ["place(1,1)", "place(2,2)"]]
+    );
 }

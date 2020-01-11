@@ -16,9 +16,7 @@ fn main() {
         // update clingo submodule
         // git submodule update --init --recursive
 
-
         // create bindings
-
         // if !Path::new("bindings.rs").exists() {
         //     let bindings = bindgen::Builder::default()
         //         .header("clingo/libclingo/clingo.h")
