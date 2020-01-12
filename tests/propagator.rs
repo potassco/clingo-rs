@@ -272,3 +272,97 @@ fn pigeon_propagator_sat() {
         [["place(1,2)", "place(2,1)"], ["place(1,1)", "place(2,2)"]]
     );
 }
+
+struct TestAssignment {
+    a: Option<Literal>,
+    b: Option<Literal>,
+    c: Option<Literal>,
+    count: usize,
+}
+impl Propagator for TestAssignment {
+    fn init(&mut self, init: &mut PropagateInit) -> bool {
+        let a1 = init
+            .symbolic_atoms()
+            .unwrap()
+            .iter()
+            .unwrap()
+            .find(|x| x.symbol().unwrap().to_string().unwrap() == "a");
+        self.a = Some(a1.unwrap().literal().unwrap());
+        let b1 = init
+            .symbolic_atoms()
+            .unwrap()
+            .iter()
+            .unwrap()
+            .find(|x| x.symbol().unwrap().to_string().unwrap() == "b");
+        self.b = Some(b1.unwrap().literal().unwrap());
+        let c1 = init
+            .symbolic_atoms()
+            .unwrap()
+            .iter()
+            .unwrap()
+            .find(|x| x.symbol().unwrap().to_string().unwrap() == "c");
+        self.c = Some(c1.unwrap().literal().unwrap());
+        init.add_watch(self.a.unwrap()).unwrap();
+        init.add_watch(self.b.unwrap()).unwrap();
+        true
+    }
+    fn propagate(&mut self, ctl: &mut PropagateControl, changes: &[Literal]) -> bool {
+        let ass = ctl.assignment().unwrap();
+        self.count += changes.len();
+        let a_ = self.a.unwrap();
+        let b_ = self.b.unwrap();
+        let c_ = self.c.unwrap();
+        assert!(ass.is_fixed(c_).unwrap());
+        assert!(!ass.is_fixed(a_).unwrap());
+        assert!(!ass.is_fixed(b_).unwrap());
+        assert!(!ass.has_conflict());
+        assert!(ass.has_literal(a_));
+        assert!(ass.has_literal(b_));
+        // REQUIRE(!ass.has_literal(1000));
+        let decision = ass.decision(ass.decision_level()).unwrap();
+        assert_eq!(ass.level(decision).unwrap(), ass.decision_level());
+        if self.count == 1 {
+            let a = changes[0];
+            assert_eq!(changes.len(), 1);
+            assert!(!ass.is_fixed(a_).unwrap());
+            assert!(ass.is_true(a).unwrap());
+            assert_eq!(ass.truth_value(a).unwrap(), TruthValue::True);
+            assert!(ass.is_true(a_).unwrap() ^ ass.is_true(b_).unwrap());
+            assert_eq!(ass.level(a).unwrap(), ass.decision_level());
+        }
+        if self.count == 2 {
+            assert!(!ass.is_fixed(a_).unwrap());
+            assert!(!ass.is_fixed(b_).unwrap());
+            assert!(ass.is_true(a_).unwrap());
+            assert!(ass.is_true(b_).unwrap());
+        }
+        true
+    }
+    fn undo(&mut self, _ctl: &mut PropagateControl, undo: &[Literal]) -> bool {
+        self.count -= undo.len();
+        true
+    }
+}
+
+#[test]
+fn test_assignment_propagator() {
+    let mut ctl = Control::new(vec!["0".into()]).unwrap();
+    let mut p = TestAssignment {
+        a: None,
+        b: None,
+        c: None,
+        count: 0,
+    };
+    ctl.register_propagator(&mut p, false)
+        .expect("Failed to register propagator.");
+    ctl.add("base", &[], "{a; b}. c.")
+        .expect("Failed to add a logic program.");
+
+    let part = Part::new("base", &[]).unwrap();
+    let parts = vec![part];
+    ctl.ground(&parts)
+        .expect("Failed to ground a logic program.");
+
+    let models = solve(&mut ctl);
+    assert_eq!(models.len(), 4);
+}

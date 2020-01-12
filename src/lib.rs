@@ -208,7 +208,7 @@ fn set_internal_error(code: ErrorType, message: &'static str) {
 }
 
 /// Represents three-valued truth values.
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub enum TruthValue {
     /// No truth value
     Free = clingo_truth_value_clingo_truth_value_free as isize,
