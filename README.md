@@ -57,6 +57,14 @@ In your source write:
 
 The macro performs a conversion to snake case. This means the corresponing fact for `MyPoint{x:4,y:2}` is `my_point(4,2)`.
 
+## Parallel build
+
+It is possible to speed up the build of clingo, via parallel compilation. This is enabled by the feature `parallel_build`.
+
+```toml
+[dependencies]
+clingo = { version = "0.6.0", features = ["parallel_build"] }
+```
 
 ## Using `dynamic_linking`
 

@@ -14,6 +14,7 @@ readme = "README.md"
 
 [features]
 dynamic_linking = []
+parallel_build = ["cc/parallel"]
 
 [lib]
 name = "clingo_sys"
