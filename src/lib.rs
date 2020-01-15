@@ -6117,7 +6117,7 @@ impl<T: ToSymbol> ToSymbol for &T {
     }
 }
 
-trait FromSymbol: Sized {
+pub trait FromSymbol: Sized {
     fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError>;
 }
 
