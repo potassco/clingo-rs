@@ -921,7 +921,7 @@ pub trait ExternalFunctionHandler {
 }
 
 /// Signed integer type used for aspif and solver literals.
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub struct Literal(clingo_literal_t);
 impl Literal {
     pub fn negate(self) -> Literal {
@@ -2444,7 +2444,7 @@ impl Control {
     /// the solver's various enumeration modes is removed after a solve call. This
     /// includes enumeration of cautious or brave consequences, enumeration of
     /// answer sets with or without projection, or finding optimal models, as well
-    /// as clauses added with clingo_solve_control_add_clause().
+    /// as clauses added with [`SolveControl::add_clause()`](struct.SolveControl.html#method.add_clause).
     ///
     /// **Attention:** For practical purposes, this option is only interesting for single-shot
     /// solving or before the last solve call to squeeze out a tiny bit of performance.
@@ -4547,6 +4547,8 @@ impl PropagateControl {
     ///
     /// * `clause` - the clause to add
     /// * `ctype` - the clause type determining its lifetime
+    ///
+    /// **Returns** result indicating whether propagation has to be stopped
     ///
     /// # Errors
     ///

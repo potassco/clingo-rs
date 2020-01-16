@@ -229,8 +229,6 @@ fn pigeon_propagator_unsat() {
     )
     .expect("Failed to add a logic program.");
 
-    // let place = |p, h| Symbol::create_function("place", &[p, h], true);
-
     let arg0 = Symbol::create_number(5);
     let arg1 = Symbol::create_number(6);
     let args = vec![arg0, arg1];
@@ -267,6 +265,16 @@ fn pigeon_propagator_sat() {
         .expect("Failed to ground a logic program.");
 
     let models = solve(&mut ctl);
+
+    // let place = |p, h| {
+    //     Symbol::create_function(
+    //         "place",
+    //         &[Symbol::create_number(p), Symbol::create_number(h)],
+    //         true,
+    //     )
+    //     .unwrap()
+    // };
+
     assert_eq!(
         models,
         [["place(1,2)", "place(2,1)"], ["place(1,1)", "place(2,2)"]]
@@ -286,8 +294,11 @@ impl Propagator for TestAssignment {
             .unwrap()
             .iter()
             .unwrap()
-            .find(|x| x.symbol().unwrap().to_string().unwrap() == "a");
-        self.a = Some(a1.unwrap().literal().unwrap());
+            .find(|x| x.symbol().unwrap().to_string().unwrap() == "a")
+            .unwrap()
+            .literal()
+            .unwrap();
+        self.a = Some(a1);
         let b1 = init
             .symbolic_atoms()
             .unwrap()
@@ -365,4 +376,181 @@ fn test_assignment_propagator() {
 
     let models = solve(&mut ctl);
     assert_eq!(models.len(), 4);
+}
+
+struct TestMode {
+    lits: Vec<Literal>,
+}
+impl Propagator for TestMode {
+    fn init(&mut self, init: &mut PropagateInit) -> bool {
+        let atoms = init.symbolic_atoms().unwrap();
+        let sig = Signature::new("p", 1, true).unwrap();
+        for atom in atoms.iter_with_signature(sig).unwrap() {
+            self.lits
+                .push(init.solver_literal(atom.literal().unwrap()).unwrap());
+        }
+        init.set_check_mode(PropagatorCheckMode::Fixpoint);
+        true
+    }
+    fn check(&mut self, ctl: &mut PropagateControl) -> bool {
+        for lit in &self.lits {
+            if ctl.assignment().unwrap().truth_value(*lit).unwrap() == TruthValue::Free {
+                let _res = ctl.add_clause(&[*lit], ClauseType::Learnt);
+                break;
+            }
+        }
+        true
+    }
+}
+
+#[test]
+fn test_mode_propagator() {
+    let mut ctl = Control::new(vec!["0".into()]).unwrap();
+    let mut p = TestMode { lits: vec![] };
+    ctl.register_propagator(&mut p, false)
+        .expect("Failed to register propagator.");
+    ctl.add("base", &[], "{p(1..9)}.")
+        .expect("Failed to add a logic program.");
+
+    let part = Part::new("base", &[]).unwrap();
+    let parts = vec![part];
+    ctl.ground(&parts)
+        .expect("Failed to ground a logic program.");
+
+    let models = solve(&mut ctl);
+    assert_eq!(
+        models,
+        [["p(1)", "p(2)", "p(3)", "p(4)", "p(5)", "p(6)", "p(7)", "p(8)", "p(9)"]]
+    );
+}
+
+use std::collections::HashSet;
+use std::sync::{Condvar, Mutex};
+struct TestAddWatch {
+    propagated: HashSet<Literal>,
+    a: Option<Literal>,
+    b: Option<Literal>,
+    mutex: Mutex<u32>,
+    cv: Condvar,
+    done: bool,
+}
+impl Propagator for TestAddWatch {
+    fn init(&mut self, init: &mut PropagateInit) -> bool {
+        assert_eq!(init.number_of_threads(), 2);
+        let a1 = init
+            .symbolic_atoms()
+            .unwrap()
+            .iter()
+            .unwrap()
+            .find(|x| x.symbol().unwrap().to_string().unwrap() == "a")
+            .unwrap()
+            .literal()
+            .unwrap();
+        self.a = Some(init.solver_literal(a1).unwrap());
+        let b1 = init
+            .symbolic_atoms()
+            .unwrap()
+            .iter()
+            .unwrap()
+            .find(|x| x.symbol().unwrap().to_string().unwrap() == "b")
+            .unwrap()
+            .literal()
+            .unwrap();
+        self.b = Some(init.solver_literal(b1).unwrap());
+        let c1 = init
+            .symbolic_atoms()
+            .unwrap()
+            .iter()
+            .unwrap()
+            .find(|x| x.symbol().unwrap().to_string().unwrap() == "c")
+            .unwrap()
+            .literal()
+            .unwrap();
+        let c = init.solver_literal(c1).unwrap();
+        let d1 = init
+            .symbolic_atoms()
+            .unwrap()
+            .iter()
+            .unwrap()
+            .find(|x| x.symbol().unwrap().to_string().unwrap() == "d")
+            .unwrap()
+            .literal()
+            .unwrap();
+        let d = init.solver_literal(d1).unwrap();
+        let a_ = self.a.unwrap();
+        let b_ = self.b.unwrap();
+        init.add_watch_to_thread(a_, 0).unwrap();
+        init.add_watch_to_thread(a_.negate(), 0).unwrap();
+        init.add_watch_to_thread(b_, 0).unwrap();
+        init.add_watch_to_thread(b_.negate(), 0).unwrap();
+        init.add_watch_to_thread(b_.negate(), 1).unwrap();
+        init.add_watch_to_thread(b_, 1).unwrap();
+        let assignment = init.assignment().unwrap();
+        assert_eq!(assignment.truth_value(a_).unwrap(), TruthValue::Free);
+        assert_eq!(assignment.truth_value(b_).unwrap(), TruthValue::Free);
+        assert_eq!(assignment.truth_value(c).unwrap(), TruthValue::True);
+        assert_eq!(assignment.truth_value(d).unwrap(), TruthValue::False);
+        self.done = false;
+        true
+    }
+    fn propagate(&mut self, ctl: &mut PropagateControl, changes: &[Literal]) -> bool {
+        if ctl.thread_id() == 0 {
+            // wait for thread 1 to propagate b
+            let lock = self.mutex.lock().unwrap();
+            let _val = self.cv.wait(lock).unwrap();
+            return self.done;
+        } else {
+            for lit in changes {
+                // let _lock = self.mutex.lock().unwrap();
+                self.done = true;
+                if lit.get_integer() < 0 {
+                    self.propagated.insert(lit.negate());
+                } else {
+                    self.propagated.insert(*lit);
+                }
+            }
+            self.cv.notify_one();
+        }
+        true
+    }
+}
+
+#[test]
+fn test_add_watch_propagator() {
+    let mut ctl = Control::new(vec!["0".into()]).unwrap();
+    let mut p = TestAddWatch {
+        propagated: HashSet::new(),
+        a: None,
+        b: None,
+        mutex: Mutex::new(0),
+        cv: Condvar::new(),
+        done: false,
+    };
+    let conf = ctl.configuration_mut().unwrap();
+    let root_key = conf.root().unwrap();
+    let sub_key = conf.map_at(root_key, "solve.parallel_mode").unwrap();
+    conf.value_set(sub_key, "2")
+        .expect("Failed to set solve.parallel_mode to 2.");
+    ctl.register_propagator(&mut p, false)
+        .expect("Failed to register propagator.");
+    ctl.add("base", &[], "{a;b;c;d}. c. :- d.")
+        .expect("Failed to add a logic program.");
+
+    let part = Part::new("base", &[]).unwrap();
+    let parts = vec![part];
+    ctl.ground(&parts)
+        .expect("Failed to ground a logic program.");
+
+    let models = solve(&mut ctl);
+    assert_eq!(
+        models,
+        [
+            vec!["c"],
+            vec!["a", "c"],
+            vec!["b", "c"],
+            vec!["a", "b", "c"],
+        ]
+    );
+
+    // REQUIRE(prop.propagated == std::set<literal_t>{prop.b});
 }
