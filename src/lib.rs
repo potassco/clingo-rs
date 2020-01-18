@@ -685,7 +685,6 @@ pub trait SolveEventHandler {
                 }
                 let stats: &mut [&mut Statistics] =
                     std::slice::from_raw_parts_mut(event_data as *mut &mut Statistics, 2);
-                use std::convert::TryInto;
                 let stats: &mut [&mut Statistics; 2] =
                     stats.try_into().expect("slice has more than two items");
                 let event = SolveEvent::Statistics(stats);
