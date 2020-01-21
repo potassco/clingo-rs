@@ -63,6 +63,7 @@ use bitflags::bitflags;
 use clingo_sys::*;
 use std::cmp::Ordering;
 use std::collections::HashSet;
+use std::convert::TryInto;
 use std::ffi::CStr;
 use std::ffi::CString;
 use std::ffi::NulError;
@@ -684,7 +685,6 @@ pub trait SolveEventHandler {
                 }
                 let stats: &mut [&mut Statistics] =
                     std::slice::from_raw_parts_mut(event_data as *mut &mut Statistics, 2);
-                use std::convert::TryInto;
                 let stats: &mut [&mut Statistics; 2] =
                     stats.try_into().expect("slice has more than two items");
                 let event = SolveEvent::Statistics(stats);
@@ -6403,6 +6403,46 @@ impl<
     }
 }
 
+impl FromSymbol for u8 {
+    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
+        symbol
+            .number()?
+            .try_into()
+            .map_err(|_| ClingoError::new_internal("Could not convert to u8"))
+    }
+}
+impl FromSymbol for i8 {
+    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
+        symbol
+            .number()?
+            .try_into()
+            .map_err(|_| ClingoError::new_internal("Could not convert to i8"))
+    }
+}
+impl FromSymbol for u16 {
+    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
+        symbol
+            .number()?
+            .try_into()
+            .map_err(|_| ClingoError::new_internal("Could not convert to u16"))
+    }
+}
+impl FromSymbol for i16 {
+    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
+        symbol
+            .number()?
+            .try_into()
+            .map_err(|_| ClingoError::new_internal("Could not convert to i16"))
+    }
+}
+impl FromSymbol for u32 {
+    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
+        symbol
+            .number()?
+            .try_into()
+            .map_err(|_| ClingoError::new_internal("Could not convert to u32"))
+    }
+}
 impl FromSymbol for i32 {
     fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
         symbol.number()
@@ -6410,7 +6450,28 @@ impl FromSymbol for i32 {
 }
 impl FromSymbol for u64 {
     fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
-        Ok(symbol.number()? as u64)
+        symbol
+            .number()?
+            .try_into()
+            .map_err(|_| ClingoError::new_internal("Could not convert to u64"))
+    }
+}
+impl FromSymbol for i64 {
+    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
+        Ok(symbol.number()? as i64)
+    }
+}
+impl FromSymbol for u128 {
+    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
+        symbol
+            .number()?
+            .try_into()
+            .map_err(|_| ClingoError::new_internal("Could not convert to u128"))
+    }
+}
+impl FromSymbol for i128 {
+    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
+        Ok(symbol.number()? as i128)
     }
 }
 impl FromSymbol for String {
