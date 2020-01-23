@@ -98,6 +98,8 @@ pub enum ClingoError {
         code: ErrorCode,
         last: &'static str,
     },
+    #[error("FromSymbolError: ")]
+    FromSymbolError(#[from] FromSymbolError),
     #[error("ExternalError: ")]
     ExternalError(#[from] ExternalError),
 }
@@ -6117,6 +6119,44 @@ impl<T: ToSymbol> ToSymbol for &T {
     }
 }
 
+#[derive(Error, Debug)]
+pub enum FromSymbolError {
+    #[error("Failed to convert symbol: ")]
+    Error(#[source] FromSymbolErrorKind),
+    #[error("Failed to convert symbol: ")]
+    Fatal(#[from] FromSymbolErrorKind),
+}
+
+#[derive(Error, Debug)]
+pub enum FromSymbolErrorKind {
+    #[error("Did not recognize predicate: {}", .0.name().unwrap_or("".into()))]
+    UnknownPredicate(Symbol),
+    #[error("Expected {0} parameters, got {1}")]
+    ExpectedParameterSize(usize, usize),
+    #[error("Unexpected symbol type: {}", .0.to_string().unwrap_or("".into()))]
+    UnexpectedSymbolType(Symbol),
+    #[error("Expected predicate name {0}, got {1}")]
+    ExpectedPredicate(&'static str, &'static str),
+    #[error("{0}")]
+    ExternalError(String),
+}
+
+impl From<FromSymbolErrorKind> for ClingoError {
+    fn from(from: FromSymbolErrorKind) -> Self {
+        let from_symbol_error: FromSymbolError = from.into();
+        from_symbol_error.into()
+    }
+}
+
+pub fn guard<T>(res: Result<T, ClingoError>) -> Result<T, ClingoError> {
+    res.map_err(|err| match err {
+        ClingoError::FromSymbolError(FromSymbolError::Fatal(e)) => {
+            ClingoError::FromSymbolError(FromSymbolError::Error(e))
+        }
+        e => e,
+    })
+}
+
 pub trait FromSymbol: Sized {
     fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError>;
 }
@@ -6129,10 +6169,10 @@ impl FromSymbol for Symbol {
 
 fn tuple_args(symbol: Symbol) -> Result<Vec<Symbol>, ClingoError> {
     if symbol.symbol_type()? != SymbolType::Function {
-        return Err(ClingoError::new_internal("Expected Tuple"));
+        Err(FromSymbolErrorKind::UnexpectedSymbolType(symbol))?;
     }
     if symbol.name()? != "" {
-        return Err(ClingoError::new_internal("Expected Tuple"));
+        Err(FromSymbolErrorKind::UnexpectedSymbolType(symbol))?;
     }
     Ok(symbol.arguments()?)
 }
@@ -6141,7 +6181,7 @@ impl FromSymbol for () {
     fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
         match tuple_args(symbol)?.as_slice() {
             [] => Ok(()),
-            _ => Err(ClingoError::new_internal("Expected empty tuple")),
+            slice => Err(FromSymbolErrorKind::ExpectedParameterSize(0, slice.len()))?,
         }
     }
 }
@@ -6150,7 +6190,7 @@ impl<A: FromSymbol, B: FromSymbol> FromSymbol for (A, B) {
     fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
         match tuple_args(symbol)?.as_slice() {
             [a, b] => Ok((A::from_symbol(*a)?, B::from_symbol(*b)?)),
-            _ => Err(ClingoError::new_internal("Expected tuple of length 2")),
+            slice => Err(FromSymbolErrorKind::ExpectedParameterSize(2, slice.len()))?,
         }
     }
 }
@@ -6163,7 +6203,7 @@ impl<A: FromSymbol, B: FromSymbol, C: FromSymbol> FromSymbol for (A, B, C) {
                 B::from_symbol(*b)?,
                 C::from_symbol(*c)?,
             )),
-            _ => Err(ClingoError::new_internal("Expected tuple of length 3")),
+            slice => Err(FromSymbolErrorKind::ExpectedParameterSize(3, slice.len()).into()),
         }
     }
 }
@@ -6177,7 +6217,7 @@ impl<A: FromSymbol, B: FromSymbol, C: FromSymbol, D: FromSymbol> FromSymbol for 
                 C::from_symbol(*c)?,
                 D::from_symbol(*d)?,
             )),
-            _ => Err(ClingoError::new_internal("Expected tuple of length 4")),
+            slice => Err(FromSymbolErrorKind::ExpectedParameterSize(4, slice.len()).into()),
         }
     }
 }
@@ -6194,7 +6234,7 @@ impl<A: FromSymbol, B: FromSymbol, C: FromSymbol, D: FromSymbol, E: FromSymbol> 
                 D::from_symbol(*d)?,
                 E::from_symbol(*e)?,
             )),
-            _ => Err(ClingoError::new_internal("Expected tuple of length 5")),
+            slice => Err(FromSymbolErrorKind::ExpectedParameterSize(5, slice.len()).into()),
         }
     }
 }
@@ -6212,7 +6252,7 @@ impl<A: FromSymbol, B: FromSymbol, C: FromSymbol, D: FromSymbol, E: FromSymbol, 
                 E::from_symbol(*e)?,
                 F::from_symbol(*f)?,
             )),
-            _ => Err(ClingoError::new_internal("Expected tuple of length 6")),
+            slice => Err(FromSymbolErrorKind::ExpectedParameterSize(6, slice.len()).into()),
         }
     }
 }
@@ -6238,7 +6278,7 @@ impl<
                 F::from_symbol(*f)?,
                 G::from_symbol(*g)?,
             )),
-            _ => Err(ClingoError::new_internal("Expected tuple of length 7")),
+            slice => Err(FromSymbolErrorKind::ExpectedParameterSize(7, slice.len()).into()),
         }
     }
 }
@@ -6266,7 +6306,7 @@ impl<
                 G::from_symbol(*g)?,
                 H::from_symbol(*h)?,
             )),
-            _ => Err(ClingoError::new_internal("Expected tuple of length 8")),
+            slice => Err(FromSymbolErrorKind::ExpectedParameterSize(8, slice.len()).into()),
         }
     }
 }
@@ -6296,7 +6336,7 @@ impl<
                 H::from_symbol(*h)?,
                 I::from_symbol(*i)?,
             )),
-            _ => Err(ClingoError::new_internal("Expected tuple of length 9")),
+            slice => Err(FromSymbolErrorKind::ExpectedParameterSize(9, slice.len()).into()),
         }
     }
 }
@@ -6328,7 +6368,7 @@ impl<
                 I::from_symbol(*i)?,
                 J::from_symbol(*j)?,
             )),
-            _ => Err(ClingoError::new_internal("Expected tuple of length 10")),
+            slice => Err(FromSymbolErrorKind::ExpectedParameterSize(10, slice.len()).into()),
         }
     }
 }
@@ -6362,7 +6402,7 @@ impl<
                 J::from_symbol(*j)?,
                 K::from_symbol(*k)?,
             )),
-            _ => Err(ClingoError::new_internal("Expected tuple of length 11")),
+            slice => Err(FromSymbolErrorKind::ExpectedParameterSize(11, slice.len()).into()),
         }
     }
 }
@@ -6398,7 +6438,7 @@ impl<
                 K::from_symbol(*k)?,
                 L::from_symbol(*l)?,
             )),
-            _ => Err(ClingoError::new_internal("Expected tuple of length 12")),
+            slice => Err(FromSymbolErrorKind::ExpectedParameterSize(12, slice.len()).into()),
         }
     }
 }
