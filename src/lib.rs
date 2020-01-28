@@ -63,6 +63,7 @@ use bitflags::bitflags;
 use clingo_sys::*;
 use std::cmp::Ordering;
 use std::collections::HashSet;
+use std::convert::Infallible;
 use std::convert::TryInto;
 use std::ffi::CStr;
 use std::ffi::CString;
@@ -98,8 +99,6 @@ pub enum ClingoError {
         code: ErrorCode,
         last: &'static str,
     },
-    #[error("FromSymbolError: ")]
-    FromSymbolError(#[from] FromSymbolError),
     #[error("ExternalError: ")]
     ExternalError(#[from] ExternalError),
 }
@@ -6119,332 +6118,21 @@ impl<T: ToSymbol> ToSymbol for &T {
     }
 }
 
-#[derive(Error, Debug)]
-pub enum FromSymbolError {
-    #[error("Failed to convert symbol: ")]
-    Error(#[source] FromSymbolErrorKind),
-    #[error("Failed to convert symbol: ")]
-    Fatal(#[from] FromSymbolErrorKind),
-}
-
-#[derive(Error, Debug)]
-pub enum FromSymbolErrorKind {
-    #[error("Did not recognize predicate: {}", .0.name().unwrap_or("".into()))]
-    UnknownPredicate(Symbol),
-    #[error("Expected {0} parameters, got {1}")]
-    ExpectedParameterSize(usize, usize),
-    #[error("Unexpected symbol type: {}", .0.to_string().unwrap_or("".into()))]
-    UnexpectedSymbolType(Symbol),
-    #[error("Expected predicate name {0}, got {1}")]
-    ExpectedPredicate(&'static str, &'static str),
-    #[error("{0}")]
-    ExternalError(String),
-}
-
-impl From<FromSymbolErrorKind> for ClingoError {
-    fn from(from: FromSymbolErrorKind) -> Self {
-        let from_symbol_error: FromSymbolError = from.into();
-        from_symbol_error.into()
-    }
-}
-
-pub fn guard<T>(res: Result<T, ClingoError>) -> Result<T, ClingoError> {
-    res.map_err(|err| match err {
-        ClingoError::FromSymbolError(FromSymbolError::Fatal(e)) => {
-            ClingoError::FromSymbolError(FromSymbolError::Error(e))
-        }
-        e => e,
-    })
-}
-
 pub trait FromSymbol: Sized {
-    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError>;
+    type Error;
+
+    fn from_symbol(symbol: Symbol) -> Result<Self, Self::Error>;
 }
 
 impl FromSymbol for Symbol {
-    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
+    type Error = Infallible;
+    fn from_symbol(symbol: Symbol) -> Result<Self, Self::Error> {
         Ok(symbol)
     }
 }
-
-fn tuple_args(symbol: Symbol) -> Result<Vec<Symbol>, ClingoError> {
-    if symbol.symbol_type()? != SymbolType::Function {
-        Err(FromSymbolErrorKind::UnexpectedSymbolType(symbol))?;
-    }
-    if symbol.name()? != "" {
-        Err(FromSymbolErrorKind::UnexpectedSymbolType(symbol))?;
-    }
-    Ok(symbol.arguments()?)
-}
-
-impl FromSymbol for () {
-    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
-        match tuple_args(symbol)?.as_slice() {
-            [] => Ok(()),
-            slice => Err(FromSymbolErrorKind::ExpectedParameterSize(0, slice.len()))?,
-        }
-    }
-}
-
-impl<A: FromSymbol, B: FromSymbol> FromSymbol for (A, B) {
-    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
-        match tuple_args(symbol)?.as_slice() {
-            [a, b] => Ok((A::from_symbol(*a)?, B::from_symbol(*b)?)),
-            slice => Err(FromSymbolErrorKind::ExpectedParameterSize(2, slice.len()))?,
-        }
-    }
-}
-
-impl<A: FromSymbol, B: FromSymbol, C: FromSymbol> FromSymbol for (A, B, C) {
-    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
-        match tuple_args(symbol)?.as_slice() {
-            [a, b, c] => Ok((
-                A::from_symbol(*a)?,
-                B::from_symbol(*b)?,
-                C::from_symbol(*c)?,
-            )),
-            slice => Err(FromSymbolErrorKind::ExpectedParameterSize(3, slice.len()).into()),
-        }
-    }
-}
-
-impl<A: FromSymbol, B: FromSymbol, C: FromSymbol, D: FromSymbol> FromSymbol for (A, B, C, D) {
-    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
-        match tuple_args(symbol)?.as_slice() {
-            [a, b, c, d] => Ok((
-                A::from_symbol(*a)?,
-                B::from_symbol(*b)?,
-                C::from_symbol(*c)?,
-                D::from_symbol(*d)?,
-            )),
-            slice => Err(FromSymbolErrorKind::ExpectedParameterSize(4, slice.len()).into()),
-        }
-    }
-}
-
-impl<A: FromSymbol, B: FromSymbol, C: FromSymbol, D: FromSymbol, E: FromSymbol> FromSymbol
-    for (A, B, C, D, E)
-{
-    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
-        match tuple_args(symbol)?.as_slice() {
-            [a, b, c, d, e] => Ok((
-                A::from_symbol(*a)?,
-                B::from_symbol(*b)?,
-                C::from_symbol(*c)?,
-                D::from_symbol(*d)?,
-                E::from_symbol(*e)?,
-            )),
-            slice => Err(FromSymbolErrorKind::ExpectedParameterSize(5, slice.len()).into()),
-        }
-    }
-}
-
-impl<A: FromSymbol, B: FromSymbol, C: FromSymbol, D: FromSymbol, E: FromSymbol, F: FromSymbol>
-    FromSymbol for (A, B, C, D, E, F)
-{
-    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
-        match tuple_args(symbol)?.as_slice() {
-            [a, b, c, d, e, f] => Ok((
-                A::from_symbol(*a)?,
-                B::from_symbol(*b)?,
-                C::from_symbol(*c)?,
-                D::from_symbol(*d)?,
-                E::from_symbol(*e)?,
-                F::from_symbol(*f)?,
-            )),
-            slice => Err(FromSymbolErrorKind::ExpectedParameterSize(6, slice.len()).into()),
-        }
-    }
-}
-
-impl<
-        A: FromSymbol,
-        B: FromSymbol,
-        C: FromSymbol,
-        D: FromSymbol,
-        E: FromSymbol,
-        F: FromSymbol,
-        G: FromSymbol,
-    > FromSymbol for (A, B, C, D, E, F, G)
-{
-    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
-        match tuple_args(symbol)?.as_slice() {
-            [a, b, c, d, e, f, g] => Ok((
-                A::from_symbol(*a)?,
-                B::from_symbol(*b)?,
-                C::from_symbol(*c)?,
-                D::from_symbol(*d)?,
-                E::from_symbol(*e)?,
-                F::from_symbol(*f)?,
-                G::from_symbol(*g)?,
-            )),
-            slice => Err(FromSymbolErrorKind::ExpectedParameterSize(7, slice.len()).into()),
-        }
-    }
-}
-
-impl<
-        A: FromSymbol,
-        B: FromSymbol,
-        C: FromSymbol,
-        D: FromSymbol,
-        E: FromSymbol,
-        F: FromSymbol,
-        G: FromSymbol,
-        H: FromSymbol,
-    > FromSymbol for (A, B, C, D, E, F, G, H)
-{
-    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
-        match tuple_args(symbol)?.as_slice() {
-            [a, b, c, d, e, f, g, h] => Ok((
-                A::from_symbol(*a)?,
-                B::from_symbol(*b)?,
-                C::from_symbol(*c)?,
-                D::from_symbol(*d)?,
-                E::from_symbol(*e)?,
-                F::from_symbol(*f)?,
-                G::from_symbol(*g)?,
-                H::from_symbol(*h)?,
-            )),
-            slice => Err(FromSymbolErrorKind::ExpectedParameterSize(8, slice.len()).into()),
-        }
-    }
-}
-
-impl<
-        A: FromSymbol,
-        B: FromSymbol,
-        C: FromSymbol,
-        D: FromSymbol,
-        E: FromSymbol,
-        F: FromSymbol,
-        G: FromSymbol,
-        H: FromSymbol,
-        I: FromSymbol,
-    > FromSymbol for (A, B, C, D, E, F, G, H, I)
-{
-    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
-        match tuple_args(symbol)?.as_slice() {
-            [a, b, c, d, e, f, g, h, i] => Ok((
-                A::from_symbol(*a)?,
-                B::from_symbol(*b)?,
-                C::from_symbol(*c)?,
-                D::from_symbol(*d)?,
-                E::from_symbol(*e)?,
-                F::from_symbol(*f)?,
-                G::from_symbol(*g)?,
-                H::from_symbol(*h)?,
-                I::from_symbol(*i)?,
-            )),
-            slice => Err(FromSymbolErrorKind::ExpectedParameterSize(9, slice.len()).into()),
-        }
-    }
-}
-
-impl<
-        A: FromSymbol,
-        B: FromSymbol,
-        C: FromSymbol,
-        D: FromSymbol,
-        E: FromSymbol,
-        F: FromSymbol,
-        G: FromSymbol,
-        H: FromSymbol,
-        I: FromSymbol,
-        J: FromSymbol,
-    > FromSymbol for (A, B, C, D, E, F, G, H, I, J)
-{
-    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
-        match tuple_args(symbol)?.as_slice() {
-            [a, b, c, d, e, f, g, h, i, j] => Ok((
-                A::from_symbol(*a)?,
-                B::from_symbol(*b)?,
-                C::from_symbol(*c)?,
-                D::from_symbol(*d)?,
-                E::from_symbol(*e)?,
-                F::from_symbol(*f)?,
-                G::from_symbol(*g)?,
-                H::from_symbol(*h)?,
-                I::from_symbol(*i)?,
-                J::from_symbol(*j)?,
-            )),
-            slice => Err(FromSymbolErrorKind::ExpectedParameterSize(10, slice.len()).into()),
-        }
-    }
-}
-
-impl<
-        A: FromSymbol,
-        B: FromSymbol,
-        C: FromSymbol,
-        D: FromSymbol,
-        E: FromSymbol,
-        F: FromSymbol,
-        G: FromSymbol,
-        H: FromSymbol,
-        I: FromSymbol,
-        J: FromSymbol,
-        K: FromSymbol,
-    > FromSymbol for (A, B, C, D, E, F, G, H, I, J, K)
-{
-    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
-        match tuple_args(symbol)?.as_slice() {
-            [a, b, c, d, e, f, g, h, i, j, k] => Ok((
-                A::from_symbol(*a)?,
-                B::from_symbol(*b)?,
-                C::from_symbol(*c)?,
-                D::from_symbol(*d)?,
-                E::from_symbol(*e)?,
-                F::from_symbol(*f)?,
-                G::from_symbol(*g)?,
-                H::from_symbol(*h)?,
-                I::from_symbol(*i)?,
-                J::from_symbol(*j)?,
-                K::from_symbol(*k)?,
-            )),
-            slice => Err(FromSymbolErrorKind::ExpectedParameterSize(11, slice.len()).into()),
-        }
-    }
-}
-
-impl<
-        A: FromSymbol,
-        B: FromSymbol,
-        C: FromSymbol,
-        D: FromSymbol,
-        E: FromSymbol,
-        F: FromSymbol,
-        G: FromSymbol,
-        H: FromSymbol,
-        I: FromSymbol,
-        J: FromSymbol,
-        K: FromSymbol,
-        L: FromSymbol,
-    > FromSymbol for (A, B, C, D, E, F, G, H, I, J, K, L)
-{
-    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
-        match tuple_args(symbol)?.as_slice() {
-            [a, b, c, d, e, f, g, h, i, j, k, l] => Ok((
-                A::from_symbol(*a)?,
-                B::from_symbol(*b)?,
-                C::from_symbol(*c)?,
-                D::from_symbol(*d)?,
-                E::from_symbol(*e)?,
-                F::from_symbol(*f)?,
-                G::from_symbol(*g)?,
-                H::from_symbol(*h)?,
-                I::from_symbol(*i)?,
-                J::from_symbol(*j)?,
-                K::from_symbol(*k)?,
-                L::from_symbol(*l)?,
-            )),
-            slice => Err(FromSymbolErrorKind::ExpectedParameterSize(12, slice.len()).into()),
-        }
-    }
-}
-
 impl FromSymbol for u8 {
-    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
+    type Error = ClingoError;
+    fn from_symbol(symbol: Symbol) -> Result<Self, Self::Error> {
         symbol
             .number()?
             .try_into()
@@ -6452,7 +6140,8 @@ impl FromSymbol for u8 {
     }
 }
 impl FromSymbol for i8 {
-    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
+    type Error = ClingoError;
+    fn from_symbol(symbol: Symbol) -> Result<Self, Self::Error> {
         symbol
             .number()?
             .try_into()
@@ -6460,7 +6149,8 @@ impl FromSymbol for i8 {
     }
 }
 impl FromSymbol for u16 {
-    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
+    type Error = ClingoError;
+    fn from_symbol(symbol: Symbol) -> Result<Self, Self::Error> {
         symbol
             .number()?
             .try_into()
@@ -6468,7 +6158,8 @@ impl FromSymbol for u16 {
     }
 }
 impl FromSymbol for i16 {
-    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
+    type Error = ClingoError;
+    fn from_symbol(symbol: Symbol) -> Result<Self, Self::Error> {
         symbol
             .number()?
             .try_into()
@@ -6476,7 +6167,8 @@ impl FromSymbol for i16 {
     }
 }
 impl FromSymbol for u32 {
-    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
+    type Error = ClingoError;
+    fn from_symbol(symbol: Symbol) -> Result<Self, Self::Error> {
         symbol
             .number()?
             .try_into()
@@ -6484,12 +6176,14 @@ impl FromSymbol for u32 {
     }
 }
 impl FromSymbol for i32 {
-    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
+    type Error = ClingoError;
+    fn from_symbol(symbol: Symbol) -> Result<Self, Self::Error> {
         symbol.number()
     }
 }
 impl FromSymbol for u64 {
-    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
+    type Error = ClingoError;
+    fn from_symbol(symbol: Symbol) -> Result<Self, Self::Error> {
         symbol
             .number()?
             .try_into()
@@ -6497,12 +6191,14 @@ impl FromSymbol for u64 {
     }
 }
 impl FromSymbol for i64 {
-    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
+    type Error = ClingoError;
+    fn from_symbol(symbol: Symbol) -> Result<Self, Self::Error> {
         Ok(symbol.number()? as i64)
     }
 }
 impl FromSymbol for u128 {
-    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
+    type Error = ClingoError;
+    fn from_symbol(symbol: Symbol) -> Result<Self, Self::Error> {
         symbol
             .number()?
             .try_into()
@@ -6510,17 +6206,20 @@ impl FromSymbol for u128 {
     }
 }
 impl FromSymbol for i128 {
-    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
+    type Error = ClingoError;
+    fn from_symbol(symbol: Symbol) -> Result<Self, Self::Error> {
         Ok(symbol.number()? as i128)
     }
 }
 impl FromSymbol for String {
-    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
+    type Error = ClingoError;
+    fn from_symbol(symbol: Symbol) -> Result<Self, Self::Error> {
         Ok(symbol.string()?.into())
     }
 }
 impl FromSymbol for &'static str {
-    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
+    type Error = ClingoError;
+    fn from_symbol(symbol: Symbol) -> Result<Self, Self::Error> {
         symbol.string()
     }
 }
