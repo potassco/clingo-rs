@@ -110,6 +110,10 @@ impl ClingoError {
             last: error_message(),
         }
     }
+
+    fn new_external(msg: &'static str) -> ClingoError {
+        ExternalError { msg: msg }.into()
+    }
 }
 #[derive(Error, Debug)]
 #[error("ExternalError: {msg}")]
@@ -6136,7 +6140,7 @@ impl FromSymbol for u8 {
         symbol
             .number()?
             .try_into()
-            .map_err(|_| ClingoError::new_internal("Could not convert to u8"))
+            .map_err(|_| ClingoError::new_external("Could not convert to u8"))
     }
 }
 impl FromSymbol for i8 {
@@ -6145,7 +6149,7 @@ impl FromSymbol for i8 {
         symbol
             .number()?
             .try_into()
-            .map_err(|_| ClingoError::new_internal("Could not convert to i8"))
+            .map_err(|_| ClingoError::new_external("Could not convert to i8"))
     }
 }
 impl FromSymbol for u16 {
@@ -6154,7 +6158,7 @@ impl FromSymbol for u16 {
         symbol
             .number()?
             .try_into()
-            .map_err(|_| ClingoError::new_internal("Could not convert to u16"))
+            .map_err(|_| ClingoError::new_external("Could not convert to u16"))
     }
 }
 impl FromSymbol for i16 {
@@ -6163,7 +6167,7 @@ impl FromSymbol for i16 {
         symbol
             .number()?
             .try_into()
-            .map_err(|_| ClingoError::new_internal("Could not convert to i16"))
+            .map_err(|_| ClingoError::new_external("Could not convert to i16"))
     }
 }
 impl FromSymbol for u32 {
@@ -6172,7 +6176,7 @@ impl FromSymbol for u32 {
         symbol
             .number()?
             .try_into()
-            .map_err(|_| ClingoError::new_internal("Could not convert to u32"))
+            .map_err(|_| ClingoError::new_external("Could not convert to u32"))
     }
 }
 impl FromSymbol for i32 {
@@ -6187,7 +6191,7 @@ impl FromSymbol for u64 {
         symbol
             .number()?
             .try_into()
-            .map_err(|_| ClingoError::new_internal("Could not convert to u64"))
+            .map_err(|_| ClingoError::new_external("Could not convert to u64"))
     }
 }
 impl FromSymbol for i64 {
@@ -6202,7 +6206,7 @@ impl FromSymbol for u128 {
         symbol
             .number()?
             .try_into()
-            .map_err(|_| ClingoError::new_internal("Could not convert to u128"))
+            .map_err(|_| ClingoError::new_external("Could not convert to u128"))
     }
 }
 impl FromSymbol for i128 {
