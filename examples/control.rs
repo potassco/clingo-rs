@@ -50,7 +50,7 @@ fn main() {
 
     // add a logic program to the base part
     ctl.add("base", &[], "a :- not b. b :- not a.")
-        .expect("Failed to add a logic program.");;
+        .expect("Failed to add a logic program.");
 
     // ground the base part
     let part = Part::new("base", &[]).unwrap();
