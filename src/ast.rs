@@ -49,7 +49,7 @@ pub enum AggregateFunction {
 #[derive(Debug, Copy, Clone)]
 pub enum HeadLiteralType {
     Literal = clingo_ast_head_literal_type_clingo_ast_head_literal_type_literal as isize,
-    Disjuction = clingo_ast_head_literal_type_clingo_ast_head_literal_type_disjunction as isize,
+    Disjunction = clingo_ast_head_literal_type_clingo_ast_head_literal_type_disjunction as isize,
     Aggregate = clingo_ast_head_literal_type_clingo_ast_head_literal_type_aggregate as isize,
     HeadAggregate =
         clingo_ast_head_literal_type_clingo_ast_head_literal_type_head_aggregate as isize,
