@@ -1,8 +1,8 @@
 error[E0506]: cannot assign to `guard` because it is borrowed
   --> $DIR/ast_aggregate.rs:16:5
    |
-14 |     let agg = ast::Aggregate::new( &elements, &guard, &guard);
-   |                                               ------ borrow of `guard` occurs here
+14 |     let agg = ast::Aggregate::new( &elements, Some(&guard), Some(&guard));
+   |                                                    ------ borrow of `guard` occurs here
 15 |     
 16 |     guard =  ast::AggregateGuard::gt(term1);
    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ assignment to borrowed `guard` occurs here
@@ -24,13 +24,10 @@ error[E0506]: cannot assign to `lit` because it is borrowed
 error[E0505]: cannot move out of `elements` because it is borrowed
   --> $DIR/ast_aggregate.rs:18:10
    |
-14 |     let agg = ast::Aggregate::new( &elements, &guard, &guard);
+14 |     let agg = ast::Aggregate::new( &elements, Some(&guard), Some(&guard));
    |                                    --------- borrow of `elements` occurs here
 ...
 18 |     drop(elements);
    |          ^^^^^^^^ move out of `elements` occurs here
 19 |     let _end = (guard, lit, agg);
    |                             --- borrow later used here
-
-Some errors have detailed explanations: E0505, E0506.
-For more information about an error, try `rustc --explain E0505`.
