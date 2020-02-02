@@ -3,7 +3,7 @@ use crate::*;
 use std::fmt;
 use std::marker::PhantomData;
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub enum Sign {
     None = clingo_ast_sign_clingo_ast_sign_none as isize,
     Negation = clingo_ast_sign_clingo_ast_sign_negation as isize,
