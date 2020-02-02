@@ -1,7 +1,7 @@
 # clingo-rs
 [![Build Status](https://travis-ci.org/potassco/clingo-rs.svg?branch=master)](https://travis-ci.org/potassco/clingo-rs)
 [![Latest Version](https://img.shields.io/crates/v/clingo.svg)](https://crates.io/crates/clingo)
-[![Rust Documentation](https://img.shields.io/badge/api-rustdoc-blue.svg)](https://docs.rs/clingo)
+[![Rust Documentation](https://docs.rs/clingo/badge.svg)](https://docs.rs/clingo)
 
 Rust bindings to the [clingo](https://github.com/potassco/clingo) library.
 Clingo version 5.4.0.
@@ -36,8 +36,10 @@ The crate provides a derive macro to help easing the use of rust data types as f
 
 In your `Cargo.toml` add:
 
-    [dependencies]
-    clingo = { version = "0.6", features = ["derive"] }
+```toml
+[dependencies]
+clingo = { version = "0.7", features = ["derive"] }
+```
 
 In your source write:
 
@@ -80,7 +82,7 @@ follows.
 
 ```toml
 [dependencies]
-clingo = { version = "0.6.0", features = ["derive", "dynamic_linking"] }
+clingo = { version = "0.7.0", features = ["derive", "dynamic_linking"] }
 ```
 
 ## Contribution
