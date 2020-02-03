@@ -1,6 +1,7 @@
 use clingo::*;
 use std::cell::RefCell;
 use std::rc::Rc;
+use test_case::test_case;
 
 #[derive(Debug)]
 struct StateT {
@@ -213,8 +214,10 @@ fn string_model(model: &Model) -> Vec<String> {
     }
     ret
 }
-#[test]
-fn pigeon_propagator_unsat() {
+
+#[test_case(2, 2, 2; "sat")]
+#[test_case(5, 6, 0; "unsat")]
+fn test_pigeon_propagator(holes: i32, pigeons: i32, number_of_models: usize) {
     let mut ctl = Control::new(vec!["0".into()]).unwrap();
     let mut prop = PigeonPropagator {
         pigeons: vec![],
@@ -229,42 +232,11 @@ fn pigeon_propagator_unsat() {
     )
     .expect("Failed to add a logic program.");
 
-    let arg0 = Symbol::create_number(5);
-    let arg1 = Symbol::create_number(6);
+    let arg0 = Symbol::create_number(holes);
+    let arg1 = Symbol::create_number(pigeons);
     let args = vec![arg0, arg1];
     let part = Part::new("pigeon", &args).unwrap();
     let parts = vec![part];
-    ctl.ground(&parts)
-        .expect("Failed to ground a logic program.");
-
-    let models = solve(&mut ctl).unwrap();
-    assert!(models.is_empty());
-}
-#[test]
-fn pigeon_propagator_sat() {
-    let mut ctl = Control::new(vec!["0".into()]).unwrap();
-    let mut prop = PigeonPropagator {
-        pigeons: vec![],
-        states: vec![],
-    };
-    ctl.register_propagator(&mut prop, false)
-        .expect("Failed to register propagator.");
-    ctl.add(
-        "pigeon",
-        &vec!["h", "p"],
-        "1 { place(P,H) : H = 1..h } 1 :- P = 1..p.",
-    )
-    .expect("Failed to add a logic program.");
-
-    let arg0 = Symbol::create_number(2);
-    let arg1 = Symbol::create_number(2);
-    let args = vec![arg0, arg1];
-    let part = Part::new("pigeon", &args).unwrap();
-    let parts = vec![part];
-    ctl.ground(&parts)
-        .expect("Failed to ground a logic program.");
-
-    let models = solve(&mut ctl).unwrap();
 
     // let place = |p, h| {
     //     Symbol::create_function(
@@ -275,10 +247,11 @@ fn pigeon_propagator_sat() {
     //     .unwrap()
     // };
 
-    assert_eq!(
-        models,
-        [["place(1,2)", "place(2,1)"], ["place(1,1)", "place(2,2)"]]
-    );
+    ctl.ground(&parts)
+        .expect("Failed to ground a logic program.");
+
+    let models = solve(&mut ctl).unwrap();
+    assert_eq!(models.len(), number_of_models);
 }
 
 struct TestAssignment {
@@ -556,33 +529,6 @@ fn test_add_watch_propagator() {
     assert_eq!(p.propagated, test_set);
 }
 
-// struct TestPanic;
-// impl Propagator for TestPanic {
-//     fn check(&mut self, _control: &mut PropagateControl) -> bool {
-//         panic!("the answer is 42");
-//     }
-// }
-// #[test]
-// fn test_exception_propagator() {
-//     let mut ctl = Control::new(vec!["0".into()]).unwrap();
-//     let mut p = TestPanic;
-//     ctl.register_propagator(&mut p, false)
-//         .expect("Failed to register propagator.");
-//     ctl.add("base", &[], "{a}.")
-//         .expect("Failed to add a logic program.");
-
-//     let part = Part::new("base", &[]).unwrap();
-//     let parts = vec![part];
-//     ctl.ground(&parts)
-//         .expect("Failed to ground a logic program.");
-
-//     use std::panic;
-//     let result = panic::catch_unwind(|| {
-//         solve(&mut ctl);
-//     });
-//     assert!(result.is_err());
-// }
-
 struct TestAddClause {
     clause_type: ClauseType,
     enable: bool,
@@ -637,11 +583,15 @@ impl Propagator for TestAddClause {
         true
     }
 }
-#[test]
-fn test_add_clause_learnt() {
+
+#[test_case(ClauseType::Learnt, 3, 4; "learnt")]
+#[test_case(ClauseType::Static, 3, 3; "static ")]
+#[test_case(ClauseType::Volatile, 3, 4; "volatile")]
+#[test_case(ClauseType::VolatileStatic, 3, 4; "volatile_static")]
+fn test_add_clause(clause_type: ClauseType, m1: usize, m2: usize) {
     let mut ctl = Control::new(vec!["0".into()]).unwrap();
     let mut p = TestAddClause {
-        clause_type: ClauseType::Learnt,
+        clause_type,
         enable: true,
         a: None,
         b: None,
@@ -659,128 +609,9 @@ fn test_add_clause_learnt() {
 
     let models = solve(&mut ctl).unwrap();
 
-    assert_eq!(models.len(), 3);
+    assert_eq!(models.len(), m1);
     p.enable = false;
     let models = solve(&mut ctl).unwrap();
-    assert!(models.len() >= 3);
+    assert_eq!(models.len(), m2);
 }
 
-#[test]
-fn test_add_clause_static() {
-    let mut ctl = Control::new(vec!["0".into()]).unwrap();
-    let mut p = TestAddClause {
-        clause_type: ClauseType::Static,
-        enable: true,
-        a: None,
-        b: None,
-        count: 0,
-    };
-    ctl.register_propagator(&mut p, false)
-        .expect("Failed to register propagator.");
-    ctl.add("base", &[], "{a; b}.")
-        .expect("Failed to add a logic program.");
-
-    let part = Part::new("base", &[]).unwrap();
-    let parts = vec![part];
-    ctl.ground(&parts)
-        .expect("Failed to ground a logic program.");
-
-    let models = solve(&mut ctl).unwrap();
-
-    assert_eq!(models.len(), 3);
-    p.enable = false;
-    let models = solve(&mut ctl).unwrap();
-    assert_eq!(models.len(), 3);
-}
-
-#[test]
-fn test_add_clause_volatile() {
-    let mut ctl = Control::new(vec!["0".into()]).unwrap();
-    let mut p = TestAddClause {
-        clause_type: ClauseType::Volatile,
-        enable: true,
-        a: None,
-        b: None,
-        count: 0,
-    };
-    ctl.register_propagator(&mut p, false)
-        .expect("Failed to register propagator.");
-    ctl.add("base", &[], "{a; b}.")
-        .expect("Failed to add a logic program.");
-
-    let part = Part::new("base", &[]).unwrap();
-    let parts = vec![part];
-    ctl.ground(&parts)
-        .expect("Failed to ground a logic program.");
-
-    let models = solve(&mut ctl).unwrap();
-
-    assert_eq!(models.len(), 3);
-    p.enable = false;
-    let models = solve(&mut ctl).unwrap();
-    assert_eq!(models.len(), 4);
-}
-#[test]
-fn test_add_clause_volatile_static() {
-    let mut ctl = Control::new(vec!["0".into()]).unwrap();
-    let mut p = TestAddClause {
-        clause_type: ClauseType::VolatileStatic,
-        enable: true,
-        a: None,
-        b: None,
-        count: 0,
-    };
-    ctl.register_propagator(&mut p, false)
-        .expect("Failed to register propagator.");
-    ctl.add("base", &[], "{a; b}.")
-        .expect("Failed to add a logic program.");
-
-    let part = Part::new("base", &[]).unwrap();
-    let parts = vec![part];
-    ctl.ground(&parts)
-        .expect("Failed to ground a logic program.");
-
-    let models = solve(&mut ctl).unwrap();
-
-    assert_eq!(models.len(), 3);
-    p.enable = false;
-    let models = solve(&mut ctl).unwrap();
-    assert_eq!(models.len(), 4);
-}
-
-// struct TestInit<T> {
-//     f: T,
-// }
-// impl Propagator for TestInit<T> {
-//     fn init(&mut self, init: &mut PropagateInit) -> bool {
-//         self.f(init);
-//         true
-//     }
-// }
-#[test]
-fn test_add_clause_init() {
-    let mut ctl = Control::new(vec!["0".into()]).unwrap();
-
-    let conf = ctl.configuration_mut().unwrap();
-    let root_key = conf.root().unwrap();
-    let sub_key = conf.map_at(root_key, "sat_prepro").unwrap();
-    conf.value_set(sub_key, "0")
-        .expect("Failed to set sat_prepro to 0.");
-
-    ctl.add("base", &[], "{a; b}. c. :- a, b.")
-        .expect("Failed to add a logic program.");
-
-    let part = Part::new("base", &[]).unwrap();
-    let parts = vec![part];
-    ctl.ground(&parts)
-        .expect("Failed to ground a logic program.");
-
-    // SECTION("conflict") {
-    //     auto p{make_init([](Clingo::PropagateInit &init){
-    //         REQUIRE_FALSE(init.add_clause({-get_literal(init, "c")}));
-    //     })};
-    //     ctl.register_propagator(p, false);
-    //     test_solve(ctl.solve(), models);
-    //     REQUIRE(models.size() == 0);
-    // }
-}
