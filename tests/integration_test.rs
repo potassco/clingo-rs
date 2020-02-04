@@ -356,12 +356,17 @@ fn ast_head_literal_test() {
 
     let term3 = Term::from(sym);
     let guard = AggregateGuard::gt(term3);
-    let agg = Aggregate::new(&elements, &guard, &guard);
+    let agg = Aggregate::new(&elements, Some(&guard), Some(&guard));
 
     let tuple = vec![term1];
     let helem = HeadAggregateElement::new(&tuple, cond);
     let elements = vec![helem];
-    let hagg = HeadAggregate::new(ast::AggregateFunction::Count, &elements, &guard, &guard);
+    let hagg = HeadAggregate::new(
+        ast::AggregateFunction::Count,
+        &elements,
+        Some(&guard),
+        Some(&guard),
+    );
 
     let th_term = TheoryTerm::from(sym);
     let tuple = vec![th_term];
@@ -369,7 +374,7 @@ fn ast_head_literal_test() {
     let elements = vec![element];
     let operator_name = String::from("theory_operator");
     let guard = TheoryGuard::new(&operator_name, th_term).unwrap();
-    let tatom = TheoryAtom::new(term1, &elements, &guard);
+    let tatom = TheoryAtom::new(term1, &elements, Some(&guard));
 
     let hlit = ast::HeadLiteral::from(&lit);
     assert_eq!(
@@ -381,13 +386,13 @@ fn ast_head_literal_test() {
     assert_eq!(format!("{:?}",hlit), "HeadLiteral { disjunction: Disjunction { elements: [ConditionalLiteral { literal: Literal { sign: None symbol: Term { symbol: test } }, condition: [Literal { sign: None symbol: Term { symbol: test } }] }] } }");
 
     let hlit = ast::HeadLiteral::from(&agg);
-    assert_eq!(format!("{:?}",hlit), "HeadLiteral { aggregate: Aggregate { elements: [ConditionalLiteral { literal: Literal { sign: None symbol: Term { symbol: test } }, condition: [Literal { sign: None symbol: Term { symbol: test } }] }], left_guard: AggregateGuard { comparison: GreaterThan, term: Term { symbol: test } }, right_guard: AggregateGuard { comparison: GreaterThan, term: Term { symbol: test } } } }");
+    assert_eq!(format!("{:?}",hlit), "HeadLiteral { aggregate: Aggregate { elements: [ConditionalLiteral { literal: Literal { sign: None symbol: Term { symbol: test } }, condition: [Literal { sign: None symbol: Term { symbol: test } }] }], left_guard: Some(AggregateGuard { comparison: GreaterThan, term: Term { symbol: test } }), right_guard: Some(AggregateGuard { comparison: GreaterThan, term: Term { symbol: test } }) } }");
 
     let hlit = ast::HeadLiteral::from(&hagg);
-    assert_eq!(format!("{:?}",hlit), "HeadLiteral { head_aggregate: HeadAggregate { function: Count elements: [HeadAggregateElement { tuple: [Term { symbol: test }], conditional_literal: ConditionalLiteral { literal: Literal { sign: None symbol: Term { symbol: test } }, condition: [Literal { sign: None symbol: Term { symbol: test } }] } }], left_guard: AggregateGuard { comparison: GreaterThan, term: Term { symbol: test } }, right_guard: AggregateGuard { comparison: GreaterThan, term: Term { symbol: test } } } }");
+    assert_eq!(format!("{:?}",hlit), "HeadLiteral { head_aggregate: HeadAggregate { function: Count elements: [HeadAggregateElement { tuple: [Term { symbol: test }], conditional_literal: ConditionalLiteral { literal: Literal { sign: None symbol: Term { symbol: test } }, condition: [Literal { sign: None symbol: Term { symbol: test } }] } }], left_guard: Some(AggregateGuard { comparison: GreaterThan, term: Term { symbol: test } }), right_guard: Some(AggregateGuard { comparison: GreaterThan, term: Term { symbol: test } }) } }");
 
     let hlit = ast::HeadLiteral::from(&tatom);
-    assert_eq!(format!("{:?}",hlit), "HeadLiteral { theory_atom: TheoryAtom { term: Term { symbol: test } elements: [TheoryAtomElement { tuple: [TheoryTerm { symbol: test }] condition: [Literal { sign: None symbol: Term { symbol: test } }] }] guard: TheoryGuard { operator_name: \"theory_operator\" term: TheoryTerm { symbol: test } } } }");
+    assert_eq!(format!("{:?}",hlit), "HeadLiteral { theory_atom: TheoryAtom { term: Term { symbol: test } elements: [TheoryAtomElement { tuple: [TheoryTerm { symbol: test }] condition: [Literal { sign: None symbol: Term { symbol: test } }] }] guard: Some(TheoryGuard { operator_name: \"theory_operator\" term: TheoryTerm { symbol: test } }) } }");
 }
 #[test]
 fn ast_body_literal_test() {
@@ -402,12 +407,17 @@ fn ast_body_literal_test() {
 
     let term3 = Term::from(sym);
     let guard = AggregateGuard::gt(term3);
-    let agg = Aggregate::new(&elements, &guard, &guard);
+    let agg = Aggregate::new(&elements, Some(&guard), Some(&guard));
 
     let tuple = vec![term1];
     let element = BodyAggregateElement::new(&tuple, &condition);
     let elements = vec![element];
-    let bagg = BodyAggregate::new(AggregateFunction::Count, &elements, &guard, &guard);
+    let bagg = BodyAggregate::new(
+        AggregateFunction::Count,
+        &elements,
+        Some(&guard),
+        Some(&guard),
+    );
 
     let th_term = TheoryTerm::from(sym);
     let tuple = vec![th_term];
@@ -415,7 +425,7 @@ fn ast_body_literal_test() {
     let elements = vec![element];
     let operator_name = String::from("theory_operator");
     let guard = TheoryGuard::new(&operator_name, th_term).unwrap();
-    let tatom = TheoryAtom::new(term1, &elements, &guard);
+    let tatom = TheoryAtom::new(term1, &elements, Some(&guard));
 
     let tuple = vec![term1];
     let csp_prod_term1 = CspProductTerm::new(term1, &term2);
@@ -440,19 +450,19 @@ fn ast_body_literal_test() {
     let blit = ast::BodyLiteral::from_aggregate(Sign::None, &agg);
     assert_eq!(
         format!("{:?}", blit),
-        "BodyLiteral { sign: None aggregate: Aggregate { elements: [ConditionalLiteral { literal: Literal { sign: None symbol: Term { symbol: test } }, condition: [Literal { sign: None symbol: Term { symbol: test } }] }], left_guard: AggregateGuard { comparison: GreaterThan, term: Term { symbol: test } }, right_guard: AggregateGuard { comparison: GreaterThan, term: Term { symbol: test } } } }"
+        "BodyLiteral { sign: None aggregate: Aggregate { elements: [ConditionalLiteral { literal: Literal { sign: None symbol: Term { symbol: test } }, condition: [Literal { sign: None symbol: Term { symbol: test } }] }], left_guard: Some(AggregateGuard { comparison: GreaterThan, term: Term { symbol: test } }), right_guard: Some(AggregateGuard { comparison: GreaterThan, term: Term { symbol: test } }) } }"
     );
 
     let blit = ast::BodyLiteral::from_body_aggregate(Sign::None, &bagg);
     assert_eq!(
         format!("{:?}", blit),
-        "BodyLiteral { sign: None body_aggregate: BodyAggregate { function: Count elements: [BodyAggregateElement { tuple: [Term { symbol: test }], condition: [Literal { sign: None symbol: Term { symbol: test } }] }], left_guard: AggregateGuard { comparison: GreaterThan, term: Term { symbol: test } }, right_guard: AggregateGuard { comparison: GreaterThan, term: Term { symbol: test } } } }"
+        "BodyLiteral { sign: None body_aggregate: BodyAggregate { function: Count elements: [BodyAggregateElement { tuple: [Term { symbol: test }], condition: [Literal { sign: None symbol: Term { symbol: test } }] }], left_guard: Some(AggregateGuard { comparison: GreaterThan, term: Term { symbol: test } }), right_guard: Some(AggregateGuard { comparison: GreaterThan, term: Term { symbol: test } }) } }"
     );
 
     let blit = ast::BodyLiteral::from_theory_atom(Sign::None, &tatom);
     assert_eq!(
         format!("{:?}", blit),
-        "BodyLiteral { sign: None theory_atom: TheoryAtom { term: Term { symbol: test } elements: [TheoryAtomElement { tuple: [TheoryTerm { symbol: test }] condition: [Literal { sign: None symbol: Term { symbol: test } }] }] guard: TheoryGuard { operator_name: \"theory_operator\" term: TheoryTerm { symbol: test } } } }"
+        "BodyLiteral { sign: None theory_atom: TheoryAtom { term: Term { symbol: test } elements: [TheoryAtomElement { tuple: [TheoryTerm { symbol: test }] condition: [Literal { sign: None symbol: Term { symbol: test } }] }] guard: Some(TheoryGuard { operator_name: \"theory_operator\" term: TheoryTerm { symbol: test } }) } }"
     );
 
     let blit = ast::BodyLiteral::from_disjoint(Sign::None, &dis);
@@ -642,11 +652,11 @@ fn ast_rule_head_aggregate() {
     let elements = vec![cond];
     let left_guard = AggregateGuard::gt(term);
     let right_guard = AggregateGuard::lt(term);
-    let agg = Aggregate::new(&elements, &left_guard, &right_guard);
+    let agg = Aggregate::new(&elements, Some(&left_guard), Some(&right_guard));
     let hlit = HeadLiteral::from(&agg);
     let rule = Rule::new(hlit, &[]);
     let stm = rule.ast_statement();
-    test_statement(&stm, "Statement { rule: Rule { head: HeadLiteral { aggregate: Aggregate { elements: [ConditionalLiteral { literal: Literal { sign: None symbol: Term { symbol: test } }, condition: [Literal { sign: None symbol: Term { symbol: test } }] }], left_guard: AggregateGuard { comparison: GreaterThan, term: Term { symbol: test } }, right_guard: AggregateGuard { comparison: LessThan, term: Term { symbol: test } } } }, body: [] } }");
+    test_statement(&stm, "Statement { rule: Rule { head: HeadLiteral { aggregate: Aggregate { elements: [ConditionalLiteral { literal: Literal { sign: None symbol: Term { symbol: test } }, condition: [Literal { sign: None symbol: Term { symbol: test } }] }], left_guard: Some(AggregateGuard { comparison: GreaterThan, term: Term { symbol: test } }), right_guard: Some(AggregateGuard { comparison: LessThan, term: Term { symbol: test } }) } }, body: [] } }");
 }
 #[test]
 fn ast_rule_head_head_aggregate() {
@@ -659,11 +669,16 @@ fn ast_rule_head_head_aggregate() {
     let helem = HeadAggregateElement::new(&tuple, cond);
     let elements = vec![helem];
     let guard = AggregateGuard::gt(term);
-    let hagg = HeadAggregate::new(AggregateFunction::Count, &elements, &guard, &guard);
+    let hagg = HeadAggregate::new(
+        AggregateFunction::Count,
+        &elements,
+        Some(&guard),
+        Some(&guard),
+    );
     let hlit = HeadLiteral::from(&hagg);
     let rule = Rule::new(hlit, &[]);
     let stm = rule.ast_statement();
-    test_statement(&stm, "Statement { rule: Rule { head: HeadLiteral { head_aggregate: HeadAggregate { function: Count elements: [HeadAggregateElement { tuple: [Term { symbol: test }], conditional_literal: ConditionalLiteral { literal: Literal { sign: None symbol: Term { symbol: test } }, condition: [Literal { sign: None symbol: Term { symbol: test } }] } }], left_guard: AggregateGuard { comparison: GreaterThan, term: Term { symbol: test } }, right_guard: AggregateGuard { comparison: GreaterThan, term: Term { symbol: test } } } }, body: [] } }");
+    test_statement(&stm, "Statement { rule: Rule { head: HeadLiteral { head_aggregate: HeadAggregate { function: Count elements: [HeadAggregateElement { tuple: [Term { symbol: test }], conditional_literal: ConditionalLiteral { literal: Literal { sign: None symbol: Term { symbol: test } }, condition: [Literal { sign: None symbol: Term { symbol: test } }] } }], left_guard: Some(AggregateGuard { comparison: GreaterThan, term: Term { symbol: test } }), right_guard: Some(AggregateGuard { comparison: GreaterThan, term: Term { symbol: test } }) } }, body: [] } }");
 }
 #[test]
 fn ast_rule() {

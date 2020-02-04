@@ -5,7 +5,12 @@ fn main() {
     let term = ast::Term::from(sym);
     let mut guard = ast::AggregateGuard::gt(term);
     let elements = vec![];
-    let hagg = ast::HeadAggregate::new(ast::AggregateFunction::Count, &elements, &guard, &guard);
+    let hagg = ast::HeadAggregate::new(
+        ast::AggregateFunction::Count,
+        &elements,
+        Some(&guard),
+        Some(&guard),
+    );
     guard =  ast::AggregateGuard::gt(term);
     drop(elements);
     let _end = (guard, hagg);
