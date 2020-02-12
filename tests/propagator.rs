@@ -217,7 +217,7 @@ fn string_model(model: &Model) -> Vec<String> {
 
 #[test_case(2, 2, 2; "sat")]
 #[test_case(5, 6, 0; "unsat")]
-fn test_pigeon_propagator(holes: i32, pigeons: i32, number_of_models: usize) {
+fn pigeon_propagator(holes: i32, pigeons: i32, number_of_models: usize) {
     let mut ctl = Control::new(vec!["0".into()]).unwrap();
     let mut prop = PigeonPropagator {
         pigeons: vec![],
@@ -329,7 +329,7 @@ impl Propagator for TestAssignment {
 }
 
 #[test]
-fn test_assignment_propagator() {
+fn assignment_propagator() {
     let mut ctl = Control::new(vec!["0".into()]).unwrap();
     let mut p = TestAssignment {
         a: None,
@@ -377,7 +377,7 @@ impl Propagator for TestMode {
 }
 
 #[test]
-fn test_mode_propagator() {
+fn mode_propagator() {
     let mut ctl = Control::new(vec!["0".into()]).unwrap();
     let mut p = TestMode { lits: vec![] };
     ctl.register_propagator(&mut p, false)
@@ -488,7 +488,7 @@ impl Propagator for TestAddWatch {
 }
 
 #[test]
-fn test_add_watch_propagator() {
+fn add_watch_propagator() {
     let mut ctl = Control::new(vec!["0".into()]).unwrap();
     let mut p = TestAddWatch {
         propagated: HashSet::new(),
@@ -588,7 +588,7 @@ impl Propagator for TestAddClause {
 #[test_case(ClauseType::Static, 3, 3; "static ")]
 #[test_case(ClauseType::Volatile, 3, 4; "volatile")]
 #[test_case(ClauseType::VolatileStatic, 3, 4; "volatile_static")]
-fn test_add_clause(clause_type: ClauseType, m1: usize, m2: usize) {
+fn add_clause(clause_type: ClauseType, m1: usize, m2: usize) {
     let mut ctl = Control::new(vec!["0".into()]).unwrap();
     let mut p = TestAddClause {
         clause_type,
@@ -614,4 +614,3 @@ fn test_add_clause(clause_type: ClauseType, m1: usize, m2: usize) {
     let models = solve(&mut ctl).unwrap();
     assert_eq!(models.len(), m2);
 }
-

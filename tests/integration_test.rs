@@ -2,14 +2,14 @@ use clingo::ast::*;
 use clingo::*;
 
 #[test]
-fn version_test() {
-    let (ma, mi, re) = version();
+fn version() {
+    let (ma, mi, re) = clingo::version();
     assert!(ma == 5);
     assert!(mi == 4);
     assert!(re == 1);
 }
 #[test]
-fn signature_test() {
+fn signature() {
     let a = Signature::new("a", 2, false).unwrap();
     let b = Signature::new("a", 2, false).unwrap();
     let c = Signature::new("a", 2, true).unwrap();
@@ -31,7 +31,7 @@ fn signature_test() {
     // assert!(b.hash() == a.hash());
 }
 #[test]
-fn symbol_test() {
+fn symbol() {
     // numbers
     let sym = Symbol::create_number(42);
     assert!(42 == sym.number().unwrap());
@@ -85,7 +85,7 @@ fn symbol_test() {
     // assert!(a.hash() != b.hash());
 }
 #[test]
-fn configuration_test() {
+fn configuration() {
     let mut ctl = Control::new(vec![]).unwrap();
     // get the configuration object and its root key
     let conf = ctl.configuration_mut().unwrap();
@@ -98,7 +98,7 @@ fn configuration_test() {
     assert_eq!(desc, "Compute at most %A models (0 for all)\n");
 }
 #[test]
-fn backend_test() {
+fn backend() {
     let mut ctl = Control::new(vec![]).unwrap();
     ctl.add("base", &[], "{a; b; c}.").unwrap();
 
@@ -113,7 +113,7 @@ fn backend_test() {
     }
 }
 #[test]
-fn symbols_test() {
+fn symbols() {
     let number_symbol = Symbol::create_number(42);
     let identifier_symbol = Symbol::create_id("x", true).unwrap();
 
@@ -125,7 +125,7 @@ fn symbols_test() {
     assert_eq!(symbols.to_vec(), symbols2);
 }
 #[test]
-fn theory_atoms_test() {
+fn theory_atoms() {
     let mut ctl = Control::new(vec![]).unwrap();
     ctl.add(
         "base",
@@ -187,7 +187,7 @@ fn test_statement(stmt: &Statement, string: &str) {
 }
 
 #[test]
-fn ast_term_test() {
+fn ast_term() {
     let sym1 = Symbol::create_number(42);
     let sym2 = Symbol::create_string("test").unwrap();
 
@@ -291,7 +291,7 @@ fn ast_term_test() {
 }
 
 #[test]
-fn ast_literal_test() {
+fn ast_literal() {
     let sym1 = Symbol::create_number(42);
     let sym2 = Symbol::create_string("test").unwrap();
 
@@ -343,7 +343,7 @@ fn ast_literal_test() {
 }
 
 #[test]
-fn ast_head_literal_test() {
+fn ast_head_literal() {
     let sym = Symbol::create_id("test", true).unwrap();
     let term1 = Term::from(sym);
     let term2 = Term::from(sym);
@@ -390,7 +390,7 @@ fn ast_head_literal_test() {
     assert_eq!(format!("{:?}",hlit), "HeadLiteral { theory_atom: TheoryAtom { term: Term { symbol: test } elements: [TheoryAtomElement { tuple: [TheoryTerm { symbol: test }] condition: [Literal { sign: None symbol: Term { symbol: test } }] }] guard: TheoryGuard { operator_name: \"theory_operator\" term: TheoryTerm { symbol: test } } } }");
 }
 #[test]
-fn ast_body_literal_test() {
+fn ast_body_literal() {
     let sym = Symbol::create_id("test", true).unwrap();
     let term1 = Term::from(sym);
     let term2 = Term::from(sym);
@@ -462,7 +462,7 @@ fn ast_body_literal_test() {
     );
 }
 #[test]
-fn ast_theory_term_test() {
+fn ast_theory_term() {
     let sym = Symbol::create_id("test", true).unwrap();
 
     let th_term1 = TheoryTerm::from(sym);
@@ -503,7 +503,7 @@ fn ast_theory_term_test() {
     assert_eq!(format!("{:?}", th_term), "TheoryTerm { variable: \"Var\" }");
 }
 #[test]
-fn ast_edge_test() {
+fn ast_edge() {
     let sym1 = Symbol::create_id("test1", true).unwrap();
     let term1 = Term::from(sym1);
     let sym2 = Symbol::create_id("test2", true).unwrap();
@@ -519,7 +519,7 @@ fn ast_edge_test() {
     );
 }
 #[test]
-fn ast_minimize_test() {
+fn ast_minimize() {
     let sym1 = Symbol::create_id("test1", true).unwrap();
     let weight = Term::from(sym1);
     let sym2 = Symbol::create_id("test2", true).unwrap();
@@ -536,7 +536,7 @@ fn ast_minimize_test() {
     );
 }
 #[test]
-fn ast_show_term_test() {
+fn ast_show_term() {
     let sym1 = Symbol::create_id("test1", true).unwrap();
     let term1 = Term::from(sym1);
     let sym2 = Symbol::create_id("test2", true).unwrap();
@@ -552,7 +552,7 @@ fn ast_show_term_test() {
     );
 }
 // #[test]
-// fn ast_show_signature_test() {
+// fn ast_show_signature() {
 //     let sig = Signature::new("signame",3, false).unwrap();
 //     let ssig = ShowSignature::new(sig, true);
 //     let stm = Statement::from(&ssig);
@@ -562,7 +562,7 @@ fn ast_show_term_test() {
 //     );
 // }
 // #[test]
-// fn ast_project_signature_test() {
+// fn ast_project_signature() {
 //     let sig = Signature::new("signame",3, false).unwrap();
 //     let stm = Statement::from(sig);
 //     test_statement(
@@ -571,7 +571,7 @@ fn ast_show_term_test() {
 //     );
 // }
 // #[test]
-// fn ast_defined_test() {
+// fn ast_defined() {
 //     let sig = Signature::new("signame",3, false).unwrap();
 //     let def = Defined::new(sig);
 //     let stm = Statement::from(&def);
@@ -581,7 +581,7 @@ fn ast_show_term_test() {
 //     );
 // }
 #[test]
-fn ast_const_definition_test() {
+fn ast_const_definition() {
     let sym1 = Symbol::create_id("test1", true).unwrap();
     let value = Term::from(sym1);
     let def = Definition::new("constname", value, true).unwrap();
@@ -592,7 +592,7 @@ fn ast_const_definition_test() {
     );
 }
 #[test]
-fn ast_theory_definition_test() {
+fn ast_theory_definition() {
     let op_def = TheoryOperatorDefinition::new("operator_name", 2, TheoryOperatorType::Unary);
     let operators = vec![op_def];
     let termdef = TheoryTermDefinition::new("term_Def_name", &operators).unwrap();
@@ -612,7 +612,7 @@ fn ast_theory_definition_test() {
     );
 }
 #[test]
-fn ast_external_test() {
+fn ast_external() {
     let sym = Symbol::create_id("test", true).unwrap();
     let atom = Term::from(sym);
     let ext = External::new(atom, &[]);
@@ -779,7 +779,7 @@ fn ast_rule_body() {
     test_statement(&stm, "Statement { rule: Rule { head: HeadLiteral { literal: Literal { sign: None symbol: Term { symbol: test } } }, body: [BodyLiteral { sign: None literal: Literal { sign: None symbol: Term { symbol: test } } }] } }");
 }
 #[test]
-fn ast_program_test() {
+fn ast_program() {
     let parameters = vec![];
     let prg = Program::new("a:-b. b.", &parameters).unwrap();
     let stm = Statement::from(&prg);
