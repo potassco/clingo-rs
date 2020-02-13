@@ -2,17 +2,19 @@ extern crate pkg_config;
 
 fn main() {
     if cfg!(feature = "dynamic_linking") {
-
-        match pkg_config::Config::new().atleast_version("5.4.1").probe("clingo"){
-            Ok(_lib) => {println!("cargo:rustc-link-lib=dylib=clingo");},
+        match pkg_config::Config::new()
+            .atleast_version("5.4.1")
+            .probe("clingo")
+        {
+            Ok(_lib) => {
+                println!("cargo:rustc-link-lib=dylib=clingo");
+            }
             Err(e) => {
                 println!("\nError: {}", e);
                 panic!(e);
             }
         }
-        
     } else {
-
         // update clingo submodule
         // git submodule update --init --recursive
 
@@ -41,7 +43,7 @@ fn main() {
         //         .blacklist_type("max_align_t") // https://github.com/rust-lang/rust-bindgen/issues/550
         //         .generate()
         //         .expect("Unable to generate bindings");
-        
+
         //     // Write the bindings to the bindings.rs file.
         //     bindings
         //         .write_to_file("bindings.rs")
@@ -163,6 +165,7 @@ fn main() {
             .warnings(false)
             .define("NDEBUG", Some("1"))
             .define("WITH_THREADS", Some("0"))
+            .define("CLINGO_NO_VISIBILITY", Some("1"))
             .file("clingo/libclingo/src/ast.cc")
             .file("clingo/libclingo/src/clingo_app.cc")
             .file("clingo/libclingo/src/clingocontrol.cc")
