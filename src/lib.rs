@@ -4704,7 +4704,7 @@ impl PropagateInit {
     ///
     /// **See:** [`PropagateControl::thread_id()`](struct.PropagateControl.html#method.thread_id)
     pub fn number_of_threads(&self) -> usize {
-        (unsafe { clingo_propagate_init_number_of_threads(&self.0) } as usize)
+        (unsafe { clingo_propagate_init_number_of_threads(&self.0) }) as usize
     }
 
     /// Configure when to call the check method of the propagator.

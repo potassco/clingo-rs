@@ -5,22 +5,22 @@ All notable changes to this project will be documented in this file.
 ## v0.7.0 - Unreleased
 
 - Properly use solve event data
-    - remove SolveEventType
-    - add SolveEvent
-    - change SolveEventHandler::on_solve_event(...)
+  - remove SolveEventType
+  - add SolveEvent
+  - change SolveEventHandler::on_solve_event(...)
 - return &'static str for internalized strings in
-    - Location::begin_file()
-    - Location::end_file()
-    - Signature::name()
-    - Symbol::name()
-    - Symbol::string()
+  - Location::begin_file()
+  - Location::end_file()
+  - Signature::name()
+  - Symbol::name()
+  - Symbol::string()
 - add FromSymbol trait
 - update clingo-sys to 0.5.2 
 - add functions to PropagateInit
-    - PropagateInit::add_literal()
-    - PropagateInit::add_weight_constraint()
-    - PropagateInit::add_minimize()
-    - PropagateInit::propagate()
+  - PropagateInit::add_literal()
+  - PropagateInit::add_weight_constraint()
+  - PropagateInit::add_minimize()
+  - PropagateInit::propagate()
 
 ## v0.6.0 - Jan 3, 2020
 
