@@ -12,6 +12,8 @@ jobs:
       - uses: actions/checkout@v1
       - name: Install bison
         run: sudo apt-get install bison
+      - name: Install re2c
+        run: sudo apt-get install re2c
       - name: Build
         run: cargo build --verbose
       - name: Run tests
