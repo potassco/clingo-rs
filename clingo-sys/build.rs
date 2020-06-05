@@ -3,7 +3,7 @@ extern crate pkg_config;
 fn main() {
     if cfg!(feature = "dynamic_linking") {
         match pkg_config::Config::new()
-            .atleast_version("5.4.1")
+            .atleast_version("5.5.0")
             .probe("clingo")
         {
             Ok(_lib) => {
