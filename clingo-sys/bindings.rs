@@ -3,6 +3,7 @@
 pub const _STDINT_H: u32 = 1;
 pub const _FEATURES_H: u32 = 1;
 pub const _DEFAULT_SOURCE: u32 = 1;
+pub const __GLIBC_USE_ISOC2X: u32 = 0;
 pub const __USE_ISOC11: u32 = 1;
 pub const __USE_ISOC99: u32 = 1;
 pub const __USE_ISOC95: u32 = 1;
@@ -27,16 +28,19 @@ pub const __STDC_IEC_559_COMPLEX__: u32 = 1;
 pub const __STDC_ISO_10646__: u32 = 201706;
 pub const __GNU_LIBRARY__: u32 = 6;
 pub const __GLIBC__: u32 = 2;
-pub const __GLIBC_MINOR__: u32 = 30;
+pub const __GLIBC_MINOR__: u32 = 31;
 pub const _SYS_CDEFS_H: u32 = 1;
 pub const __glibc_c99_flexarr_available: u32 = 1;
 pub const __WORDSIZE: u32 = 64;
 pub const __WORDSIZE_TIME64_COMPAT32: u32 = 1;
 pub const __SYSCALL_WORDSIZE: u32 = 64;
+pub const __LONG_DOUBLE_USES_FLOAT128: u32 = 0;
 pub const __HAVE_GENERIC_SELECTION: u32 = 1;
 pub const __GLIBC_USE_LIB_EXT2: u32 = 0;
 pub const __GLIBC_USE_IEC_60559_BFP_EXT: u32 = 0;
+pub const __GLIBC_USE_IEC_60559_BFP_EXT_C2X: u32 = 0;
 pub const __GLIBC_USE_IEC_60559_FUNCS_EXT: u32 = 0;
+pub const __GLIBC_USE_IEC_60559_FUNCS_EXT_C2X: u32 = 0;
 pub const __GLIBC_USE_IEC_60559_TYPES_EXT: u32 = 0;
 pub const _BITS_TYPES_H: u32 = 1;
 pub const __TIMESIZE: u32 = 64;
@@ -44,6 +48,7 @@ pub const _BITS_TYPESIZES_H: u32 = 1;
 pub const __OFF_T_MATCHES_OFF64_T: u32 = 1;
 pub const __INO_T_MATCHES_INO64_T: u32 = 1;
 pub const __RLIM_T_MATCHES_RLIM64_T: u32 = 1;
+pub const __STATFS_MATCHES_STATFS64: u32 = 1;
 pub const __FD_SETSIZE: u32 = 1024;
 pub const _BITS_TIME64_H: u32 = 1;
 pub const _BITS_WCHAR_H: u32 = 1;
@@ -90,9 +95,9 @@ pub const true_: u32 = 1;
 pub const false_: u32 = 0;
 pub const __bool_true_false_are_defined: u32 = 1;
 pub const CLINGO_VERSION_MAJOR: u32 = 5;
-pub const CLINGO_VERSION_MINOR: u32 = 4;
-pub const CLINGO_VERSION_REVISION: u32 = 1;
-pub const CLINGO_VERSION: &'static [u8; 6usize] = b"5.4.1\0";
+pub const CLINGO_VERSION_MINOR: u32 = 5;
+pub const CLINGO_VERSION_REVISION: u32 = 0;
+pub const CLINGO_VERSION: &'static [u8; 6usize] = b"5.5.0\0";
 pub type wchar_t = ::std::os::raw::c_int;
 pub type __u_char = ::std::os::raw::c_uchar;
 pub type __u_short = ::std::os::raw::c_ushort;
@@ -249,6 +254,7 @@ fn bindgen_test_layout_clingo_weighted_literal() {
         )
     );
 }
+#[doc = "! A Literal with an associated weight."]
 pub type clingo_weighted_literal_t = clingo_weighted_literal;
 #[doc = "!< successful API calls"]
 pub const clingo_error_clingo_error_success: clingo_error = 0;
@@ -355,6 +361,7 @@ pub type clingo_truth_value_t = ::std::os::raw::c_int;
 #[doc = "!"]
 #[doc = "! @note Not all locations refer to physical files."]
 #[doc = "! By convention, such locations use a name put in angular brackets as filename."]
+#[doc = "! The string members of a location object are internalized and valid for the duration of the process."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct clingo_location {
@@ -444,6 +451,11 @@ fn bindgen_test_layout_clingo_location() {
         )
     );
 }
+#[doc = "! Represents a source code location marking its beginnig and end."]
+#[doc = "!"]
+#[doc = "! @note Not all locations refer to physical files."]
+#[doc = "! By convention, such locations use a name put in angular brackets as filename."]
+#[doc = "! The string members of a location object are internalized and valid for the duration of the process."]
 pub type clingo_location_t = clingo_location;
 #[doc = "! Represents a predicate signature."]
 #[doc = "!"]
@@ -468,6 +480,9 @@ extern "C" {
 }
 extern "C" {
     #[doc = "! Get the name of a signature."]
+    #[doc = "!"]
+    #[doc = "! @note"]
+    #[doc = "! The string is internalized and valid for the duration of the process."]
     #[doc = "!"]
     #[doc = "! @param[in] signature the target signature"]
     #[doc = "! @return the name of the signature"]
@@ -622,6 +637,9 @@ extern "C" {
 extern "C" {
     #[doc = "! Get the name of a symbol."]
     #[doc = "!"]
+    #[doc = "! @note"]
+    #[doc = "! The string is internalized and valid for the duration of the process."]
+    #[doc = "!"]
     #[doc = "! @param[in] symbol the target symbol"]
     #[doc = "! @param[out] name the resulting name"]
     #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
@@ -633,6 +651,9 @@ extern "C" {
 }
 extern "C" {
     #[doc = "! Get the string of a symbol."]
+    #[doc = "!"]
+    #[doc = "! @note"]
+    #[doc = "! The string is internalized and valid for the duration of the process."]
     #[doc = "!"]
     #[doc = "! @param[in] symbol the target symbol"]
     #[doc = "! @param[out] string the resulting string"]
@@ -738,8 +759,7 @@ extern "C" {
     #[doc = "! Internalize a string."]
     #[doc = "!"]
     #[doc = "! This functions takes a string as input and returns an equal unique string"]
-    #[doc = "! that is (at the moment) not freed until the program is closed.  All strings"]
-    #[doc = "! returned from clingo API functions are internalized and must not be freed."]
+    #[doc = "! that is (at the moment) not freed until the program is closed."]
     #[doc = "!"]
     #[doc = "! @param[in] string the string to internalize"]
     #[doc = "! @param[out] result the internalized string"]
@@ -1044,6 +1064,9 @@ extern "C" {
 extern "C" {
     #[doc = "! Get the name of the given constant or function theory term."]
     #[doc = "!"]
+    #[doc = "! @note"]
+    #[doc = "! The lifetime of the string is tied to the current solve step."]
+    #[doc = "!"]
     #[doc = "! @pre The term must be of type ::clingo_theory_term_type_function or ::clingo_theory_term_type_symbol."]
     #[doc = "! @param[in] atoms container where the term is stored"]
     #[doc = "! @param[in] term id of the term"]
@@ -1235,6 +1258,9 @@ extern "C" {
 extern "C" {
     #[doc = "! Get the guard consisting of a theory operator and a theory term of the given theory atom."]
     #[doc = "!"]
+    #[doc = "! @note"]
+    #[doc = "! The lifetime of the string is tied to the current solve step."]
+    #[doc = "!"]
     #[doc = "! @param[in] atoms container where the atom is stored"]
     #[doc = "! @param[in] atom id of the atom"]
     #[doc = "! @param[out] connective the resulting theory operator"]
@@ -1421,39 +1447,123 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    #[doc = "! The number of assigned literals in the assignment."]
+    #[doc = "! The number of (positive) literals in the assignment."]
     #[doc = "!"]
     #[doc = "! @param[in] assignment the target"]
     #[doc = "! @return the number of literals"]
     pub fn clingo_assignment_size(assignment: *const clingo_assignment_t) -> usize;
 }
 extern "C" {
-    #[doc = "! The maximum size of the assignment (if all literals are assigned)."]
+    #[doc = "! The (positive) literal at the given offset in the assignment."]
     #[doc = "!"]
     #[doc = "! @param[in] assignment the target"]
+    #[doc = "! @param[in] offset the offset of the literal"]
+    #[doc = "! @param[out] literal the literal"]
     #[doc = "! @return the maximum size"]
-    pub fn clingo_assignment_max_size(assignment: *const clingo_assignment_t) -> usize;
+    pub fn clingo_assignment_at(
+        assignment: *const clingo_assignment_t,
+        offset: usize,
+        literal: *mut clingo_literal_t,
+    ) -> bool;
 }
 extern "C" {
-    #[doc = "! Check if the assignmen is total, i.e. - size == max_size."]
+    #[doc = "! Check if the assignment is total, i.e. there are no free literal."]
     #[doc = "!"]
     #[doc = "! @param[in] assignment the target"]
     #[doc = "! @return wheather the assignment is total"]
     pub fn clingo_assignment_is_total(assignment: *const clingo_assignment_t) -> bool;
 }
+extern "C" {
+    #[doc = "! Returns the number of literals in the trail, i.e., the number of assigned literals."]
+    #[doc = "!"]
+    #[doc = "! @param[in] assignment the target"]
+    #[doc = "! @param[out] size the number of literals in the trail"]
+    #[doc = "! @return whether the call was successful"]
+    pub fn clingo_assignment_trail_size(
+        assignment: *const clingo_assignment_t,
+        size: *mut u32,
+    ) -> bool;
+}
+extern "C" {
+    #[doc = "! Returns the offset of the decision literal with the given decision level in"]
+    #[doc = "! the trail."]
+    #[doc = "!"]
+    #[doc = "! @note Literals in the trail are ordered by decision levels, where the first"]
+    #[doc = "! literal with a larger level than the previous literals is a decision; the"]
+    #[doc = "! following literals with same level are implied by this decision literal."]
+    #[doc = "! Each decision level up to and including the current decision level has a"]
+    #[doc = "! valid offset in the trail."]
+    #[doc = "!"]
+    #[doc = "! @param[in] assignment the target"]
+    #[doc = "! @param[in] level the decision level"]
+    #[doc = "! @param[out] offset the offset of the decision literal"]
+    #[doc = "! @return whether the call was successful"]
+    pub fn clingo_assignment_trail_begin(
+        assignment: *const clingo_assignment_t,
+        level: u32,
+        offset: *mut u32,
+    ) -> bool;
+}
+extern "C" {
+    #[doc = "! Returns the offset following the last literal with the given decision level."]
+    #[doc = "!"]
+    #[doc = "! @note This function is the counter part to clingo_assignment_trail_begin()."]
+    #[doc = "!"]
+    #[doc = "! @param[in] assignment the target"]
+    #[doc = "! @param[in] level the decision level"]
+    #[doc = "! @param[out] offset the offset"]
+    #[doc = "! @return whether the call was successful"]
+    pub fn clingo_assignment_trail_end(
+        assignment: *const clingo_assignment_t,
+        level: u32,
+        offset: *mut u32,
+    ) -> bool;
+}
+extern "C" {
+    #[doc = "! Returns the literal at the given position in the trail."]
+    #[doc = "!"]
+    #[doc = "! @param[in] assignment the target"]
+    #[doc = "! @param[in] offset the offset of the literal"]
+    #[doc = "! @param[out] literal the literal"]
+    #[doc = "! @return whether the call was successful"]
+    pub fn clingo_assignment_trail_at(
+        assignment: *const clingo_assignment_t,
+        offset: u32,
+        literal: *mut clingo_literal_t,
+    ) -> bool;
+}
 #[doc = "!< do not call @ref ::clingo_propagator::check() at all"]
 pub const clingo_propagator_check_mode_clingo_propagator_check_mode_none:
     clingo_propagator_check_mode = 0;
-#[doc = "!< call @ref ::clingo_propagator::check() on total assignment"]
+#[doc = "!< call @ref ::clingo_propagator::check() on total assignments"]
 pub const clingo_propagator_check_mode_clingo_propagator_check_mode_total:
     clingo_propagator_check_mode = 1;
 #[doc = "!< call @ref ::clingo_propagator::check() on propagation fixpoints"]
 pub const clingo_propagator_check_mode_clingo_propagator_check_mode_fixpoint:
     clingo_propagator_check_mode = 2;
+#[doc = "!< call @ref ::clingo_propagator::check() on propagation fixpoints and total assignments"]
+pub const clingo_propagator_check_mode_clingo_propagator_check_mode_both:
+    clingo_propagator_check_mode = 3;
 #[doc = "! Supported check modes for propagators."]
+#[doc = "!"]
+#[doc = "! Note that total checks are subject to the lock when a model is found."]
+#[doc = "! This means that information from previously found models can be used to discard assignments in check calls."]
 pub type clingo_propagator_check_mode = u32;
 #[doc = "! Corresponding type to ::clingo_propagator_check_mode."]
 pub type clingo_propagator_check_mode_t = ::std::os::raw::c_int;
+#[doc = "!< the weight constraint implies the literal"]
+pub const clingo_weight_constraint_type_clingo_weight_constraint_type_implication_left:
+    clingo_weight_constraint_type = -1;
+#[doc = "!< the literal implies the weight constraint"]
+pub const clingo_weight_constraint_type_clingo_weight_constraint_type_implication_right:
+    clingo_weight_constraint_type = 1;
+#[doc = "!< the weight constraint is equivalent to the literal"]
+pub const clingo_weight_constraint_type_clingo_weight_constraint_type_equivalence:
+    clingo_weight_constraint_type = 0;
+#[doc = "! Enumeration of weight_constraint_types."]
+pub type clingo_weight_constraint_type = i32;
+#[doc = "! Corresponding type to ::clingo_weight_constraint_type."]
+pub type clingo_weight_constraint_type_t = ::std::os::raw::c_int;
 #[repr(C)]
 #[derive(Debug)]
 pub struct clingo_propagate_init {
@@ -1604,7 +1714,8 @@ extern "C" {
 extern "C" {
     #[doc = "! Add the given weight constraint to the solver."]
     #[doc = "!"]
-    #[doc = "! This function adds a constraint of form `literal == { lit=weight | (lit, weight) in literals } <= bound` to the solver."]
+    #[doc = "! This function adds a constraint of form `literal <=> { lit=weight | (lit, weight) in literals } >= bound` to the solver."]
+    #[doc = "! Depending on the type the `<=>` connective can be either a left implication, right implication, or equivalence."]
     #[doc = "!"]
     #[doc = "! @attention No further calls on the init object or functions on the assignment should be called when the result of this method is false."]
     #[doc = "!"]
@@ -1613,6 +1724,7 @@ extern "C" {
     #[doc = "! @param[in] literals the weighted literals"]
     #[doc = "! @param[in] size the number of weighted literals"]
     #[doc = "! @param[in] bound the bound of the constraint"]
+    #[doc = "! @param[in] type the type of the weight constraint"]
     #[doc = "! @param[in] compare_equal if true compare equal instead of less than equal"]
     #[doc = "! @param[out] result result indicating whether the problem became unsatisfiable"]
     #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
@@ -1623,6 +1735,7 @@ extern "C" {
         literals: *const clingo_weighted_literal_t,
         size: usize,
         bound: clingo_weight_t,
+        type_: clingo_weight_constraint_type_t,
         compare_equal: bool,
         result: *mut bool,
     ) -> bool;
@@ -1819,7 +1932,7 @@ pub type clingo_propagator_undo_callback_t = ::std::option::Option<
         arg2: *const clingo_literal_t,
         arg3: usize,
         arg4: *mut ::std::os::raw::c_void,
-    ) -> bool,
+    ),
 >;
 #[doc = "! Typedef for @ref ::clingo_propagator::check()."]
 pub type clingo_propagator_check_callback_t = ::std::option::Option<
@@ -1902,7 +2015,7 @@ pub struct clingo_propagator {
     #[doc = "!"]
     #[doc = "! This callback is meant to update assignment dependent state in the propagator."]
     #[doc = "!"]
-    #[doc = "! @note No clauses must be propagated in this callback."]
+    #[doc = "! @note No clauses must be propagated in this callback and no errors should be set."]
     #[doc = "!"]
     #[doc = "! @param[in] control control object for the target solver"]
     #[doc = "! @param[in] changes the change set"]
@@ -1916,7 +2029,7 @@ pub struct clingo_propagator {
             changes: *const clingo_literal_t,
             size: usize,
             data: *mut ::std::os::raw::c_void,
-        ) -> bool,
+        ),
     >,
     #[doc = "! This function is similar to @ref clingo_propagate_control_propagate() but is called without a change set on propagation fixpoints."]
     #[doc = "!"]
@@ -2020,6 +2133,10 @@ fn bindgen_test_layout_clingo_propagator() {
         )
     );
 }
+#[doc = "! An instance of this struct has to be registered with a solver to implement a custom propagator."]
+#[doc = "!"]
+#[doc = "! Not all callbacks have to be implemented and can be set to NULL if not needed."]
+#[doc = "! @see Propagator"]
 pub type clingo_propagator_t = clingo_propagator;
 #[doc = "!< set the level of an atom"]
 pub const clingo_heuristic_type_clingo_heuristic_type_level: clingo_heuristic_type = 0;
@@ -2669,10 +2786,12 @@ pub const clingo_show_type_clingo_show_type_shown: clingo_show_type = 2;
 pub const clingo_show_type_clingo_show_type_atoms: clingo_show_type = 4;
 #[doc = "!< Select all terms."]
 pub const clingo_show_type_clingo_show_type_terms: clingo_show_type = 8;
+#[doc = "!< Select symbols added by theory."]
+pub const clingo_show_type_clingo_show_type_theory: clingo_show_type = 16;
 #[doc = "!< Select everything."]
-pub const clingo_show_type_clingo_show_type_all: clingo_show_type = 15;
+pub const clingo_show_type_clingo_show_type_all: clingo_show_type = 31;
 #[doc = "!< Select false instead of true atoms (::clingo_show_type_atoms) or terms (::clingo_show_type_terms)."]
-pub const clingo_show_type_clingo_show_type_complement: clingo_show_type = 16;
+pub const clingo_show_type_clingo_show_type_complement: clingo_show_type = 32;
 #[doc = "! Enumeration of bit flags to select symbols in models."]
 pub type clingo_show_type = u32;
 #[doc = "! Corresponding type to ::clingo_show_type."]
@@ -2954,6 +3073,22 @@ extern "C" {
     pub fn clingo_solve_handle_model(
         handle: *mut clingo_solve_handle_t,
         model: *mut *const clingo_model_t,
+    ) -> bool;
+}
+extern "C" {
+    #[doc = "! When a problem is unsatisfiable, get a subset of the assumptions that made the problem unsatisfiable."]
+    #[doc = "!"]
+    #[doc = "! If the program is not unsatisfiable, core is set to NULL and size to zero."]
+    #[doc = "!"]
+    #[doc = "! @param[in] handle the target"]
+    #[doc = "! @param[out] core pointer where to store the core"]
+    #[doc = "! @param[out] size size of the given array"]
+    #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    #[doc = "! - ::clingo_error_bad_alloc"]
+    pub fn clingo_solve_handle_core(
+        handle: *mut clingo_solve_handle_t,
+        core: *mut *const clingo_literal_t,
+        size: *mut usize,
     ) -> bool;
 }
 extern "C" {
@@ -7445,6 +7580,17 @@ fn bindgen_test_layout_clingo_ground_program_observer() {
         )
     );
 }
+#[doc = "! An instance of this struct has to be registered with a solver to observe ground directives as they are passed to the solver."]
+#[doc = "!"]
+#[doc = "! @note This interface is closely modeled after the aspif format."]
+#[doc = "! For more information please refer to the specification of the aspif format."]
+#[doc = "!"]
+#[doc = "! Not all callbacks have to be implemented and can be set to NULL if not needed."]
+#[doc = "! If one of the callbacks in the struct fails, grounding is stopped."]
+#[doc = "! If a non-recoverable clingo API call fails, a callback must return false."]
+#[doc = "! Otherwise ::clingo_error_unknown should be set and false returned."]
+#[doc = "!"]
+#[doc = "! @see clingo_control_register_observer()"]
 pub type clingo_ground_program_observer_t = clingo_ground_program_observer;
 #[doc = "! Struct used to specify the program parts that have to be grounded."]
 #[doc = "!"]
@@ -7510,6 +7656,17 @@ fn bindgen_test_layout_clingo_part() {
         )
     );
 }
+#[doc = "! Struct used to specify the program parts that have to be grounded."]
+#[doc = "!"]
+#[doc = "! Programs may be structured into parts, which can be grounded independently with ::clingo_control_ground."]
+#[doc = "! Program parts are mainly interesting for incremental grounding and multi-shot solving."]
+#[doc = "! For single-shot solving, program parts are not needed."]
+#[doc = "!"]
+#[doc = "! @note Parts of a logic program without an explicit <tt>\\#program</tt>"]
+#[doc = "! specification are by default put into a program called `base` without"]
+#[doc = "! arguments."]
+#[doc = "!"]
+#[doc = "! @see clingo_control_ground()"]
 pub type clingo_part_t = clingo_part;
 #[doc = "! Callback function to implement external functions."]
 #[doc = "!"]
@@ -7789,6 +7946,8 @@ extern "C" {
     #[doc = "! The default level zero only provides basic statistics,"]
     #[doc = "! level one provides extended and accumulated statistics,"]
     #[doc = "! and level two provides per-thread statistics."]
+    #[doc = "! Furthermore, the statistics object is best accessed right after solving."]
+    #[doc = "! Otherwise, not all of its entries have valid values."]
     #[doc = "!"]
     #[doc = "! @param[in] control the target"]
     #[doc = "! @param[out] statistics the statistics object"]
@@ -8132,6 +8291,7 @@ fn bindgen_test_layout_clingo_application() {
         )
     );
 }
+#[doc = "! This struct contains a set of functions to customize the clingo application."]
 pub type clingo_application_t = clingo_application;
 extern "C" {
     #[doc = "! Add an option that is processed with a custom parser."]
@@ -8141,7 +8301,7 @@ extern "C" {
     #[doc = "!"]
     #[doc = "! Parameter option specifies the name(s) of the option."]
     #[doc = "! For example, \"ping,p\" adds the short option \"-p\" and its long form \"--ping\"."]
-    #[doc = "! It is also possible to associate an option with a help level by adding \"@l\" to the option specification."]
+    #[doc = "! It is also possible to associate an option with a help level by adding \",@l\" to the option specification."]
     #[doc = "! Options with a level greater than zero are only shown if the argument to help is greater or equal to l."]
     #[doc = "!"]
     #[doc = "! @param[in] options object to register the option with"]

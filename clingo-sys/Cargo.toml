@@ -14,7 +14,6 @@ readme = "README.md"
 
 [features]
 dynamic_linking = []
-parallel_build = ["cc/parallel"]
 
 [lib]
 name = "clingo_sys"
@@ -24,6 +23,6 @@ path = "lib.rs"
 libc = "0.2"
 
 [build-dependencies]
-cc = "1.0"
-bindgen = "0.52"
+cmake = "0.1"
+bindgen = "0.54"
 pkg-config = "0.3"

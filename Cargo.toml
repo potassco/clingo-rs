@@ -20,7 +20,6 @@ path = "src/lib.rs"
 
 [features]
 dynamic_linking = ["clingo-sys/dynamic_linking"]
-parallel_build = ["clingo-sys/parallel_build"]
 
 # Provide derive(ToSymbol) macro.
 derive = ["clingo-derive"]
