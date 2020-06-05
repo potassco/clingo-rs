@@ -1,5 +1,5 @@
 #![doc(html_root_url = "https://docs.rs/clingo/0.6.0")]
-//! This crate provides bindings to the [clingo](https://github.com/potassco/clingo) library version 5.4.0.
+//! This crate provides bindings to the [clingo](https://github.com/potassco/clingo) library version 5.5.0.
 //!
 //! ## Requirements
 //!
@@ -15,12 +15,14 @@
 //!
 //!
 //! In your `Cargo.toml` add:
+//!   
 //! ```toml
 //! [dependencies]
 //! clingo = { version = "0.6", features = ["derive"] }
 //! ```
 //!      
 //! In your source write:
+//!   
 //! ```ignore
 //! use clingo::ToSymbol;
 //! use clingo::ClingoError;
