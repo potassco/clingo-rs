@@ -3,17 +3,26 @@ name: Rust
 on: [push]
 
 jobs:
-  build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
+  build-linux:
+    runs-on: "ubuntu-latest"
     steps:
       - uses: actions/checkout@v1
       - name: Install bison
         run: sudo apt-get install bison
       - name: Install re2c
         run: sudo apt-get install re2c
+      - name: Build
+        run: cargo build --verbose
+      - name: Run tests
+        run: cargo test --verbose
+  build-macos:
+    runs-on: "macos-latest"
+    steps:
+      - uses: actions/checkout@v1
+      - name: Install build dependencies
+        run: |
+          brew update
+          brew install bison re2c
       - name: Build
         run: cargo build --verbose
       - name: Run tests
