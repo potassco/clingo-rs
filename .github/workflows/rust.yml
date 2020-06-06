@@ -22,7 +22,7 @@ jobs:
       - name: Install build dependencies
         run: |
           brew update
-          brew install bison re2c
+          brew tap homebrew/homebrew-core && brew install bison re2c
           brew unlink bison
           brew link bison --force
           source ~/.bash_profile
