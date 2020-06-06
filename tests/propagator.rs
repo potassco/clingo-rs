@@ -576,9 +576,8 @@ impl Propagator for TestAddClause {
         }
         true
     }
-    fn undo(&mut self, _ctl: &mut PropagateControl, undo: &[Literal]) -> bool {
+    fn undo(&mut self, _ctl: &mut PropagateControl, undo: &[Literal]) {
         self.count -= undo.len();
-        true
     }
 }
 
