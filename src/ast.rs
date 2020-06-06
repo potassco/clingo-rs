@@ -2219,17 +2219,19 @@ impl<'a> Aggregate<'a> {
     pub fn left_guard(&self) -> Option<&'a AggregateGuard<'a>> {
         let pointer =
             self.data.left_guard as *const clingo_ast_aggregate_guard as *const AggregateGuard;
-        match pointer.is_null() {
-            true => None,
-            false => Some(unsafe { pointer.as_ref() }.unwrap()),
+        if pointer.is_null() {
+            None
+        } else {
+            Some(unsafe { pointer.as_ref() }.unwrap())
         }
     }
     pub fn right_guard(&self) -> Option<&'a AggregateGuard<'a>> {
         let pointer =
             self.data.right_guard as *const clingo_ast_aggregate_guard as *const AggregateGuard;
-        match pointer.is_null() {
-            true => None,
-            false => Some(unsafe { pointer.as_ref() }.unwrap()),
+        if pointer.is_null() {
+            None
+        } else {
+            Some(unsafe { pointer.as_ref() }.unwrap())
         }
     }
 }
@@ -2344,17 +2346,19 @@ impl<'a> BodyAggregate<'a> {
     pub fn left_guard(&self) -> Option<&'a AggregateGuard<'a>> {
         let pointer =
             self.data.left_guard as *const clingo_ast_aggregate_guard as *const AggregateGuard;
-        match pointer.is_null() {
-            true => None,
-            false => Some(unsafe { pointer.as_ref() }.unwrap()),
+        if pointer.is_null() {
+            None
+        } else {
+            Some(unsafe { pointer.as_ref() }.unwrap())
         }
     }
     pub fn right_guard(&self) -> Option<&'a AggregateGuard<'a>> {
         let pointer =
             self.data.right_guard as *const clingo_ast_aggregate_guard as *const AggregateGuard;
-        match pointer.is_null() {
-            true => None,
-            false => Some(unsafe { pointer.as_ref() }.unwrap()),
+        if pointer.is_null() {
+            None
+        } else {
+            Some(unsafe { pointer.as_ref() }.unwrap())
         }
     }
 }
@@ -2473,17 +2477,19 @@ impl<'a> HeadAggregate<'a> {
     pub fn left_guard(&self) -> Option<&'a AggregateGuard<'a>> {
         let pointer =
             self.data.left_guard as *const clingo_ast_aggregate_guard as *const AggregateGuard;
-        match pointer.is_null() {
-            true => None,
-            false => Some(unsafe { pointer.as_ref() }.unwrap()),
+        if pointer.is_null() {
+            None
+        } else {
+            Some(unsafe { pointer.as_ref() }.unwrap())
         }
     }
     pub fn right_guard(&self) -> Option<&'a AggregateGuard<'a>> {
         let pointer =
             self.data.right_guard as *const clingo_ast_aggregate_guard as *const AggregateGuard;
-        match pointer.is_null() {
-            true => None,
-            false => Some(unsafe { pointer.as_ref() }.unwrap()),
+        if pointer.is_null() {
+            None
+        } else {
+            Some(unsafe { pointer.as_ref() }.unwrap())
         }
     }
 }
@@ -3027,9 +3033,10 @@ impl<'a> TheoryAtom<'a> {
     }
     pub fn guard(&self) -> Option<&'a TheoryGuard<'a>> {
         let pointer = self.data.guard as *const clingo_ast_theory_guard as *const TheoryGuard;
-        match pointer.is_null() {
-            true => None,
-            false => Some(unsafe { pointer.as_ref() }.unwrap()),
+        if pointer.is_null() {
+            None
+        } else {
+            Some(unsafe { pointer.as_ref() }.unwrap())
         }
     }
 }
@@ -3302,9 +3309,10 @@ impl<'a> TheoryAtomDefinition<'a> {
     pub fn guard(&self) -> Option<&'a TheoryGuardDefinition<'a>> {
         let pointer = self.data.guard as *const clingo_ast_theory_guard_definition
             as *const TheoryGuardDefinition;
-        match pointer.is_null() {
-            false => None,
-            true => Some(unsafe { pointer.as_ref() }.unwrap()),
+        if pointer.is_null() {
+            None
+        } else {
+            Some(unsafe { pointer.as_ref() }.unwrap())
         }
     }
 }
