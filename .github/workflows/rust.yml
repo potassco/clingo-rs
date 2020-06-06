@@ -24,7 +24,6 @@ jobs:
           brew update
           brew install bison@2.7
           brew install re2c
-          xcode-select --install
       - name: Build
         run: |
           export PATH="/usr/local/opt/bison@2.7/bin:$PATH"
