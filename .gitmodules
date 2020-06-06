@@ -1,3 +1,0 @@
-[submodule "clingo-sys/clingo"]
-	path = clingo-sys/clingo
-	url = https://github.com/potassco/clingo.git

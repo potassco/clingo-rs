@@ -161,7 +161,7 @@ impl Propagator for PigeonPropagator {
         true
     }
 
-    fn undo(&mut self, control: &mut PropagateControl, changes: &[Literal]) -> bool {
+    fn undo(&mut self, control: &mut PropagateControl, changes: &[Literal]) {
         // get the thread specific state
         let mut state = self.states[control.thread_id() as usize].borrow_mut();
 
@@ -176,7 +176,6 @@ impl Propagator for PigeonPropagator {
                 }
             }
         }
-        true
     }
 }
 
@@ -322,9 +321,8 @@ impl Propagator for TestAssignment {
         }
         true
     }
-    fn undo(&mut self, _ctl: &mut PropagateControl, undo: &[Literal]) -> bool {
+    fn undo(&mut self, _ctl: &mut PropagateControl, undo: &[Literal]) {
         self.count -= undo.len();
-        true
     }
 }
 

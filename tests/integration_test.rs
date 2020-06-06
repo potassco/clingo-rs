@@ -5,8 +5,8 @@ use clingo::*;
 fn version() {
     let (ma, mi, re) = clingo::version();
     assert!(ma == 5);
-    assert!(mi == 4);
-    assert!(re == 1);
+    assert!(mi == 5);
+    assert!(re == 0);
 }
 #[test]
 fn signature() {

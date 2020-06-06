@@ -1,5 +1,5 @@
 #![doc(html_root_url = "https://docs.rs/clingo/0.6.0")]
-//! This crate provides bindings to the [clingo](https://github.com/potassco/clingo) library version 5.4.0.
+//! This crate provides bindings to the [clingo](https://github.com/potassco/clingo) library version 5.5.0.
 //!
 //! ## Requirements
 //!
@@ -15,12 +15,14 @@
 //!
 //!
 //! In your `Cargo.toml` add:
+//!   
 //! ```toml
 //! [dependencies]
 //! clingo = { version = "0.6", features = ["derive"] }
 //! ```
 //!      
 //! In your source write:
+//!   
 //! ```ignore
 //! use clingo::ToSymbol;
 //! use clingo::ClingoError;
@@ -63,6 +65,8 @@ use bitflags::bitflags;
 use clingo_sys::*;
 use std::cmp::Ordering;
 use std::collections::HashSet;
+use std::convert::Infallible;
+use std::convert::TryInto;
 use std::ffi::CStr;
 use std::ffi::CString;
 use std::ffi::NulError;
@@ -107,6 +111,10 @@ impl ClingoError {
             code: error_code(),
             last: error_message(),
         }
+    }
+
+    fn new_external(msg: &'static str) -> ClingoError {
+        ExternalError { msg: msg }.into()
     }
 }
 #[derive(Error, Debug)]
@@ -538,14 +546,18 @@ impl ModelType {
 }
 
 /// Supported check modes for propagators.
+/// Note that total checks are subject to the lock when a model is found.
+/// This means that information from previously found models can be used to discard assignments in check calls.
 #[derive(Debug, Copy, Clone)]
 pub enum PropagatorCheckMode {
     /// Do not call [`Propagator::check()`](trait.Propagator.html#method.check) at all
     None = clingo_propagator_check_mode_clingo_propagator_check_mode_none as isize,
-    /// Call [`Propagator::check()`](trait.Propagator.html#method.check) on total assignment
+    /// Call [`Propagator::check()`](trait.Propagator.html#method.check) on total assignments
     Total = clingo_propagator_check_mode_clingo_propagator_check_mode_total as isize,
     /// Call [`Propagator::check()`](trait.Propagator.html#method.check) on propagation fixpoints
     Fixpoint = clingo_propagator_check_mode_clingo_propagator_check_mode_fixpoint as isize,
+    /// Call [`Propagator::check()`](trait.Propagator.html#method.check) on propagation fixpoints and total assignments
+    Both = clingo_propagator_check_mode_clingo_propagator_check_mode_both as isize,
 }
 impl PropagatorCheckMode {
     fn try_from(code: i32) -> Result<PropagatorCheckMode, ClingoError> {
@@ -574,6 +586,18 @@ impl PropagatorCheckMode {
         }
     }
 }
+/// Enumeration of weight_constraint_types.
+#[derive(Debug, Copy, Clone)]
+pub enum WeigthConstraintType {
+    /// The weight constraint implies the literal
+    ImplicationLeft =
+        clingo_weight_constraint_type_clingo_weight_constraint_type_implication_left as isize,
+    /// The literal implies the weight constraint
+    ImplicationRight =
+        clingo_weight_constraint_type_clingo_weight_constraint_type_implication_right as isize,
+    /// The weight constraint is equivalent to the literal
+    Equivalence = clingo_weight_constraint_type_clingo_weight_constraint_type_equivalence as isize,
+}
 
 bitflags! {
     /// Bit flags describing the entries of a configuration.
@@ -601,6 +625,8 @@ bitflags! {
 bitflags! {
     /// Bit flags to select symbols in models.
     pub struct ShowType: u32 {
+        /// Select symbols added by theory.
+        const THEORY = clingo_show_type_clingo_show_type_theory;
         /// Select CSP assignments.
         const CSP  = clingo_show_type_clingo_show_type_csp;
         /// Select shown atoms and terms.
@@ -684,7 +710,6 @@ pub trait SolveEventHandler {
                 }
                 let stats: &mut [&mut Statistics] =
                     std::slice::from_raw_parts_mut(event_data as *mut &mut Statistics, 2);
-                use std::convert::TryInto;
                 let stats: &mut [&mut Statistics; 2] =
                     stats.try_into().expect("slice has more than two items");
                 let event = SolveEvent::Statistics(stats);
@@ -964,6 +989,7 @@ impl WeightedLiteral {
 ///
 /// **Note:** Not all locations refer to physical files.
 /// By convention, such locations use a name put in angular brackets as filename.
+/// The string members of a location object are internalized and valid for the duration of the process.
 #[derive(Debug, Copy, Clone)]
 pub struct Location(clingo_location);
 impl Location {
@@ -1109,6 +1135,8 @@ impl Signature {
 
     // TODO: should i return empty string vs Error
     /// Get the name of a signature.
+    /// **Note:**
+    /// The string is internalized and valid for the duration of the process.
     pub fn name(&self) -> Result<&'static str, Utf8Error> {
         let char_ptr: *const c_char = unsafe { clingo_signature_name(self.0) };
         if char_ptr.is_null() {
@@ -1291,6 +1319,9 @@ impl Symbol {
 
     /// Get the name of a symbol.
     ///
+    /// **Note:**
+    /// The string is internalized and valid for the duration of the process.
+    ///
     /// # Errors
     ///
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if symbol is not of type [`SymbolType::Function`](enum.SymbolType.html#variant.Function)
@@ -1312,6 +1343,9 @@ impl Symbol {
     }
 
     /// Get the string of a symbol.
+    ///
+    /// **Note:**
+    /// The string is internalized and valid for the duration of the process.
     ///
     /// # Errors
     ///
@@ -1564,7 +1598,7 @@ impl<'a> Part<'a> {
 
 /// An instance of this trait has to be registered with a solver to implement a custom propagator.
 ///
-/// For all functions exist default implementations and they must not be implemented manually.
+/// Not all functions have to be implemented, there exist default implementations.
 pub trait Propagator {
     /// This function is called once before each solving step.
     /// It is used to map relevant program literals to solver literals, add watches for solver
@@ -1676,7 +1710,7 @@ pub trait Propagator {
     ///
     /// This callback is meant to update assignment dependent state in the propagator.
     ///
-    /// **Note:** No clauses must be propagated in this callback.
+    /// **Note:** No clauses must be propagated in this callback and no errors should be set.
     ///
     /// # Arguments
     ///
@@ -1684,20 +1718,18 @@ pub trait Propagator {
     /// * `changes` - the change set
     ///
     /// **Returns** whether the call was successful
-    fn undo(&mut self, _control: &mut PropagateControl, _changes: &[Literal]) -> bool {
-        true
-    }
+    fn undo(&mut self, _control: &mut PropagateControl, _changes: &[Literal]) {}
     #[doc(hidden)]
     unsafe extern "C" fn unsafe_undo<T: Propagator>(
         control: *const clingo_propagate_control_t,
         changes: *const clingo_literal_t,
         size: usize,
         propagator: *mut c_void,
-    ) -> bool {
+    ) {
         // check for null pointers
         if control.is_null() | (size > 0 && changes.is_null()) | propagator.is_null() {
             set_internal_error(ErrorType::Runtime, "unsafe_undo() got a null pointer.");
-            return false;
+            return;
         }
         let control = &mut *(control as *mut PropagateControl);
         let changes = std::slice::from_raw_parts(changes as *const Literal, size);
@@ -2380,6 +2412,8 @@ impl Control {
     /// The default level zero only provides basic statistics,
     /// level one provides extended and accumulated statistics,
     /// and level two provides per-thread statistics.
+    /// Furthermore, the statistics object is best accessed right after solving.
+    /// Otherwise, not all of its entries have valid values.
     ///
     /// # Errors
     ///
@@ -3732,6 +3766,9 @@ impl TheoryAtoms {
     /// The term must be of type [`TermType::Function`](enum.TermType.html#variant.Function) or
     /// [`TermType::Symbol`](enum.TermType.html#variant.Symbol).
     ///
+    /// **Note:**
+    /// The lifetime of the string is tied to the current solve step.
+    ///
     /// # Arguments
     ///
     /// * `term` id of the term
@@ -3955,6 +3992,9 @@ impl TheoryAtoms {
     }
 
     /// Get the guard consisting of a theory operator and a theory term of the given theory atom.
+    ///
+    /// **Note:**
+    /// The lifetime of the string is tied to the current solve step.
     ///
     /// # Arguments
     ///
@@ -4422,19 +4462,102 @@ impl Assignment {
         TruthValue::try_from(value)
     }
 
-    /// The number of assigned literals in the assignment.
+    /// The number of (positive) literals in the assignment.
     pub fn size(&self) -> usize {
         unsafe { clingo_assignment_size(&self.0) }
     }
 
-    /// The maximum size of the assignment (if all literals are assigned).
-    pub fn max_size(&self) -> usize {
-        unsafe { clingo_assignment_max_size(&self.0) }
+    /// The (positive) literal at the given offset in the assignment.
+    ///
+    /// # Arguments
+    ///
+    /// * `offset` - the offset of the literal
+    ///
+    /// **Returns** the literal
+    pub fn at(&self, offset: usize) -> Result<Literal, ClingoError> {
+        let mut lit = 0 as clingo_literal_t;
+        if !unsafe { clingo_assignment_at(&self.0, offset, &mut lit) } {
+            return Err(ClingoError::new_internal(
+                "Call to clingo_assignment_at() failed",
+            ));
+        }
+        Ok(Literal(lit))
     }
 
-    /// Check if the assignmen is total, i.e. - size == max_size.
+    /// Check if the assignmen is total, i.e. there are no free literal.
     pub fn is_total(&self) -> bool {
         unsafe { clingo_assignment_is_total(&self.0) }
+    }
+
+    /// Returns the number of literals in the trail, i.e., the number of assigned literals.
+    pub fn trail_size(&self) -> Result<u32, ClingoError> {
+        let mut size = 0;
+        if !unsafe { clingo_assignment_trail_size(&self.0, &mut size) } {
+            return Err(ClingoError::new_internal(
+                "Call to clingo_assignment_trail_size() failed",
+            ));
+        }
+        Ok(size)
+    }
+
+    /// Returns the offset of the decision literal with the given decision level in
+    /// the trail.
+    ///
+    /// **Note:** Literals in the trail are ordered by decision levels, where the first
+    /// literal with a larger level than the previous literals is a decision; the
+    /// following literals with same level are implied by this decision literal.
+    /// Each decision level up to and including the current decision level has a
+    /// valid offset in the trail.
+    ///
+    /// # Arguments
+    ///
+    /// * `level` - the decision level
+    ///
+    /// **Returns** the offset of the decision literal
+    pub fn trail_begin(&self, level: u32) -> Result<u32, ClingoError> {
+        let mut offset = 0;
+        if !unsafe { clingo_assignment_trail_begin(&self.0, level, &mut offset) } {
+            return Err(ClingoError::new_internal(
+                "Call to clingo_assignment_trail_begin() failed",
+            ));
+        }
+        Ok(offset)
+    }
+
+    /// Returns the offset following the last literal with the given decision level.
+    ///
+    /// **Note:** This function is the counter part to clingo_assignment_trail_begin().
+    ///
+    /// # Arguments
+    ///
+    /// * `level` - the decision level
+    ///
+    /// **Returns** the offset
+    pub fn trail_end(&self, level: u32) -> Result<u32, ClingoError> {
+        let mut offset = 0;
+        if !unsafe { clingo_assignment_trail_end(&self.0, level, &mut offset) } {
+            return Err(ClingoError::new_internal(
+                "Call to clingo_assignment_trail_end() failed",
+            ));
+        }
+        Ok(offset)
+    }
+
+    /// Returns the literal at the given position in the trail.
+    ///
+    /// # Arguments
+    ///
+    /// * `offset` - the offset of the literal
+    ///
+    /// **Returns** the literal
+    pub fn trail_at(&self, offset: u32) -> Result<Literal, ClingoError> {
+        let mut lit = 0 as clingo_literal_t;
+        if !unsafe { clingo_assignment_trail_at(&self.0, offset, &mut lit) } {
+            return Err(ClingoError::new_internal(
+                "Call to clingo_assignment_trail_at() failed",
+            ));
+        }
+        Ok(Literal(lit))
     }
 }
 
@@ -4701,7 +4824,7 @@ impl PropagateInit {
     ///
     /// **See:** [`PropagateControl::thread_id()`](struct.PropagateControl.html#method.thread_id)
     pub fn number_of_threads(&self) -> usize {
-        (unsafe { clingo_propagate_init_number_of_threads(&self.0) } as usize)
+        (unsafe { clingo_propagate_init_number_of_threads(&self.0) }) as usize
     }
 
     /// Configure when to call the check method of the propagator.
@@ -4798,13 +4921,15 @@ impl PropagateInit {
 
     /// Add the given weight constraint to the solver.
     ///
-    /// This function adds a constraint of form `literal == { lit=weight | (lit, weight) in literals } <= bound` to the solver.
+    /// This function adds a constraint of form `literal <=> { lit=weight | (lit, weight) in literals } >= bound` to the solver.
+    /// Depending on the type the `<=>` connective can be either a left implication, right implication, or equivalence.
     ///
     /// **Attention** No further calls on the init object or functions on the assignment should be called when the result of this method is false.
     ///
     /// * `literal` - the literal of the constraint
     /// * `literals` - the weighted literals
     /// * `bound` - the bound of the constraint
+    /// * `wctype` - the type of the weight constraint
     /// * `compare_equal` - if true compare equal instead of less than equal
     ///
     /// **Returns** result indicating whether the problem became unsatisfiable
@@ -4817,6 +4942,7 @@ impl PropagateInit {
         literal: Literal,
         literals: &[WeightedLiteral],
         bound: i32,
+        wctype: WeigthConstraintType,
         compare_equal: bool,
     ) -> Result<bool, ClingoError> {
         let mut result = false;
@@ -4827,6 +4953,7 @@ impl PropagateInit {
                 literals.as_ptr() as *const clingo_weighted_literal_t,
                 literals.len(),
                 bound,
+                wctype as i32,
                 compare_equal,
                 &mut result,
             )
@@ -4946,6 +5073,39 @@ impl<'a> SolveHandle<'a> {
             ));
         }
         Ok(unsafe { (model as *const Model).as_ref() })
+    }
+
+    /// When a problem is unsatisfiable, get a subset of the assumptions that made the problem unsatisfiable.
+    ///
+    /// If the program is not unsatisfiable, an empty vector is returned.
+    ///
+    /// **Returns** the unsatisfiable core
+    ///
+    /// # Errors
+    ///
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    pub fn core(&mut self) -> Result<Vec<Literal>, ClingoError> {
+        let mut literal_ptr = std::ptr::null();
+        let mut size: usize = 0;
+        if !unsafe { clingo_solve_handle_core(self.theref, &mut literal_ptr, &mut size) } {
+            return Err(ClingoError::new_internal(
+                "Call to clingo_solve_handle_core() failed",
+            ));
+        }
+        // let literals = unsafe {std::slice::from_raw_parts(literal_ptr, size)};
+
+        let mut literals = Vec::<Literal>::with_capacity(size);
+        for _ in 0..size {
+            if literal_ptr.is_null() {
+                return Err(ClingoError::FFIError {
+                    msg: "clingo_solve_handle_core() returned a null pointer.",
+                });
+            }
+            let nliteral = unsafe { *literal_ptr };
+            literals.push(Literal(nliteral));
+            literal_ptr = unsafe { literal_ptr.offset(1) };
+        }
+        Ok(literals)
     }
 
     /// Get the next model or None if there are no more models.
@@ -5088,8 +5248,7 @@ pub struct MModel {
 /// Internalize a string.
 ///
 /// This functions takes a string as input and returns an equal unique string
-/// that is (at the moment) not freed until the program is closed.  All strings
-/// returned from clingo API functions are internalized and must not be freed.
+/// that is (at the moment) not freed until the program is closed.
 ///
 /// # Arguments
 ///
@@ -5196,7 +5355,17 @@ pub fn parse_term_with_logger<L: Logger>(
     }
     Ok(Symbol(symbol))
 }
-
+/// An instance of this struct has to be registered with a solver to observe ground directives as they are passed to the solver.
+///
+/// **Note:** This interface is closely modeled after the aspif format.
+/// For more information please refer to the specification of the aspif format.
+///
+/// Not all callbacks have to be implemented and can be set to NULL if not needed.
+/// If one of the callbacks in the struct fails, grounding is stopped.
+/// If a non-recoverable clingo API call fails, a callback must return false.
+/// Otherwise ::clingo_error_unknown should be set and false returned.
+///
+// See [`Control::register_observer`](struct.Control.html#method.register_observer).
 pub trait GroundProgramObserver {
     /// Called once in the beginning.
     ///
@@ -6120,308 +6289,107 @@ impl<T: ToSymbol> ToSymbol for &T {
 }
 
 pub trait FromSymbol: Sized {
-    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError>;
+    type Error;
+
+    fn from_symbol(symbol: Symbol) -> Result<Self, Self::Error>;
 }
 
 impl FromSymbol for Symbol {
-    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
+    type Error = Infallible;
+    fn from_symbol(symbol: Symbol) -> Result<Self, Self::Error> {
         Ok(symbol)
     }
 }
-
-fn tuple_args(symbol: Symbol) -> Result<Vec<Symbol>, ClingoError> {
-    if symbol.symbol_type()? != SymbolType::Function {
-        return Err(ClingoError::new_internal("Expected Tuple"));
-    }
-    if symbol.name()? != "" {
-        return Err(ClingoError::new_internal("Expected Tuple"));
-    }
-    Ok(symbol.arguments()?)
-}
-
-impl FromSymbol for () {
-    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
-        match tuple_args(symbol)?.as_slice() {
-            [] => Ok(()),
-            _ => Err(ClingoError::new_internal("Expected empty tuple")),
-        }
+impl FromSymbol for u8 {
+    type Error = ClingoError;
+    fn from_symbol(symbol: Symbol) -> Result<Self, Self::Error> {
+        symbol
+            .number()?
+            .try_into()
+            .map_err(|_| ClingoError::new_external("Could not convert to u8"))
     }
 }
-
-impl<A: FromSymbol, B: FromSymbol> FromSymbol for (A, B) {
-    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
-        match tuple_args(symbol)?.as_slice() {
-            [a, b] => Ok((A::from_symbol(*a)?, B::from_symbol(*b)?)),
-            _ => Err(ClingoError::new_internal("Expected tuple of length 2")),
-        }
+impl FromSymbol for i8 {
+    type Error = ClingoError;
+    fn from_symbol(symbol: Symbol) -> Result<Self, Self::Error> {
+        symbol
+            .number()?
+            .try_into()
+            .map_err(|_| ClingoError::new_external("Could not convert to i8"))
     }
 }
-
-impl<A: FromSymbol, B: FromSymbol, C: FromSymbol> FromSymbol for (A, B, C) {
-    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
-        match tuple_args(symbol)?.as_slice() {
-            [a, b, c] => Ok((
-                A::from_symbol(*a)?,
-                B::from_symbol(*b)?,
-                C::from_symbol(*c)?,
-            )),
-            _ => Err(ClingoError::new_internal("Expected tuple of length 3")),
-        }
+impl FromSymbol for u16 {
+    type Error = ClingoError;
+    fn from_symbol(symbol: Symbol) -> Result<Self, Self::Error> {
+        symbol
+            .number()?
+            .try_into()
+            .map_err(|_| ClingoError::new_external("Could not convert to u16"))
     }
 }
-
-impl<A: FromSymbol, B: FromSymbol, C: FromSymbol, D: FromSymbol> FromSymbol for (A, B, C, D) {
-    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
-        match tuple_args(symbol)?.as_slice() {
-            [a, b, c, d] => Ok((
-                A::from_symbol(*a)?,
-                B::from_symbol(*b)?,
-                C::from_symbol(*c)?,
-                D::from_symbol(*d)?,
-            )),
-            _ => Err(ClingoError::new_internal("Expected tuple of length 4")),
-        }
+impl FromSymbol for i16 {
+    type Error = ClingoError;
+    fn from_symbol(symbol: Symbol) -> Result<Self, Self::Error> {
+        symbol
+            .number()?
+            .try_into()
+            .map_err(|_| ClingoError::new_external("Could not convert to i16"))
     }
 }
-
-impl<A: FromSymbol, B: FromSymbol, C: FromSymbol, D: FromSymbol, E: FromSymbol> FromSymbol
-    for (A, B, C, D, E)
-{
-    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
-        match tuple_args(symbol)?.as_slice() {
-            [a, b, c, d, e] => Ok((
-                A::from_symbol(*a)?,
-                B::from_symbol(*b)?,
-                C::from_symbol(*c)?,
-                D::from_symbol(*d)?,
-                E::from_symbol(*e)?,
-            )),
-            _ => Err(ClingoError::new_internal("Expected tuple of length 5")),
-        }
+impl FromSymbol for u32 {
+    type Error = ClingoError;
+    fn from_symbol(symbol: Symbol) -> Result<Self, Self::Error> {
+        symbol
+            .number()?
+            .try_into()
+            .map_err(|_| ClingoError::new_external("Could not convert to u32"))
     }
 }
-
-impl<A: FromSymbol, B: FromSymbol, C: FromSymbol, D: FromSymbol, E: FromSymbol, F: FromSymbol>
-    FromSymbol for (A, B, C, D, E, F)
-{
-    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
-        match tuple_args(symbol)?.as_slice() {
-            [a, b, c, d, e, f] => Ok((
-                A::from_symbol(*a)?,
-                B::from_symbol(*b)?,
-                C::from_symbol(*c)?,
-                D::from_symbol(*d)?,
-                E::from_symbol(*e)?,
-                F::from_symbol(*f)?,
-            )),
-            _ => Err(ClingoError::new_internal("Expected tuple of length 6")),
-        }
-    }
-}
-
-impl<
-        A: FromSymbol,
-        B: FromSymbol,
-        C: FromSymbol,
-        D: FromSymbol,
-        E: FromSymbol,
-        F: FromSymbol,
-        G: FromSymbol,
-    > FromSymbol for (A, B, C, D, E, F, G)
-{
-    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
-        match tuple_args(symbol)?.as_slice() {
-            [a, b, c, d, e, f, g] => Ok((
-                A::from_symbol(*a)?,
-                B::from_symbol(*b)?,
-                C::from_symbol(*c)?,
-                D::from_symbol(*d)?,
-                E::from_symbol(*e)?,
-                F::from_symbol(*f)?,
-                G::from_symbol(*g)?,
-            )),
-            _ => Err(ClingoError::new_internal("Expected tuple of length 7")),
-        }
-    }
-}
-
-impl<
-        A: FromSymbol,
-        B: FromSymbol,
-        C: FromSymbol,
-        D: FromSymbol,
-        E: FromSymbol,
-        F: FromSymbol,
-        G: FromSymbol,
-        H: FromSymbol,
-    > FromSymbol for (A, B, C, D, E, F, G, H)
-{
-    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
-        match tuple_args(symbol)?.as_slice() {
-            [a, b, c, d, e, f, g, h] => Ok((
-                A::from_symbol(*a)?,
-                B::from_symbol(*b)?,
-                C::from_symbol(*c)?,
-                D::from_symbol(*d)?,
-                E::from_symbol(*e)?,
-                F::from_symbol(*f)?,
-                G::from_symbol(*g)?,
-                H::from_symbol(*h)?,
-            )),
-            _ => Err(ClingoError::new_internal("Expected tuple of length 8")),
-        }
-    }
-}
-
-impl<
-        A: FromSymbol,
-        B: FromSymbol,
-        C: FromSymbol,
-        D: FromSymbol,
-        E: FromSymbol,
-        F: FromSymbol,
-        G: FromSymbol,
-        H: FromSymbol,
-        I: FromSymbol,
-    > FromSymbol for (A, B, C, D, E, F, G, H, I)
-{
-    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
-        match tuple_args(symbol)?.as_slice() {
-            [a, b, c, d, e, f, g, h, i] => Ok((
-                A::from_symbol(*a)?,
-                B::from_symbol(*b)?,
-                C::from_symbol(*c)?,
-                D::from_symbol(*d)?,
-                E::from_symbol(*e)?,
-                F::from_symbol(*f)?,
-                G::from_symbol(*g)?,
-                H::from_symbol(*h)?,
-                I::from_symbol(*i)?,
-            )),
-            _ => Err(ClingoError::new_internal("Expected tuple of length 9")),
-        }
-    }
-}
-
-impl<
-        A: FromSymbol,
-        B: FromSymbol,
-        C: FromSymbol,
-        D: FromSymbol,
-        E: FromSymbol,
-        F: FromSymbol,
-        G: FromSymbol,
-        H: FromSymbol,
-        I: FromSymbol,
-        J: FromSymbol,
-    > FromSymbol for (A, B, C, D, E, F, G, H, I, J)
-{
-    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
-        match tuple_args(symbol)?.as_slice() {
-            [a, b, c, d, e, f, g, h, i, j] => Ok((
-                A::from_symbol(*a)?,
-                B::from_symbol(*b)?,
-                C::from_symbol(*c)?,
-                D::from_symbol(*d)?,
-                E::from_symbol(*e)?,
-                F::from_symbol(*f)?,
-                G::from_symbol(*g)?,
-                H::from_symbol(*h)?,
-                I::from_symbol(*i)?,
-                J::from_symbol(*j)?,
-            )),
-            _ => Err(ClingoError::new_internal("Expected tuple of length 10")),
-        }
-    }
-}
-
-impl<
-        A: FromSymbol,
-        B: FromSymbol,
-        C: FromSymbol,
-        D: FromSymbol,
-        E: FromSymbol,
-        F: FromSymbol,
-        G: FromSymbol,
-        H: FromSymbol,
-        I: FromSymbol,
-        J: FromSymbol,
-        K: FromSymbol,
-    > FromSymbol for (A, B, C, D, E, F, G, H, I, J, K)
-{
-    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
-        match tuple_args(symbol)?.as_slice() {
-            [a, b, c, d, e, f, g, h, i, j, k] => Ok((
-                A::from_symbol(*a)?,
-                B::from_symbol(*b)?,
-                C::from_symbol(*c)?,
-                D::from_symbol(*d)?,
-                E::from_symbol(*e)?,
-                F::from_symbol(*f)?,
-                G::from_symbol(*g)?,
-                H::from_symbol(*h)?,
-                I::from_symbol(*i)?,
-                J::from_symbol(*j)?,
-                K::from_symbol(*k)?,
-            )),
-            _ => Err(ClingoError::new_internal("Expected tuple of length 11")),
-        }
-    }
-}
-
-impl<
-        A: FromSymbol,
-        B: FromSymbol,
-        C: FromSymbol,
-        D: FromSymbol,
-        E: FromSymbol,
-        F: FromSymbol,
-        G: FromSymbol,
-        H: FromSymbol,
-        I: FromSymbol,
-        J: FromSymbol,
-        K: FromSymbol,
-        L: FromSymbol,
-    > FromSymbol for (A, B, C, D, E, F, G, H, I, J, K, L)
-{
-    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
-        match tuple_args(symbol)?.as_slice() {
-            [a, b, c, d, e, f, g, h, i, j, k, l] => Ok((
-                A::from_symbol(*a)?,
-                B::from_symbol(*b)?,
-                C::from_symbol(*c)?,
-                D::from_symbol(*d)?,
-                E::from_symbol(*e)?,
-                F::from_symbol(*f)?,
-                G::from_symbol(*g)?,
-                H::from_symbol(*h)?,
-                I::from_symbol(*i)?,
-                J::from_symbol(*j)?,
-                K::from_symbol(*k)?,
-                L::from_symbol(*l)?,
-            )),
-            _ => Err(ClingoError::new_internal("Expected tuple of length 12")),
-        }
-    }
-}
-
 impl FromSymbol for i32 {
-    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
+    type Error = ClingoError;
+    fn from_symbol(symbol: Symbol) -> Result<Self, Self::Error> {
         symbol.number()
     }
 }
 impl FromSymbol for u64 {
-    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
-        Ok(symbol.number()? as u64)
+    type Error = ClingoError;
+    fn from_symbol(symbol: Symbol) -> Result<Self, Self::Error> {
+        symbol
+            .number()?
+            .try_into()
+            .map_err(|_| ClingoError::new_external("Could not convert to u64"))
+    }
+}
+impl FromSymbol for i64 {
+    type Error = ClingoError;
+    fn from_symbol(symbol: Symbol) -> Result<Self, Self::Error> {
+        Ok(symbol.number()? as i64)
+    }
+}
+impl FromSymbol for u128 {
+    type Error = ClingoError;
+    fn from_symbol(symbol: Symbol) -> Result<Self, Self::Error> {
+        symbol
+            .number()?
+            .try_into()
+            .map_err(|_| ClingoError::new_external("Could not convert to u128"))
+    }
+}
+impl FromSymbol for i128 {
+    type Error = ClingoError;
+    fn from_symbol(symbol: Symbol) -> Result<Self, Self::Error> {
+        Ok(symbol.number()? as i128)
     }
 }
 impl FromSymbol for String {
-    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
+    type Error = ClingoError;
+    fn from_symbol(symbol: Symbol) -> Result<Self, Self::Error> {
         Ok(symbol.string()?.into())
     }
 }
 impl FromSymbol for &'static str {
-    fn from_symbol(symbol: Symbol) -> Result<Self, ClingoError> {
+    type Error = ClingoError;
+    fn from_symbol(symbol: Symbol) -> Result<Self, Self::Error> {
         symbol.string()
     }
 }

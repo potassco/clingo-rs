@@ -20,13 +20,12 @@ path = "src/lib.rs"
 
 [features]
 dynamic_linking = ["clingo-sys/dynamic_linking"]
-parallel_build = ["clingo-sys/parallel_build"]
 
 # Provide derive(ToSymbol) macro.
 derive = ["clingo-derive"]
 
 [dependencies]
-clingo-sys = { path = "./clingo-sys", version = "0.5.2" }
+clingo-sys = { git = "https://github.com/potassco/clingo-sys", branch = "master" }
 clingo-derive = { version = "0.2.0", optional = true }
 rand = "0.7"
 thiserror = "1.0"
