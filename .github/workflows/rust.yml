@@ -23,6 +23,7 @@ jobs:
         run: |
           brew update
           brew install bison re2c
+          export PATH="/usr/local/opt/bison/bin:$PATH"
       - name: Build
         run: cargo build --verbose
       - name: Run tests
