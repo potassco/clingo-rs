@@ -22,9 +22,13 @@ jobs:
       - name: Install build dependencies
         run: |
           brew update
-          brew install bison re2c
-          export PATH="/usr/local/opt/bison/bin:$PATH"
+          brew install bison@2.7
+          brew install re2c
       - name: Build
-        run: cargo build --verbose
+        run: |
+          export PATH="/usr/local/opt/bison@2.7/bin:$PATH"
+          cargo build --verbose
       - name: Run tests
-        run: cargo test --verbose
+        run: |
+          export PATH="/usr/local/opt/bison@2.7/bin:$PATH"
+          cargo test --verbose
