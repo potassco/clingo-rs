@@ -467,18 +467,19 @@ impl Propagator for TestAddWatch {
     fn propagate(&mut self, ctl: &mut PropagateControl, changes: &[Literal]) -> bool {
         if ctl.thread_id() == 0 {
             // wait for thread 1 to propagate b
-            let lock = self.mutex.lock().unwrap();
-            let _val = self.cv.wait(lock).unwrap();
+            let mut_ = self.mutex.lock().unwrap();
+            let _mut_ = self.cv.wait(mut_).unwrap();
             return self.done;
         } else {
             for lit in changes {
+                let _mut_ = self.mutex.lock().unwrap();
+                self.done = true;
                 if lit.get_integer() < 0 {
                     self.propagated.insert(lit.negate());
                 } else {
                     self.propagated.insert(*lit);
                 }
             }
-            self.done = true;
             self.cv.notify_one();
         }
         true
