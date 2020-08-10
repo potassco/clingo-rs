@@ -396,14 +396,12 @@ fn mode_propagator() {
 }
 
 use std::collections::HashSet;
-use std::sync::{Condvar, Mutex};
+use std::sync::{Arc, Condvar, Mutex};
 struct TestAddWatch {
     propagated: HashSet<Literal>,
     a: Option<Literal>,
     b: Option<Literal>,
-    mutex: Mutex<u32>,
-    cv: Condvar,
-    done: bool,
+    pair: Arc<(Mutex<bool>, Condvar)>,
 }
 impl Propagator for TestAddWatch {
     fn init(&mut self, init: &mut PropagateInit) -> bool {
@@ -461,26 +459,27 @@ impl Propagator for TestAddWatch {
         assert_eq!(assignment.truth_value(b_).unwrap(), TruthValue::Free);
         assert_eq!(assignment.truth_value(c).unwrap(), TruthValue::True);
         assert_eq!(assignment.truth_value(d).unwrap(), TruthValue::False);
-        self.done = false;
         true
     }
     fn propagate(&mut self, ctl: &mut PropagateControl, changes: &[Literal]) -> bool {
+        let (lock, cvar) = &*self.pair;
         if ctl.thread_id() == 0 {
             // wait for thread 1 to propagate b
-            let mut_ = self.mutex.lock().unwrap();
-            let _mut_ = self.cv.wait(mut_).unwrap();
-            return self.done;
+            let done = lock.lock().unwrap();
+            if !*done {
+                cvar.wait(done).unwrap();
+            }
         } else {
             for lit in changes {
-                let _mut_ = self.mutex.lock().unwrap();
-                self.done = true;
+                let mut done = lock.lock().unwrap();
+                *done = true;
                 if lit.get_integer() < 0 {
                     self.propagated.insert(lit.negate());
                 } else {
                     self.propagated.insert(*lit);
                 }
             }
-            self.cv.notify_one();
+            cvar.notify_one();
         }
         true
     }
@@ -493,9 +492,7 @@ fn add_watch_propagator() {
         propagated: HashSet::new(),
         a: None,
         b: None,
-        mutex: Mutex::new(0),
-        cv: Condvar::new(),
-        done: false,
+        pair: Arc::new((Mutex::new(false), Condvar::new())),
     };
     let conf = ctl.configuration_mut().unwrap();
     let root_key = conf.root().unwrap();
