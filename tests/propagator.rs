@@ -402,6 +402,7 @@ struct TestAddWatch {
     a: Option<Literal>,
     b: Option<Literal>,
     pair: Arc<(Mutex<bool>, Condvar)>,
+    done: bool,
 }
 impl Propagator for TestAddWatch {
     fn init(&mut self, init: &mut PropagateInit) -> bool {
@@ -459,20 +460,19 @@ impl Propagator for TestAddWatch {
         assert_eq!(assignment.truth_value(b_).unwrap(), TruthValue::Free);
         assert_eq!(assignment.truth_value(c).unwrap(), TruthValue::True);
         assert_eq!(assignment.truth_value(d).unwrap(), TruthValue::False);
+        self.done = false;
         true
     }
     fn propagate(&mut self, ctl: &mut PropagateControl, changes: &[Literal]) -> bool {
         let (lock, cvar) = &*self.pair;
         if ctl.thread_id() == 0 {
             // wait for thread 1 to propagate b
-            let done = lock.lock().unwrap();
-            if !*done {
-                cvar.wait(done).unwrap();
+            while !self.done {
+                cvar.wait(lock.lock().unwrap()).unwrap();
             }
         } else {
             for lit in changes {
-                let mut done = lock.lock().unwrap();
-                *done = true;
+                self.done = true;
                 if lit.get_integer() < 0 {
                     self.propagated.insert(lit.negate());
                 } else {
@@ -493,6 +493,7 @@ fn add_watch_propagator() {
         a: None,
         b: None,
         pair: Arc::new((Mutex::new(false), Condvar::new())),
+        done: false,
     };
     let conf = ctl.configuration_mut().unwrap();
     let root_key = conf.root().unwrap();
