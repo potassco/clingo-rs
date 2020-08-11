@@ -511,14 +511,15 @@ fn add_watch_propagator() {
     ctl.ground(&parts)
         .expect("Failed to ground a logic program.");
 
-    let models = solve(&mut ctl).unwrap();
+    let mut models = solve(&mut ctl).unwrap();
+    models.sort();
     assert_eq!(
         models,
         [
-            vec!["c"],
+            vec!["a", "b", "c"],
             vec!["a", "c"],
             vec!["b", "c"],
-            vec!["a", "b", "c"],
+            vec!["c"],
         ]
     );
     let b = p.b.unwrap();

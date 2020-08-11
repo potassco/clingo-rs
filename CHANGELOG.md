@@ -21,6 +21,11 @@ All notable changes to this project will be documented in this file.
   - PropagateInit::add_weight_constraint()
   - PropagateInit::add_minimize()
   - PropagateInit::propagate()
+- remove Control::use_enumeration_assumption() from Control
+- add Control::get_enable_enumeration_assumption()
+- add Control::set_enable_enumeration_assumption()
+- add Control::get_enable_cleanup()
+- add Control::set_enable_cleanup()
 
 ## v0.6.0 - Jan 3, 2020
 

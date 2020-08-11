@@ -2270,14 +2270,7 @@ impl Control {
             }),
         }
     }
-
-    /// Clean up the domains of clingo's grounding component using the solving
-    /// component's top level assignment.
-    ///
-    /// This function removes atoms from domains that are false and marks atoms as
-    /// facts that are true.  With multi-shot solving, this can result in smaller
-    /// groundings because less rules have to be instantiated and more
-    /// simplifications can be applied.
+    /// **See:** [`Control::get_enable_cleanup()`](struct.Control.html#method.get_enable_cleanup) and [`Control::set_enable_cleanup()`](struct.Control.html#method.set_enable_cleanup)
     ///
     /// # Errors
     ///
@@ -2487,15 +2480,42 @@ impl Control {
     /// # Arguments
     ///
     /// * `enable` - whether to enable the assumption
-    pub fn use_enumeration_assumption(&mut self, enable: bool) -> Result<(), ClingoError> {
-        if !unsafe { clingo_control_use_enumeration_assumption(self.ctl.as_ptr(), enable) } {
+    pub fn set_enable_enumeration_assumption(&mut self, enable: bool) -> Result<(), ClingoError> {
+        if !unsafe { clingo_control_set_enable_enumeration_assumption(self.ctl.as_ptr(), enable) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_control_use_enumeration_assumption() failed",
             ));
         }
         Ok(())
     }
-
+    /// Check whether the enumeration assumption is enabled.
+    ///
+    /// **See** [`Control::set_enable_assumption()`](struct.Control.html#method.set_enable_assumption)
+    ///
+    /// **Returns** using the enumeration assumption is enabled
+    pub fn get_enable_enumeration_assumption(&self) -> bool {
+        unsafe { clingo_control_get_enable_enumeration_assumption(self.ctl.as_ptr()) }
+    }
+    /// Enable automatic cleanup after solving.
+    ///
+    /// **Note:** Cleanup is enabled by default.
+    ///
+    /// # Arguments
+    ///
+    /// * `enable` - whether to enable cleanups
+    ///
+    /// **Returns** whether the call was successful
+    ///
+    /// **See** [`Control::cleanup()`](struct.Control.html#method.cleanup) and [`Control::get_enable_cleanup()`](struct.Control.html#method.get_enable_cleanup)
+    pub fn set_enable_cleanup(&mut self, enable: bool) -> bool {
+        unsafe { clingo_control_set_enable_cleanup(self.ctl.as_ptr(), enable) }
+    }
+    /// Check whether automatic cleanup is enabled.
+    ///
+    /// **See** [`Control::cleanup()`](struct.Control.html#method.cleanup) and [`Control::set_enable_cleanup()`](struct.Control.html#method.set_enable_cleanup)
+    pub fn get_enable_cleanup(&self) -> bool {
+        unsafe { clingo_control_get_enable_cleanup(self.ctl.as_ptr()) }
+    }
     /// Return the symbol for a constant definition of form: `#const name = symbol`.
     ///
     /// # Arguments
@@ -4866,17 +4886,23 @@ impl PropagateInit {
 
     /// Add a literal to the solver.
     ///
+    /// To be able to use the variable in clauses during propagation or add watches to it, it has to be frozen.
+    /// Otherwise, it might be removed during preprocessing.
+    ///
     /// **Attention** If varibales were added, subsequent calls to functions adding constraints or ::clingo_propagate_init_propagate() are expensive.
     /// It is best to add varables in batches.
     ///
+    /// # Arguments
+    ///
+    /// * `freeze` - whether to freeze the literal
     /// **Returns** the added literal
     ///
     /// # Errors
     ///
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
-    pub fn add_literal(&mut self) -> Result<&mut Literal, ClingoError> {
+    pub fn add_literal(&mut self, freeze: bool) -> Result<&mut Literal, ClingoError> {
         let literal_ptr = std::ptr::null_mut() as *mut clingo_literal_t;
-        if !unsafe { clingo_propagate_init_add_literal(&mut self.0, literal_ptr) } {
+        if !unsafe { clingo_propagate_init_add_literal(&mut self.0, freeze, literal_ptr) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_propagate_init_add_literal() failed",
             ));
