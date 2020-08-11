@@ -396,12 +396,13 @@ fn mode_propagator() {
 }
 
 use std::collections::HashSet;
-use std::sync::{Arc, Condvar, Mutex};
+use std::sync::{Condvar, Mutex};
 struct TestAddWatch {
     propagated: HashSet<Literal>,
     a: Option<Literal>,
     b: Option<Literal>,
-    pair: Arc<(Mutex<bool>, Condvar)>,
+    mutex: Mutex<u32>,
+    cv: Condvar,
     done: bool,
 }
 impl Propagator for TestAddWatch {
@@ -464,11 +465,11 @@ impl Propagator for TestAddWatch {
         true
     }
     fn propagate(&mut self, ctl: &mut PropagateControl, changes: &[Literal]) -> bool {
-        let (lock, cvar) = &*self.pair;
+        // let (lock, cvar) = &*self.pair;
         if ctl.thread_id() == 0 {
             // wait for thread 1 to propagate b
             while !self.done {
-                cvar.wait(lock.lock().unwrap()).unwrap();
+                self.cv.wait(self.mutex.lock().unwrap()).unwrap();
             }
         } else {
             for lit in changes {
@@ -479,7 +480,7 @@ impl Propagator for TestAddWatch {
                     self.propagated.insert(*lit);
                 }
             }
-            cvar.notify_one();
+            self.cv.notify_one();
         }
         true
     }
@@ -492,7 +493,8 @@ fn add_watch_propagator() {
         propagated: HashSet::new(),
         a: None,
         b: None,
-        pair: Arc::new((Mutex::new(false), Condvar::new())),
+        mutex: Mutex::new(0),
+        cv: Condvar::new(),
         done: false,
     };
     let conf = ctl.configuration_mut().unwrap();
