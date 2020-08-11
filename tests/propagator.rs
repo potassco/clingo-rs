@@ -465,7 +465,6 @@ impl Propagator for TestAddWatch {
         true
     }
     fn propagate(&mut self, ctl: &mut PropagateControl, changes: &[Literal]) -> bool {
-        // let (lock, cvar) = &*self.pair;
         if ctl.thread_id() == 0 {
             // wait for thread 1 to propagate b
             while !self.done {
