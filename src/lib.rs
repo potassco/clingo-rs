@@ -1563,11 +1563,11 @@ pub fn version() -> (i32, i32, i32) {
 /// arguments.
 ///
 /// **See:** [`Control::ground()`](struct.Control.html#method.ground)
-pub struct Part<'a> {
-    name: CString,
-    params: &'a [Symbol],
+pub struct Part<'a, 'b> {
+    name: &'a str,
+    params: &'b [Symbol],
 }
-impl<'a> Part<'a> {
+impl<'a, 'b> Part<'a, 'b> {
     /// Create a new program part object.
     ///
     /// # Arguments
@@ -1580,16 +1580,16 @@ impl<'a> Part<'a> {
     /// - [`ClingoError::NulError`](enum.ClingoError.html#variant.NulError) - if `name` contains a nul byte
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if argument parsing fails
-    pub fn new(name: &str, params: &'a [Symbol]) -> Result<Part<'a>, ClingoError> {
+    pub fn new(name: &'a str, params: &'b [Symbol]) -> Result<Part<'a, 'b>, ClingoError> {
         Ok(Part {
-            name: CString::new(name)?,
+            name: add_string(name)?,
             params,
         })
     }
 
     fn from(&self) -> clingo_part {
         clingo_part {
-            name: self.name.as_ptr(),
+            name: self.name.as_ptr() as *const c_char,
             params: self.params.as_ptr() as *const clingo_symbol_t,
             size: self.params.len(),
         }
