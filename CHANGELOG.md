@@ -15,7 +15,7 @@ All notable changes to this project will be documented in this file.
   - Symbol::name()
   - Symbol::string()
 - add FromSymbol trait
-- update clingo-sys to 0.5.2 
+- update clingo-sys to 0.5.2
 - add functions to PropagateInit
   - PropagateInit::add_literal()
   - PropagateInit::add_weight_constraint()
@@ -46,7 +46,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
-- remove optimality check from AllModels Iterator 
+- remove optimality check from AllModels Iterator
 
 ## v0.4.2 - Jun 28, 2019
 

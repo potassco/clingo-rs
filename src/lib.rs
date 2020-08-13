@@ -114,7 +114,7 @@ impl ClingoError {
     }
 
     fn new_external(msg: &'static str) -> ClingoError {
-        ExternalError { msg: msg }.into()
+        ExternalError { msg }.into()
     }
 }
 #[derive(Error, Debug)]
@@ -1563,11 +1563,11 @@ pub fn version() -> (i32, i32, i32) {
 /// arguments.
 ///
 /// **See:** [`Control::ground()`](struct.Control.html#method.ground)
-pub struct Part<'a, 'b> {
-    name: &'a str,
-    params: &'b [Symbol],
+pub struct Part<'a> {
+    name: CString,
+    params: &'a [Symbol],
 }
-impl<'a, 'b> Part<'a, 'b> {
+impl<'a> Part<'a> {
     /// Create a new program part object.
     ///
     /// # Arguments
@@ -1580,9 +1580,9 @@ impl<'a, 'b> Part<'a, 'b> {
     /// - [`ClingoError::NulError`](enum.ClingoError.html#variant.NulError) - if `name` contains a nul byte
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if argument parsing fails
-    pub fn new(name: &'a str, params: &'b [Symbol]) -> Result<Part<'a, 'b>, ClingoError> {
+    pub fn new(name: &str, params: &'a [Symbol]) -> Result<Part<'a>, NulError> {
         Ok(Part {
-            name: add_string(name)?,
+            name: CString::new(name)?,
             params,
         })
     }
@@ -2411,7 +2411,7 @@ impl Control {
     /// # Errors
     ///
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
-    pub fn statistics<'a>(&'a self) -> Result<&'a Statistics, ClingoError> {
+    pub fn statistics(&self) -> Result<&Statistics, ClingoError> {
         let mut stat = std::ptr::null();
         if !unsafe { clingo_control_statistics(self.ctl.as_ptr(), &mut stat) } {
             return Err(ClingoError::new_internal(
@@ -2434,7 +2434,7 @@ impl Control {
     }
 
     /// Get a configuration object to change the solver configuration.
-    pub fn configuration_mut<'a>(&'a mut self) -> Result<&'a mut Configuration, ClingoError> {
+    pub fn configuration_mut(&mut self) -> Result<&mut Configuration, ClingoError> {
         let mut conf = std::ptr::null_mut();
         if !unsafe { clingo_control_configuration(self.ctl.as_ptr(), &mut conf) } {
             return Err(ClingoError::new_internal(
@@ -2450,7 +2450,7 @@ impl Control {
     }
 
     /// Get a configuration object to change the solver configuration.
-    pub fn configuration<'a>(&'a self) -> Result<&'a Configuration, ClingoError> {
+    pub fn configuration(&self) -> Result<&Configuration, ClingoError> {
         let mut conf = std::ptr::null_mut();
         if !unsafe { clingo_control_configuration(self.ctl.as_ptr(), &mut conf) } {
             return Err(ClingoError::new_internal(
@@ -2577,7 +2577,7 @@ impl Control {
     }
 
     /// Get an object to inspect theory atoms that occur in the grounding.
-    pub fn theory_atoms<'a>(&'a self) -> Result<&'a TheoryAtoms, ClingoError> {
+    pub fn theory_atoms(&self) -> Result<&TheoryAtoms, ClingoError> {
         let mut atoms = std::ptr::null();
         if !unsafe { clingo_control_theory_atoms(self.ctl.as_ptr(), &mut atoms) } {
             return Err(ClingoError::new_internal(
@@ -2643,7 +2643,7 @@ impl Control {
     /// # Errors
     ///
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
-    pub fn backend<'a>(&'a mut self) -> Result<Backend<'a>, ClingoError> {
+    pub fn backend(&mut self) -> Result<Backend, ClingoError> {
         let mut backend = std::ptr::null_mut();
         if !unsafe { clingo_control_backend(self.ctl.as_ptr(), &mut backend) } {
             return Err(ClingoError::new_internal(
@@ -2711,7 +2711,7 @@ impl Configuration {
     ///
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError)
     /// - [`ClingoError::Utf8Error`](enum.ClingoError.html#variant.Utf8Error)
-    pub fn description<'a>(&'a self, Id(key): Id) -> Result<&'a str, ClingoError> {
+    pub fn description(&self, Id(key): Id) -> Result<&str, ClingoError> {
         let mut description_ptr = std::ptr::null();
         if !unsafe { clingo_configuration_description(&self.0, key, &mut description_ptr) } {
             return Err(ClingoError::new_internal(
@@ -2826,11 +2826,7 @@ impl Configuration {
     ///
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError)
     /// - [`ClingoError::Utf8Error`](enum.ClingoError.html#variant.Utf8Error)
-    pub fn map_subkey_name<'a>(
-        &'a self,
-        Id(key): Id,
-        offset: usize,
-    ) -> Result<&'a str, ClingoError> {
+    pub fn map_subkey_name(&self, Id(key): Id, offset: usize) -> Result<&str, ClingoError> {
         let mut name_ptr = std::ptr::null();
         if !unsafe { clingo_configuration_map_subkey_name(&self.0, key, offset, &mut name_ptr) } {
             return Err(ClingoError::new_internal(
@@ -2904,7 +2900,7 @@ impl Configuration {
     ///
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError)
     /// - [`ClingoError::Utf8Error`](enum.ClingoError.html#variant.Utf8Error)
-    pub fn value_get<'a>(&'a self, Id(key): Id) -> Result<String, ClingoError> {
+    pub fn value_get(&self, Id(key): Id) -> Result<String, ClingoError> {
         let mut size = 0;
         if !unsafe { clingo_configuration_value_get_size(&self.0, key, &mut size) } {
             return Err(ClingoError::new_internal(
@@ -3403,7 +3399,7 @@ impl Statistics {
     ///
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError)
     /// - [`ClingoError::Utf8Error`](enum.ClingoError.html#variant.Utf8Error)
-    pub fn map_subkey_name<'a>(&'a self, key: u64, offset: usize) -> Result<&'a str, ClingoError> {
+    pub fn map_subkey_name(&self, key: u64, offset: usize) -> Result<&str, ClingoError> {
         let mut name = std::ptr::null();
         if !unsafe { clingo_statistics_map_subkey_name(&self.0, key, offset, &mut name) } {
             return Err(ClingoError::new_internal(
@@ -3822,7 +3818,7 @@ impl TheoryAtoms {
     /// # Arguments
     ///
     /// * `term` - id of the term
-    pub fn term_arguments<'a>(&'a self, Id(term): Id) -> Result<&'a [Id], ClingoError> {
+    pub fn term_arguments(&self, Id(term): Id) -> Result<&[Id], ClingoError> {
         let mut size = 0;
         let mut c_ptr = std::ptr::null();
         if !unsafe { clingo_theory_atoms_term_arguments(&self.0, term, &mut c_ptr, &mut size) } {
@@ -4279,7 +4275,7 @@ impl Model {
     /// Get the associated solve control object of a model.
     ///
     /// This object allows for adding clauses during model enumeration.
-    pub fn context<'a>(&'a self) -> Result<&'a mut SolveControl, ClingoError> {
+    pub fn context(&self) -> Result<&mut SolveControl, ClingoError> {
         let control_ptr = std::ptr::null_mut();
         if !unsafe { clingo_model_context(&self.0, control_ptr) } {
             return Err(ClingoError::new_internal(
@@ -6444,7 +6440,7 @@ impl FactBase {
     }
     pub fn union(&mut self, facts: &FactBase) {
         for s in &facts.facts {
-            self.facts.insert(s.clone());
+            self.facts.insert(*s);
         }
     }
     pub fn print(&self) {
