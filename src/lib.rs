@@ -925,7 +925,7 @@ pub trait ExternalFunctionHandler {
     }
 
     #[doc(hidden)]
-    fn try_symbol_callback(
+    unsafe fn try_symbol_callback(
         &mut self,
         location: &Location,
         name: &CStr,
@@ -937,7 +937,11 @@ pub trait ExternalFunctionHandler {
         let symbols = self.on_external_function(location, name, arguments)?;
         if let Some(symbol_callback) = symbol_callback {
             let v: Vec<clingo_symbol_t> = symbols.iter().map(|symbol| (*symbol).0).collect();
-            Ok(unsafe { symbol_callback(v.as_slice().as_ptr(), v.len(), symbol_callback_data) })
+            Ok(symbol_callback(
+                v.as_slice().as_ptr(),
+                v.len(),
+                symbol_callback_data,
+            ))
         } else {
             // no symbol callback
             Ok(true)
