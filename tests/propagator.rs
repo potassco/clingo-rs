@@ -468,10 +468,11 @@ impl Propagator for TestAddWatch {
         if ctl.thread_id() == 0 {
             // wait for thread 1 to propagate b
             while !self.done {
-                self.cv.wait(self.mutex.lock().unwrap()).unwrap();
+                let _mut_ = self.cv.wait(self.mutex.lock().unwrap()).unwrap();
             }
         } else {
             for lit in changes {
+                // let mut_ = self.mutex.lock().unwrap();
                 self.done = true;
                 if lit.get_integer() < 0 {
                     self.propagated.insert(lit.negate());
