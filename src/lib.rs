@@ -1504,6 +1504,8 @@ pub fn parse_program<T: StatementHandler>(
     Ok(())
 }
 
+// NODO: fn clingo_parse_files(files ...) -> bool;
+
 /// Parse the given program and return an abstract syntax tree for each statement via a callback.
 ///
 /// # Arguments
@@ -1952,7 +1954,7 @@ impl Control {
         }
     }
 
-    //NODO: pub fn clingo_control_load(control: *mut Control, file: *const c_char) -> bool;
+    // NODO: pub fn clingo_control_load(control: *mut Control, file: *const c_char) -> bool;
 
     /// Extend the logic program with the given non-ground logic program in string form.
     ///
@@ -2888,7 +2890,7 @@ impl Configuration {
         Ok(assigned)
     }
 
-    //NODO: clingo_configuration_value_get_size(&mut self.0, key, &mut size)
+    // NODO: fn clingo_configuration_value_get_size(&mut self.0, key, &mut size)
 
     /// Get the string value of the given entry.
     ///
@@ -3593,7 +3595,7 @@ impl SymbolicAtoms {
         })
     }
 
-    //NODO: fn clingo_symbolic_atoms_signatures_size()
+    // NODO: fn clingo_symbolic_atoms_signatures_size()
 
     /// Get the predicate signatures occurring in a logic program.
     ///
@@ -3623,7 +3625,7 @@ impl SymbolicAtoms {
         Ok(signatures)
     }
 
-    //NODO clingo_symbolic_atoms_is_valid()
+    // NODO: fn clingo_symbolic_atoms_is_valid()
 }
 /// An iterator over symbolic atoms.
 pub struct SymbolicAtomsIterator<'a> {
@@ -3834,7 +3836,7 @@ impl TheoryAtoms {
         Ok(arguments_ref)
     }
 
-    //NODO: pub fn clingo_theory_atoms_term_to_string_size()
+    // NODO: fn clingo_theory_atoms_term_to_string_size()
 
     /// Get the string representation of the given theory term.
     ///
@@ -3930,7 +3932,7 @@ impl TheoryAtoms {
         Ok(Literal(unsafe { *condition_ptr }))
     }
 
-    //NODO: pub fn clingo_theory_atoms_element_to_string_size()
+    // NODO: fn clingo_theory_atoms_element_to_string_size()
 
     /// Get the string representation of the given theory element.
     ///
@@ -4056,7 +4058,7 @@ impl TheoryAtoms {
         Ok(Literal(literal))
     }
 
-    //NODO: pub fn clingo_theory_atoms_atom_to_string_size()
+    // NODO: fn clingo_theory_atoms_atom_to_string_size()
 
     /// Get the string representation of the given theory atom.
     ///
@@ -4136,7 +4138,7 @@ impl Model {
         Ok(number)
     }
 
-    //NODO: pub fn clingo_model_symbols_size()
+    // NODO: fn clingo_model_symbols_size()
 
     /// Get the symbols of the selected types in the model.
     ///
@@ -4205,7 +4207,7 @@ impl Model {
         Ok(is_true)
     }
 
-    //NODO: pub fn clingo_model_cost_size(model: *mut Model, size: *mut size_t) -> u8;
+    // NODO: fn clingo_model_cost_size(model: *mut Model, size: *mut size_t) -> u8;
 
     /// Get the cost vector of a model.
     ///

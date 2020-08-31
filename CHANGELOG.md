@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## v0.7.0 - Unreleased
+## v0.7.0-dev - Unreleased
 
 - Properly use solve event data
   - remove SolveEventType
