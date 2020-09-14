@@ -64,7 +64,7 @@ fn print_model(model: &Model) {
     println!();
 }
 
-fn solve(ctl: &mut Control) {
+fn solve(ctl: Control) -> Control {
     // get a solve handle
     let mut handle = ctl
         .solve(SolveMode::YIELD, &[])
@@ -86,7 +86,7 @@ fn solve(ctl: &mut Control) {
     handle
         .get()
         .expect("Failed to get result from solve handle.");
-    handle.close().expect("Failed to close solve handle.");
+    handle.close().expect("Failed to close solve handle.")
 }
 
 fn main() {
@@ -134,17 +134,17 @@ fn main() {
 
     // solve with external enable = false
     println!("Solving with enable = false...");
-    solve(&mut ctl);
+    ctl = solve(ctl);
 
     // solve with external enable = true
     println!("Solving with enable = true...");
     ctl.assign_external(atm, TruthValue::True)
         .expect("Failed to assign #external enable true.");
-    solve(&mut ctl);
+    ctl = solve(ctl);
 
     // solve with external enable = false
     println!("Solving with enable = false...");
     ctl.assign_external(atm, TruthValue::False)
         .expect("Failed to assign #external enable false.");
-    solve(&mut ctl);
+    ctl = solve(ctl);
 }

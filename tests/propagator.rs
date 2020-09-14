@@ -179,7 +179,7 @@ impl Propagator for PigeonPropagator {
     }
 }
 
-fn solve(ctl: &mut Control) -> Result<Vec<Vec<String>>, ClingoError> {
+fn solve(ctl: Control) -> Result<(Vec<Vec<String>>, Control), ClingoError> {
     let mut ret = Vec::<Vec<String>>::new();
     // get a solve handle
     let mut handle = ctl
@@ -198,8 +198,8 @@ fn solve(ctl: &mut Control) -> Result<Vec<Vec<String>>, ClingoError> {
         }
     }
     // close the solve handle
-    // handle.close().expect("Failed to close solve handle.");
-    Ok(ret)
+    let ctl = handle.close().expect("Failed to close solve handle.");
+    Ok((ret, ctl))
 }
 fn string_model(model: &Model) -> Vec<String> {
     let mut ret = Vec::<String>::new();
@@ -249,7 +249,7 @@ fn pigeon_propagator(holes: i32, pigeons: i32, number_of_models: usize) {
     ctl.ground(&parts)
         .expect("Failed to ground a logic program.");
 
-    let models = solve(&mut ctl).unwrap();
+    let (models, ctl) = solve(ctl).unwrap();
     assert_eq!(models.len(), number_of_models);
 }
 
@@ -345,7 +345,7 @@ fn assignment_propagator() {
     ctl.ground(&parts)
         .expect("Failed to ground a logic program.");
 
-    let models = solve(&mut ctl).unwrap();
+    let (models, ctl) = solve(ctl).unwrap();
     assert_eq!(models.len(), 4);
 }
 
@@ -388,7 +388,7 @@ fn mode_propagator() {
     ctl.ground(&parts)
         .expect("Failed to ground a logic program.");
 
-    let models = solve(&mut ctl).unwrap();
+    let (models, ctl) = solve(ctl).unwrap();
     assert_eq!(
         models,
         [["p(1)", "p(2)", "p(3)", "p(4)", "p(5)", "p(6)", "p(7)", "p(8)", "p(9)"]]
@@ -512,7 +512,7 @@ fn add_watch_propagator() {
     ctl.ground(&parts)
         .expect("Failed to ground a logic program.");
 
-    let mut models = solve(&mut ctl).unwrap();
+    let (mut models, mut clt) = solve(ctl).unwrap();
     models.sort();
     assert_eq!(
         models,
@@ -606,10 +606,10 @@ fn add_clause(clause_type: ClauseType, m1: usize, m2: usize) {
     ctl.ground(&parts)
         .expect("Failed to ground a logic program.");
 
-    let models = solve(&mut ctl).unwrap();
+    let (models, ctl) = solve(ctl).unwrap();
 
     assert_eq!(models.len(), m1);
     p.enable = false;
-    let models = solve(&mut ctl).unwrap();
+    let (models, ctl) = solve(ctl).unwrap();
     assert_eq!(models.len(), m2);
 }

@@ -81,7 +81,7 @@ fn print_model(model: &Model) {
     println!();
 }
 
-fn solve(ctl: &mut Control) {
+fn solve(ctl: Control) {
     // get a solve handle
     let mut handle = ctl
         .solve(SolveMode::YIELD, &[])
@@ -148,5 +148,5 @@ fn main() {
         .expect("Failed to ground a logic program.");
 
     // solve
-    solve(&mut ctl);
+    solve(ctl);
 }

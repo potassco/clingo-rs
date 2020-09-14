@@ -2141,7 +2141,7 @@ impl Control {
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if solving could not be started
     pub fn solve(
-        &mut self,
+        self,
         mode: SolveMode,
         assumptions: &[Literal],
     ) -> Result<SolveHandle, ClingoError> {
@@ -2162,7 +2162,10 @@ impl Control {
             ));
         }
         match unsafe { handle.as_mut() } {
-            Some(handle_ref) => Ok(SolveHandle { theref: handle_ref }),
+            Some(handle_ref) => Ok(SolveHandle {
+                theref: handle_ref,
+                ctl: self,
+            }),
             None => Err(ClingoError::FFIError {
                 msg: "Tried casting a null pointer to &mut clingo_solve_handle.",
             }),
@@ -2170,13 +2173,13 @@ impl Control {
     }
 
     /// Covenience function that returns an iterator over the models.
-    /// Uses [solve](struct.Control.html#method.solve) with [SolveMode::Yield](enum.SolveMode.html#variant.YIELD) and empty assumptions.
+    /// Uses [`solve()`](struct.Control.html#method.solve) with [SolveMode::Yield](enum.SolveMode.html#variant.YIELD) and empty assumptions.
     ///
     /// # Errors
     ///
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if solving could not be started
-    pub fn all_models(&mut self) -> Result<AllModels, ClingoError> {
+    pub fn all_models(self) -> Result<AllModels<'static>, ClingoError> {
         let mut handle = std::ptr::null_mut();
         if !unsafe {
             clingo_control_solve(
@@ -2194,7 +2197,10 @@ impl Control {
             ));
         }
         match unsafe { handle.as_mut() } {
-            Some(handle_ref) => Ok(AllModels(SolveHandle { theref: handle_ref })),
+            Some(handle_ref) => Ok(AllModels(SolveHandle {
+                theref: handle_ref,
+                ctl: self,
+            })),
             None => Err(ClingoError::FFIError {
                 msg: "Tried casting a null pointer to &mut clingo_solve_handle.",
             }),
@@ -2202,13 +2208,13 @@ impl Control {
     }
 
     /// Covenience function that returns an iterator over the optimal models.
-    /// Uses [solve](struct.Control.html#method.solve) with [SolveMode::Yield](enum.SolveMode.html#variant.YIELD) and empty assumptions.
+    /// Uses [`solve()`](struct.Control.html#method.solve) with [SolveMode::Yield](enum.SolveMode.html#variant.YIELD) and empty assumptions.
     ///
     /// # Errors
     ///
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if solving could not be started
-    pub fn optimal_models(&mut self) -> Result<OptimalModels, ClingoError> {
+    pub fn optimal_models(self) -> Result<OptimalModels<'static>, ClingoError> {
         let mut handle = std::ptr::null_mut();
         if !unsafe {
             clingo_control_solve(
@@ -2226,7 +2232,10 @@ impl Control {
             ));
         }
         match unsafe { handle.as_mut() } {
-            Some(handle_ref) => Ok(OptimalModels(SolveHandle { theref: handle_ref })),
+            Some(handle_ref) => Ok(OptimalModels(SolveHandle {
+                theref: handle_ref,
+                ctl: self,
+            })),
             None => Err(ClingoError::FFIError {
                 msg: "Tried casting a null pointer to &mut clingo_solve_handle.",
             }),
@@ -2247,11 +2256,11 @@ impl Control {
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if solving could not be started
     pub fn solve_with_event_handler<T: SolveEventHandler>(
-        &mut self,
+        self,
         mode: SolveMode,
         assumptions: &[Literal],
         event_handler: &mut T,
-    ) -> Result<SolveHandle, ClingoError> {
+    ) -> Result<SolveHandle<'static>, ClingoError> {
         let mut handle = std::ptr::null_mut();
         let event_handler = event_handler as *mut T;
         if !unsafe {
@@ -2270,7 +2279,10 @@ impl Control {
             ));
         }
         match unsafe { handle.as_mut() } {
-            Some(handle_ref) => Ok(SolveHandle { theref: handle_ref }),
+            Some(handle_ref) => Ok(SolveHandle {
+                theref: handle_ref,
+                ctl: self,
+            }),
             None => Err(ClingoError::FFIError {
                 msg: "Tried casting a null pointer to &mut clingo_solve_handle.",
             }),
@@ -5044,6 +5056,7 @@ impl PropagateInit {
 #[derive(Debug)]
 pub struct SolveHandle<'a> {
     theref: &'a mut clingo_solve_handle_t,
+    ctl: Control,
 }
 impl<'a> SolveHandle<'a> {
     /// Get the next solve result.
@@ -5200,13 +5213,13 @@ impl<'a> SolveHandle<'a> {
     ///
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if solving fails
-    pub fn close(self) -> Result<(), ClingoError> {
+    pub fn close(self) -> Result<Control, ClingoError> {
         if !unsafe { clingo_solve_handle_close(self.theref) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_solve_handle_close() failed",
             ));
         }
-        Ok(())
+        Ok(self.ctl)
     }
 }
 
