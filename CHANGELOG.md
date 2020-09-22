@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 ## v0.7.0-dev - Unreleased
 
 - Control::solve() now consumes the control object and returns a SolveHandle
-- SolveHandle::close() consumes the solve object and returns the corresponding Control object
+- SolveHandle::close() consumes the solve handle and returns the corresponding Control object
 - Properly use solve event data
   - remove SolveEventType
   - add SolveEvent
