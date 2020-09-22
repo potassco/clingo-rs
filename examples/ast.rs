@@ -146,5 +146,5 @@ fn main() {
     println!("Solving with enable = false...");
     ctl.assign_external(atm, TruthValue::False)
         .expect("Failed to assign #external enable false.");
-    ctl = solve(ctl);
+    let _ = solve(ctl);
 }
