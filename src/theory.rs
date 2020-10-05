@@ -9,7 +9,7 @@ use std::os::raw::c_void;
 pub struct Options(clingo_options_t);
 pub trait Theory {
     /// creates the theory
-    fn create<T: Theory>() -> T;
+    fn create() -> Self;
     #[doc(hidden)]
     unsafe extern "C" fn unsafe_create<T: Theory>(theory: *mut *mut c_void) -> bool {
         let theorybox = Box::<T>::new(T::create());
