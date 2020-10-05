@@ -80,6 +80,8 @@ use thiserror::Error;
 /// Functions and data structures to work with program ASTs.
 pub mod ast;
 
+pub mod theory;
+
 /// ClingoError in the rust wrapper, like null pointers or failed matches of C enums.
 ///
 /// Includes internal error from the clingo library.
@@ -5273,7 +5275,6 @@ pub struct MModel {
     pub model_type: ModelType,
     pub number: u64,
 }
-
 /// Internalize a string.
 ///
 /// This functions takes a string as input and returns an equal unique string
