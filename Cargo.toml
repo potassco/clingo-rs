@@ -27,7 +27,7 @@ derive = ["clingo-derive"]
 [dependencies]
 clingo-sys = { version = "0.5.1" }
 clingo-derive = { version = "0.2.0", optional = true }
-rand = "0.7"
+rand = "0.8"
 thiserror = "1.0"
 bitflags = "1.2"
 
