@@ -2,12 +2,10 @@
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
 
-use super::{Control, Model, Statistics, Symbol};
+use super::{Control, Model, Options, Statistics, Symbol};
 use clingo_sys::*;
 use std::ffi::CStr;
 use std::os::raw::c_void;
-/// Object to add command-line options.
-pub struct Options(clingo_options_t);
 pub trait Theory {
     /// creates the theory
     fn create() -> Self;
@@ -160,7 +158,7 @@ pub trait Theory {
     }
     /// get the symbol and it's value at the given index
     /// does not throw
-    fn assignment_get_value(&mut self, thread_id: u32, index: usize, value: &mut TheoryValue);
+    fn assignment_get_value(&mut self, thread_id: u32, index: usize) -> TheoryValue;
     #[doc(hidden)]
     unsafe extern "C" fn unsafe_assignment_get_value<T: Theory>(
         theory: *mut c_void,
@@ -168,9 +166,8 @@ pub trait Theory {
         index: usize,
         value: *mut value_t,
     ) {
-        let value = &mut *(value as *mut TheoryValue);
         let theory = &mut *(theory as *mut T);
-        theory.assignment_get_value(thread_id, index, value)
+        *value = theory.assignment_get_value(thread_id, index).0
     }
     /// configure theory manually (without using clingo's options facility)
     /// Note that the theory has to be configured before registering it and cannot be reconfigured.
@@ -197,7 +194,8 @@ pub struct value {
     pub type_: value_type_t,
     pub __bindgen_anon_1: value__bindgen_ty_1,
 }
-pub struct TheoryValue(value_t);
+// TODO: make TheoryValue an enum
+pub struct TheoryValue(pub value_t);
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub union value__bindgen_ty_1 {

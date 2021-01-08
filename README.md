@@ -1,7 +1,7 @@
 # clingo-rs [![Build Status](https://travis-ci.org/potassco/clingo-rs.svg?branch=master)](https://travis-ci.org/potassco/clingo-rs) [![Latest Version](https://img.shields.io/crates/v/clingo.svg)](https://crates.io/crates/clingo) [![Rust Documentation](https://docs.rs/clingo/badge.svg)](https://docs.rs/clingo)
 
 Rust bindings to the [clingo](https://github.com/potassco/clingo) library.
-Clingo version 5.4.0.
+Clingo version 5.5.0.
 
 ## Requirements
 
@@ -36,7 +36,7 @@ In your `Cargo.toml` add:
 
 ```toml
 [dependencies]
-clingo = { version = "0.7", features = ["derive"] }
+clingo = { version = "0.7.0-beta.1", features = ["derive"] }
 ```
 
 In your source write:
@@ -67,13 +67,34 @@ The crate defines a [Cargo feature] that allows to use the clingo library via dy
 
 With dynamic linking enabled the clingo library is not build for static linking but it is assumed that a
 clingo dynamic library is installed on the system.
+You have to set the environment variable `CLINGO_LIBRARY_PATH`. For example:
+
+```sh
+export CLINGO_LIBRARY_PATH=/scratch/miniconda3/envs/test/lib
+```
 
 The recommended way to use the optional dynamic linking support is as
 follows.
 
 ```toml
 [dependencies]
-clingo = { version = "0.7.0", features = ["derive", "dynamic_linking"] }
+clingo = { version = "0.7.0-beta.1", features = ["dynamic_linking"] }
+```
+
+## Using `dl_theory`
+
+You have to set the environment variable `CLINGO_DL_LIBRARY_PATH`. For example:
+
+```sh
+export CLINGO_DL_LIBRARY_PATH=/scratch/miniconda3/envs/test/lib
+```
+
+The recommended way to use the optional dl_theory feature is as
+follows.
+
+```toml
+[dependencies]
+clingo = { version = "0.7.0-beta.1", features = ["dynamic_linking", "dl_theory"] }
 ```
 
 ## Contribution
