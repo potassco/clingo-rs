@@ -36,4 +36,4 @@ bitflags = "1.2"
 rand = "0.7"
 trybuild = "1.0"
 clingo-derive = { version = "0.2.0" }
-test-case = "1.0"
+test-case = "1.1"
