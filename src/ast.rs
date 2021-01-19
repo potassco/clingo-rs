@@ -80,7 +80,7 @@ pub enum StatementType<'a> {
 }
 /// Representation of a program statement.
 pub struct Statement<'a> {
-    data: clingo_ast_statement_t,
+    pub(crate) data: clingo_ast_statement_t,
     _lifetime: PhantomData<&'a ()>,
 }
 impl<'a> From<&'a Edge<'a>> for Statement<'a> {
@@ -3310,7 +3310,7 @@ impl<'a> TheoryDefinition<'a> {
 }
 /// Object to build non-ground programs.
 pub struct ProgramBuilder<'a> {
-    theref: &'a mut clingo_program_builder_t,
+    pub(crate) theref: &'a mut clingo_program_builder_t,
 }
 impl<'a> ProgramBuilder<'a> {
     /// Get an object to add non-ground directives to the program.
@@ -3368,4 +3368,13 @@ impl<'a> ProgramBuilder<'a> {
         }
         Ok(())
     }
+}
+#[doc(hidden)]
+pub(crate) unsafe extern "C" fn unsafe_program_builder_add(
+    statement: *const clingo_ast_statement_t,
+    data: *mut ::std::os::raw::c_void,
+) -> bool{
+    eprintln!("hidden clingo::ast::unsafe_program_builder_add");
+    let builder = data as *mut clingo_program_builder;
+    clingo_program_builder_add(builder, statement)
 }

@@ -1,15 +1,17 @@
+use super::ast;
 use super::theory::*;
 use super::{Control, Model, Options, Statistics, Symbol};
 use clingo_dl_sys::*;
 use std::ptr::NonNull;
+use clingo_sys::*;
 
 #[derive(Debug, Copy, Clone)]
 pub struct DLTheory {
     theory: NonNull<clingodl_theory>,
 }
-impl Theory for DLTheory {
+impl DLTheory {
     /// creates the theory
-    fn create() -> Self {
+    pub fn create() -> DLTheory {
         let mut theory_ptr = std::ptr::null_mut();
         unsafe { clingodl_create(&mut theory_ptr) };
         match NonNull::new(theory_ptr) {
@@ -17,9 +19,20 @@ impl Theory for DLTheory {
             None => panic!("Tried creating NonNull from a null pointer."),
         }
     }
+}
+impl Theory for DLTheory {
     /// registers the theory with the control
     fn register(&mut self, ctl: &mut Control) -> bool {
         unsafe { clingodl_register(self.theory.as_ptr(), ctl.ctl.as_ptr()) }
+    }
+    /// Rewrite statements before adding them via the given callback.
+    fn rewrite_statement(
+        &mut self,
+        stm: &ast::Statement,
+        builder: &mut ast::ProgramBuilder,
+    ) -> bool {
+        let add = super::ast::unsafe_program_builder_add;
+        unsafe { clingodl_rewrite_statement(self.theory.as_ptr(), &stm.data, Some(add), (builder.theref as *mut clingo_program_builder) as *mut ::std::os::raw::c_void) }
     }
     /// prepare the theory between grounding and solving
     fn prepare(&mut self, ctl: &mut Control) -> bool {
@@ -78,18 +91,28 @@ impl Theory for DLTheory {
             type_: 0,
             __bindgen_anon_1: value_internal,
         };
-        unsafe { clingodl_assignment_get_value(self.theory.as_ptr(), thread_id, index, &mut value) };
+        unsafe {
+            clingodl_assignment_get_value(self.theory.as_ptr(), thread_id, index, &mut value)
+        };
 
-        let out_value_internal = value__bindgen_ty_1 { int_number: unsafe {value.__bindgen_anon_1.int_number} };
+        let out_value_internal = value__bindgen_ty_1 {
+            int_number: unsafe { value.__bindgen_anon_1.int_number },
+        };
         let out_value = value {
             type_: value.type_,
-            __bindgen_anon_1: out_value_internal
+            __bindgen_anon_1: out_value_internal,
         };
         TheoryValue(out_value)
     }
     /// configure theory manually (without using clingo's options facility)
     /// Note that the theory has to be configured before registering it and cannot be reconfigured.
     fn configure(&mut self, key: &str, value: &str) -> bool {
-        unsafe { clingodl_configure(self.theory.as_ptr(), key.as_ptr()  as *const i8, value.as_ptr() as *const i8) }
+        unsafe {
+            clingodl_configure(
+                self.theory.as_ptr(),
+                key.as_ptr() as *const i8,
+                value.as_ptr() as *const i8,
+            )
+        }
     }
 }
