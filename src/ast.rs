@@ -3373,7 +3373,7 @@ impl<'a> ProgramBuilder<'a> {
 pub(crate) unsafe extern "C" fn unsafe_program_builder_add(
     statement: *const clingo_ast_statement_t,
     data: *mut ::std::os::raw::c_void,
-) -> bool{
+) -> bool {
     let builder = data as *mut clingo_program_builder;
     clingo_program_builder_add(builder, statement)
 }
