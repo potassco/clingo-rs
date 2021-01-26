@@ -1,11 +1,11 @@
 use super::ast;
 use super::theory::*;
-use super::{Control, Model, Options, Statistics, Symbol, Id};
+use super::{Control, Id, Model, Options, Statistics, Symbol};
 use clingo_dl_sys::*;
 use clingo_sys::*;
 use std::ptr::NonNull;
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug)]
 pub struct DLTheory {
     theory: NonNull<clingodl_theory>,
 }
@@ -22,11 +22,18 @@ impl<'a> DLTheory {
     pub fn assignment_iter(&'a mut self, thread_id: Id) -> DLTheoryAssignmentIterator<'a> {
         let mut index = 0;
         unsafe { clingodl_assignment_begin(self.theory.as_ptr(), thread_id.0, &mut index) }
-        eprintln!("DLTheory:assignment_iter");
         DLTheoryAssignmentIterator {
             dl_theory: self,
             thread_id,
             index,
+        }
+    }
+}
+impl Drop for DLTheory {
+    fn drop(&mut self) {
+        let success = unsafe { clingodl_destroy(self.theory.as_ptr()) };
+        if !success {
+            panic!("call clingodl_destroy returned false")
         }
     }
 }
@@ -40,7 +47,6 @@ impl<'a> Iterator for DLTheoryAssignmentIterator<'a> {
     type Item = TheoryValue;
 
     fn next(&mut self) -> Option<TheoryValue> {
-        eprintln!("DLTheoryAssignmentIterator::next");
         if !unsafe {
             clingodl_assignment_next(
                 self.dl_theory.theory.as_ptr(),
@@ -123,7 +129,6 @@ impl Theory for DLTheory {
     }
     /// callback on every model
     fn on_model(&mut self, model: &mut Model) -> bool {
-        eprintln!("DLTheory::on_model");
         unsafe { clingodl_on_model(self.theory.as_ptr(), &mut model.0) }
     }
     /// callback on statistic updates

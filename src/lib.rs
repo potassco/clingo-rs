@@ -1838,7 +1838,6 @@ pub struct Control {
 }
 impl Drop for Control {
     fn drop(&mut self) {
-        // println!("drop Control");
         unsafe { clingo_control_free(self.ctl.as_ptr()) }
     }
 }
