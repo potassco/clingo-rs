@@ -15,11 +15,7 @@ fn main() {
     let mut hasher = DefaultHasher::new();
     for symbol in &symbols {
         symbol.hash(&mut hasher);
-        println!(
-            "the hash of {} is {}",
-            symbol.to_string().unwrap(),
-            hasher.finish()
-        );
+        println!("the hash of {} is {}", symbol, hasher.finish());
     }
 
     // retrieve argument symbols of a symbol
@@ -27,21 +23,21 @@ fn main() {
 
     // equal to comparison
     for symbol in symbols2 {
-        print!("{} is ", symbols[0].to_string().unwrap());
+        print!("{} is ", symbols[0]);
         if symbols[0] == symbol {
             print!("equal");
         } else {
             print!("not equal");
         }
-        println!(" to {}", symbol.to_string().unwrap());
+        println!(" to {}", symbol);
     }
 
     // less than comparison
-    print!("{} is ", symbols[0].to_string().unwrap());
+    print!("{} is ", symbols[0]);
     if symbols[0] < symbols[1] {
         print!("less");
     } else {
         print!("not less");
     }
-    println!(" than {}", symbols[1].to_string().unwrap());
+    println!(" than {}", symbols[1]);
 }

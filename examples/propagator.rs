@@ -11,9 +11,8 @@ fn print_model(model: &Model) {
 
     print!("Model:");
 
-    for atom in atoms {
-        // retrieve and print the symbol's string
-        print!(" {}", atom.to_string().unwrap());
+    for symbol in atoms {
+        print!(" {}", symbol);
     }
     println!();
 }

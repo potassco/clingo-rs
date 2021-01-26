@@ -56,7 +56,7 @@ fn symbol() {
     assert!(SymbolType::Function == sym6.symbol_type().unwrap());
     assert!(!sym6.is_negative().unwrap());
     assert!("f" == sym6.name().unwrap());
-    assert!("f(42,#inf,#sup,\"x\",-x)" == sym6.to_string().unwrap());
+    assert!("f(42,#inf,#sup,\"x\",-x)" == sym6.to_string());
     assert!(args.len() == sym6.arguments().unwrap().len());
     assert_eq!(args, sym6.arguments().unwrap());
     if let Err(e) = sym6.number() {
@@ -181,7 +181,7 @@ fn test_statement(stmt: &Statement, string: &str) {
     let mut atoms_iterator = atoms.iter().unwrap();
     while let Some(item) = atoms_iterator.next() {
         let symbol = item.symbol().unwrap();
-        let string2 = symbol.to_string().unwrap();
+        let string2 = symbol.to_string();
         println!("{}", string2);
     }
 }

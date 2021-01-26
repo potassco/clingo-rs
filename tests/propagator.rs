@@ -207,9 +207,8 @@ fn string_model(model: &Model) -> Vec<String> {
     let atoms = model
         .symbols(ShowType::SHOWN)
         .expect("Failed to retrieve symbols in the model.");
-    for atom in atoms {
-        // retrieve the symbol's string
-        ret.push(atom.to_string().unwrap());
+    for symbol in atoms {
+        ret.push(symbol.to_string());
     }
     ret
 }
@@ -266,7 +265,7 @@ impl Propagator for TestAssignment {
             .unwrap()
             .iter()
             .unwrap()
-            .find(|x| x.symbol().unwrap().to_string().unwrap() == "a")
+            .find(|x| x.symbol().unwrap().to_string() == "a")
             .unwrap()
             .literal()
             .unwrap();
@@ -276,14 +275,14 @@ impl Propagator for TestAssignment {
             .unwrap()
             .iter()
             .unwrap()
-            .find(|x| x.symbol().unwrap().to_string().unwrap() == "b");
+            .find(|x| x.symbol().unwrap().to_string() == "b");
         self.b = Some(b1.unwrap().literal().unwrap());
         let c1 = init
             .symbolic_atoms()
             .unwrap()
             .iter()
             .unwrap()
-            .find(|x| x.symbol().unwrap().to_string().unwrap() == "c");
+            .find(|x| x.symbol().unwrap().to_string() == "c");
         self.c = Some(c1.unwrap().literal().unwrap());
         init.add_watch(self.a.unwrap()).unwrap();
         init.add_watch(self.b.unwrap()).unwrap();
@@ -413,7 +412,7 @@ impl Propagator for TestAddWatch {
             .unwrap()
             .iter()
             .unwrap()
-            .find(|x| x.symbol().unwrap().to_string().unwrap() == "a")
+            .find(|x| x.symbol().unwrap().to_string() == "a")
             .unwrap()
             .literal()
             .unwrap();
@@ -423,7 +422,7 @@ impl Propagator for TestAddWatch {
             .unwrap()
             .iter()
             .unwrap()
-            .find(|x| x.symbol().unwrap().to_string().unwrap() == "b")
+            .find(|x| x.symbol().unwrap().to_string() == "b")
             .unwrap()
             .literal()
             .unwrap();
@@ -433,7 +432,7 @@ impl Propagator for TestAddWatch {
             .unwrap()
             .iter()
             .unwrap()
-            .find(|x| x.symbol().unwrap().to_string().unwrap() == "c")
+            .find(|x| x.symbol().unwrap().to_string() == "c")
             .unwrap()
             .literal()
             .unwrap();
@@ -443,7 +442,7 @@ impl Propagator for TestAddWatch {
             .unwrap()
             .iter()
             .unwrap()
-            .find(|x| x.symbol().unwrap().to_string().unwrap() == "d")
+            .find(|x| x.symbol().unwrap().to_string() == "d")
             .unwrap()
             .literal()
             .unwrap();
@@ -543,7 +542,7 @@ impl Propagator for TestAddClause {
             .unwrap()
             .iter()
             .unwrap()
-            .find(|x| x.symbol().unwrap().to_string().unwrap() == "a")
+            .find(|x| x.symbol().unwrap().to_string() == "a")
             .unwrap()
             .literal()
             .unwrap();
@@ -553,7 +552,7 @@ impl Propagator for TestAddClause {
             .unwrap()
             .iter()
             .unwrap()
-            .find(|x| x.symbol().unwrap().to_string().unwrap() == "b")
+            .find(|x| x.symbol().unwrap().to_string() == "b")
             .unwrap()
             .literal()
             .unwrap();

@@ -4,6 +4,7 @@
 
 use super::ast;
 use super::{Control, Model, Options, Statistics, Symbol};
+use std::fmt;
 pub trait Theory {
     /// registers the theory with the control
     fn register(&mut self, ctl: &mut Control) -> bool;
@@ -55,6 +56,15 @@ pub enum TheoryValue {
     IntNumber(u64),
     DoubleNumber(f64),
     Symbol(Symbol),
+}
+impl fmt::Display for TheoryValue {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            TheoryValue::IntNumber(int) => u64::fmt(int, f),
+            TheoryValue::DoubleNumber(double) => f64::fmt(double, f),
+            TheoryValue::Symbol(sym) => Symbol::fmt(sym, f),
+        }
+    }
 }
 // type value_type_t = ::std::os::raw::c_int;
 // #[repr(C)]

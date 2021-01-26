@@ -1113,8 +1113,7 @@ impl fmt::Debug for Term<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self.term_type() {
             TermType::Symbol(sym) => {
-                let string = sym.to_string().unwrap();
-                write!(f, "Term {{ symbol: {} }}", string)
+                write!(f, "Term {{ symbol: {} }}", sym)
             }
             TermType::Variable(var) => write!(f, "Term {{ variable: {:?} }}", var),
             TermType::UnaryOperation(uop) => write!(f, "Term {{ unary_operation: {:?} }}", uop),
@@ -2560,8 +2559,7 @@ impl fmt::Debug for TheoryTerm<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self.term_type() {
             TheoryTermType::Symbol(sym) => {
-                let string = sym.to_string().unwrap();
-                write!(f, "TheoryTerm {{ symbol: {} }}", string)
+                write!(f, "TheoryTerm {{ symbol: {} }}", sym)
             }
             TheoryTermType::Variable(var) => write!(f, "TheoryTerm {{ variable: {:?} }}", var),
             TheoryTermType::Tuple(tuple) => write!(f, "TheoryTerm {{ tuple: {:?} }}", tuple),
@@ -3370,6 +3368,7 @@ impl<'a> ProgramBuilder<'a> {
     }
 }
 #[doc(hidden)]
+#[cfg(feature = "dl_theory")]
 pub(crate) unsafe extern "C" fn unsafe_program_builder_add(
     statement: *const clingo_ast_statement_t,
     data: *mut ::std::os::raw::c_void,

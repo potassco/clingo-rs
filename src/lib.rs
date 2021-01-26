@@ -70,6 +70,7 @@ use std::convert::TryInto;
 use std::ffi::CStr;
 use std::ffi::CString;
 use std::ffi::NulError;
+use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::os::raw::c_char;
 use std::os::raw::c_void;
@@ -1208,6 +1209,30 @@ impl Hash for Symbol {
         unsafe { clingo_symbol_hash(self.0) }.hash(state);
     }
 }
+impl fmt::Display for Symbol {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let mut size: usize = 0;
+        if !unsafe { clingo_symbol_to_string_size(self.0, &mut size) } {
+            eprintln!("Call to clingo_symbol_to_string_size() failed");
+            return Err(fmt::Error);
+        }
+        let mut string = Vec::with_capacity(size);
+        let string_ptr = string.as_mut_ptr();
+        if !unsafe { clingo_symbol_to_string(self.0, string_ptr, size) } {
+            eprintln!("Call to clingo_symbol_to_string() failed");
+            return Err(fmt::Error);
+        }
+        let c_str: &CStr = unsafe { CStr::from_ptr(string_ptr) };
+        let str_slice: &str = match c_str.to_str() {
+            Ok(slice) => slice,
+            Err(e) => {
+                eprintln!("{}", e);
+                return Err(fmt::Error);
+            }
+        };
+        str::fmt(str_slice, f)
+    }
+}
 impl Symbol {
     /// Construct a symbol representing a number.
     pub fn create_number(number: i32) -> Symbol {
@@ -1446,31 +1471,6 @@ impl Symbol {
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) - may failed to match clingo symbol type
     pub fn symbol_type(self) -> Result<SymbolType, ClingoError> {
         SymbolType::try_from(unsafe { clingo_symbol_type(self.0) })
-    }
-
-    /// Get the string representation of a symbol.
-    ///
-    /// # Errors
-    ///
-    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
-    /// - [`ClingoError::Utf8Error`](enum.ClingoError.html#variant.Utf8Error)
-    pub fn to_string(self) -> Result<String, ClingoError> {
-        let mut size: usize = 0;
-        if !unsafe { clingo_symbol_to_string_size(self.0, &mut size) } {
-            return Err(ClingoError::new_internal(
-                "Call to clingo_symbol_to_string_size() failed",
-            ));
-        }
-        let mut string = Vec::with_capacity(size);
-        let string_ptr = string.as_mut_ptr();
-        if !unsafe { clingo_symbol_to_string(self.0, string_ptr, size) } {
-            return Err(ClingoError::new_internal(
-                "Call to clingo_symbol_to_string() failed",
-            ));
-        }
-        let c_str: &CStr = unsafe { CStr::from_ptr(string_ptr) };
-        let str_slice: &str = c_str.to_str()?;
-        Ok(str_slice.to_owned())
     }
 }
 
@@ -6646,7 +6646,7 @@ impl FactBase {
     }
     pub fn print(&self) {
         for fact in &self.facts {
-            print!("{}.", fact.to_string().unwrap());
+            print!("{}.", fact.to_string());
         }
         println!();
     }
