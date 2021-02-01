@@ -1236,21 +1236,21 @@ impl fmt::Display for Symbol {
 impl Symbol {
     /// Construct a symbol representing a number.
     pub fn create_number(number: i32) -> Symbol {
-        let mut symbol = 0 as clingo_symbol_t;
+        let mut symbol = 0;
         unsafe { clingo_symbol_create_number(number, &mut symbol) };
         Symbol(symbol)
     }
 
     /// Construct a symbol representing \#sup.
     pub fn create_supremum() -> Symbol {
-        let mut symbol = 0 as clingo_symbol_t;
+        let mut symbol = 0;
         unsafe { clingo_symbol_create_supremum(&mut symbol) };
         Symbol(symbol)
     }
 
     /// Construct a symbol representing \#inf
     pub fn create_infimum() -> Symbol {
-        let mut symbol = 0 as clingo_symbol_t;
+        let mut symbol = 0;
         unsafe { clingo_symbol_create_infimum(&mut symbol) };
         Symbol(symbol)
     }
@@ -1266,7 +1266,7 @@ impl Symbol {
     /// - [`ClingoError::NulError`](enum.ClingoError.html#variant.NulError) - if `string` contains a nul byte
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     pub fn create_string(string: &str) -> Result<Symbol, ClingoError> {
-        let mut symbol = 0 as clingo_symbol_t;
+        let mut symbol = 0;
         let c_str = CString::new(string)?;
         if !unsafe { clingo_symbol_create_string(c_str.as_ptr(), &mut symbol) } {
             return Err(ClingoError::new_internal(
@@ -1291,7 +1291,7 @@ impl Symbol {
     /// - [`ClingoError::NulError`](enum.ClingoError.html#variant.NulError) - if `name` contains a nul byte
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     pub fn create_id(name: &str, positive: bool) -> Result<Symbol, ClingoError> {
-        let mut symbol = 0 as clingo_symbol_t;
+        let mut symbol = 0;
         let name = CString::new(name)?;
         if !unsafe { clingo_symbol_create_id(name.as_ptr(), positive, &mut symbol) } {
             return Err(ClingoError::new_internal(
@@ -1321,7 +1321,7 @@ impl Symbol {
         arguments: &[Symbol],
         positive: bool,
     ) -> Result<Symbol, ClingoError> {
-        let mut symbol = 0 as clingo_symbol_t;
+        let mut symbol = 0;
         let name = CString::new(name)?;
         if !unsafe {
             clingo_symbol_create_function(
@@ -2540,7 +2540,7 @@ impl Control {
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError)
     pub fn get_const(&self, name: &str) -> Result<Symbol, ClingoError> {
         let name = CString::new(name)?;
-        let mut symbol = 0 as clingo_symbol_t;
+        let mut symbol = 0;
         if !unsafe { clingo_control_get_const(self.ctl.as_ptr(), name.as_ptr(), &mut symbol) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_control_get_const() failed",
@@ -2685,7 +2685,7 @@ pub struct Configuration(clingo_configuration_t);
 impl Configuration {
     /// Get the root key of the configuration.
     pub fn root(&self) -> Result<Id, ClingoError> {
-        let mut root_key = 0 as clingo_id_t;
+        let mut root_key = 0;
         if !unsafe { clingo_configuration_root(&self.0, &mut root_key) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_configuration_root() failed",
@@ -2697,7 +2697,7 @@ impl Configuration {
     /// Get the type of a key.
     /// The type is a bitset, an entry can have multiple (but at least one) type.
     pub fn configuration_type(&self, Id(key): Id) -> Result<ConfigurationType, ClingoError> {
-        let mut ctype = 0 as clingo_configuration_type_bitset_t;
+        let mut ctype = 0;
         if !unsafe { clingo_configuration_type(&self.0, key, &mut ctype) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_configuration_type() failed",
@@ -2768,7 +2768,7 @@ impl Configuration {
     /// * `key` - the key
     /// * `offset` - the offset in the array
     pub fn array_at(&self, Id(key): Id, offset: usize) -> Result<Id, ClingoError> {
-        let mut nkey = 0 as clingo_id_t;
+        let mut nkey = 0;
         if !unsafe { clingo_configuration_array_at(&self.0, key, offset, &mut nkey) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_configuration_array_at() failed",
@@ -2867,7 +2867,7 @@ impl Configuration {
     ///
     /// **Note:** Multiple levels can be looked up by concatenating keys with a period.
     pub fn map_at(&self, Id(key): Id, name: &str) -> Result<Id, ClingoError> {
-        let mut nkey = 0 as clingo_id_t;
+        let mut nkey = 0;
         let name = CString::new(name)?;
         if !unsafe { clingo_configuration_map_at(&self.0, key, name.as_ptr(), &mut nkey) } {
             return Err(ClingoError::new_internal(
@@ -3225,7 +3225,7 @@ impl<'a> Backend<'a> {
     pub fn add_atom(&mut self, symbol: Option<Symbol>) -> Result<Atom, ClingoError> {
         match symbol {
             Some(Symbol(mut symbol)) => {
-                let mut atom = 0 as clingo_atom_t;
+                let mut atom = 0;
                 if unsafe { clingo_backend_add_atom(self.theref, &mut symbol, &mut atom) } {
                     Ok(Atom(atom))
                 } else {
@@ -3235,7 +3235,7 @@ impl<'a> Backend<'a> {
                 }
             }
             None => {
-                let mut atom = 0 as clingo_atom_t;
+                let mut atom = 0;
                 let null = std::ptr::null_mut();
                 if unsafe { clingo_backend_add_atom(self.theref, null, &mut atom) } {
                     Ok(Atom(atom))
@@ -3255,7 +3255,7 @@ pub struct Statistics(clingo_statistics_t);
 impl Statistics {
     /// Get the root key of the statistics.
     pub fn root(&self) -> Result<u64, ClingoError> {
-        let mut root_key = 0 as u64;
+        let mut root_key = 0;
         if !unsafe { clingo_statistics_root(&self.0, &mut root_key) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_statistics_root() failed",
@@ -3270,7 +3270,7 @@ impl Statistics {
     ///
     /// * `key` - the key
     pub fn statistics_type(&self, key: u64) -> Result<StatisticsType, ClingoError> {
-        let mut stype = 0 as clingo_statistics_type_t;
+        let mut stype = 0;
         if !unsafe { clingo_statistics_type(&self.0, key, &mut stype) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_statistics_type() failed",
@@ -3290,7 +3290,7 @@ impl Statistics {
     ///
     /// * `key` - the key
     pub fn array_size(&self, key: u64) -> Result<usize, ClingoError> {
-        let mut size = 0 as usize;
+        let mut size = 0;
         if !unsafe { clingo_statistics_array_size(&self.0, key, &mut size) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_statistics_array_size() failed",
@@ -3311,7 +3311,7 @@ impl Statistics {
     /// * `key` - the key
     /// * `offset` - the offset in the array
     pub fn array_at(&self, key: u64, offset: usize) -> Result<u64, ClingoError> {
-        let mut subkey = 0 as u64;
+        let mut subkey = 0;
         if !unsafe { clingo_statistics_array_at(&self.0, key, offset, &mut subkey) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_statistics_array_at() failed",
@@ -3332,7 +3332,7 @@ impl Statistics {
     /// * `key` - the key
     /// * `stype` -  the type of the new subkey
     pub fn array_push(&mut self, key: u64, stype: StatisticsType) -> Result<u64, ClingoError> {
-        let mut subkey = 0 as u64;
+        let mut subkey = 0;
         if !unsafe {
             clingo_statistics_array_push(
                 &mut self.0,
@@ -3359,7 +3359,7 @@ impl Statistics {
     ///
     /// * `key` - the key
     pub fn map_size(&self, key: u64) -> Result<usize, ClingoError> {
-        let mut size = 0 as usize;
+        let mut size = 0;
         if !unsafe { clingo_statistics_map_size(&self.0, key, &mut size) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_statistics_map_size() failed",
@@ -3445,7 +3445,7 @@ impl Statistics {
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError)
     /// - [`ClingoError::NulError`](enum.ClingoError.html#variant.NulError) - if `name` contains a nul byte
     pub fn map_at(&self, key: u64, name: &str) -> Result<u64, ClingoError> {
-        let mut subkey = 0 as u64;
+        let mut subkey = 0;
         let name = CString::new(name)?;
         if !unsafe { clingo_statistics_map_at(&self.0, key, name.as_ptr(), &mut subkey) } {
             return Err(ClingoError::new_internal(
@@ -3480,7 +3480,7 @@ impl Statistics {
         name: &str,
         stype: StatisticsType,
     ) -> Result<u64, ClingoError> {
-        let mut subkey = 0 as u64;
+        let mut subkey = 0;
         let name = CString::new(name)?;
         if !unsafe {
             clingo_statistics_map_add_subkey(
@@ -3509,7 +3509,7 @@ impl Statistics {
     ///
     /// * `key` - the key
     pub fn value_get(&self, key: u64) -> Result<f64, ClingoError> {
-        let mut value = 0.0 as f64;
+        let mut value = 0.0;
         if !unsafe { clingo_statistics_value_get(&self.0, key, &mut value) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_symbolic_atoms_size() failed",
@@ -3544,7 +3544,7 @@ pub struct SymbolicAtoms(clingo_symbolic_atoms_t);
 impl SymbolicAtoms {
     /// Get the number of different atoms occurring in a logic program.
     pub fn size(&self) -> Result<usize, ClingoError> {
-        let mut size = 0 as usize;
+        let mut size = 0;
         if !unsafe { clingo_symbolic_atoms_size(&self.0, &mut size) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_symbolic_atoms_size() failed",
@@ -3555,13 +3555,13 @@ impl SymbolicAtoms {
 
     /// Get a forward iterator of the sequence of all symbolic atoms.
     pub fn iter(&self) -> Result<SymbolicAtomsIterator, ClingoError> {
-        let mut begin = 0 as clingo_symbolic_atom_iterator_t;
+        let mut begin = 0;
         if !unsafe { clingo_symbolic_atoms_begin(&self.0, std::ptr::null(), &mut begin) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_symbolic_atoms_begin() failed",
             ));
         }
-        let mut end = 0 as clingo_symbolic_atom_iterator_t;
+        let mut end = 0;
         if !unsafe { clingo_symbolic_atoms_end(&self.0, &mut end) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_symbolic_atoms_end() failed",
@@ -3582,13 +3582,13 @@ impl SymbolicAtoms {
         &self,
         sig: Signature,
     ) -> Result<SymbolicAtomsIterator, ClingoError> {
-        let mut begin = 0 as clingo_symbolic_atom_iterator_t;
+        let mut begin = 0;
         if !unsafe { clingo_symbolic_atoms_begin(&self.0, &sig.0, &mut begin) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_symbolic_atoms_begin() failed",
             ));
         }
-        let mut end = 0 as clingo_symbolic_atom_iterator_t;
+        let mut end = 0;
         if !unsafe { clingo_symbolic_atoms_end(&self.0, &mut end) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_symbolic_atoms_end() failed",
@@ -3704,7 +3704,7 @@ impl<'a> SymbolicAtom<'a> {
 
     /// Get the symbolic representation of an atom.
     pub fn symbol(&self) -> Result<Symbol, ClingoError> {
-        let mut symbol = 0 as clingo_symbol_t;
+        let mut symbol = 0;
         if !unsafe { clingo_symbolic_atoms_symbol(self.atoms, self.cur, &mut symbol) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_symbolic_atoms_symbol() failed",
@@ -3718,7 +3718,7 @@ impl<'a> SymbolicAtom<'a> {
     /// Such a literal can be mapped to a solver literal (see [`Propagator`](struct.Propagator)).
     /// or be used in rules in aspif format (see [`ProgramBuilder`](struct.ProgramBuilder.html)).
     pub fn literal(&self) -> Result<Literal, ClingoError> {
-        let mut literal = 0 as clingo_literal_t;
+        let mut literal = 0;
         if !unsafe { clingo_symbolic_atoms_literal(self.atoms, self.cur, &mut literal) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_symbolic_atoms_literal() failed",
@@ -3736,7 +3736,7 @@ pub struct TheoryAtoms(clingo_theory_atoms_t);
 impl TheoryAtoms {
     /// Get the total number of theory atoms.
     pub fn size(&self) -> Result<usize, ClingoError> {
-        let mut size = 0 as usize;
+        let mut size = 0;
         if !unsafe { clingo_theory_atoms_size(&self.0, &mut size) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_theory_atoms_size() failed",
@@ -3759,7 +3759,7 @@ impl TheoryAtoms {
     ///
     /// * `term` - id of the term
     pub fn term_type(&self, Id(term): Id) -> Result<TheoryTermType, ClingoError> {
-        let mut ttype = 0 as clingo_theory_term_type_t;
+        let mut ttype = 0;
         if !unsafe { clingo_theory_atoms_term_type(&self.0, term, &mut ttype) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_theory_atoms_term_type() failed",
@@ -3976,7 +3976,7 @@ impl TheoryAtoms {
     ///
     /// * `atom` - id of the atom
     pub fn atom_term(&self, Id(atom): Id) -> Result<Id, ClingoError> {
-        let mut term = 0 as clingo_id_t;
+        let mut term = 0;
         if !unsafe { clingo_theory_atoms_atom_term(&self.0, atom, &mut term) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_theory_atoms_atom_term() failed",
@@ -4034,7 +4034,7 @@ impl TheoryAtoms {
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError)
     pub fn atom_guard(&self, Id(atom): Id) -> Result<(&str, Id), ClingoError> {
         let mut c_ptr = std::ptr::null() as *const c_char;
-        let mut term = 0 as clingo_id_t;
+        let mut term = 0;
         if !unsafe { clingo_theory_atoms_atom_guard(&self.0, atom, &mut c_ptr, &mut term) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_theory_atoms_atom_guard() failed",
@@ -4055,7 +4055,7 @@ impl TheoryAtoms {
     ///
     /// * `atom` id of the atom
     pub fn atom_literal(&self, Id(atom): Id) -> Result<Literal, ClingoError> {
-        let mut literal = 0 as clingo_literal_t;
+        let mut literal = 0;
         if !unsafe { clingo_theory_atoms_atom_literal(&self.0, atom, &mut literal) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_theory_atoms_atom_literal() failed",
@@ -4124,7 +4124,7 @@ pub struct Model(clingo_model_t);
 impl Model {
     /// Get the type of the model.
     pub fn model_type(&self) -> Result<ModelType, ClingoError> {
-        let mut mtype = 0 as clingo_model_type_t;
+        let mut mtype = 0;
         if !unsafe { clingo_model_type(&self.0, &mut mtype) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_model_type() failed",
@@ -4254,7 +4254,7 @@ impl Model {
 
     /// Get the id of the solver thread that found the model.
     pub fn thread_id(&self) -> Result<Id, ClingoError> {
-        let mut id = 0 as clingo_id_t;
+        let mut id = 0;
         if !unsafe { clingo_model_thread_id(&self.0, &mut id) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_model_thread_id() failed",
@@ -4414,7 +4414,7 @@ impl Assignment {
     ///
     /// **Returns** the decision literal for the given decision level
     pub fn decision(&self, level: u32) -> Result<Literal, ClingoError> {
-        let mut lit = 0 as clingo_literal_t;
+        let mut lit = 0;
         if !unsafe { clingo_assignment_decision(&self.0, level, &mut lit) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_assignment_decision() failed",
@@ -4503,7 +4503,7 @@ impl Assignment {
     ///
     /// **Returns** the literal
     pub fn at(&self, offset: usize) -> Result<Literal, ClingoError> {
-        let mut lit = 0 as clingo_literal_t;
+        let mut lit = 0;
         if !unsafe { clingo_assignment_at(&self.0, offset, &mut lit) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_assignment_at() failed",
@@ -4579,7 +4579,7 @@ impl Assignment {
     ///
     /// **Returns** the literal
     pub fn trail_at(&self, offset: u32) -> Result<Literal, ClingoError> {
-        let mut lit = 0 as clingo_literal_t;
+        let mut lit = 0;
         if !unsafe { clingo_assignment_trail_at(&self.0, offset, &mut lit) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_assignment_trail_at() failed",
@@ -4770,7 +4770,7 @@ impl PropagateInit {
     ///
     /// **Returns** the corresponding solver literal
     pub fn solver_literal(&self, Literal(aspif_literal): Literal) -> Result<Literal, ClingoError> {
-        let mut solver_literal = 0 as clingo_literal_t;
+        let mut solver_literal = 0;
         if !unsafe {
             clingo_propagate_init_solver_literal(&self.0, aspif_literal, &mut solver_literal)
         } {
@@ -5530,7 +5530,7 @@ fn internalize_string(string: &str) -> Result<*const c_char, ClingoError> {
 /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if parsing fails
 pub fn parse_term(string: &str) -> Result<Symbol, ClingoError> {
     let c_str = CString::new(string)?;
-    let mut symbol = 0 as clingo_symbol_t;
+    let mut symbol = 0;
     if !unsafe { clingo_parse_term(c_str.as_ptr(), None, std::ptr::null_mut(), 0, &mut symbol) } {
         return Err(ClingoError::new_internal(
             "Call to clingo_parse_term() failed",
@@ -5562,7 +5562,7 @@ pub fn parse_term_with_logger<L: Logger>(
 ) -> Result<Symbol, ClingoError> {
     let c_str = CString::new(string)?;
     let logger = logger as *mut L;
-    let mut symbol = 0 as clingo_symbol_t;
+    let mut symbol = 0;
     if !unsafe {
         clingo_parse_term(
             c_str.as_ptr(),
