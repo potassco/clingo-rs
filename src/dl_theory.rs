@@ -19,15 +19,6 @@ impl<'a> DLTheory {
             None => panic!("Tried creating NonNull from a null pointer."),
         }
     }
-    pub fn assignment(&'a mut self, thread_id: Id) -> DLTheoryAssignment<'a> {
-        let mut index = 0;
-        unsafe { clingodl_assignment_begin(self.theory.as_ptr(), thread_id.0, &mut index) }
-        DLTheoryAssignment {
-            dl_theory: self,
-            thread_id,
-            index,
-        }
-    }
 }
 impl Drop for DLTheory {
     fn drop(&mut self) {
@@ -100,7 +91,17 @@ impl<'a> Iterator for DLTheoryAssignment<'a> {
         }
     }
 }
-impl Theory for DLTheory {
+impl<'a> Theory<'a> for DLTheory {
+    type AssignmentIterator = DLTheoryAssignment<'a>;
+    fn assignment(&'a mut self, thread_id: Id) -> Self::AssignmentIterator {
+        let mut index = 0;
+        unsafe { clingodl_assignment_begin(self.theory.as_ptr(), thread_id.0, &mut index) }
+        DLTheoryAssignment {
+            dl_theory: self,
+            thread_id,
+            index,
+        }
+    }
     /// registers the theory with the control
     fn register(&mut self, ctl: &mut Control) -> bool {
         unsafe { clingodl_register(self.theory.as_ptr(), ctl.ctl.as_ptr()) }
