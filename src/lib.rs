@@ -277,7 +277,10 @@ pub enum SolveEvent<'a> {
     /// Issued if a model is found.
     Model(&'a mut Model),
     /// Issued when the statistics can be updated.
-    Statistics(&'a mut [&'a mut Statistics; 2]),
+    Statistics {
+        step: &'a mut Statistics,
+        akku: &'a mut Statistics,
+    },
     /// Issued if the search has completed.
     Finish(&'a mut SolveResult),
 }
@@ -720,7 +723,11 @@ pub trait SolveEventHandler {
                     std::slice::from_raw_parts_mut(event_data as *mut &mut Statistics, 2);
                 let stats: &mut [&mut Statistics; 2] =
                     stats.try_into().expect("slice has more than two items");
-                let event = SolveEvent::Statistics(stats);
+                let stats = stats.split_at_mut(1);
+                let event = SolveEvent::Statistics {
+                    step: stats.0[0],
+                    akku: stats.1[0],
+                };
                 event_handler.on_solve_event(event, goon)
             }
             clingo_solve_event_type_clingo_solve_event_type_finish => {
@@ -5052,7 +5059,7 @@ pub struct SolveHandle {
     handle: NonNull<clingo_solve_handle_t>,
     ctl: Control,
 }
-impl<'a> SolveHandle {
+impl SolveHandle {
     /// Get the next solve result.
     ///
     /// Blocks until the result is ready.
@@ -5219,7 +5226,7 @@ impl<'a> SolveHandle {
 
 pub struct OptimalModels(SolveHandle);
 
-impl<'a, 'b> Iterator for OptimalModels {
+impl Iterator for OptimalModels {
     type Item = MModel;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -5247,7 +5254,7 @@ impl<'a, 'b> Iterator for OptimalModels {
     }
 }
 pub struct AllModels(SolveHandle);
-impl<'a, 'b> Iterator for AllModels {
+impl Iterator for AllModels {
     type Item = MModel;
 
     fn next(&mut self) -> Option<Self::Item> {
