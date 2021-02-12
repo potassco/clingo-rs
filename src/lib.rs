@@ -707,7 +707,15 @@ pub trait SolveEventHandler {
         match event_type {
             clingo_solve_event_type_clingo_solve_event_type_model => {
                 let model = &mut *(event_data as *mut Model);
+
+                eprintln!("unsafe_solve_callback model");
+                for i in model.symbols(ShowType::ALL).unwrap(){
+                    eprint!("{}",i);
+                }                
+                eprintln!();
+                eprintln!("call save on_solve_event");
                 let event = SolveEvent::Model(model);
+
                 event_handler.on_solve_event(event, goon)
             }
             clingo_solve_event_type_clingo_solve_event_type_statistics => {
@@ -728,6 +736,7 @@ pub trait SolveEventHandler {
                     step: stats.0[0],
                     akku: stats.1[0],
                 };
+                eprintln!("unsafe_solve_callback stats calling save code");
                 event_handler.on_solve_event(event, goon)
             }
             clingo_solve_event_type_clingo_solve_event_type_finish => {

@@ -45,49 +45,46 @@ impl<'a> Iterator for DLTheoryAssignment<'a> {
                 &mut self.index,
             )
         } {
-            return None;
-        } else {
-            if unsafe {
-                clingodl_assignment_has_value(
+            None
+        } else if unsafe {
+            clingodl_assignment_has_value(
+                self.dl_theory.theory.as_ptr(),
+                self.thread_id.0,
+                self.index,
+            )
+        } {
+            let sym = unsafe { clingodl_get_symbol(self.dl_theory.theory.as_ptr(), self.index) };
+            let sym = Symbol(sym);
+            let value_internal = clingodl_value__bindgen_ty_1 { int_number: 0 };
+            let mut value = clingodl_value {
+                type_: 0,
+                __bindgen_anon_1: value_internal,
+            };
+            unsafe {
+                clingodl_assignment_get_value(
                     self.dl_theory.theory.as_ptr(),
                     self.thread_id.0,
                     self.index,
+                    &mut value,
                 )
-            } {
-                let sym =
-                    unsafe { clingodl_get_symbol(self.dl_theory.theory.as_ptr(), self.index) };
-                let sym = Symbol(sym);
-                let value_internal = clingodl_value__bindgen_ty_1 { int_number: 0 };
-                let mut value = clingodl_value {
-                    type_: 0,
-                    __bindgen_anon_1: value_internal,
-                };
-                unsafe {
-                    clingodl_assignment_get_value(
-                        self.dl_theory.theory.as_ptr(),
-                        self.thread_id.0,
-                        self.index,
-                        &mut value,
-                    )
-                };
-                match value.type_ {
-                    0 => Some((
-                        sym,
-                        TheoryValue::IntNumber(unsafe { value.__bindgen_anon_1.int_number } as u64),
-                    )),
-                    1 => Some((
-                        sym,
-                        TheoryValue::DoubleNumber(unsafe { value.__bindgen_anon_1.double_number }),
-                    )),
-                    2 => Some((
-                        sym,
-                        TheoryValue::Symbol(Symbol(unsafe { value.__bindgen_anon_1.symbol })),
-                    )),
-                    x => panic!("unexpected DLTheoryValue {}", x),
-                }
-            } else {
-                None
+            };
+            match value.type_ {
+                0 => Some((
+                    sym,
+                    TheoryValue::IntNumber(unsafe { value.__bindgen_anon_1.int_number } as u64),
+                )),
+                1 => Some((
+                    sym,
+                    TheoryValue::DoubleNumber(unsafe { value.__bindgen_anon_1.double_number }),
+                )),
+                2 => Some((
+                    sym,
+                    TheoryValue::Symbol(Symbol(unsafe { value.__bindgen_anon_1.symbol })),
+                )),
+                x => panic!("unexpected DLTheoryValue {}", x),
             }
+        } else {
+            None
         }
     }
 }
@@ -136,11 +133,19 @@ impl<'a> Theory<'a> for DLTheory {
     }
     /// callback on every model
     fn on_model(&mut self, model: &mut Model) -> bool {
-        unsafe { clingodl_on_model(self.theory.as_ptr(), &mut model.0) }
+        use super::ShowType;
+        eprintln!("dl_theory::on_model");
+        for i in model.symbols(ShowType::ALL).unwrap() {
+            eprint!("{}", i);
+        }
+        eprintln!();
+        eprintln!("call unsafe clingodl_on_model");
+        unsafe { clingodl_on_model(self.theory.as_ptr(),  &mut model.0) }
     }
     /// callback on statistic updates
     /// please add a subkey with the name of your theory
     fn on_statistics(&mut self, step: &mut Statistics, accu: &mut Statistics) -> bool {
+        eprintln!("dl_theory::on_statistics");
         unsafe { clingodl_on_statistics(self.theory.as_ptr(), &mut step.0, &mut accu.0) }
     }
     /// obtain a symbol index which can be used to get the value of a symbol
