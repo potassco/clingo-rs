@@ -13,6 +13,7 @@ impl<'a> DLTheory {
     /// creates the theory
     pub fn create() -> DLTheory {
         let mut theory_ptr = std::ptr::null_mut();
+        eprintln!("clingodl_create");
         unsafe { clingodl_create(&mut theory_ptr) };
         match NonNull::new(theory_ptr) {
             Some(theory) => DLTheory { theory },
@@ -101,6 +102,7 @@ impl<'a> Theory<'a> for DLTheory {
     }
     /// registers the theory with the control
     fn register(&mut self, ctl: &mut Control) -> bool {
+        eprintln!("clingodl_register");
         unsafe { clingodl_register(self.theory.as_ptr(), ctl.ctl.as_ptr()) }
     }
     /// Rewrite statements before adding them via the given callback.
@@ -109,6 +111,7 @@ impl<'a> Theory<'a> for DLTheory {
         stm: &ast::Statement,
         builder: &mut ast::ProgramBuilder,
     ) -> bool {
+        eprintln!("clingodl_rewrite_statement");
         let add = super::ast::unsafe_program_builder_add;
         unsafe {
             clingodl_rewrite_statement(
@@ -121,10 +124,12 @@ impl<'a> Theory<'a> for DLTheory {
     }
     /// prepare the theory between grounding and solving
     fn prepare(&mut self, ctl: &mut Control) -> bool {
+        eprintln!("clingodl_prepare");
         unsafe { clingodl_prepare(self.theory.as_ptr(), ctl.ctl.as_ptr()) }
     }
     /// add options for your theory
     fn register_options(&mut self, options: &mut Options) -> bool {
+        eprintln!("clingodl_register_options");
         unsafe { clingodl_register_options(self.theory.as_ptr(), &mut options.0) }
     }
     /// validate options for your theory
@@ -140,7 +145,7 @@ impl<'a> Theory<'a> for DLTheory {
         }
         eprintln!();
         eprintln!("call unsafe clingodl_on_model");
-        unsafe { clingodl_on_model(self.theory.as_ptr(),  &mut model.0) }
+        unsafe { clingodl_on_model(self.theory.as_ptr(), &mut model.0) }
     }
     /// callback on statistic updates
     /// please add a subkey with the name of your theory

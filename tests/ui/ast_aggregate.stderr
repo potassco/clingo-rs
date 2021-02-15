@@ -16,8 +16,8 @@ error[E0506]: cannot assign to `lit` because it is borrowed
 11 |     let cond = ast::ConditionalLiteral::new(&lit, &condition);
    |                                             ---- borrow of `lit` occurs here
 ...
-17 |     lit = ast::Literal::from_term(ast::Sign::None, &term1);
-   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ assignment to borrowed `lit` occurs here
+17 |     lit = ast::Literal::from_term(ast::Sign::NoSign, &term1);
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ assignment to borrowed `lit` occurs here
 18 |     drop(elements);
    |          -------- borrow later used here
 

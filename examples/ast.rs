@@ -21,9 +21,9 @@ impl<'a, 'b> StatementHandler for OnStatementData<'a, 'b> {
                 }
 
                 // create atom enable
-                let lit = ast::Literal::from_term(ast::Sign::None, &self.atom);
+                let lit = ast::Literal::from_term(ast::Sign::NoSign, &self.atom);
                 // add atom enable to the rule body
-                let blit = ast::BodyLiteral::from_literal(ast::Sign::None, &lit);
+                let blit = ast::BodyLiteral::from_literal(ast::Sign::NoSign, &lit);
                 extended_body.push(blit);
 
                 // initialize the rule

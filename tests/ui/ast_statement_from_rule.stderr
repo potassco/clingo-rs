@@ -1,8 +1,8 @@
 error[E0506]: cannot assign to `term1` because it is borrowed
   --> $DIR/ast_statement_from_rule.rs:15:5
    |
-7  |     let mut lit1 = ast::Literal::from_term(ast::Sign::None, &term1);
-   |                                                             ------ borrow of `term1` occurs here
+7  |     let mut lit1 = ast::Literal::from_term(ast::Sign::NoSign, &term1);
+   |                                                               ------ borrow of `term1` occurs here
 ...
 15 |     term1 = ast::Term::from(sym);
    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ assignment to borrowed `term1` occurs here
@@ -13,8 +13,8 @@ error[E0506]: cannot assign to `term1` because it is borrowed
 error[E0506]: cannot assign to `term2` because it is borrowed
   --> $DIR/ast_statement_from_rule.rs:16:5
    |
-8  |     let mut lit2 = ast::Literal::from_term(ast::Sign::None, &term2);
-   |                                                             ------ borrow of `term2` occurs here
+8  |     let mut lit2 = ast::Literal::from_term(ast::Sign::NoSign, &term2);
+   |                                                               ------ borrow of `term2` occurs here
 ...
 16 |     term2 = ast::Term::from(sym);
    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ assignment to borrowed `term2` occurs here
@@ -28,20 +28,20 @@ error[E0506]: cannot assign to `lit1` because it is borrowed
 9  |     let hlit = ast::HeadLiteral::from(&lit1);
    |                                       ----- borrow of `lit1` occurs here
 ...
-17 |     lit1 = ast::Literal::from_term(ast::Sign::None, &term1);
-   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ assignment to borrowed `lit1` occurs here
-18 |     lit2 = ast::Literal::from_term(ast::Sign::None, &term2);
+17 |     lit1 = ast::Literal::from_term(ast::Sign::NoSign, &term1);
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ assignment to borrowed `lit1` occurs here
+18 |     lit2 = ast::Literal::from_term(ast::Sign::NoSign, &term2);
 19 |     rule = ast::Rule::new(hlit, &body);
    |                           ---- borrow later used here
 
 error[E0506]: cannot assign to `lit2` because it is borrowed
   --> $DIR/ast_statement_from_rule.rs:18:5
    |
-10 |     let blit = ast::BodyLiteral::from_literal(ast::Sign::None, &lit2);
-   |                                                                ----- borrow of `lit2` occurs here
+10 |     let blit = ast::BodyLiteral::from_literal(ast::Sign::NoSign, &lit2);
+   |                                                                  ----- borrow of `lit2` occurs here
 ...
-18 |     lit2 = ast::Literal::from_term(ast::Sign::None, &term2);
-   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ assignment to borrowed `lit2` occurs here
+18 |     lit2 = ast::Literal::from_term(ast::Sign::NoSign, &term2);
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ assignment to borrowed `lit2` occurs here
 19 |     rule = ast::Rule::new(hlit, &body);
    |                                 ----- borrow later used here
 

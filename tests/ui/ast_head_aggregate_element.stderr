@@ -1,8 +1,8 @@
 error[E0506]: cannot assign to `term1` because it is borrowed
   --> $DIR/ast_head_aggregate_element.rs:14:5
    |
-8  |     let lit = ast::Literal::from_term(ast::Sign::None, &term1);
-   |                                                        ------ borrow of `term1` occurs here
+8  |     let lit = ast::Literal::from_term(ast::Sign::NoSign, &term1);
+   |                                                          ------ borrow of `term1` occurs here
 ...
 14 |     term1 =  ast::Term::from(sym);
    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ assignment to borrowed `term1` occurs here
@@ -13,8 +13,8 @@ error[E0506]: cannot assign to `term1` because it is borrowed
 error[E0506]: cannot assign to `term2` because it is borrowed
   --> $DIR/ast_head_aggregate_element.rs:15:5
    |
-9  |     let lit2 = ast::Literal::from_term(ast::Sign::None, &term2);
-   |                                                         ------ borrow of `term2` occurs here
+9  |     let lit2 = ast::Literal::from_term(ast::Sign::NoSign, &term2);
+   |                                                           ------ borrow of `term2` occurs here
 ...
 15 |     term2 =  ast::Term::from(sym);
    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ assignment to borrowed `term2` occurs here
@@ -25,14 +25,14 @@ error[E0506]: cannot assign to `term2` because it is borrowed
 error[E0384]: cannot assign twice to immutable variable `lit`
   --> $DIR/ast_head_aggregate_element.rs:16:5
    |
-8  |     let lit = ast::Literal::from_term(ast::Sign::None, &term1);
+8  |     let lit = ast::Literal::from_term(ast::Sign::NoSign, &term1);
    |         ---
    |         |
    |         first assignment to `lit`
    |         help: make this binding mutable: `mut lit`
 ...
-16 |     lit = ast::Literal::from_term(ast::Sign::None, &term1);
-   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ cannot assign twice to immutable variable
+16 |     lit = ast::Literal::from_term(ast::Sign::NoSign, &term1);
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ cannot assign twice to immutable variable
 
 error[E0505]: cannot move out of `tuple` because it is borrowed
   --> $DIR/ast_head_aggregate_element.rs:17:10

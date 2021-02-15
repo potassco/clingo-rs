@@ -4,41 +4,67 @@ use std::fmt;
 use std::marker::PhantomData;
 
 #[derive(Debug, Copy, Clone)]
+/// Enumeration of signs.
 pub enum Sign {
-    None = clingo_ast_sign_clingo_ast_sign_none as isize,
+    /// For positive literals.
+    NoSign = clingo_ast_sign_clingo_ast_sign_no_sign as isize,
+    ///  For negative literals (prefix `not`s).
     Negation = clingo_ast_sign_clingo_ast_sign_negation as isize,
+    /// For double negated literals (prefix `not not`).
     DoubleNegation = clingo_ast_sign_clingo_ast_sign_double_negation as isize,
 }
 #[derive(Debug, Copy, Clone)]
+/// Enumeration of comparison relations
 pub enum ComparisonOperator {
+    /// Operator `>`.
     GreaterThan =
         clingo_ast_comparison_operator_clingo_ast_comparison_operator_greater_than as isize,
+    /// Operator `<`.
     LessThan = clingo_ast_comparison_operator_clingo_ast_comparison_operator_less_than as isize,
+    /// Operator `<=`.
     LessEqual = clingo_ast_comparison_operator_clingo_ast_comparison_operator_less_equal as isize,
+    /// Operator `>=`.
     GreaterEqual =
         clingo_ast_comparison_operator_clingo_ast_comparison_operator_greater_equal as isize,
+    /// Operator `!=`.
     NotEqual = clingo_ast_comparison_operator_clingo_ast_comparison_operator_not_equal as isize,
+    /// Operator `==`.
     Equal = clingo_ast_comparison_operator_clingo_ast_comparison_operator_equal as isize,
 }
 #[derive(Debug, Copy, Clone)]
+/// Enumeration of unary operators.
 pub enum UnaryOperator {
+    /// Operator `-`.
     Minus = clingo_ast_unary_operator_clingo_ast_unary_operator_minus as isize,
+    /// Operator `~`.
     Negation = clingo_ast_unary_operator_clingo_ast_unary_operator_negation as isize,
+    /// Operator `|.|`.
     Absolute = clingo_ast_unary_operator_clingo_ast_unary_operator_absolute as isize,
 }
 #[derive(Debug, Copy, Clone)]
+/// Enumeration of binary operators.
 pub enum BinaryOperator {
+    /// Operator `^`.
     Xor = clingo_ast_binary_operator_clingo_ast_binary_operator_xor as isize,
+    /// Operator `?`.
     Or = clingo_ast_binary_operator_clingo_ast_binary_operator_or as isize,
+    /// Operator `&`.
     And = clingo_ast_binary_operator_clingo_ast_binary_operator_and as isize,
+    /// Operator `+`.
     Plus = clingo_ast_binary_operator_clingo_ast_binary_operator_plus as isize,
+    /// Operator `-`.
     Minus = clingo_ast_binary_operator_clingo_ast_binary_operator_minus as isize,
+    /// Operator `*`.
     Multiplication = clingo_ast_binary_operator_clingo_ast_binary_operator_multiplication as isize,
+    /// Operator `/`.
     Division = clingo_ast_binary_operator_clingo_ast_binary_operator_division as isize,
+    /// Operator `\`.
     Modulo = clingo_ast_binary_operator_clingo_ast_binary_operator_modulo as isize,
+    /// Operator `**`.
     Power = clingo_ast_binary_operator_clingo_ast_binary_operator_power as isize,
 }
 #[derive(Debug, Copy, Clone)]
+/// Enumeration of aggregate functions.
 pub enum AggregateFunction {
     Count = clingo_ast_aggregate_function_clingo_ast_aggregate_function_count as isize,
     Sum = clingo_ast_aggregate_function_clingo_ast_aggregate_function_sum as isize,
@@ -49,15 +75,18 @@ pub enum AggregateFunction {
 #[derive(Debug, Copy, Clone)]
 pub enum HeadLiteralType {
     Literal = clingo_ast_head_literal_type_clingo_ast_head_literal_type_literal as isize,
-    Disjuction = clingo_ast_head_literal_type_clingo_ast_head_literal_type_disjunction as isize,
+    Disjunction = clingo_ast_head_literal_type_clingo_ast_head_literal_type_disjunction as isize,
     Aggregate = clingo_ast_head_literal_type_clingo_ast_head_literal_type_aggregate as isize,
     HeadAggregate =
         clingo_ast_head_literal_type_clingo_ast_head_literal_type_head_aggregate as isize,
     TheoryAtom = clingo_ast_head_literal_type_clingo_ast_head_literal_type_theory_atom as isize,
 }
 #[derive(Debug, Copy, Clone)]
+/// Enumeration of script types.
 pub enum ScriptType {
+    /// For Lua scripts.
     Lua = clingo_ast_script_type_clingo_ast_script_type_lua as isize,
+    /// For Python scripts.
     Python = clingo_ast_script_type_clingo_ast_script_type_python as isize,
 }
 
@@ -846,7 +875,7 @@ impl<'a> BodyLiteral<'a> {
         match self.data.sign as u32 {
             clingo_ast_sign_clingo_ast_sign_double_negation => Sign::DoubleNegation,
             clingo_ast_sign_clingo_ast_sign_negation => Sign::Negation,
-            clingo_ast_sign_clingo_ast_sign_none => Sign::None,
+            clingo_ast_sign_clingo_ast_sign_no_sign => Sign::NoSign,
             x => panic!("Failed to match clingo_ast_sign: {}.", x),
         }
     }
@@ -1374,7 +1403,7 @@ impl<'a> Literal<'a> {
         match self.data.sign as u32 {
             clingo_ast_sign_clingo_ast_sign_double_negation => Sign::DoubleNegation,
             clingo_ast_sign_clingo_ast_sign_negation => Sign::Negation,
-            clingo_ast_sign_clingo_ast_sign_none => Sign::None,
+            clingo_ast_sign_clingo_ast_sign_no_sign => Sign::NoSign,
             x => panic!("Failed to match clingo_ast_sign: {}.", x),
         }
     }
@@ -2541,6 +2570,24 @@ impl<'a> Disjoint<'a> {
     }
 }
 #[derive(Debug, Copy, Clone)]
+pub enum TheoryTermSequenceType {
+    /// For theory tuples `(t1,...,tn)`.
+    Tuple = clingo_ast_theory_sequence_type_clingo_ast_theory_sequence_type_tuple as isize,
+    /// For theory lists `[t1,...,tn]`.
+    List = clingo_ast_theory_sequence_type_clingo_ast_theory_sequence_type_list as isize,
+    /// for theory sets `{t1,...,tn}`.
+    Set = clingo_ast_theory_sequence_type_clingo_ast_theory_sequence_type_set as isize,
+}
+#[derive(Debug, Copy, Clone)]
+pub enum TheoryTermSequence<'a> {
+    /// Theory tuples `(t1,...,tn)`.
+    Tuple(&'a TheoryTermArray<'a>),
+    /// Theory lists `[t1,...,tn]`.
+    List(&'a TheoryTermArray<'a>),
+    /// Theory sets `{t1,...,tn}`.
+    Set(&'a TheoryTermArray<'a>),
+}
+#[derive(Debug, Copy, Clone)]
 pub enum TheoryTermType<'a> {
     Symbol(Symbol),
     Variable(&'a str),
@@ -2976,10 +3023,14 @@ impl<'a> TheoryAtom<'a> {
     }
 }
 #[derive(Debug, Copy, Clone)]
+/// Enumeration of theory operators.
 pub enum TheoryOperatorType {
+    // An unary theory operator.
     Unary = clingo_ast_theory_operator_type_clingo_ast_theory_operator_type_unary as isize,
+    /// A left associative binary operator.
     BinaryLeft =
         clingo_ast_theory_operator_type_clingo_ast_theory_operator_type_binary_left as isize,
+    /// A right associative binary operator.
     BinaryRight =
         clingo_ast_theory_operator_type_clingo_ast_theory_operator_type_binary_right as isize,
 }
@@ -3146,13 +3197,18 @@ impl<'a> TheoryGuardDefinition<'a> {
     }
 }
 #[derive(Debug, Copy, Clone)]
+/// Enumeration of the theory atom types.
 pub enum TheoryAtomType {
+    /// For theory atoms that can appear in the head.
     Head =
         clingo_ast_theory_atom_definition_type_clingo_ast_theory_atom_definition_type_head as isize,
+    /// For theory atoms that can appear in the body.
     Body =
         clingo_ast_theory_atom_definition_type_clingo_ast_theory_atom_definition_type_body as isize,
+    /// For theory atoms that can appear in both head and body.
     Any =
         clingo_ast_theory_atom_definition_type_clingo_ast_theory_atom_definition_type_any as isize,
+    /// For theory atoms that must not have a body.
     Directive =
         clingo_ast_theory_atom_definition_type_clingo_ast_theory_atom_definition_type_directive
             as isize,
@@ -3356,6 +3412,21 @@ impl<'a> ProgramBuilder<'a> {
         Ok(())
     }
 
+    // for ASTv2
+    // extern "C" {
+    //     #[doc = "! Adds a statement to the program."]
+    //     #[doc = "!"]
+    //     #[doc = "! @attention @ref clingo_program_builder_begin() must be called before adding statements and @ref clingo_program_builder_end() must be called after all statements have been added."]
+    //     #[doc = "! @param[in] builder the target program builder"]
+    //     #[doc = "! @param[in] ast the AST node to add"]
+    //     #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    //     #[doc = "! - ::clingo_error_runtime for statements of invalid form or AST nodes that do not represent statements"]
+    //     #[doc = "! - ::clingo_error_bad_alloc"]
+    //     pub fn clingo_program_builder_add_ast(
+    //         builder: *mut clingo_program_builder_t,
+    //         ast: *mut clingo_ast_t,
+    //     ) -> bool;
+
     /// End building a program.
     /// The method consumes the program builder.
     pub fn end(self) -> Result<(), ClingoError> {
@@ -3376,3 +3447,716 @@ pub(crate) unsafe extern "C" fn unsafe_program_builder_add(
     let builder = data as *mut clingo_program_builder;
     clingo_program_builder_add(builder, statement)
 }
+
+// Here starts AST2
+
+#[derive(Debug, Copy, Clone)]
+/// Enumeration of AST types.
+pub enum AstType {
+    Id = clingo_ast_type_clingo_ast_type_id as isize,
+    Variable = clingo_ast_type_clingo_ast_type_variable as isize,
+    SymbolicTerm = clingo_ast_type_clingo_ast_type_symbolic_term as isize,
+    UnaryOperation = clingo_ast_type_clingo_ast_type_unary_operation as isize,
+    BinaryOperation = clingo_ast_type_clingo_ast_type_binary_operation as isize,
+    Interval = clingo_ast_type_clingo_ast_type_interval as isize,
+    Function = clingo_ast_type_clingo_ast_type_function as isize,
+    Pool = clingo_ast_type_clingo_ast_type_pool as isize,
+    CspProduct = clingo_ast_type_clingo_ast_type_csp_product as isize,
+    CspSum = clingo_ast_type_clingo_ast_type_csp_sum as isize,
+    CspGuard = clingo_ast_type_clingo_ast_type_csp_guard as isize,
+    BooleanConstant = clingo_ast_type_clingo_ast_type_boolean_constant as isize,
+    SymbolicAtom = clingo_ast_type_clingo_ast_type_symbolic_atom as isize,
+    Comparison = clingo_ast_type_clingo_ast_type_comparison as isize,
+    CspLiteral = clingo_ast_type_clingo_ast_type_csp_literal as isize,
+    AggregateGuard = clingo_ast_type_clingo_ast_type_aggregate_guard as isize,
+    ConditionalLiteral = clingo_ast_type_clingo_ast_type_conditional_literal as isize,
+    Aggregate = clingo_ast_type_clingo_ast_type_aggregate as isize,
+    BodyAggregateElement = clingo_ast_type_clingo_ast_type_body_aggregate_element as isize,
+    BodyAggregate = clingo_ast_type_clingo_ast_type_body_aggregate as isize,
+    HeadAggregateElement = clingo_ast_type_clingo_ast_type_head_aggregate_element as isize,
+    HeadAggregate = clingo_ast_type_clingo_ast_type_head_aggregate as isize,
+    Disjunction = clingo_ast_type_clingo_ast_type_disjunction as isize,
+    DisjointElement = clingo_ast_type_clingo_ast_type_disjoint_element as isize,
+    Disjoint = clingo_ast_type_clingo_ast_type_disjoint as isize,
+    TheorySequence = clingo_ast_type_clingo_ast_type_theory_sequence as isize,
+    TheoryFunction = clingo_ast_type_clingo_ast_type_theory_function as isize,
+    TheoryUnparsedTermElement =
+        clingo_ast_type_clingo_ast_type_theory_unparsed_term_element as isize,
+    TheoryUnparsedTerm = clingo_ast_type_clingo_ast_type_theory_unparsed_term as isize,
+    TheoryGuard = clingo_ast_type_clingo_ast_type_theory_guard as isize,
+    TheoryAtomElement = clingo_ast_type_clingo_ast_type_theory_atom_element as isize,
+    TheoryAtom = clingo_ast_type_clingo_ast_type_theory_atom as isize,
+    Literal = clingo_ast_type_clingo_ast_type_literal as isize,
+    TheoryOperatorDefinition = clingo_ast_type_clingo_ast_type_theory_operator_definition as isize,
+    TheoryTermDefinition = clingo_ast_type_clingo_ast_type_theory_term_definition as isize,
+    TheoryGuardDefinition = clingo_ast_type_clingo_ast_type_theory_guard_definition as isize,
+    TheoryAtomDefinition = clingo_ast_type_clingo_ast_type_theory_atom_definition as isize,
+    Rule = clingo_ast_type_clingo_ast_type_rule as isize,
+    Definition = clingo_ast_type_clingo_ast_type_definition as isize,
+    ShowSignature = clingo_ast_type_clingo_ast_type_show_signature as isize,
+    ShowTerm = clingo_ast_type_clingo_ast_type_show_term as isize,
+    Minimize = clingo_ast_type_clingo_ast_type_minimize as isize,
+    Script = clingo_ast_type_clingo_ast_type_script as isize,
+    Program = clingo_ast_type_clingo_ast_type_program as isize,
+    External = clingo_ast_type_clingo_ast_type_external as isize,
+    Edge = clingo_ast_type_clingo_ast_type_edge as isize,
+    Heuristic = clingo_ast_type_clingo_ast_type_heuristic as isize,
+    ProjectAtom = clingo_ast_type_clingo_ast_type_project_atom as isize,
+    ProjectAtomSignature = clingo_ast_type_clingo_ast_type_project_signature as isize,
+    Defined = clingo_ast_type_clingo_ast_type_defined as isize,
+    TheoryDefinition = clingo_ast_type_clingo_ast_type_theory_definition as isize,
+}
+
+#[derive(Debug, Copy, Clone)]
+/// Enumeration of attributes types used by the AST.
+pub enum AstAttributeType {
+    /// For an attribute of type `int`.
+    Number = clingo_ast_attribute_type_clingo_ast_attribute_type_number as isize,
+    /// For an attribute of type `clingo_ast_symbol_t`.
+    Symbol = clingo_ast_attribute_type_clingo_ast_attribute_type_symbol as isize,
+    /// For an attribute of type `clingo_location_t`.
+    Location = clingo_ast_attribute_type_clingo_ast_attribute_type_location as isize,
+    /// For an attribute of type `char const *`.
+    String = clingo_ast_attribute_type_clingo_ast_attribute_type_string as isize,
+    /// For an attribute of type `clingo_ast_t *`.
+    Ast = clingo_ast_attribute_type_clingo_ast_attribute_type_ast as isize,
+    /// For an attribute of type `clingo_ast_t *` that can be NULL.
+    OptionalAst = clingo_ast_attribute_type_clingo_ast_attribute_type_optional_ast as isize,
+    /// For an attribute of type `char const **`.
+    StringArray = clingo_ast_attribute_type_clingo_ast_attribute_type_string_array as isize,
+    /// For an attribute of type `clingo_ast_t **`.
+    AstArray = clingo_ast_attribute_type_clingo_ast_attribute_type_ast_array as isize,
+}
+
+#[derive(Debug, Copy, Clone)]
+/// Enumeration of attributes used by the AST.
+pub enum AstAttribute {
+    Argument = clingo_ast_attribute_clingo_ast_attribute_argument as isize,
+    Arguments = clingo_ast_attribute_clingo_ast_attribute_arguments as isize,
+    Arity = clingo_ast_attribute_clingo_ast_attribute_arity as isize,
+    Atom = clingo_ast_attribute_clingo_ast_attribute_atom as isize,
+    Atoms = clingo_ast_attribute_clingo_ast_attribute_atoms as isize,
+    AtomType = clingo_ast_attribute_clingo_ast_attribute_atom_type as isize,
+    Bias = clingo_ast_attribute_clingo_ast_attribute_bias as isize,
+    Body = clingo_ast_attribute_clingo_ast_attribute_body as isize,
+    Code = clingo_ast_attribute_clingo_ast_attribute_code as isize,
+    Coefficient = clingo_ast_attribute_clingo_ast_attribute_coefficient as isize,
+    Comparison = clingo_ast_attribute_clingo_ast_attribute_comparison as isize,
+    Condition = clingo_ast_attribute_clingo_ast_attribute_condition as isize,
+    Csp = clingo_ast_attribute_clingo_ast_attribute_csp as isize,
+    Elements = clingo_ast_attribute_clingo_ast_attribute_elements as isize,
+    External = clingo_ast_attribute_clingo_ast_attribute_external as isize,
+    ExternalType = clingo_ast_attribute_clingo_ast_attribute_external_type as isize,
+    Function = clingo_ast_attribute_clingo_ast_attribute_function as isize,
+    Guard = clingo_ast_attribute_clingo_ast_attribute_guard as isize,
+    Guards = clingo_ast_attribute_clingo_ast_attribute_guards as isize,
+    Head = clingo_ast_attribute_clingo_ast_attribute_head as isize,
+    IsDefault = clingo_ast_attribute_clingo_ast_attribute_is_default as isize,
+    Left = clingo_ast_attribute_clingo_ast_attribute_left as isize,
+    LeftGuard = clingo_ast_attribute_clingo_ast_attribute_left_guard as isize,
+    Literal = clingo_ast_attribute_clingo_ast_attribute_literal as isize,
+    Location = clingo_ast_attribute_clingo_ast_attribute_location as isize,
+    Modifier = clingo_ast_attribute_clingo_ast_attribute_modifier as isize,
+    Name = clingo_ast_attribute_clingo_ast_attribute_name as isize,
+    NodeU = clingo_ast_attribute_clingo_ast_attribute_node_u as isize,
+    NodeV = clingo_ast_attribute_clingo_ast_attribute_node_v as isize,
+    OperatorName = clingo_ast_attribute_clingo_ast_attribute_operator_name as isize,
+    OperatorType = clingo_ast_attribute_clingo_ast_attribute_operator_type as isize,
+    Operators = clingo_ast_attribute_clingo_ast_attribute_operators as isize,
+    Parameters = clingo_ast_attribute_clingo_ast_attribute_parameters as isize,
+    Positive = clingo_ast_attribute_clingo_ast_attribute_positive as isize,
+    Priority = clingo_ast_attribute_clingo_ast_attribute_priority as isize,
+    Right = clingo_ast_attribute_clingo_ast_attribute_right as isize,
+    RightGuard = clingo_ast_attribute_clingo_ast_attribute_right_guard as isize,
+    ScriptType = clingo_ast_attribute_clingo_ast_attribute_script_type as isize,
+    SequenceType = clingo_ast_attribute_clingo_ast_attribute_sequence_type as isize,
+    Sign = clingo_ast_attribute_clingo_ast_attribute_sign as isize,
+    Symbol = clingo_ast_attribute_clingo_ast_attribute_symbol as isize,
+    Term = clingo_ast_attribute_clingo_ast_attribute_term as isize,
+    Terms = clingo_ast_attribute_clingo_ast_attribute_terms as isize,
+    Value = clingo_ast_attribute_clingo_ast_attribute_value as isize,
+    Variable = clingo_ast_attribute_clingo_ast_attribute_variable as isize,
+    Weight = clingo_ast_attribute_clingo_ast_attribute_weight as isize,
+}
+
+/// Struct to map attributes to their string representation.
+#[derive(Debug, Copy, Clone)]
+pub struct AttributeNames(clingo_ast_attribute_names);
+// pub struct clingo_ast_attribute_names {
+//     pub names: *const *const ::std::os::raw::c_char,
+//     pub size: usize,
+// }
+
+/// Struct to define an argument that consists of a name and a type.
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct Argument(clingo_ast_argument);
+// pub struct clingo_ast_argument {
+//     pub attribute: clingo_ast_attribute_t,
+//     pub type_: clingo_ast_attribute_type_t,
+// }
+
+/// A lists of required attributes to construct an AST.
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct Constructor(clingo_ast_constructor);
+// pub struct clingo_ast_constructor {
+//     pub name: *const ::std::os::raw::c_char,
+//     pub arguments: *const clingo_ast_argument_t,
+//     pub size: usize,
+
+/// Struct to map AST types to lists of required attributes to construct ASTs.
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct Constructors(clingo_ast_constructors);
+// pub struct clingo_ast_constructors {
+//     pub constructors: *const clingo_ast_constructor_t,
+//     pub size: usize,
+// }
+
+/// This struct provides a view to nodes in the AST.
+pub struct Ast(clingo_ast_t);
+
+// TODO
+// extern "C" {
+//     #[doc = "! Construct an AST of the given type."]
+//     #[doc = "!"]
+//     #[doc = "! @note The arguments corresponding to the given type can be inspected using \"g_clingo_ast_constructors.constructors[type]\"."]
+//     #[doc = "!"]
+//     #[doc = "! @param[in] type the type of AST to construct"]
+//     #[doc = "! @param[out] ast the resulting AST"]
+//     #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+//     #[doc = "! - ::clingo_error_bad_alloc"]
+//     #[doc = "! - ::clingo_error_runtime if one of the arguments is incompatible with the type"]
+//     pub fn clingo_ast_build(type_: clingo_ast_type_t, ast: *mut *mut clingo_ast_t, ...) -> bool;
+// }
+// extern "C" {
+//     #[doc = "! Increment the reference count of an AST node."]
+//     #[doc = "!"]
+//     #[doc = "! @note All functions that return AST nodes already increment the reference count."]
+//     #[doc = "! The reference count of callback arguments is not incremented."]
+//     #[doc = "!"]
+//     #[doc = "! @param[in] ast the target AST"]
+//     pub fn clingo_ast_acquire(ast: *mut clingo_ast_t);
+// }
+// extern "C" {
+//     #[doc = "! Decrement the reference count of an AST node."]
+//     #[doc = "!"]
+//     #[doc = "! @note The node is deleted if the reference count reaches zero."]
+//     #[doc = "!"]
+//     #[doc = "! @param[in] ast the target AST"]
+//     pub fn clingo_ast_release(ast: *mut clingo_ast_t);
+// }
+// extern "C" {
+//     #[doc = "! Deep copy an AST node."]
+//     #[doc = "!"]
+//     #[doc = "! @param[in] ast the AST to copy"]
+//     #[doc = "! @param[out] copy the resulting AST"]
+//     #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+//     #[doc = "! - ::clingo_error_bad_alloc"]
+//     pub fn clingo_ast_copy(ast: *mut clingo_ast_t, copy: *mut *mut clingo_ast_t) -> bool;
+// }
+// extern "C" {
+//     #[doc = "! Create a shallow copy of an AST node."]
+//     #[doc = "!"]
+//     #[doc = "! @param[in] ast the AST to copy"]
+//     #[doc = "! @param[out] copy the resulting AST"]
+//     #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+//     #[doc = "! - ::clingo_error_bad_alloc"]
+//     pub fn clingo_ast_deep_copy(ast: *mut clingo_ast_t, copy: *mut *mut clingo_ast_t) -> bool;
+// }
+// extern "C" {
+//     #[doc = "! Less than compare two AST nodes."]
+//     #[doc = "!"]
+//     #[doc = "! @param[in] a the left-hand-side AST"]
+//     #[doc = "! @param[in] b the right-hand-side AST"]
+//     #[doc = "! @return the result of the comparison"]
+//     pub fn clingo_ast_less_than(a: *mut clingo_ast_t, b: *mut clingo_ast_t) -> bool;
+// }
+// extern "C" {
+//     #[doc = "! Equality compare two AST nodes."]
+//     #[doc = "!"]
+//     #[doc = "! @param[in] a the left-hand-side AST"]
+//     #[doc = "! @param[in] b the right-hand-side AST"]
+//     #[doc = "! @return the result of the comparison"]
+//     pub fn clingo_ast_equal(a: *mut clingo_ast_t, b: *mut clingo_ast_t) -> bool;
+// }
+// extern "C" {
+//     #[doc = "! Compute a hash for an AST node."]
+//     #[doc = "!"]
+//     #[doc = "! @param[in] ast the target AST"]
+//     #[doc = "! @return the resulting hash code"]
+//     pub fn clingo_ast_hash(ast: *mut clingo_ast_t) -> usize;
+// }
+// extern "C" {
+//     #[doc = "! Get the size of the string representation of an AST node."]
+//     #[doc = "!"]
+//     #[doc = "! @param[in] ast the target AST"]
+//     #[doc = "! @param[out] size the size of the string representation"]
+//     #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+//     #[doc = "! - ::clingo_error_runtime"]
+//     pub fn clingo_ast_to_string_size(ast: *mut clingo_ast_t, size: *mut usize) -> bool;
+// }
+// extern "C" {
+//     #[doc = "! Get the string representation of an AST node."]
+//     #[doc = "!"]
+//     #[doc = "! @param[in] ast the target AST"]
+//     #[doc = "! @param[out] string the string representation"]
+//     #[doc = "! @param[out] size the size of the string representation"]
+//     #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+//     #[doc = "! - ::clingo_error_runtime"]
+//     pub fn clingo_ast_to_string(
+//         ast: *mut clingo_ast_t,
+//         string: *mut ::std::os::raw::c_char,
+//         size: usize,
+//     ) -> bool;
+// }
+// extern "C" {
+//     #[doc = "! Get the type of an AST node."]
+//     #[doc = "!"]
+//     #[doc = "! @param[in] ast the target AST"]
+//     #[doc = "! @param[out] type the resulting type"]
+//     #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+//     #[doc = "! - ::clingo_error_runtime"]
+//     pub fn clingo_ast_get_type(ast: *mut clingo_ast_t, type_: *mut clingo_ast_type_t) -> bool;
+// }
+// extern "C" {
+//     #[doc = "! Check if an AST has the given attribute."]
+//     #[doc = "!"]
+//     #[doc = "! @param[in] ast the target AST"]
+//     #[doc = "! @param[in] attribute the attribute to check"]
+//     #[doc = "! @param[out] has_attribute the result"]
+//     #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+//     #[doc = "! - ::clingo_error_runtime"]
+//     pub fn clingo_ast_has_attribute(
+//         ast: *mut clingo_ast_t,
+//         attribute: clingo_ast_attribute_t,
+//         has_attribute: *mut bool,
+//     ) -> bool;
+// }
+// extern "C" {
+//     #[doc = "! Get the type of the given AST."]
+//     #[doc = "!"]
+//     #[doc = "! @param[in] ast the target AST"]
+//     #[doc = "! @param[in] attribute the target attribute"]
+//     #[doc = "! @param[out] type the resulting type"]
+//     #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+//     #[doc = "! - ::clingo_error_runtime"]
+//     pub fn clingo_ast_attribute_type(
+//         ast: *mut clingo_ast_t,
+//         attribute: clingo_ast_attribute_t,
+//         type_: *mut clingo_ast_attribute_type_t,
+//     ) -> bool;
+// }
+// extern "C" {
+//     #[doc = "! Get the value of an attribute of type \"clingo_ast_attribute_type_number\"."]
+//     #[doc = "!"]
+//     #[doc = "! @param[in] ast the target AST"]
+//     #[doc = "! @param[in] attribute the target attribute"]
+//     #[doc = "! @param[out] value the resulting value"]
+//     #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+//     #[doc = "! - ::clingo_error_runtime"]
+//     pub fn clingo_ast_attribute_get_number(
+//         ast: *mut clingo_ast_t,
+//         attribute: clingo_ast_attribute_t,
+//         value: *mut ::std::os::raw::c_int,
+//     ) -> bool;
+// }
+// extern "C" {
+//     #[doc = "! Set the value of an attribute of type \"clingo_ast_attribute_type_number\"."]
+//     #[doc = "!"]
+//     #[doc = "! @param[in] ast the target AST"]
+//     #[doc = "! @param[in] attribute the target attribute"]
+//     #[doc = "! @param[in] value the value"]
+//     #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+//     #[doc = "! - ::clingo_error_runtime"]
+//     pub fn clingo_ast_attribute_set_number(
+//         ast: *mut clingo_ast_t,
+//         attribute: clingo_ast_attribute_t,
+//         value: ::std::os::raw::c_int,
+//     ) -> bool;
+// }
+// extern "C" {
+//     #[doc = "! Get the value of an attribute of type \"clingo_ast_attribute_type_symbol\"."]
+//     #[doc = "!"]
+//     #[doc = "! @param[in] ast the target AST"]
+//     #[doc = "! @param[in] attribute the target attribute"]
+//     #[doc = "! @param[out] value the resulting value"]
+//     #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+//     #[doc = "! - ::clingo_error_runtime"]
+//     pub fn clingo_ast_attribute_get_symbol(
+//         ast: *mut clingo_ast_t,
+//         attribute: clingo_ast_attribute_t,
+//         value: *mut clingo_symbol_t,
+//     ) -> bool;
+// }
+// extern "C" {
+//     #[doc = "! Set the value of an attribute of type \"clingo_ast_attribute_type_symbol\"."]
+//     #[doc = "!"]
+//     #[doc = "! @param[in] ast the target AST"]
+//     #[doc = "! @param[in] attribute the target attribute"]
+//     #[doc = "! @param[in] value the value"]
+//     #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+//     #[doc = "! - ::clingo_error_runtime"]
+//     pub fn clingo_ast_attribute_set_symbol(
+//         ast: *mut clingo_ast_t,
+//         attribute: clingo_ast_attribute_t,
+//         value: clingo_symbol_t,
+//     ) -> bool;
+// }
+// extern "C" {
+//     #[doc = "! Get the value of an attribute of type \"clingo_ast_attribute_type_location\"."]
+//     #[doc = "!"]
+//     #[doc = "! @param[in] ast the target AST"]
+//     #[doc = "! @param[in] attribute the target attribute"]
+//     #[doc = "! @param[out] value the resulting value"]
+//     #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+//     #[doc = "! - ::clingo_error_runtime"]
+//     pub fn clingo_ast_attribute_get_location(
+//         ast: *mut clingo_ast_t,
+//         attribute: clingo_ast_attribute_t,
+//         value: *mut clingo_location_t,
+//     ) -> bool;
+// }
+// extern "C" {
+//     #[doc = "! Set the value of an attribute of type \"clingo_ast_attribute_type_location\"."]
+//     #[doc = "!"]
+//     #[doc = "! @param[in] ast the target AST"]
+//     #[doc = "! @param[in] attribute the target attribute"]
+//     #[doc = "! @param[in] value the value"]
+//     #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+//     #[doc = "! - ::clingo_error_runtime"]
+//     pub fn clingo_ast_attribute_set_location(
+//         ast: *mut clingo_ast_t,
+//         attribute: clingo_ast_attribute_t,
+//         value: *const clingo_location_t,
+//     ) -> bool;
+// }
+// extern "C" {
+//     #[doc = "! Get the value of an attribute of type \"clingo_ast_attribute_type_string\"."]
+//     #[doc = "!"]
+//     #[doc = "! @param[in] ast the target AST"]
+//     #[doc = "! @param[in] attribute the target attribute"]
+//     #[doc = "! @param[out] value the resulting value"]
+//     #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+//     #[doc = "! - ::clingo_error_runtime"]
+//     pub fn clingo_ast_attribute_get_string(
+//         ast: *mut clingo_ast_t,
+//         attribute: clingo_ast_attribute_t,
+//         value: *mut *const ::std::os::raw::c_char,
+//     ) -> bool;
+// }
+// extern "C" {
+//     #[doc = "! Set the value of an attribute of type \"clingo_ast_attribute_type_string\"."]
+//     #[doc = "!"]
+//     #[doc = "! @param[in] ast the target AST"]
+//     #[doc = "! @param[in] attribute the target attribute"]
+//     #[doc = "! @param[in] value the value"]
+//     #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+//     #[doc = "! - ::clingo_error_runtime"]
+//     pub fn clingo_ast_attribute_set_string(
+//         ast: *mut clingo_ast_t,
+//         attribute: clingo_ast_attribute_t,
+//         value: *const ::std::os::raw::c_char,
+//     ) -> bool;
+// }
+// extern "C" {
+//     #[doc = "! Get the value of an attribute of type \"clingo_ast_attribute_type_ast\"."]
+//     #[doc = "!"]
+//     #[doc = "! @param[in] ast the target AST"]
+//     #[doc = "! @param[in] attribute the target attribute"]
+//     #[doc = "! @param[out] value the resulting value"]
+//     #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+//     #[doc = "! - ::clingo_error_runtime"]
+//     pub fn clingo_ast_attribute_get_ast(
+//         ast: *mut clingo_ast_t,
+//         attribute: clingo_ast_attribute_t,
+//         value: *mut *mut clingo_ast_t,
+//     ) -> bool;
+// }
+// extern "C" {
+//     #[doc = "! Set the value of an attribute of type \"clingo_ast_attribute_type_ast\"."]
+//     #[doc = "!"]
+//     #[doc = "! @param[in] ast the target AST"]
+//     #[doc = "! @param[in] attribute the target attribute"]
+//     #[doc = "! @param[in] value the value"]
+//     #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+//     #[doc = "! - ::clingo_error_runtime"]
+//     pub fn clingo_ast_attribute_set_ast(
+//         ast: *mut clingo_ast_t,
+//         attribute: clingo_ast_attribute_t,
+//         value: *mut clingo_ast_t,
+//     ) -> bool;
+// }
+// extern "C" {
+//     #[doc = "! Get the value of an attribute of type \"clingo_ast_attribute_type_optional_ast\"."]
+//     #[doc = "!"]
+//     #[doc = "! @note The value might be \"NULL\"."]
+//     #[doc = "!"]
+//     #[doc = "! @param[in] ast the target AST"]
+//     #[doc = "! @param[in] attribute the target attribute"]
+//     #[doc = "! @param[out] value the resulting value"]
+//     #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+//     #[doc = "! - ::clingo_error_runtime"]
+//     pub fn clingo_ast_attribute_get_optional_ast(
+//         ast: *mut clingo_ast_t,
+//         attribute: clingo_ast_attribute_t,
+//         value: *mut *mut clingo_ast_t,
+//     ) -> bool;
+// }
+// extern "C" {
+//     #[doc = "! Set the value of an attribute of type \"clingo_ast_attribute_type_optional_ast\"."]
+//     #[doc = "!"]
+//     #[doc = "! @note The value might be \"NULL\"."]
+//     #[doc = "!"]
+//     #[doc = "! @param[in] ast the target AST"]
+//     #[doc = "! @param[in] attribute the target attribute"]
+//     #[doc = "! @param[in] value the value"]
+//     #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+//     #[doc = "! - ::clingo_error_runtime"]
+//     pub fn clingo_ast_attribute_set_optional_ast(
+//         ast: *mut clingo_ast_t,
+//         attribute: clingo_ast_attribute_t,
+//         value: *mut clingo_ast_t,
+//     ) -> bool;
+// }
+// extern "C" {
+//     #[doc = "! Get the value of an attribute of type \"clingo_ast_attribute_type_string_array\" at the given index."]
+//     #[doc = "!"]
+//     #[doc = "! @param[in] ast the target AST"]
+//     #[doc = "! @param[in] attribute the target attribute"]
+//     #[doc = "! @param[in] index the target index"]
+//     #[doc = "! @param[out] value the resulting value"]
+//     #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+//     #[doc = "! - ::clingo_error_runtime"]
+//     pub fn clingo_ast_attribute_get_string_at(
+//         ast: *mut clingo_ast_t,
+//         attribute: clingo_ast_attribute_t,
+//         index: usize,
+//         value: *mut *const ::std::os::raw::c_char,
+//     ) -> bool;
+// }
+// extern "C" {
+//     #[doc = "! Set the value of an attribute of type \"clingo_ast_attribute_type_string_array\" at the given index."]
+//     #[doc = "!"]
+//     #[doc = "! @param[in] ast the target AST"]
+//     #[doc = "! @param[in] attribute the target attribute"]
+//     #[doc = "! @param[in] index the target index"]
+//     #[doc = "! @param[in] value the value"]
+//     #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+//     #[doc = "! - ::clingo_error_runtime"]
+//     #[doc = "! - ::clingo_error_bad_alloc"]
+//     pub fn clingo_ast_attribute_set_string_at(
+//         ast: *mut clingo_ast_t,
+//         attribute: clingo_ast_attribute_t,
+//         index: usize,
+//         value: *const ::std::os::raw::c_char,
+//     ) -> bool;
+// }
+// extern "C" {
+//     #[doc = "! Remove an element from an attribute of type \"clingo_ast_attribute_type_string_array\" at the given index."]
+//     #[doc = "!"]
+//     #[doc = "! @param[in] ast the target AST"]
+//     #[doc = "! @param[in] attribute the target attribute"]
+//     #[doc = "! @param[in] index the target index"]
+//     #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+//     #[doc = "! - ::clingo_error_runtime"]
+//     pub fn clingo_ast_attribute_delete_string_at(
+//         ast: *mut clingo_ast_t,
+//         attribute: clingo_ast_attribute_t,
+//         index: usize,
+//     ) -> bool;
+// }
+// extern "C" {
+//     #[doc = "! Get the size of an attribute of type \"clingo_ast_attribute_type_string_array\"."]
+//     #[doc = "!"]
+//     #[doc = "! @param[in] ast the target AST"]
+//     #[doc = "! @param[in] attribute the target attribute"]
+//     #[doc = "! @param[out] size the resulting size"]
+//     #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+//     #[doc = "! - ::clingo_error_runtime"]
+//     pub fn clingo_ast_attribute_size_string_array(
+//         ast: *mut clingo_ast_t,
+//         attribute: clingo_ast_attribute_t,
+//         size: *mut usize,
+//     ) -> bool;
+// }
+// extern "C" {
+//     #[doc = "! Insert a value into an attribute of type \"clingo_ast_attribute_type_string_array\" at the given index."]
+//     #[doc = "!"]
+//     #[doc = "! @param[in] ast the target AST"]
+//     #[doc = "! @param[in] attribute the target attribute"]
+//     #[doc = "! @param[in] index the target index"]
+//     #[doc = "! @param[in] value the value"]
+//     #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+//     #[doc = "! - ::clingo_error_runtime"]
+//     #[doc = "! - ::clingo_error_bad_alloc"]
+//     pub fn clingo_ast_attribute_insert_string_at(
+//         ast: *mut clingo_ast_t,
+//         attribute: clingo_ast_attribute_t,
+//         index: usize,
+//         value: *const ::std::os::raw::c_char,
+//     ) -> bool;
+// }
+// extern "C" {
+//     #[doc = "! Get the value of an attribute of type \"clingo_ast_attribute_type_ast_array\" at the given index."]
+//     #[doc = "!"]
+//     #[doc = "! @param[in] ast the target AST"]
+//     #[doc = "! @param[in] attribute the target attribute"]
+//     #[doc = "! @param[in] index the target index"]
+//     #[doc = "! @param[out] value the resulting value"]
+//     #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+//     #[doc = "! - ::clingo_error_runtime"]
+//     pub fn clingo_ast_attribute_get_ast_at(
+//         ast: *mut clingo_ast_t,
+//         attribute: clingo_ast_attribute_t,
+//         index: usize,
+//         value: *mut *mut clingo_ast_t,
+//     ) -> bool;
+// }
+// extern "C" {
+//     #[doc = "! Set the value of an attribute of type \"clingo_ast_attribute_type_ast_array\" at the given index."]
+//     #[doc = "!"]
+//     #[doc = "! @param[in] ast the target AST"]
+//     #[doc = "! @param[in] attribute the target attribute"]
+//     #[doc = "! @param[in] index the target index"]
+//     #[doc = "! @param[in] value the value"]
+//     #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+//     #[doc = "! - ::clingo_error_runtime"]
+//     #[doc = "! - ::clingo_error_bad_alloc"]
+//     pub fn clingo_ast_attribute_set_ast_at(
+//         ast: *mut clingo_ast_t,
+//         attribute: clingo_ast_attribute_t,
+//         index: usize,
+//         value: *mut clingo_ast_t,
+//     ) -> bool;
+// }
+// extern "C" {
+//     #[doc = "! Remove an element from an attribute of type \"clingo_ast_attribute_type_ast_array\" at the given index."]
+//     #[doc = "!"]
+//     #[doc = "! @param[in] ast the target AST"]
+//     #[doc = "! @param[in] attribute the target attribute"]
+//     #[doc = "! @param[in] index the target index"]
+//     #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+//     #[doc = "! - ::clingo_error_runtime"]
+//     pub fn clingo_ast_attribute_delete_ast_at(
+//         ast: *mut clingo_ast_t,
+//         attribute: clingo_ast_attribute_t,
+//         index: usize,
+//     ) -> bool;
+// }
+// extern "C" {
+//     #[doc = "! Get the size of an attribute of type \"clingo_ast_attribute_type_ast_array\"."]
+//     #[doc = "!"]
+//     #[doc = "! @param[in] ast the target AST"]
+//     #[doc = "! @param[in] attribute the target attribute"]
+//     #[doc = "! @param[out] size the resulting size"]
+//     #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+//     #[doc = "! - ::clingo_error_runtime"]
+//     pub fn clingo_ast_attribute_size_ast_array(
+//         ast: *mut clingo_ast_t,
+//         attribute: clingo_ast_attribute_t,
+//         size: *mut usize,
+//     ) -> bool;
+// }
+// extern "C" {
+//     #[doc = "! Insert a value into an attribute of type \"clingo_ast_attribute_type_ast_array\" at the given index."]
+//     #[doc = "!"]
+//     #[doc = "! @param[in] ast the target AST"]
+//     #[doc = "! @param[in] attribute the target attribute"]
+//     #[doc = "! @param[in] index the target index"]
+//     #[doc = "! @param[in] value the value"]
+//     #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+//     #[doc = "! - ::clingo_error_runtime"]
+//     #[doc = "! - ::clingo_error_bad_alloc"]
+//     pub fn clingo_ast_attribute_insert_ast_at(
+//         ast: *mut clingo_ast_t,
+//         attribute: clingo_ast_attribute_t,
+//         index: usize,
+//         value: *mut clingo_ast_t,
+//     ) -> bool;
+// }
+// #[doc = "! Callback function to intercept AST nodes."]
+// #[doc = "!"]
+// #[doc = "! @param[in] ast the AST"]
+// #[doc = "! @param[in] data a user data pointer"]
+// #[doc = "! @return whether the call was successful"]
+// pub type clingo_ast_callback_v2_t = ::std::option::Option<
+//     unsafe extern "C" fn(ast: *mut clingo_ast_t, data: *mut ::std::os::raw::c_void) -> bool,
+// >;
+// extern "C" {
+//     #[doc = "! Parse the given program and return an abstract syntax tree for each statement via a callback."]
+//     #[doc = "!"]
+//     #[doc = "! @param[in] program the program in gringo syntax"]
+//     #[doc = "! @param[in] callback the callback reporting statements"]
+//     #[doc = "! @param[in] callback_data user data for the callback"]
+//     #[doc = "! @param[in] logger callback to report messages during parsing"]
+//     #[doc = "! @param[in] logger_data user data for the logger"]
+//     #[doc = "! @param[in] message_limit the maximum number of times the logger is called"]
+//     #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+//     #[doc = "! - ::clingo_error_runtime if parsing fails"]
+//     #[doc = "! - ::clingo_error_bad_alloc"]
+//     pub fn clingo_ast_parse_string(
+//         program: *const ::std::os::raw::c_char,
+//         callback: clingo_ast_callback_v2_t,
+//         callback_data: *mut ::std::os::raw::c_void,
+//         logger: clingo_logger_t,
+//         logger_data: *mut ::std::os::raw::c_void,
+//         message_limit: ::std::os::raw::c_uint,
+//     ) -> bool;
+// }
+// extern "C" {
+//     #[doc = "! Parse the programs in the given list of files and return an abstract syntax tree for each statement via a callback."]
+//     #[doc = "!"]
+//     #[doc = "! The function follows clingo's handling of files on the command line."]
+//     #[doc = "! Filename \"-\" is treated as \"STDIN\" and if an empty list is given, then the parser will read from \"STDIN\"."]
+//     #[doc = "!"]
+//     #[doc = "! @param[in] files the beginning of the file name array"]
+//     #[doc = "! @param[in] size the number of file names"]
+//     #[doc = "! @param[in] callback the callback reporting statements"]
+//     #[doc = "! @param[in] callback_data user data for the callback"]
+//     #[doc = "! @param[in] logger callback to report messages during parsing"]
+//     #[doc = "! @param[in] logger_data user data for the logger"]
+//     #[doc = "! @param[in] message_limit the maximum number of times the logger is called"]
+//     #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+//     #[doc = "! - ::clingo_error_runtime if parsing fails"]
+//     #[doc = "! - ::clingo_error_bad_alloc"]
+//     pub fn clingo_ast_parse_files(
+//         files: *const *const ::std::os::raw::c_char,
+//         size: usize,
+//         callback: clingo_ast_callback_v2_t,
+//         callback_data: *mut ::std::os::raw::c_void,
+//         logger: clingo_logger_t,
+//         logger_data: *mut ::std::os::raw::c_void,
+//         message_limit: ::std::os::raw::c_uint,
+//     ) -> bool;
+// }
+
+#[derive(Debug, Copy, Clone)]
+/// Enum to configure unpooling.
+pub enum Unpooling {
+    /// To only unpool conditions of conditional literals.
+    Condition = clingo_ast_unpool_type_clingo_ast_unpool_type_condition as isize,
+    /// To unpool everything except conditions of conditional literals.
+    Other = clingo_ast_unpool_type_clingo_ast_unpool_type_other as isize,
+    /// To unpool everything.
+    All = clingo_ast_unpool_type_clingo_ast_unpool_type_all as isize,
+}
+
+// TODO
+// extern "C" {
+//     #[doc = "! Unpool the given AST."]
+//     #[doc = "!"]
+//     #[doc = "! @param[in] ast the target AST"]
+//     #[doc = "! @param[in] unpool_type what to unpool"]
+//     #[doc = "! @param[in] callback the callback to report ASTs"]
+//     #[doc = "! @param[in] callback_data user data for the callback"]
+//     #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+//     #[doc = "! - ::clingo_error_bad_alloc"]
+//     pub fn clingo_ast_unpool(
+//         ast: *mut clingo_ast_t,
+//         unpool_type: clingo_ast_unpool_type_bitset_t,
+//         callback: clingo_ast_callback_v2_t,
+//         callback_data: *mut ::std::os::raw::c_void,
+//     ) -> bool;
+// }

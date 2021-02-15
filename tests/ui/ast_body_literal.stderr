@@ -1,8 +1,8 @@
 error[E0505]: cannot move out of `lit` because it is borrowed
  --> $DIR/ast_body_literal.rs:8:10
   |
-7 |     let blit = ast::BodyLiteral::from_literal(ast::Sign::None, &lit);
-  |                                                                ---- borrow of `lit` occurs here
+7 |     let blit = ast::BodyLiteral::from_literal(ast::Sign::NoSign, &lit);
+  |                                                                  ---- borrow of `lit` occurs here
 8 |     drop(lit);
   |          ^^^ move out of `lit` occurs here
 9 |     let _end = blit;

@@ -276,6 +276,8 @@ pub enum ClauseType {
 pub enum SolveEvent<'a> {
     /// Issued if a model is found.
     Model(&'a mut Model),
+    /// Issued if an optimization problem is found unsatisfiable.
+    Unsat,
     /// Issued when the statistics can be updated.
     Statistics {
         step: &'a mut Statistics,
@@ -709,12 +711,18 @@ pub trait SolveEventHandler {
                 let model = &mut *(event_data as *mut Model);
 
                 eprintln!("unsafe_solve_callback model");
-                for i in model.symbols(ShowType::ALL).unwrap(){
-                    eprint!("{}",i);
-                }                
+                for i in model.symbols(ShowType::ALL).unwrap() {
+                    eprint!("{}", i);
+                }
                 eprintln!();
                 eprintln!("call save on_solve_event");
                 let event = SolveEvent::Model(model);
+
+                event_handler.on_solve_event(event, goon)
+            }
+            clingo_solve_event_type_clingo_solve_event_type_unsat => {
+                eprintln!("unsafe_solve_callback unsat");
+                let event = SolveEvent::Unsat;
 
                 event_handler.on_solve_event(event, goon)
             }
@@ -2044,7 +2052,7 @@ impl Control {
             let atom = ast::Term::from(*sym);
 
             // create literal
-            let lit = ast::Literal::from_term(ast::Sign::None, &atom);
+            let lit = ast::Literal::from_term(ast::Sign::NoSign, &atom);
 
             // create headliteral
             let hlit = ast::HeadLiteral::from(&lit);

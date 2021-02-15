@@ -1,8 +1,8 @@
 error[E0506]: cannot assign to `comp` because it is borrowed
   --> $DIR/ast_literal_from_comparison.rs:10:5
    |
-8  |     let lit = ast::Literal::from_comparison(ast::Sign::None, &comp);
-   |                                                              ----- borrow of `comp` occurs here
+8  |     let lit = ast::Literal::from_comparison(ast::Sign::NoSign, &comp);
+   |                                                                ----- borrow of `comp` occurs here
 9  |     
 10 |     comp = ast::Comparison::gt(term1, term2);
    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ assignment to borrowed `comp` occurs here

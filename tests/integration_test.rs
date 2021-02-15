@@ -318,26 +318,29 @@ fn ast_literal() {
     let csp_guards = vec![csp_guard];
     let csp_lit = CspLiteral::new(csp_sum_term2, &csp_guards);
 
-    let lit = ast::Literal::from_bool(Sign::None, true);
-    assert_eq!(format!("{:?}", lit), "Literal { sign: None boolean: true }");
+    let lit = ast::Literal::from_bool(Sign::NoSign, true);
+    assert_eq!(
+        format!("{:?}", lit),
+        "Literal { sign: NoSign boolean: true }"
+    );
     let lt = lit.literal_type();
     assert_eq!(format!("{:?}", lt), "Boolean(true)");
 
-    let lit = ast::Literal::from_term(Sign::None, &term1);
+    let lit = ast::Literal::from_term(Sign::NoSign, &term1);
     assert_eq!(
         format!("{:?}", lit),
-        "Literal { sign: None symbol: Term { symbol: 42 } }"
+        "Literal { sign: NoSign symbol: Term { symbol: 42 } }"
     );
     let lt = lit.literal_type();
     assert_eq!(format!("{:?}", lt), "Symbolic(Term { symbol: 42 })");
 
-    let lit = ast::Literal::from_comparison(Sign::None, &comp);
-    assert_eq!(format!("{:?}",lit), "Literal { sign: None comparison: Comparison { op: GreaterThan left: Term { symbol: \"test\" } right: Term { symbol: fun1(42,\"test\") } } }");
+    let lit = ast::Literal::from_comparison(Sign::NoSign, &comp);
+    assert_eq!(format!("{:?}",lit), "Literal { sign: NoSign comparison: Comparison { op: GreaterThan left: Term { symbol: \"test\" } right: Term { symbol: fun1(42,\"test\") } } }");
     let lt = lit.literal_type();
     assert_eq!(format!("{:?}", lt), "Comparison(Comparison { op: GreaterThan left: Term { symbol: \"test\" } right: Term { symbol: fun1(42,\"test\") } })");
 
-    let lit = ast::Literal::from_csp_literal(Sign::None, &csp_lit);
-    assert_eq!(format!("{:?}",lit), "Literal { sign: None csp_literal: CspLiteral { term: CspSumTerm { terms: [CspProductTerm { coefficient: Term { symbol: fun1(42,\"test\") } variable: Term { symbol: #sup } }] } guards: [CspGuard { comparison: GreaterThan term: CspSumTerm { terms: [CspProductTerm { coefficient: Term { symbol: 42 } variable: Term { symbol: \"test\" } }] } }] } }");
+    let lit = ast::Literal::from_csp_literal(Sign::NoSign, &csp_lit);
+    assert_eq!(format!("{:?}",lit), "Literal { sign: NoSign csp_literal: CspLiteral { term: CspSumTerm { terms: [CspProductTerm { coefficient: Term { symbol: fun1(42,\"test\") } variable: Term { symbol: #sup } }] } guards: [CspGuard { comparison: GreaterThan term: CspSumTerm { terms: [CspProductTerm { coefficient: Term { symbol: 42 } variable: Term { symbol: \"test\" } }] } }] } }");
     let lt = lit.literal_type();
     assert_eq!(format!("{:?}", lt), "CSP(CspLiteral { term: CspSumTerm { terms: [CspProductTerm { coefficient: Term { symbol: fun1(42,\"test\") } variable: Term { symbol: #sup } }] } guards: [CspGuard { comparison: GreaterThan term: CspSumTerm { terms: [CspProductTerm { coefficient: Term { symbol: 42 } variable: Term { symbol: \"test\" } }] } }] })");
 }
@@ -347,8 +350,8 @@ fn ast_head_literal() {
     let sym = Symbol::create_id("test", true).unwrap();
     let term1 = Term::from(sym);
     let term2 = Term::from(sym);
-    let lit = ast::Literal::from_term(Sign::None, &term1);
-    let lit2 = ast::Literal::from_term(Sign::None, &term2);
+    let lit = ast::Literal::from_term(Sign::NoSign, &term1);
+    let lit2 = ast::Literal::from_term(Sign::NoSign, &term2);
     let condition = vec![lit2];
     let cond = ConditionalLiteral::new(&lit, &condition);
     let elements = vec![cond];
@@ -374,28 +377,28 @@ fn ast_head_literal() {
     let hlit = ast::HeadLiteral::from(&lit);
     assert_eq!(
         format!("{:?}", hlit),
-        "HeadLiteral { literal: Literal { sign: None symbol: Term { symbol: test } } }"
+        "HeadLiteral { literal: Literal { sign: NoSign symbol: Term { symbol: test } } }"
     );
 
     let hlit = ast::HeadLiteral::from(&dis);
-    assert_eq!(format!("{:?}",hlit), "HeadLiteral { disjunction: Disjunction { elements: [ConditionalLiteral { literal: Literal { sign: None symbol: Term { symbol: test } }, condition: [Literal { sign: None symbol: Term { symbol: test } }] }] } }");
+    assert_eq!(format!("{:?}",hlit), "HeadLiteral { disjunction: Disjunction { elements: [ConditionalLiteral { literal: Literal { sign: NoSign symbol: Term { symbol: test } }, condition: [Literal { sign: NoSign symbol: Term { symbol: test } }] }] } }");
 
     let hlit = ast::HeadLiteral::from(&agg);
-    assert_eq!(format!("{:?}",hlit), "HeadLiteral { aggregate: Aggregate { elements: [ConditionalLiteral { literal: Literal { sign: None symbol: Term { symbol: test } }, condition: [Literal { sign: None symbol: Term { symbol: test } }] }], left_guard: AggregateGuard { comparison: GreaterThan, term: Term { symbol: test } }, right_guard: AggregateGuard { comparison: GreaterThan, term: Term { symbol: test } } } }");
+    assert_eq!(format!("{:?}",hlit), "HeadLiteral { aggregate: Aggregate { elements: [ConditionalLiteral { literal: Literal { sign: NoSign symbol: Term { symbol: test } }, condition: [Literal { sign: NoSign symbol: Term { symbol: test } }] }], left_guard: AggregateGuard { comparison: GreaterThan, term: Term { symbol: test } }, right_guard: AggregateGuard { comparison: GreaterThan, term: Term { symbol: test } } } }");
 
     let hlit = ast::HeadLiteral::from(&hagg);
-    assert_eq!(format!("{:?}",hlit), "HeadLiteral { head_aggregate: HeadAggregate { function: Count elements: [HeadAggregateElement { tuple: [Term { symbol: test }], conditional_literal: ConditionalLiteral { literal: Literal { sign: None symbol: Term { symbol: test } }, condition: [Literal { sign: None symbol: Term { symbol: test } }] } }], left_guard: AggregateGuard { comparison: GreaterThan, term: Term { symbol: test } }, right_guard: AggregateGuard { comparison: GreaterThan, term: Term { symbol: test } } } }");
+    assert_eq!(format!("{:?}",hlit), "HeadLiteral { head_aggregate: HeadAggregate { function: Count elements: [HeadAggregateElement { tuple: [Term { symbol: test }], conditional_literal: ConditionalLiteral { literal: Literal { sign: NoSign symbol: Term { symbol: test } }, condition: [Literal { sign: NoSign symbol: Term { symbol: test } }] } }], left_guard: AggregateGuard { comparison: GreaterThan, term: Term { symbol: test } }, right_guard: AggregateGuard { comparison: GreaterThan, term: Term { symbol: test } } } }");
 
     let hlit = ast::HeadLiteral::from(&tatom);
-    assert_eq!(format!("{:?}",hlit), "HeadLiteral { theory_atom: TheoryAtom { term: Term { symbol: test } elements: [TheoryAtomElement { tuple: [TheoryTerm { symbol: test }] condition: [Literal { sign: None symbol: Term { symbol: test } }] }] guard: TheoryGuard { operator_name: \"theory_operator\" term: TheoryTerm { symbol: test } } } }");
+    assert_eq!(format!("{:?}",hlit), "HeadLiteral { theory_atom: TheoryAtom { term: Term { symbol: test } elements: [TheoryAtomElement { tuple: [TheoryTerm { symbol: test }] condition: [Literal { sign: NoSign symbol: Term { symbol: test } }] }] guard: TheoryGuard { operator_name: \"theory_operator\" term: TheoryTerm { symbol: test } } } }");
 }
 #[test]
 fn ast_body_literal() {
     let sym = Symbol::create_id("test", true).unwrap();
     let term1 = Term::from(sym);
     let term2 = Term::from(sym);
-    let lit = ast::Literal::from_term(Sign::None, &term1);
-    let lit2 = ast::Literal::from_term(Sign::None, &term2);
+    let lit = ast::Literal::from_term(Sign::NoSign, &term1);
+    let lit2 = ast::Literal::from_term(Sign::NoSign, &term2);
     let condition = vec![lit2];
     let cond = ConditionalLiteral::new(&lit, &condition);
     let elements = vec![cond];
@@ -425,40 +428,40 @@ fn ast_body_literal() {
     let elements = vec![element];
     let dis = Disjoint::new(&elements);
 
-    let blit = ast::BodyLiteral::from_literal(Sign::None, &lit);
+    let blit = ast::BodyLiteral::from_literal(Sign::NoSign, &lit);
     assert_eq!(
         format!("{:?}", blit),
-        "BodyLiteral { sign: None literal: Literal { sign: None symbol: Term { symbol: test } } }"
+        "BodyLiteral { sign: NoSign literal: Literal { sign: NoSign symbol: Term { symbol: test } } }"
     );
 
-    let blit = ast::BodyLiteral::from_conditional(Sign::None, &cond);
+    let blit = ast::BodyLiteral::from_conditional(Sign::NoSign, &cond);
     assert_eq!(
         format!("{:?}", blit),
-        "BodyLiteral { sign: None conditional: ConditionalLiteral { literal: Literal { sign: None symbol: Term { symbol: test } }, condition: [Literal { sign: None symbol: Term { symbol: test } }] } }"
+        "BodyLiteral { sign: NoSign conditional: ConditionalLiteral { literal: Literal { sign: NoSign symbol: Term { symbol: test } }, condition: [Literal { sign: NoSign symbol: Term { symbol: test } }] } }"
     );
 
-    let blit = ast::BodyLiteral::from_aggregate(Sign::None, &agg);
+    let blit = ast::BodyLiteral::from_aggregate(Sign::NoSign, &agg);
     assert_eq!(
         format!("{:?}", blit),
-        "BodyLiteral { sign: None aggregate: Aggregate { elements: [ConditionalLiteral { literal: Literal { sign: None symbol: Term { symbol: test } }, condition: [Literal { sign: None symbol: Term { symbol: test } }] }], left_guard: AggregateGuard { comparison: GreaterThan, term: Term { symbol: test } }, right_guard: AggregateGuard { comparison: GreaterThan, term: Term { symbol: test } } } }"
+        "BodyLiteral { sign: NoSign aggregate: Aggregate { elements: [ConditionalLiteral { literal: Literal { sign: NoSign symbol: Term { symbol: test } }, condition: [Literal { sign: NoSign symbol: Term { symbol: test } }] }], left_guard: AggregateGuard { comparison: GreaterThan, term: Term { symbol: test } }, right_guard: AggregateGuard { comparison: GreaterThan, term: Term { symbol: test } } } }"
     );
 
-    let blit = ast::BodyLiteral::from_body_aggregate(Sign::None, &bagg);
+    let blit = ast::BodyLiteral::from_body_aggregate(Sign::NoSign, &bagg);
     assert_eq!(
         format!("{:?}", blit),
-        "BodyLiteral { sign: None body_aggregate: BodyAggregate { function: Count elements: [BodyAggregateElement { tuple: [Term { symbol: test }], condition: [Literal { sign: None symbol: Term { symbol: test } }] }], left_guard: AggregateGuard { comparison: GreaterThan, term: Term { symbol: test } }, right_guard: AggregateGuard { comparison: GreaterThan, term: Term { symbol: test } } } }"
+        "BodyLiteral { sign: NoSign body_aggregate: BodyAggregate { function: Count elements: [BodyAggregateElement { tuple: [Term { symbol: test }], condition: [Literal { sign: NoSign symbol: Term { symbol: test } }] }], left_guard: AggregateGuard { comparison: GreaterThan, term: Term { symbol: test } }, right_guard: AggregateGuard { comparison: GreaterThan, term: Term { symbol: test } } } }"
     );
 
-    let blit = ast::BodyLiteral::from_theory_atom(Sign::None, &tatom);
+    let blit = ast::BodyLiteral::from_theory_atom(Sign::NoSign, &tatom);
     assert_eq!(
         format!("{:?}", blit),
-        "BodyLiteral { sign: None theory_atom: TheoryAtom { term: Term { symbol: test } elements: [TheoryAtomElement { tuple: [TheoryTerm { symbol: test }] condition: [Literal { sign: None symbol: Term { symbol: test } }] }] guard: TheoryGuard { operator_name: \"theory_operator\" term: TheoryTerm { symbol: test } } } }"
+        "BodyLiteral { sign: NoSign theory_atom: TheoryAtom { term: Term { symbol: test } elements: [TheoryAtomElement { tuple: [TheoryTerm { symbol: test }] condition: [Literal { sign: NoSign symbol: Term { symbol: test } }] }] guard: TheoryGuard { operator_name: \"theory_operator\" term: TheoryTerm { symbol: test } } } }"
     );
 
-    let blit = ast::BodyLiteral::from_disjoint(Sign::None, &dis);
+    let blit = ast::BodyLiteral::from_disjoint(Sign::NoSign, &dis);
     assert_eq!(
         format!("{:?}", blit),
-        "BodyLiteral { sign: None disjoint: Disjoint { elements: [DisjointElement { tuple: [Term { symbol: test }] term: CspSumTerm { terms: [CspProductTerm { coefficient: Term { symbol: test } variable: Term { symbol: test } }] } condition: [Literal { sign: None symbol: Term { symbol: test } }] }] } }"
+        "BodyLiteral { sign: NoSign disjoint: Disjoint { elements: [DisjointElement { tuple: [Term { symbol: test }] term: CspSumTerm { terms: [CspProductTerm { coefficient: Term { symbol: test } variable: Term { symbol: test } }] } condition: [Literal { sign: NoSign symbol: Term { symbol: test } }] }] } }"
     );
 }
 #[test]
@@ -508,14 +511,14 @@ fn ast_edge() {
     let term1 = Term::from(sym1);
     let sym2 = Symbol::create_id("test2", true).unwrap();
     let term2 = Term::from(sym2);
-    let lit = ast::Literal::from_term(Sign::None, &term1);
-    let blit1 = BodyLiteral::from_literal(Sign::None, &lit);
+    let lit = ast::Literal::from_term(Sign::NoSign, &term1);
+    let blit1 = BodyLiteral::from_literal(Sign::NoSign, &lit);
     let body = vec![blit1];
     let edge = Edge::new(term1, term2, &body);
     let stm = Statement::from(&edge);
     test_statement(
         &stm,
-        "Statement { edge: Edge { u: Term { symbol: test1 } v: Term { symbol: test2 } body: [BodyLiteral { sign: None literal: Literal { sign: None symbol: Term { symbol: test1 } } }] } }",
+        "Statement { edge: Edge { u: Term { symbol: test1 } v: Term { symbol: test2 } body: [BodyLiteral { sign: NoSign literal: Literal { sign: NoSign symbol: Term { symbol: test1 } } }] } }",
     );
 }
 #[test]
@@ -525,14 +528,14 @@ fn ast_minimize() {
     let sym2 = Symbol::create_id("test2", true).unwrap();
     let priority = Term::from(sym2);
     let tuple = vec![weight, priority];
-    let lit = ast::Literal::from_term(Sign::None, &weight);
-    let blit1 = BodyLiteral::from_literal(Sign::None, &lit);
+    let lit = ast::Literal::from_term(Sign::NoSign, &weight);
+    let blit1 = BodyLiteral::from_literal(Sign::NoSign, &lit);
     let body = vec![blit1];
     let mini = Minimize::new(weight, priority, &tuple, &body);
     let stm = Statement::from(&mini);
     test_statement(
         &stm,
-        "Statement { minimize: Minimize { weight: Term { symbol: test1 } priority: Term { symbol: test2 } tuple: [Term { symbol: test1 }, Term { symbol: test2 }] body: [BodyLiteral { sign: None literal: Literal { sign: None symbol: Term { symbol: test1 } } }] } }",
+        "Statement { minimize: Minimize { weight: Term { symbol: test1 } priority: Term { symbol: test2 } tuple: [Term { symbol: test1 }, Term { symbol: test2 }] body: [BodyLiteral { sign: NoSign literal: Literal { sign: NoSign symbol: Term { symbol: test1 } } }] } }",
     );
 }
 #[test]
@@ -541,14 +544,14 @@ fn ast_show_term() {
     let term1 = Term::from(sym1);
     let sym2 = Symbol::create_id("test2", true).unwrap();
     let term2 = Term::from(sym2);
-    let lit = ast::Literal::from_term(Sign::None, &term2);
-    let blit1 = BodyLiteral::from_literal(Sign::None, &lit);
+    let lit = ast::Literal::from_term(Sign::NoSign, &term2);
+    let blit1 = BodyLiteral::from_literal(Sign::NoSign, &lit);
     let body = vec![blit1];
     let term = ShowTerm::new(term1, &body, true);
     let stm = Statement::from(&term);
     test_statement(
         &stm,
-        "Statement { show_term: ShowTerm { term: Term { symbol: test1 } body: [BodyLiteral { sign: None literal: Literal { sign: None symbol: Term { symbol: test2 } } }] csp: true } }",
+        "Statement { show_term: ShowTerm { term: Term { symbol: test1 } body: [BodyLiteral { sign: NoSign literal: Literal { sign: NoSign symbol: Term { symbol: test2 } } }] csp: true } }",
     );
 }
 // #[test]
@@ -626,17 +629,17 @@ fn ast_external() {
 fn ast_rule_head_literal() {
     let sym = Symbol::create_id("test", true).unwrap();
     let term = Term::from(sym);
-    let lit = ast::Literal::from_term(Sign::None, &term);
+    let lit = ast::Literal::from_term(Sign::NoSign, &term);
     let hlit = HeadLiteral::from(&lit);
     let rule = Rule::new(hlit, &[]);
     let stm = rule.ast_statement();
-    test_statement(&stm, "Statement { rule: Rule { head: HeadLiteral { literal: Literal { sign: None symbol: Term { symbol: test } } }, body: [] } }");
+    test_statement(&stm, "Statement { rule: Rule { head: HeadLiteral { literal: Literal { sign: NoSign symbol: Term { symbol: test } } }, body: [] } }");
 }
 #[test]
 fn ast_rule_head_aggregate() {
     let sym = Symbol::create_id("test", true).unwrap();
     let term = Term::from(sym);
-    let lit = ast::Literal::from_term(Sign::None, &term);
+    let lit = ast::Literal::from_term(Sign::NoSign, &term);
     let condition = vec![lit];
     let cond = ConditionalLiteral::new(&lit, &condition);
     let elements = vec![cond];
@@ -646,13 +649,13 @@ fn ast_rule_head_aggregate() {
     let hlit = HeadLiteral::from(&agg);
     let rule = Rule::new(hlit, &[]);
     let stm = rule.ast_statement();
-    test_statement(&stm, "Statement { rule: Rule { head: HeadLiteral { aggregate: Aggregate { elements: [ConditionalLiteral { literal: Literal { sign: None symbol: Term { symbol: test } }, condition: [Literal { sign: None symbol: Term { symbol: test } }] }], left_guard: AggregateGuard { comparison: GreaterThan, term: Term { symbol: test } }, right_guard: AggregateGuard { comparison: LessThan, term: Term { symbol: test } } } }, body: [] } }");
+    test_statement(&stm, "Statement { rule: Rule { head: HeadLiteral { aggregate: Aggregate { elements: [ConditionalLiteral { literal: Literal { sign: NoSign symbol: Term { symbol: test } }, condition: [Literal { sign: NoSign symbol: Term { symbol: test } }] }], left_guard: AggregateGuard { comparison: GreaterThan, term: Term { symbol: test } }, right_guard: AggregateGuard { comparison: LessThan, term: Term { symbol: test } } } }, body: [] } }");
 }
 #[test]
 fn ast_rule_head_head_aggregate() {
     let sym = Symbol::create_id("test", true).unwrap();
     let term = Term::from(sym);
-    let lit = ast::Literal::from_term(Sign::None, &term);
+    let lit = ast::Literal::from_term(Sign::NoSign, &term);
     let condition = vec![lit];
     let cond = ConditionalLiteral::new(&lit, &condition);
     let tuple = vec![term];
@@ -663,7 +666,7 @@ fn ast_rule_head_head_aggregate() {
     let hlit = HeadLiteral::from(&hagg);
     let rule = Rule::new(hlit, &[]);
     let stm = rule.ast_statement();
-    test_statement(&stm, "Statement { rule: Rule { head: HeadLiteral { head_aggregate: HeadAggregate { function: Count elements: [HeadAggregateElement { tuple: [Term { symbol: test }], conditional_literal: ConditionalLiteral { literal: Literal { sign: None symbol: Term { symbol: test } }, condition: [Literal { sign: None symbol: Term { symbol: test } }] } }], left_guard: AggregateGuard { comparison: GreaterThan, term: Term { symbol: test } }, right_guard: AggregateGuard { comparison: GreaterThan, term: Term { symbol: test } } } }, body: [] } }");
+    test_statement(&stm, "Statement { rule: Rule { head: HeadLiteral { head_aggregate: HeadAggregate { function: Count elements: [HeadAggregateElement { tuple: [Term { symbol: test }], conditional_literal: ConditionalLiteral { literal: Literal { sign: NoSign symbol: Term { symbol: test } }, condition: [Literal { sign: NoSign symbol: Term { symbol: test } }] } }], left_guard: AggregateGuard { comparison: GreaterThan, term: Term { symbol: test } }, right_guard: AggregateGuard { comparison: GreaterThan, term: Term { symbol: test } } } }, body: [] } }");
 }
 #[test]
 fn ast_rule() {
@@ -726,12 +729,12 @@ fn ast_rule() {
     let csp_guards = vec![csp_guard];
     let csp_lit = CspLiteral::new(csp_sum_term2, &csp_guards);
 
-    let lit1 = ast::Literal::from_bool(Sign::None, true);
-    let lit2 = ast::Literal::from_term(Sign::None, &term1);
-    let lit3 = ast::Literal::from_comparison(Sign::None, &comp);
-    let lit4 = ast::Literal::from_csp_literal(Sign::None, &csp_lit);
-    let lit5 = ast::Literal::from_term(Sign::None, &term11);
-    let lit6 = ast::Literal::from_term(Sign::None, &term13);
+    let lit1 = ast::Literal::from_bool(Sign::NoSign, true);
+    let lit2 = ast::Literal::from_term(Sign::NoSign, &term1);
+    let lit3 = ast::Literal::from_comparison(Sign::NoSign, &comp);
+    let lit4 = ast::Literal::from_csp_literal(Sign::NoSign, &csp_lit);
+    let lit5 = ast::Literal::from_term(Sign::NoSign, &term11);
+    let lit6 = ast::Literal::from_term(Sign::NoSign, &term13);
 
     let hlit1 = HeadLiteral::from(&lit1);
     let hlit2 = HeadLiteral::from(&lit2);
@@ -748,35 +751,35 @@ fn ast_rule() {
     let rule6 = Rule::new(hlit6, &[]);
 
     let stm = rule1.ast_statement();
-    test_statement(&stm, "Statement { rule: Rule { head: HeadLiteral { literal: Literal { sign: None boolean: true } }, body: [] } }");
+    test_statement(&stm, "Statement { rule: Rule { head: HeadLiteral { literal: Literal { sign: NoSign boolean: true } }, body: [] } }");
     let head = rule1.head();
     assert_eq!(
         format!("{:?}", head),
-        "HeadLiteral { literal: Literal { sign: None boolean: true } }"
+        "HeadLiteral { literal: Literal { sign: NoSign boolean: true } }"
     );
 
     let stm = rule2.ast_statement();
-    test_statement(&stm, "Statement { rule: Rule { head: HeadLiteral { literal: Literal { sign: None symbol: Term { symbol: test1 } } }, body: [] } }");
+    test_statement(&stm, "Statement { rule: Rule { head: HeadLiteral { literal: Literal { sign: NoSign symbol: Term { symbol: test1 } } }, body: [] } }");
     let stm = rule3.ast_statement();
-    test_statement(&stm, "Statement { rule: Rule { head: HeadLiteral { literal: Literal { sign: None comparison: Comparison { op: GreaterThan left: Term { symbol: test2 } right: Term { symbol: test3 } } } }, body: [] } }");
+    test_statement(&stm, "Statement { rule: Rule { head: HeadLiteral { literal: Literal { sign: NoSign comparison: Comparison { op: GreaterThan left: Term { symbol: test2 } right: Term { symbol: test3 } } } }, body: [] } }");
     let stm = rule4.ast_statement();
-    test_statement(&stm, "Statement { rule: Rule { head: HeadLiteral { literal: Literal { sign: None csp_literal: CspLiteral { term: CspSumTerm { terms: [CspProductTerm { coefficient: Term { symbol: test6 } variable: Term { symbol: test7 } }] } guards: [CspGuard { comparison: GreaterThan term: CspSumTerm { terms: [CspProductTerm { coefficient: Term { symbol: test4 } variable: Term { symbol: test5 } }] } }] } } }, body: [] } }");
+    test_statement(&stm, "Statement { rule: Rule { head: HeadLiteral { literal: Literal { sign: NoSign csp_literal: CspLiteral { term: CspSumTerm { terms: [CspProductTerm { coefficient: Term { symbol: test6 } variable: Term { symbol: test7 } }] } guards: [CspGuard { comparison: GreaterThan term: CspSumTerm { terms: [CspProductTerm { coefficient: Term { symbol: test4 } variable: Term { symbol: test5 } }] } }] } } }, body: [] } }");
     let stm = rule5.ast_statement();
-    test_statement(&stm, "Statement { rule: Rule { head: HeadLiteral { literal: Literal { sign: None symbol: Term { unary_operation: UnaryOperation { unary_operator: Minus argument: Term { symbol: test8 } } } } }, body: [] } }");
+    test_statement(&stm, "Statement { rule: Rule { head: HeadLiteral { literal: Literal { sign: NoSign symbol: Term { unary_operation: UnaryOperation { unary_operator: Minus argument: Term { symbol: test8 } } } } }, body: [] } }");
     let stm = rule6.ast_statement();
-    test_statement(&stm, "Statement { rule: Rule { head: HeadLiteral { literal: Literal { sign: None symbol: Term { function: Function { name: fun1 args: [Term { binary_operation: BinaryOperation { binary_operator: Xor left: Term { symbol: test9 } right: Term { symbol: test10 } } }] } } } }, body: [] } }");
+    test_statement(&stm, "Statement { rule: Rule { head: HeadLiteral { literal: Literal { sign: NoSign symbol: Term { function: Function { name: fun1 args: [Term { binary_operation: BinaryOperation { binary_operator: Xor left: Term { symbol: test9 } right: Term { symbol: test10 } } }] } } } }, body: [] } }");
 }
 #[test]
 fn ast_rule_body() {
     let sym = Symbol::create_id("test", true).unwrap();
     let term = Term::from(sym);
-    let lit = ast::Literal::from_term(Sign::None, &term);
+    let lit = ast::Literal::from_term(Sign::NoSign, &term);
     let hlit = HeadLiteral::from(&lit);
-    let blit1 = BodyLiteral::from_literal(Sign::None, &lit);
+    let blit1 = BodyLiteral::from_literal(Sign::NoSign, &lit);
     let body = vec![blit1];
     let rule = Rule::new(hlit, &body);
     let stm = rule.ast_statement();
-    test_statement(&stm, "Statement { rule: Rule { head: HeadLiteral { literal: Literal { sign: None symbol: Term { symbol: test } } }, body: [BodyLiteral { sign: None literal: Literal { sign: None symbol: Term { symbol: test } } }] } }");
+    test_statement(&stm, "Statement { rule: Rule { head: HeadLiteral { literal: Literal { sign: NoSign symbol: Term { symbol: test } } }, body: [BodyLiteral { sign: NoSign literal: Literal { sign: NoSign symbol: Term { symbol: test } } }] } }");
 }
 #[test]
 fn ast_program() {
