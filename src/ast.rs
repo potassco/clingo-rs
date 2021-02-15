@@ -355,18 +355,34 @@ pub struct HeadLiteral<'a> {
 }
 impl fmt::Debug for HeadLiteral<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self.head_literal_type() {
-            HeadLiteralType::Literal(lit) => write!(f, "HeadLiteral {{ literal: {:?} }}", lit),
-            HeadLiteralType::Disjunction(lit) => {
-                write!(f, "HeadLiteral {{ disjunction: {:?} }}", lit)
+        match self.data.type_ as u32 {
+            clingo_ast_head_literal_type_clingo_ast_head_literal_type_literal => {
+                let literal = unsafe { self.data.__bindgen_anon_1.literal } as *const Literal;
+                let literal = unsafe { literal.as_ref() }.unwrap();
+                write!(f, "HeadLiteral {{ literal: {:?} }}", literal)
             }
-            HeadLiteralType::Aggregate(agg) => write!(f, "HeadLiteral {{ aggregate: {:?} }}", agg),
-            HeadLiteralType::HeadAggregate(agg) => {
-                write!(f, "HeadLiteral {{ head_aggregate: {:?} }}", agg)
+            clingo_ast_head_literal_type_clingo_ast_head_literal_type_disjunction => {
+                let dis = unsafe { self.data.__bindgen_anon_1.disjunction } as *const Disjunction;
+                let dis = unsafe { dis.as_ref() }.unwrap();
+                write!(f, "HeadLiteral {{ disjunction: {:?} }}", dis)
             }
-            HeadLiteralType::TheoryAtom(atom) => {
+            clingo_ast_head_literal_type_clingo_ast_head_literal_type_aggregate => {
+                let agg = unsafe { self.data.__bindgen_anon_1.aggregate } as *const Aggregate;
+                let agg = unsafe { agg.as_ref() }.unwrap();
+                write!(f, "HeadLiteral {{ aggregate: {:?} }}", agg)
+            }
+            clingo_ast_head_literal_type_clingo_ast_head_literal_type_head_aggregate => {
+                let hagg =
+                    unsafe { self.data.__bindgen_anon_1.head_aggregate } as *const HeadAggregate;
+                let hagg = unsafe { hagg.as_ref() }.unwrap();
+                write!(f, "HeadLiteral {{ head_aggregate: {:?} }}", hagg)
+            }
+            clingo_ast_head_literal_type_clingo_ast_head_literal_type_theory_atom => {
+                let atom = unsafe { self.data.__bindgen_anon_1.theory_atom } as *const TheoryAtom;
+                let atom = unsafe { atom.as_ref() }.unwrap();
                 write!(f, "HeadLiteral {{ theory_atom: {:?} }}", atom)
             }
+            x => panic!("Failed to match clingo_ast_head_literal_type: {}!", x),
         }
     }
 }
@@ -440,46 +456,8 @@ impl<'a> From<&'a TheoryAtom<'a>> for HeadLiteral<'a> {
     }
 }
 impl<'a> HeadLiteral<'a> {
-    pub fn head_literal_type(&self) -> HeadLiteralType {
-        match self.data.type_ as u32 {
-            clingo_ast_head_literal_type_clingo_ast_head_literal_type_literal => {
-                HeadLiteralType::Literal(
-                    unsafe { (self.data.__bindgen_anon_1.literal as *const Literal).as_ref() }
-                        .unwrap(),
-                )
-            }
-            clingo_ast_head_literal_type_clingo_ast_head_literal_type_disjunction => {
-                HeadLiteralType::Disjunction(
-                    unsafe {
-                        (self.data.__bindgen_anon_1.disjunction as *const Disjunction).as_ref()
-                    }
-                    .unwrap(),
-                )
-            }
-            clingo_ast_head_literal_type_clingo_ast_head_literal_type_aggregate => {
-                HeadLiteralType::Aggregate(
-                    unsafe { (self.data.__bindgen_anon_1.aggregate as *const Aggregate).as_ref() }
-                        .unwrap(),
-                )
-            }
-            clingo_ast_head_literal_type_clingo_ast_head_literal_type_head_aggregate => {
-                HeadLiteralType::HeadAggregate(
-                    unsafe {
-                        (self.data.__bindgen_anon_1.head_aggregate as *const HeadAggregate).as_ref()
-                    }
-                    .unwrap(),
-                )
-            }
-            clingo_ast_head_literal_type_clingo_ast_head_literal_type_theory_atom => {
-                HeadLiteralType::TheoryAtom(
-                    unsafe {
-                        (self.data.__bindgen_anon_1.theory_atom as *const TheoryAtom).as_ref()
-                    }
-                    .unwrap(),
-                )
-            }
-            x => panic!("Failed to match clingo_ast_head_literal_type: {}.", x),
-        }
+    pub fn print_lit(&self) -> Option<&clingo_sys::clingo_ast_literal> {
+        unsafe { self.data.__bindgen_anon_1.literal.as_ref() }
     }
 }
 
