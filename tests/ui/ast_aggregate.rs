@@ -11,7 +11,7 @@ fn main() {
     let cond = ast::ConditionalLiteral::new(&lit, &condition);
     let elements = vec![cond];
     let mut guard = ast::AggregateGuard::gt(term3);
-    let agg = ast::Aggregate::new( &elements, &guard, &guard);
+    let agg = ast::Aggregate::new( &elements, Some(&guard), Some(&guard));
     
     guard =  ast::AggregateGuard::gt(term1);
     lit = ast::Literal::from_term(ast::Sign::NoSign, &term1);

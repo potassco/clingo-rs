@@ -3,8 +3,7 @@ use crate::*;
 use std::fmt;
 use std::marker::PhantomData;
 
-#[derive(Debug, Copy, Clone)]
-/// Enumeration of signs.
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub enum Sign {
     /// For positive literals.
     NoSign = clingo_ast_sign_clingo_ast_sign_no_sign as isize,
@@ -73,7 +72,7 @@ pub enum AggregateFunction {
     Max = clingo_ast_aggregate_function_clingo_ast_aggregate_function_max as isize,
 }
 #[derive(Debug, Copy, Clone)]
-pub enum HeadLiteralType {
+enum HeadLiteralType {
     Literal = clingo_ast_head_literal_type_clingo_ast_head_literal_type_literal as isize,
     Disjunction = clingo_ast_head_literal_type_clingo_ast_head_literal_type_disjunction as isize,
     Aggregate = clingo_ast_head_literal_type_clingo_ast_head_literal_type_aggregate as isize,
@@ -356,34 +355,18 @@ pub struct HeadLiteral<'a> {
 }
 impl fmt::Debug for HeadLiteral<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self.data.type_ as u32 {
-            clingo_ast_head_literal_type_clingo_ast_head_literal_type_literal => {
-                let literal = unsafe { self.data.__bindgen_anon_1.literal } as *const Literal;
-                let literal = unsafe { literal.as_ref() }.unwrap();
-                write!(f, "HeadLiteral {{ literal: {:?} }}", literal)
+        match self.head_literal_type() {
+            HeadLiteralType::Literal(lit) => write!(f, "HeadLiteral {{ literal: {:?} }}", lit),
+            HeadLiteralType::Disjunction(lit) => {
+                write!(f, "HeadLiteral {{ disjunction: {:?} }}", lit)
             }
-            clingo_ast_head_literal_type_clingo_ast_head_literal_type_disjunction => {
-                let dis = unsafe { self.data.__bindgen_anon_1.disjunction } as *const Disjunction;
-                let dis = unsafe { dis.as_ref() }.unwrap();
-                write!(f, "HeadLiteral {{ disjunction: {:?} }}", dis)
+            HeadLiteralType::Aggregate(agg) => write!(f, "HeadLiteral {{ aggregate: {:?} }}", agg),
+            HeadLiteralType::HeadAggregate(agg) => {
+                write!(f, "HeadLiteral {{ head_aggregate: {:?} }}", agg)
             }
-            clingo_ast_head_literal_type_clingo_ast_head_literal_type_aggregate => {
-                let agg = unsafe { self.data.__bindgen_anon_1.aggregate } as *const Aggregate;
-                let agg = unsafe { agg.as_ref() }.unwrap();
-                write!(f, "HeadLiteral {{ aggregate: {:?} }}", agg)
-            }
-            clingo_ast_head_literal_type_clingo_ast_head_literal_type_head_aggregate => {
-                let hagg =
-                    unsafe { self.data.__bindgen_anon_1.head_aggregate } as *const HeadAggregate;
-                let hagg = unsafe { hagg.as_ref() }.unwrap();
-                write!(f, "HeadLiteral {{ head_aggregate: {:?} }}", hagg)
-            }
-            clingo_ast_head_literal_type_clingo_ast_head_literal_type_theory_atom => {
-                let atom = unsafe { self.data.__bindgen_anon_1.theory_atom } as *const TheoryAtom;
-                let atom = unsafe { atom.as_ref() }.unwrap();
+            HeadLiteralType::TheoryAtom(atom) => {
                 write!(f, "HeadLiteral {{ theory_atom: {:?} }}", atom)
             }
-            x => panic!("Failed to match clingo_ast_head_literal_type: {}!", x),
         }
     }
 }
@@ -457,8 +440,46 @@ impl<'a> From<&'a TheoryAtom<'a>> for HeadLiteral<'a> {
     }
 }
 impl<'a> HeadLiteral<'a> {
-    pub fn print_lit(&self) -> Option<&clingo_sys::clingo_ast_literal> {
-        unsafe { self.data.__bindgen_anon_1.literal.as_ref() }
+    pub fn head_literal_type(&self) -> HeadLiteralType {
+        match self.data.type_ as u32 {
+            clingo_ast_head_literal_type_clingo_ast_head_literal_type_literal => {
+                HeadLiteralType::Literal(
+                    unsafe { (self.data.__bindgen_anon_1.literal as *const Literal).as_ref() }
+                        .unwrap(),
+                )
+            }
+            clingo_ast_head_literal_type_clingo_ast_head_literal_type_disjunction => {
+                HeadLiteralType::Disjunction(
+                    unsafe {
+                        (self.data.__bindgen_anon_1.disjunction as *const Disjunction).as_ref()
+                    }
+                    .unwrap(),
+                )
+            }
+            clingo_ast_head_literal_type_clingo_ast_head_literal_type_aggregate => {
+                HeadLiteralType::Aggregate(
+                    unsafe { (self.data.__bindgen_anon_1.aggregate as *const Aggregate).as_ref() }
+                        .unwrap(),
+                )
+            }
+            clingo_ast_head_literal_type_clingo_ast_head_literal_type_head_aggregate => {
+                HeadLiteralType::HeadAggregate(
+                    unsafe {
+                        (self.data.__bindgen_anon_1.head_aggregate as *const HeadAggregate).as_ref()
+                    }
+                    .unwrap(),
+                )
+            }
+            clingo_ast_head_literal_type_clingo_ast_head_literal_type_theory_atom => {
+                HeadLiteralType::TheoryAtom(
+                    unsafe {
+                        (self.data.__bindgen_anon_1.theory_atom as *const TheoryAtom).as_ref()
+                    }
+                    .unwrap(),
+                )
+            }
+            x => panic!("Failed to match clingo_ast_head_literal_type: {}.", x),
+        }
     }
 }
 
@@ -2194,15 +2215,23 @@ impl fmt::Debug for Aggregate<'_> {
 impl<'a> Aggregate<'a> {
     pub fn new(
         elements: &'a [ConditionalLiteral<'a>],
-        left_guard: &'a AggregateGuard<'a>,
-        right_guard: &'a AggregateGuard<'a>,
+        left_guard: Option<&'a AggregateGuard<'a>>,
+        right_guard: Option<&'a AggregateGuard<'a>>,
     ) -> Aggregate<'a> {
+        let left_guard = match &left_guard {
+            Some(left_guard) => &left_guard.data,
+            None => std::ptr::null(),
+        };
+        let right_guard = match &right_guard {
+            Some(right_guard) => &right_guard.data,
+            None => std::ptr::null(),
+        };
         Aggregate {
             data: clingo_ast_aggregate {
                 elements: elements.as_ptr() as *const clingo_ast_conditional_literal_t,
                 size: elements.len(),
-                left_guard: &left_guard.data,
-                right_guard: &right_guard.data,
+                left_guard,
+                right_guard,
             },
             _lifetime: PhantomData,
         }
@@ -2215,19 +2244,23 @@ impl<'a> Aggregate<'a> {
             )
         }
     }
-    pub fn left_guard(&self) -> &'a AggregateGuard<'a> {
-        unsafe {
-            (self.data.left_guard as *const clingo_ast_aggregate_guard as *const AggregateGuard)
-                .as_ref()
+    pub fn left_guard(&self) -> Option<&'a AggregateGuard<'a>> {
+        let pointer =
+            self.data.left_guard as *const clingo_ast_aggregate_guard as *const AggregateGuard;
+        if pointer.is_null() {
+            None
+        } else {
+            Some(unsafe { pointer.as_ref() }.unwrap())
         }
-        .unwrap()
     }
-    pub fn right_guard(&self) -> &'a AggregateGuard<'a> {
-        unsafe {
-            (self.data.right_guard as *const clingo_ast_aggregate_guard as *const AggregateGuard)
-                .as_ref()
+    pub fn right_guard(&self) -> Option<&'a AggregateGuard<'a>> {
+        let pointer =
+            self.data.right_guard as *const clingo_ast_aggregate_guard as *const AggregateGuard;
+        if pointer.is_null() {
+            None
+        } else {
+            Some(unsafe { pointer.as_ref() }.unwrap())
         }
-        .unwrap()
     }
 }
 
@@ -2288,16 +2321,24 @@ impl<'a> BodyAggregate<'a> {
     pub fn new(
         function: AggregateFunction,
         elements: &'a [BodyAggregateElement<'a>],
-        left_guard: &'a AggregateGuard<'a>,
-        right_guard: &'a AggregateGuard<'a>,
+        left_guard: Option<&'a AggregateGuard<'a>>,
+        right_guard: Option<&'a AggregateGuard<'a>>,
     ) -> BodyAggregate<'a> {
+        let left_guard = match &left_guard {
+            Some(left_guard) => &left_guard.data,
+            None => std::ptr::null(),
+        };
+        let right_guard = match &right_guard {
+            Some(right_guard) => &right_guard.data,
+            None => std::ptr::null(),
+        };
         BodyAggregate {
             data: clingo_ast_body_aggregate {
                 function: function as i32,
                 elements: elements.as_ptr() as *const clingo_ast_body_aggregate_element_t,
                 size: elements.len(),
-                left_guard: &left_guard.data,
-                right_guard: &right_guard.data,
+                left_guard,
+                right_guard,
             },
             _lifetime: PhantomData,
         }
@@ -2330,19 +2371,23 @@ impl<'a> BodyAggregate<'a> {
             )
         }
     }
-    pub fn left_guard(&self) -> &'a AggregateGuard<'a> {
-        unsafe {
-            (self.data.left_guard as *const clingo_ast_aggregate_guard as *const AggregateGuard)
-                .as_ref()
+    pub fn left_guard(&self) -> Option<&'a AggregateGuard<'a>> {
+        let pointer =
+            self.data.left_guard as *const clingo_ast_aggregate_guard as *const AggregateGuard;
+        if pointer.is_null() {
+            None
+        } else {
+            Some(unsafe { pointer.as_ref() }.unwrap())
         }
-        .unwrap()
     }
-    pub fn right_guard(&self) -> &'a AggregateGuard<'a> {
-        unsafe {
-            (self.data.right_guard as *const clingo_ast_aggregate_guard as *const AggregateGuard)
-                .as_ref()
+    pub fn right_guard(&self) -> Option<&'a AggregateGuard<'a>> {
+        let pointer =
+            self.data.right_guard as *const clingo_ast_aggregate_guard as *const AggregateGuard;
+        if pointer.is_null() {
+            None
+        } else {
+            Some(unsafe { pointer.as_ref() }.unwrap())
         }
-        .unwrap()
     }
 }
 #[derive(Copy, Clone)]
@@ -2407,16 +2452,24 @@ impl<'a> HeadAggregate<'a> {
     pub fn new(
         function: AggregateFunction,
         elements: &'a [HeadAggregateElement<'a>],
-        left_guard: &'a AggregateGuard<'a>,
-        right_guard: &'a AggregateGuard<'a>,
+        left_guard: Option<&'a AggregateGuard<'a>>,
+        right_guard: Option<&'a AggregateGuard<'a>>,
     ) -> HeadAggregate<'a> {
+        let left_guard = match &left_guard {
+            Some(left_guard) => &left_guard.data,
+            None => std::ptr::null(),
+        };
+        let right_guard = match &right_guard {
+            Some(right_guard) => &right_guard.data,
+            None => std::ptr::null(),
+        };
         HeadAggregate {
             data: clingo_ast_head_aggregate {
                 function: function as i32,
                 elements: elements.as_ptr() as *const clingo_ast_head_aggregate_element_t,
                 size: elements.len(),
-                left_guard: &left_guard.data,
-                right_guard: &right_guard.data,
+                left_guard,
+                right_guard,
             },
             _lifetime: PhantomData,
         }
@@ -2449,19 +2502,23 @@ impl<'a> HeadAggregate<'a> {
             )
         }
     }
-    pub fn left_guard(&self) -> &'a AggregateGuard<'a> {
-        unsafe {
-            (self.data.left_guard as *const clingo_ast_aggregate_guard as *const AggregateGuard)
-                .as_ref()
+    pub fn left_guard(&self) -> Option<&'a AggregateGuard<'a>> {
+        let pointer =
+            self.data.left_guard as *const clingo_ast_aggregate_guard as *const AggregateGuard;
+        if pointer.is_null() {
+            None
+        } else {
+            Some(unsafe { pointer.as_ref() }.unwrap())
         }
-        .unwrap()
     }
-    pub fn right_guard(&self) -> &'a AggregateGuard<'a> {
-        unsafe {
-            (self.data.right_guard as *const clingo_ast_aggregate_guard as *const AggregateGuard)
-                .as_ref()
+    pub fn right_guard(&self) -> Option<&'a AggregateGuard<'a>> {
+        let pointer =
+            self.data.right_guard as *const clingo_ast_aggregate_guard as *const AggregateGuard;
+        if pointer.is_null() {
+            None
+        } else {
+            Some(unsafe { pointer.as_ref() }.unwrap())
         }
-        .unwrap()
     }
 }
 #[derive(Copy, Clone)]
@@ -2992,14 +3049,18 @@ impl<'a> TheoryAtom<'a> {
     pub fn new(
         term: Term<'a>,
         elements: &'a [TheoryAtomElement<'a>],
-        guard: &'a TheoryGuard<'a>,
+        guard: Option<&'a TheoryGuard<'a>>,
     ) -> TheoryAtom<'a> {
+        let guard = match &guard {
+            Some(guard) => &guard.data,
+            None => std::ptr::null(),
+        };
         TheoryAtom {
             data: clingo_ast_theory_atom {
                 term: term.data,
                 elements: elements.as_ptr() as *const clingo_ast_theory_atom_element_t,
                 size: elements.len(),
-                guard: &guard.data as *const clingo_ast_theory_guard_t,
+                guard,
             },
             _lifetime: PhantomData,
         }
@@ -3015,11 +3076,13 @@ impl<'a> TheoryAtom<'a> {
             )
         }
     }
-    pub fn guard(&self) -> &'a TheoryGuard<'a> {
-        unsafe {
-            (self.data.guard as *const clingo_ast_theory_guard as *const TheoryGuard).as_ref()
+    pub fn guard(&self) -> Option<&'a TheoryGuard<'a>> {
+        let pointer = self.data.guard as *const clingo_ast_theory_guard as *const TheoryGuard;
+        if pointer.is_null() {
+            None
+        } else {
+            Some(unsafe { pointer.as_ref() }.unwrap())
         }
-        .unwrap()
     }
 }
 #[derive(Debug, Copy, Clone)]
@@ -3238,10 +3301,14 @@ impl<'a> TheoryAtomDefinition<'a> {
         atom_type: TheoryAtomType,
         arity: u32,
         elements: &str,
-        guard: &'a TheoryGuardDefinition<'a>,
+        guard: Option<&'a TheoryGuardDefinition<'a>>,
     ) -> Result<TheoryAtomDefinition<'a>, ClingoError> {
         let name = internalize_string(name)?;
         let elements = internalize_string(elements)?;
+        let guard = match &guard {
+            Some(guard) => &guard.data,
+            None => std::ptr::null(),
+        };
         Ok(TheoryAtomDefinition {
             data: clingo_ast_theory_atom_definition_t {
                 location: Location::default(),
@@ -3249,7 +3316,7 @@ impl<'a> TheoryAtomDefinition<'a> {
                 name,
                 arity,
                 elements,
-                guard: &guard.data,
+                guard,
             },
             _lifetime: PhantomData,
         })
@@ -3293,13 +3360,14 @@ impl<'a> TheoryAtomDefinition<'a> {
             c_str.to_str()
         }
     }
-    pub fn guard(&self) -> &'a TheoryGuardDefinition<'a> {
-        unsafe {
-            (self.data.guard as *const clingo_ast_theory_guard_definition
-                as *const TheoryGuardDefinition)
-                .as_ref()
+    pub fn guard(&self) -> Option<&'a TheoryGuardDefinition<'a>> {
+        let pointer = self.data.guard as *const clingo_ast_theory_guard_definition
+            as *const TheoryGuardDefinition;
+        if pointer.is_null() {
+            None
+        } else {
+            Some(unsafe { pointer.as_ref() }.unwrap())
         }
-        .unwrap()
     }
 }
 #[derive(Copy, Clone)]
