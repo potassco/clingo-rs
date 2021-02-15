@@ -71,14 +71,13 @@ fn print_model(model: &Model) {
 
     print!("Model:");
 
-    for atom in atoms {
-        // retrieve and print the symbol's string
-        print!(" {}", atom.to_string().unwrap());
+    for symbol in atoms {
+        print!(" {}", symbol);
     }
     println!();
 }
 
-fn solve(ctl: &mut Control) {
+fn solve(ctl: Control) -> Control {
     // get a solve handle
     let mut handle = ctl
         .solve(SolveMode::YIELD, &[])
@@ -100,7 +99,7 @@ fn solve(ctl: &mut Control) {
     handle
         .get()
         .expect("Failed to get result from solve handle.");
-    handle.close().expect("Failed to close solve handle.");
+    handle.close().expect("Failed to close solve handle.")
 }
 
 fn main() {
@@ -130,7 +129,7 @@ fn main() {
     ctl.ground(&parts).unwrap();
 
     // solve
-    solve(&mut ctl);
+    let ctl = solve(ctl);
 
     // get the statistics object, get the root key, then print the statistics recursively
     let stats = ctl.statistics().unwrap();

@@ -1,5 +1,5 @@
 #![doc(html_root_url = "https://docs.rs/clingo/0.6.0")]
-//! This crate provides bindings to the [clingo](https://github.com/potassco/clingo) library version 5.4.0.
+//! This crate provides bindings to the [clingo](https://github.com/potassco/clingo) library version 5.5.0.
 //!
 //! ## Requirements
 //!
@@ -15,12 +15,14 @@
 //!
 //!
 //! In your `Cargo.toml` add:
+//!   
 //! ```toml
 //! [dependencies]
 //! clingo = { version = "0.6", features = ["derive"] }
 //! ```
 //!      
 //! In your source write:
+//!   
 //! ```ignore
 //! use clingo::ToSymbol;
 //! use clingo::ClingoError;
@@ -63,9 +65,12 @@ use bitflags::bitflags;
 use clingo_sys::*;
 use std::cmp::Ordering;
 use std::collections::HashSet;
+use std::convert::Infallible;
+use std::convert::TryInto;
 use std::ffi::CStr;
 use std::ffi::CString;
 use std::ffi::NulError;
+use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::os::raw::c_char;
 use std::os::raw::c_void;
@@ -75,6 +80,10 @@ use thiserror::Error;
 
 /// Functions and data structures to work with program ASTs.
 pub mod ast;
+
+#[cfg(feature = "dl_theory")]
+pub mod dl_theory;
+pub mod theory;
 
 /// ClingoError in the rust wrapper, like null pointers or failed matches of C enums.
 ///
@@ -107,6 +116,10 @@ impl ClingoError {
             code: error_code(),
             last: error_message(),
         }
+    }
+
+    fn new_external(msg: &'static str) -> ClingoError {
+        ExternalError { msg }.into()
     }
 }
 #[derive(Error, Debug)]
@@ -207,8 +220,11 @@ fn set_internal_error(code: ErrorType, message: &'static str) {
     unsafe { clingo_set_error(code as clingo_error_t, message.as_ptr()) }
 }
 
+/// Object to add command-line options.
+pub struct Options(clingo_options_t);
+
 /// Represents three-valued truth values.
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub enum TruthValue {
     /// No truth value
     Free = clingo_truth_value_clingo_truth_value_free as isize,
@@ -256,37 +272,19 @@ pub enum ClauseType {
 }
 
 /// Enumeration of solve events.
-#[derive(Debug, Copy, Clone, PartialEq)]
-pub enum SolveEventType {
+#[derive(Debug)]
+pub enum SolveEvent<'a> {
     /// Issued if a model is found.
-    Model = clingo_solve_event_type_clingo_solve_event_type_model as isize,
+    Model(&'a mut Model),
+    /// Issued if an optimization problem is found unsatisfiable.
+    Unsat,
     /// Issued when the statistics can be updated.
-    Statistics = clingo_solve_event_type_clingo_solve_event_type_statistics as isize,
+    Statistics {
+        step: &'a mut Statistics,
+        akku: &'a mut Statistics,
+    },
     /// Issued if the search has completed.
-    Finish = clingo_solve_event_type_clingo_solve_event_type_finish as isize,
-}
-impl SolveEventType {
-    fn try_from(code: u32) -> Result<SolveEventType, ClingoError> {
-        match code {
-            clingo_solve_event_type_clingo_solve_event_type_model => Ok(SolveEventType::Model),
-            clingo_solve_event_type_clingo_solve_event_type_statistics => {
-                Ok(SolveEventType::Statistics)
-            }
-            clingo_solve_event_type_clingo_solve_event_type_finish => Ok(SolveEventType::Finish),
-            x => {
-                eprintln!(
-                    "FFIError in {} {}, {} : Failed to match clingo_solve_event_type {}",
-                    file!(),
-                    line!(),
-                    column!(),
-                    x
-                );
-                Err(ClingoError::FFIError {
-                    msg: "Failed to match clingo_solve_event_type.",
-                })
-            }
-        }
-    }
+    Finish(&'a mut SolveResult),
 }
 
 /// Enumeration for entries of the statistics.
@@ -561,14 +559,18 @@ impl ModelType {
 }
 
 /// Supported check modes for propagators.
+/// Note that total checks are subject to the lock when a model is found.
+/// This means that information from previously found models can be used to discard assignments in check calls.
 #[derive(Debug, Copy, Clone)]
 pub enum PropagatorCheckMode {
     /// Do not call [`Propagator::check()`](trait.Propagator.html#method.check) at all
     None = clingo_propagator_check_mode_clingo_propagator_check_mode_none as isize,
-    /// Call [`Propagator::check()`](trait.Propagator.html#method.check) on total assignment
+    /// Call [`Propagator::check()`](trait.Propagator.html#method.check) on total assignments
     Total = clingo_propagator_check_mode_clingo_propagator_check_mode_total as isize,
     /// Call [`Propagator::check()`](trait.Propagator.html#method.check) on propagation fixpoints
     Fixpoint = clingo_propagator_check_mode_clingo_propagator_check_mode_fixpoint as isize,
+    /// Call [`Propagator::check()`](trait.Propagator.html#method.check) on propagation fixpoints and total assignments
+    Both = clingo_propagator_check_mode_clingo_propagator_check_mode_both as isize,
 }
 impl PropagatorCheckMode {
     fn try_from(code: i32) -> Result<PropagatorCheckMode, ClingoError> {
@@ -597,6 +599,18 @@ impl PropagatorCheckMode {
         }
     }
 }
+/// Enumeration of weight_constraint_types.
+#[derive(Debug, Copy, Clone)]
+pub enum WeigthConstraintType {
+    /// The weight constraint implies the literal
+    ImplicationLeft =
+        clingo_weight_constraint_type_clingo_weight_constraint_type_implication_left as isize,
+    /// The literal implies the weight constraint
+    ImplicationRight =
+        clingo_weight_constraint_type_clingo_weight_constraint_type_implication_right as isize,
+    /// The weight constraint is equivalent to the literal
+    Equivalence = clingo_weight_constraint_type_clingo_weight_constraint_type_equivalence as isize,
+}
 
 bitflags! {
     /// Bit flags describing the entries of a configuration.
@@ -624,6 +638,8 @@ bitflags! {
 bitflags! {
     /// Bit flags to select symbols in models.
     pub struct ShowType: u32 {
+        /// Select symbols added by theory.
+        const THEORY = clingo_show_type_clingo_show_type_theory;
         /// Select CSP assignments.
         const CSP  = clingo_show_type_clingo_show_type_csp;
         /// Select shown atoms and terms.
@@ -665,17 +681,17 @@ pub trait SolveEventHandler {
     ///
     /// # Arguments
     ///
-    /// * `etype` - the type of the solve event
+    /// * `event` - the solve event
     /// * `goon` - can be set to false to stop solving
     ///
     /// **Returns** whether the call was successful
     ///
     /// **See:** [`Control::solve()`](struct.Control.html#method.solve)
-    fn on_solve_event(&mut self, etype: SolveEventType, goon: &mut bool) -> bool;
+    fn on_solve_event(&mut self, event: SolveEvent, goon: &mut bool) -> bool;
     #[doc(hidden)]
     unsafe extern "C" fn unsafe_solve_callback<T: SolveEventHandler>(
-        etype: clingo_solve_event_type_t,
-        _event: *mut c_void,
+        event_type: clingo_solve_event_type_t,
+        event_data: *mut c_void,
         event_handler: *mut c_void,
         goon: *mut bool,
     ) -> bool {
@@ -690,15 +706,77 @@ pub trait SolveEventHandler {
         let event_handler = &mut *(event_handler as *mut T);
         let goon = &mut *goon;
 
-        match SolveEventType::try_from(etype) {
-            Err(_) => {
+        match event_type {
+            clingo_solve_event_type_clingo_solve_event_type_model => {
+                let model = &mut *(event_data as *mut Model);
+
+                eprintln!("unsafe_solve_callback model");
+                for i in model.symbols(ShowType::ALL).unwrap() {
+                    eprint!("{}", i);
+                }
+                eprintln!();
+                eprintln!("call save on_solve_event");
+                let event = SolveEvent::Model(model);
+
+                event_handler.on_solve_event(event, goon)
+            }
+            clingo_solve_event_type_clingo_solve_event_type_unsat => {
+                eprintln!("unsafe_solve_callback unsat");
+                let event = SolveEvent::Unsat;
+
+                event_handler.on_solve_event(event, goon)
+            }
+            clingo_solve_event_type_clingo_solve_event_type_statistics => {
+                // check for null pointers
+                if event_data.is_null() {
+                    set_internal_error(
+                        ErrorType::Runtime,
+                        "unsafe_solve_callback() got a null pointer event_data.",
+                    );
+                    return false;
+                }
+                let stats: &mut [&mut Statistics] =
+                    std::slice::from_raw_parts_mut(event_data as *mut &mut Statistics, 2);
+                let stats: &mut [&mut Statistics; 2] =
+                    stats.try_into().expect("slice has more than two items");
+                let stats = stats.split_at_mut(1);
+                let event = SolveEvent::Statistics {
+                    step: stats.0[0],
+                    akku: stats.1[0],
+                };
+                eprintln!("unsafe_solve_callback stats calling save code");
+                event_handler.on_solve_event(event, goon)
+            }
+            clingo_solve_event_type_clingo_solve_event_type_finish => {
+                // check for null pointers
+                if event_data.is_null() {
+                    set_internal_error(
+                        ErrorType::Runtime,
+                        "unsafe_solve_callback() got a null pointer event_data.",
+                    );
+                    return false;
+                }
+                let solve_result = &mut *(event_data as *mut SolveResult);
+                let event = SolveEvent::Finish(solve_result);
+                event_handler.on_solve_event(event, goon)
+            }
+            x => {
+                eprintln!(
+                    "FFIError in {} {}, {} : Failed to match clingo_solve_event_type {}",
+                    file!(),
+                    line!(),
+                    column!(),
+                    x
+                );
                 // from the libclingo docs:
                 // If a (non-recoverable) clingo API function fails in this callback, it must return false.
                 // In case of errors not related to clingo, set error code ErrorType::Unknown and return false to stop solving with an error.
-                set_internal_error(ErrorType::Runtime, "Error in unsafe_solve_callback().");
+                set_internal_error(
+                    ErrorType::Runtime,
+                    "Error in unsafe_solve_callback(): unknown event_type.",
+                );
                 false
             }
-            Ok(etype) => event_handler.on_solve_event(etype, goon),
         }
     }
 }
@@ -879,7 +957,7 @@ pub trait ExternalFunctionHandler {
     }
 
     #[doc(hidden)]
-    fn try_symbol_callback(
+    unsafe fn try_symbol_callback(
         &mut self,
         location: &Location,
         name: &CStr,
@@ -891,7 +969,11 @@ pub trait ExternalFunctionHandler {
         let symbols = self.on_external_function(location, name, arguments)?;
         if let Some(symbol_callback) = symbol_callback {
             let v: Vec<clingo_symbol_t> = symbols.iter().map(|symbol| (*symbol).0).collect();
-            Ok(unsafe { symbol_callback(v.as_slice().as_ptr(), v.len(), symbol_callback_data) })
+            Ok(symbol_callback(
+                v.as_slice().as_ptr(),
+                v.len(),
+                symbol_callback_data,
+            ))
         } else {
             // no symbol callback
             Ok(true)
@@ -900,7 +982,7 @@ pub trait ExternalFunctionHandler {
 }
 
 /// Signed integer type used for aspif and solver literals.
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub struct Literal(clingo_literal_t);
 impl Literal {
     pub fn negate(self) -> Literal {
@@ -943,6 +1025,7 @@ impl WeightedLiteral {
 ///
 /// **Note:** Not all locations refer to physical files.
 /// By convention, such locations use a name put in angular brackets as filename.
+/// The string members of a location object are internalized and valid for the duration of the process.
 #[derive(Debug, Copy, Clone)]
 pub struct Location(clingo_location);
 impl Location {
@@ -993,7 +1076,7 @@ impl Location {
         Ok(Location(loc))
     }
     /// the file where the location begins
-    pub fn begin_file(&self) -> Result<&str, Utf8Error> {
+    pub fn begin_file(&self) -> Result<&'static str, Utf8Error> {
         if self.0.begin_file.is_null() {
             Ok("")
         } else {
@@ -1002,7 +1085,7 @@ impl Location {
         }
     }
     /// the file where the location ends
-    pub fn end_file(&self) -> Result<&str, Utf8Error> {
+    pub fn end_file(&self) -> Result<&'static str, Utf8Error> {
         if self.0.end_file.is_null() {
             Ok("")
         } else {
@@ -1088,7 +1171,9 @@ impl Signature {
 
     // TODO: should i return empty string vs Error
     /// Get the name of a signature.
-    pub fn name(&self) -> Result<&str, Utf8Error> {
+    /// **Note:**
+    /// The string is internalized and valid for the duration of the process.
+    pub fn name(&self) -> Result<&'static str, Utf8Error> {
         let char_ptr: *const c_char = unsafe { clingo_signature_name(self.0) };
         if char_ptr.is_null() {
             Ok("")
@@ -1148,24 +1233,48 @@ impl Hash for Symbol {
         unsafe { clingo_symbol_hash(self.0) }.hash(state);
     }
 }
+impl fmt::Display for Symbol {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let mut size: usize = 0;
+        if !unsafe { clingo_symbol_to_string_size(self.0, &mut size) } {
+            eprintln!("Call to clingo_symbol_to_string_size() failed");
+            return Err(fmt::Error);
+        }
+        let mut string = Vec::with_capacity(size);
+        let string_ptr = string.as_mut_ptr();
+        if !unsafe { clingo_symbol_to_string(self.0, string_ptr, size) } {
+            eprintln!("Call to clingo_symbol_to_string() failed");
+            return Err(fmt::Error);
+        }
+        let c_str: &CStr = unsafe { CStr::from_ptr(string_ptr) };
+        let str_slice: &str = match c_str.to_str() {
+            Ok(slice) => slice,
+            Err(e) => {
+                eprintln!("{}", e);
+                return Err(fmt::Error);
+            }
+        };
+        str::fmt(str_slice, f)
+    }
+}
 impl Symbol {
     /// Construct a symbol representing a number.
     pub fn create_number(number: i32) -> Symbol {
-        let mut symbol = 0 as clingo_symbol_t;
+        let mut symbol = 0;
         unsafe { clingo_symbol_create_number(number, &mut symbol) };
         Symbol(symbol)
     }
 
     /// Construct a symbol representing \#sup.
     pub fn create_supremum() -> Symbol {
-        let mut symbol = 0 as clingo_symbol_t;
+        let mut symbol = 0;
         unsafe { clingo_symbol_create_supremum(&mut symbol) };
         Symbol(symbol)
     }
 
     /// Construct a symbol representing \#inf
     pub fn create_infimum() -> Symbol {
-        let mut symbol = 0 as clingo_symbol_t;
+        let mut symbol = 0;
         unsafe { clingo_symbol_create_infimum(&mut symbol) };
         Symbol(symbol)
     }
@@ -1181,7 +1290,7 @@ impl Symbol {
     /// - [`ClingoError::NulError`](enum.ClingoError.html#variant.NulError) - if `string` contains a nul byte
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     pub fn create_string(string: &str) -> Result<Symbol, ClingoError> {
-        let mut symbol = 0 as clingo_symbol_t;
+        let mut symbol = 0;
         let c_str = CString::new(string)?;
         if !unsafe { clingo_symbol_create_string(c_str.as_ptr(), &mut symbol) } {
             return Err(ClingoError::new_internal(
@@ -1206,7 +1315,7 @@ impl Symbol {
     /// - [`ClingoError::NulError`](enum.ClingoError.html#variant.NulError) - if `name` contains a nul byte
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     pub fn create_id(name: &str, positive: bool) -> Result<Symbol, ClingoError> {
-        let mut symbol = 0 as clingo_symbol_t;
+        let mut symbol = 0;
         let name = CString::new(name)?;
         if !unsafe { clingo_symbol_create_id(name.as_ptr(), positive, &mut symbol) } {
             return Err(ClingoError::new_internal(
@@ -1236,7 +1345,7 @@ impl Symbol {
         arguments: &[Symbol],
         positive: bool,
     ) -> Result<Symbol, ClingoError> {
-        let mut symbol = 0 as clingo_symbol_t;
+        let mut symbol = 0;
         let name = CString::new(name)?;
         if !unsafe {
             clingo_symbol_create_function(
@@ -1270,11 +1379,14 @@ impl Symbol {
 
     /// Get the name of a symbol.
     ///
+    /// **Note:**
+    /// The string is internalized and valid for the duration of the process.
+    ///
     /// # Errors
     ///
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if symbol is not of type [`SymbolType::Function`](enum.SymbolType.html#variant.Function)
     /// - [`ClingoError::Utf8Error`](enum.ClingoError.html#variant.Utf8Error)
-    pub fn name(&self) -> Result<&str, ClingoError> {
+    pub fn name(&self) -> Result<&'static str, ClingoError> {
         let mut char_ptr = std::ptr::null();
         if !unsafe { clingo_symbol_name(self.0, &mut char_ptr) } {
             return Err(ClingoError::new_internal(
@@ -1292,11 +1404,14 @@ impl Symbol {
 
     /// Get the string of a symbol.
     ///
+    /// **Note:**
+    /// The string is internalized and valid for the duration of the process.
+    ///
     /// # Errors
     ///
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if symbol is not of type [`SymbolType::String`](enum.SymbolType.html#variant.String)
     /// - [`ClingoError::Utf8Error`](enum.ClingoError.html#variant.Utf8Error)
-    pub fn string(&self) -> Result<&str, ClingoError> {
+    pub fn string(&self) -> Result<&'static str, ClingoError> {
         let mut char_ptr = std::ptr::null();
         if !unsafe { clingo_symbol_string(self.0, &mut char_ptr) } {
             return Err(ClingoError::new_internal(
@@ -1381,31 +1496,6 @@ impl Symbol {
     pub fn symbol_type(self) -> Result<SymbolType, ClingoError> {
         SymbolType::try_from(unsafe { clingo_symbol_type(self.0) })
     }
-
-    /// Get the string representation of a symbol.
-    ///
-    /// # Errors
-    ///
-    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
-    /// - [`ClingoError::Utf8Error`](enum.ClingoError.html#variant.Utf8Error)
-    pub fn to_string(self) -> Result<String, ClingoError> {
-        let mut size: usize = 0;
-        if !unsafe { clingo_symbol_to_string_size(self.0, &mut size) } {
-            return Err(ClingoError::new_internal(
-                "Call to clingo_symbol_to_string_size() failed",
-            ));
-        }
-        let mut string = Vec::with_capacity(size);
-        let string_ptr = string.as_mut_ptr();
-        if !unsafe { clingo_symbol_to_string(self.0, string_ptr, size) } {
-            return Err(ClingoError::new_internal(
-                "Call to clingo_symbol_to_string() failed",
-            ));
-        }
-        let c_str: &CStr = unsafe { CStr::from_ptr(string_ptr) };
-        let str_slice: &str = c_str.to_str()?;
-        Ok(str_slice.to_owned())
-    }
 }
 
 /// Parse the given program and return an abstract syntax tree for each statement via a callback.
@@ -1444,6 +1534,8 @@ pub fn parse_program<T: StatementHandler>(
     }
     Ok(())
 }
+
+// NODO: fn clingo_parse_files(files ...) -> bool;
 
 /// Parse the given program and return an abstract syntax tree for each statement via a callback.
 ///
@@ -1525,7 +1617,7 @@ impl<'a> Part<'a> {
     /// - [`ClingoError::NulError`](enum.ClingoError.html#variant.NulError) - if `name` contains a nul byte
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if argument parsing fails
-    pub fn new(name: &str, params: &'a [Symbol]) -> Result<Part<'a>, ClingoError> {
+    pub fn new(name: &str, params: &'a [Symbol]) -> Result<Part<'a>, NulError> {
         Ok(Part {
             name: CString::new(name)?,
             params,
@@ -1534,7 +1626,7 @@ impl<'a> Part<'a> {
 
     fn from(&self) -> clingo_part {
         clingo_part {
-            name: self.name.as_ptr(),
+            name: self.name.as_ptr() as *const c_char,
             params: self.params.as_ptr() as *const clingo_symbol_t,
             size: self.params.len(),
         }
@@ -1543,7 +1635,7 @@ impl<'a> Part<'a> {
 
 /// An instance of this trait has to be registered with a solver to implement a custom propagator.
 ///
-/// For all functions exist default implementations and they must not be implemented manually.
+/// Not all functions have to be implemented, there exist default implementations.
 pub trait Propagator {
     /// This function is called once before each solving step.
     /// It is used to map relevant program literals to solver literals, add watches for solver
@@ -1655,7 +1747,7 @@ pub trait Propagator {
     ///
     /// This callback is meant to update assignment dependent state in the propagator.
     ///
-    /// **Note:** No clauses must be propagated in this callback.
+    /// **Note:** No clauses must be propagated in this callback and no errors should be set.
     ///
     /// # Arguments
     ///
@@ -1663,20 +1755,18 @@ pub trait Propagator {
     /// * `changes` - the change set
     ///
     /// **Returns** whether the call was successful
-    fn undo(&mut self, _control: &mut PropagateControl, _changes: &[Literal]) -> bool {
-        true
-    }
+    fn undo(&mut self, _control: &mut PropagateControl, _changes: &[Literal]) {}
     #[doc(hidden)]
     unsafe extern "C" fn unsafe_undo<T: Propagator>(
         control: *const clingo_propagate_control_t,
         changes: *const clingo_literal_t,
         size: usize,
         propagator: *mut c_void,
-    ) -> bool {
+    ) {
         // check for null pointers
         if control.is_null() | (size > 0 && changes.is_null()) | propagator.is_null() {
             set_internal_error(ErrorType::Runtime, "unsafe_undo() got a null pointer.");
-            return false;
+            return;
         }
         let control = &mut *(control as *mut PropagateControl);
         let changes = std::slice::from_raw_parts(changes as *const Literal, size);
@@ -1772,7 +1862,6 @@ pub struct Control {
 }
 impl Drop for Control {
     fn drop(&mut self) {
-        // println!("drop Control");
         unsafe { clingo_control_free(self.ctl.as_ptr()) }
     }
 }
@@ -1895,7 +1984,7 @@ impl Control {
         }
     }
 
-    //NODO: pub fn clingo_control_load(control: *mut Control, file: *const c_char) -> bool;
+    // NODO: pub fn clingo_control_load(control: *mut Control, file: *const c_char) -> bool;
 
     /// Extend the logic program with the given non-ground logic program in string form.
     ///
@@ -1963,7 +2052,7 @@ impl Control {
             let atom = ast::Term::from(*sym);
 
             // create literal
-            let lit = ast::Literal::from_term(ast::Sign::None, &atom);
+            let lit = ast::Literal::from_term(ast::Sign::NoSign, &atom);
 
             // create headliteral
             let hlit = ast::HeadLiteral::from(&lit);
@@ -1988,7 +2077,7 @@ impl Control {
     /// Ground the selected [parts](struct.Part.html) of the current (non-ground) logic
     /// program.
     ///
-    /// After grounding, logic programs can be solved with [`solve()`](struct.Control.html.method.solve).
+    /// After grounding, logic programs can be solved with [`solve()`](struct.Control.html#method.solve).
     ///
     /// **Note:** Parts of a logic program without an explicit `#program`
     /// specification are by default put into a program called `base` - without
@@ -2027,7 +2116,7 @@ impl Control {
     /// Ground the selected [parts](struct.Part.html) of the current (non-ground) logic
     /// program.
     ///
-    /// After grounding, logic programs can be solved with [`solve()`](struct.Control.html.method.solve).
+    /// After grounding, logic programs can be solved with [`solve()`](struct.Control.html#method.solve).
     ///
     /// **Note:** Parts of a logic program without an explicit `#program`
     /// specification are by default put into a program called `base` - without
@@ -2082,7 +2171,7 @@ impl Control {
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if solving could not be started
     pub fn solve(
-        &mut self,
+        self,
         mode: SolveMode,
         assumptions: &[Literal],
     ) -> Result<SolveHandle, ClingoError> {
@@ -2102,22 +2191,22 @@ impl Control {
                 "Call to clingo_control_solve() failed",
             ));
         }
-        match unsafe { handle.as_mut() } {
-            Some(handle_ref) => Ok(SolveHandle { theref: handle_ref }),
+        match NonNull::new(handle) {
+            Some(handle) => Ok(SolveHandle { handle, ctl: self }),
             None => Err(ClingoError::FFIError {
-                msg: "Tried casting a null pointer to &mut clingo_solve_handle.",
-            }),
+                msg: "Tried creating NonNull from a null pointer.",
+            })?,
         }
     }
 
     /// Covenience function that returns an iterator over the models.
-    /// Uses [solve](struct.Control.html#method.solve) with [SolveMode::Yield](enum.SolveMode.html#variant.YIELD) and empty assumptions.
+    /// Uses [`solve()`](struct.Control.html#method.solve) with [SolveMode::Yield](enum.SolveMode.html#variant.YIELD) and empty assumptions.
     ///
     /// # Errors
     ///
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if solving could not be started
-    pub fn all_models(&mut self) -> Result<AllModels, ClingoError> {
+    pub fn all_models(self) -> Result<AllModels, ClingoError> {
         let mut handle = std::ptr::null_mut();
         if !unsafe {
             clingo_control_solve(
@@ -2134,22 +2223,22 @@ impl Control {
                 "Call to clingo_control_solve() failed",
             ));
         }
-        match unsafe { handle.as_mut() } {
-            Some(handle_ref) => Ok(AllModels(SolveHandle { theref: handle_ref })),
+        match NonNull::new(handle) {
+            Some(handle) => Ok(AllModels(SolveHandle { handle, ctl: self })),
             None => Err(ClingoError::FFIError {
-                msg: "Tried casting a null pointer to &mut clingo_solve_handle.",
-            }),
+                msg: "Tried creating NonNull from a null pointer.",
+            })?,
         }
     }
 
     /// Covenience function that returns an iterator over the optimal models.
-    /// Uses [solve](struct.Control.html#method.solve) with [SolveMode::Yield](enum.SolveMode.html#variant.YIELD) and empty assumptions.
+    /// Uses [`solve()`](struct.Control.html#method.solve) with [SolveMode::Yield](enum.SolveMode.html#variant.YIELD) and empty assumptions.
     ///
     /// # Errors
     ///
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if solving could not be started
-    pub fn optimal_models(&mut self) -> Result<OptimalModels, ClingoError> {
+    pub fn optimal_models(self) -> Result<OptimalModels, ClingoError> {
         let mut handle = std::ptr::null_mut();
         if !unsafe {
             clingo_control_solve(
@@ -2166,11 +2255,11 @@ impl Control {
                 "Call to clingo_control_solve() failed",
             ));
         }
-        match unsafe { handle.as_mut() } {
-            Some(handle_ref) => Ok(OptimalModels(SolveHandle { theref: handle_ref })),
+        match NonNull::new(handle) {
+            Some(handle) => Ok(OptimalModels(SolveHandle { handle, ctl: self })),
             None => Err(ClingoError::FFIError {
-                msg: "Tried casting a null pointer to &mut clingo_solve_handle.",
-            }),
+                msg: "Tried creating NonNull from a null pointer.",
+            })?,
         }
     }
 
@@ -2188,7 +2277,7 @@ impl Control {
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if solving could not be started
     pub fn solve_with_event_handler<T: SolveEventHandler>(
-        &mut self,
+        self,
         mode: SolveMode,
         assumptions: &[Literal],
         event_handler: &mut T,
@@ -2210,21 +2299,14 @@ impl Control {
                 "Call to clingo_control_solve() failed",
             ));
         }
-        match unsafe { handle.as_mut() } {
-            Some(handle_ref) => Ok(SolveHandle { theref: handle_ref }),
+        match NonNull::new(handle) {
+            Some(handle) => Ok(SolveHandle { handle, ctl: self }),
             None => Err(ClingoError::FFIError {
-                msg: "Tried casting a null pointer to &mut clingo_solve_handle.",
-            }),
+                msg: "Tried creating NonNull from a null pointer.",
+            })?,
         }
     }
-
-    /// Clean up the domains of clingo's grounding component using the solving
-    /// component's top level assignment.
-    ///
-    /// This function removes atoms from domains that are false and marks atoms as
-    /// facts that are true.  With multi-shot solving, this can result in smaller
-    /// groundings because less rules have to be instantiated and more
-    /// simplifications can be applied.
+    /// **See:** [`Control::get_enable_cleanup()`](struct.Control.html#method.get_enable_cleanup) and [`Control::set_enable_cleanup()`](struct.Control.html#method.set_enable_cleanup)
     ///
     /// # Errors
     ///
@@ -2344,7 +2426,7 @@ impl Control {
     /// initial unit propagation results in an empty clause,
     /// or later if an empty clause is resolved during solving.
     /// Hence, the function might return false even if the problem is unsatisfiable.
-    pub fn clingo_control_is_conflicting(&self) -> bool {
+    pub fn is_conflicting(&self) -> bool {
         unsafe { clingo_control_is_conflicting(self.ctl.as_ptr()) }
     }
 
@@ -2359,11 +2441,13 @@ impl Control {
     /// The default level zero only provides basic statistics,
     /// level one provides extended and accumulated statistics,
     /// and level two provides per-thread statistics.
+    /// Furthermore, the statistics object is best accessed right after solving.
+    /// Otherwise, not all of its entries have valid values.
     ///
     /// # Errors
     ///
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
-    pub fn statistics<'a>(&'a self) -> Result<&'a Statistics, ClingoError> {
+    pub fn statistics(&self) -> Result<&Statistics, ClingoError> {
         let mut stat = std::ptr::null();
         if !unsafe { clingo_control_statistics(self.ctl.as_ptr(), &mut stat) } {
             return Err(ClingoError::new_internal(
@@ -2386,7 +2470,7 @@ impl Control {
     }
 
     /// Get a configuration object to change the solver configuration.
-    pub fn configuration_mut<'a>(&'a mut self) -> Result<&'a mut Configuration, ClingoError> {
+    pub fn configuration_mut(&mut self) -> Result<&mut Configuration, ClingoError> {
         let mut conf = std::ptr::null_mut();
         if !unsafe { clingo_control_configuration(self.ctl.as_ptr(), &mut conf) } {
             return Err(ClingoError::new_internal(
@@ -2402,7 +2486,7 @@ impl Control {
     }
 
     /// Get a configuration object to change the solver configuration.
-    pub fn configuration<'a>(&'a self) -> Result<&'a Configuration, ClingoError> {
+    pub fn configuration(&self) -> Result<&Configuration, ClingoError> {
         let mut conf = std::ptr::null_mut();
         if !unsafe { clingo_control_configuration(self.ctl.as_ptr(), &mut conf) } {
             return Err(ClingoError::new_internal(
@@ -2423,7 +2507,7 @@ impl Control {
     /// the solver's various enumeration modes is removed after a solve call. This
     /// includes enumeration of cautious or brave consequences, enumeration of
     /// answer sets with or without projection, or finding optimal models, as well
-    /// as clauses added with clingo_solve_control_add_clause().
+    /// as clauses added with [`SolveControl::add_clause()`](struct.SolveControl.html#method.add_clause).
     ///
     /// **Attention:** For practical purposes, this option is only interesting for single-shot
     /// solving or before the last solve call to squeeze out a tiny bit of performance.
@@ -2432,15 +2516,42 @@ impl Control {
     /// # Arguments
     ///
     /// * `enable` - whether to enable the assumption
-    pub fn use_enumeration_assumption(&mut self, enable: bool) -> Result<(), ClingoError> {
-        if !unsafe { clingo_control_use_enumeration_assumption(self.ctl.as_ptr(), enable) } {
+    pub fn set_enable_enumeration_assumption(&mut self, enable: bool) -> Result<(), ClingoError> {
+        if !unsafe { clingo_control_set_enable_enumeration_assumption(self.ctl.as_ptr(), enable) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_control_use_enumeration_assumption() failed",
             ));
         }
         Ok(())
     }
-
+    /// Check whether the enumeration assumption is enabled.
+    ///
+    /// **See** [`Control::set_enable_assumption()`](struct.Control.html#method.set_enable_assumption)
+    ///
+    /// **Returns** using the enumeration assumption is enabled
+    pub fn get_enable_enumeration_assumption(&self) -> bool {
+        unsafe { clingo_control_get_enable_enumeration_assumption(self.ctl.as_ptr()) }
+    }
+    /// Enable automatic cleanup after solving.
+    ///
+    /// **Note:** Cleanup is enabled by default.
+    ///
+    /// # Arguments
+    ///
+    /// * `enable` - whether to enable cleanups
+    ///
+    /// **Returns** whether the call was successful
+    ///
+    /// **See** [`Control::cleanup()`](struct.Control.html#method.cleanup) and [`Control::get_enable_cleanup()`](struct.Control.html#method.get_enable_cleanup)
+    pub fn set_enable_cleanup(&mut self, enable: bool) -> bool {
+        unsafe { clingo_control_set_enable_cleanup(self.ctl.as_ptr(), enable) }
+    }
+    /// Check whether automatic cleanup is enabled.
+    ///
+    /// **See** [`Control::cleanup()`](struct.Control.html#method.cleanup) and [`Control::set_enable_cleanup()`](struct.Control.html#method.set_enable_cleanup)
+    pub fn get_enable_cleanup(&self) -> bool {
+        unsafe { clingo_control_get_enable_cleanup(self.ctl.as_ptr()) }
+    }
     /// Return the symbol for a constant definition of form: `#const name = symbol`.
     ///
     /// # Arguments
@@ -2453,7 +2564,7 @@ impl Control {
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError)
     pub fn get_const(&self, name: &str) -> Result<Symbol, ClingoError> {
         let name = CString::new(name)?;
-        let mut symbol = 0 as clingo_symbol_t;
+        let mut symbol = 0;
         if !unsafe { clingo_control_get_const(self.ctl.as_ptr(), name.as_ptr(), &mut symbol) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_control_get_const() failed",
@@ -2502,7 +2613,7 @@ impl Control {
     }
 
     /// Get an object to inspect theory atoms that occur in the grounding.
-    pub fn theory_atoms<'a>(&'a self) -> Result<&'a TheoryAtoms, ClingoError> {
+    pub fn theory_atoms(&self) -> Result<&TheoryAtoms, ClingoError> {
         let mut atoms = std::ptr::null();
         if !unsafe { clingo_control_theory_atoms(self.ctl.as_ptr(), &mut atoms) } {
             return Err(ClingoError::new_internal(
@@ -2568,7 +2679,7 @@ impl Control {
     /// # Errors
     ///
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
-    pub fn backend<'a>(&'a mut self) -> Result<Backend<'a>, ClingoError> {
+    pub fn backend(&mut self) -> Result<Backend, ClingoError> {
         let mut backend = std::ptr::null_mut();
         if !unsafe { clingo_control_backend(self.ctl.as_ptr(), &mut backend) } {
             return Err(ClingoError::new_internal(
@@ -2598,7 +2709,7 @@ pub struct Configuration(clingo_configuration_t);
 impl Configuration {
     /// Get the root key of the configuration.
     pub fn root(&self) -> Result<Id, ClingoError> {
-        let mut root_key = 0 as clingo_id_t;
+        let mut root_key = 0;
         if !unsafe { clingo_configuration_root(&self.0, &mut root_key) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_configuration_root() failed",
@@ -2610,7 +2721,7 @@ impl Configuration {
     /// Get the type of a key.
     /// The type is a bitset, an entry can have multiple (but at least one) type.
     pub fn configuration_type(&self, Id(key): Id) -> Result<ConfigurationType, ClingoError> {
-        let mut ctype = 0 as clingo_configuration_type_bitset_t;
+        let mut ctype = 0;
         if !unsafe { clingo_configuration_type(&self.0, key, &mut ctype) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_configuration_type() failed",
@@ -2636,7 +2747,7 @@ impl Configuration {
     ///
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError)
     /// - [`ClingoError::Utf8Error`](enum.ClingoError.html#variant.Utf8Error)
-    pub fn description<'a>(&'a self, Id(key): Id) -> Result<&'a str, ClingoError> {
+    pub fn description(&self, Id(key): Id) -> Result<&str, ClingoError> {
         let mut description_ptr = std::ptr::null();
         if !unsafe { clingo_configuration_description(&self.0, key, &mut description_ptr) } {
             return Err(ClingoError::new_internal(
@@ -2681,7 +2792,7 @@ impl Configuration {
     /// * `key` - the key
     /// * `offset` - the offset in the array
     pub fn array_at(&self, Id(key): Id, offset: usize) -> Result<Id, ClingoError> {
-        let mut nkey = 0 as clingo_id_t;
+        let mut nkey = 0;
         if !unsafe { clingo_configuration_array_at(&self.0, key, offset, &mut nkey) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_configuration_array_at() failed",
@@ -2751,11 +2862,7 @@ impl Configuration {
     ///
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError)
     /// - [`ClingoError::Utf8Error`](enum.ClingoError.html#variant.Utf8Error)
-    pub fn map_subkey_name<'a>(
-        &'a self,
-        Id(key): Id,
-        offset: usize,
-    ) -> Result<&'a str, ClingoError> {
+    pub fn map_subkey_name(&self, Id(key): Id, offset: usize) -> Result<&str, ClingoError> {
         let mut name_ptr = std::ptr::null();
         if !unsafe { clingo_configuration_map_subkey_name(&self.0, key, offset, &mut name_ptr) } {
             return Err(ClingoError::new_internal(
@@ -2784,7 +2891,7 @@ impl Configuration {
     ///
     /// **Note:** Multiple levels can be looked up by concatenating keys with a period.
     pub fn map_at(&self, Id(key): Id, name: &str) -> Result<Id, ClingoError> {
-        let mut nkey = 0 as clingo_id_t;
+        let mut nkey = 0;
         let name = CString::new(name)?;
         if !unsafe { clingo_configuration_map_at(&self.0, key, name.as_ptr(), &mut nkey) } {
             return Err(ClingoError::new_internal(
@@ -2813,7 +2920,7 @@ impl Configuration {
         Ok(assigned)
     }
 
-    //NODO: clingo_configuration_value_get_size(&mut self.0, key, &mut size)
+    // NODO: fn clingo_configuration_value_get_size(&mut self.0, key, &mut size)
 
     /// Get the string value of the given entry.
     ///
@@ -2829,7 +2936,7 @@ impl Configuration {
     ///
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError)
     /// - [`ClingoError::Utf8Error`](enum.ClingoError.html#variant.Utf8Error)
-    pub fn value_get<'a>(&'a self, Id(key): Id) -> Result<String, ClingoError> {
+    pub fn value_get(&self, Id(key): Id) -> Result<String, ClingoError> {
         let mut size = 0;
         if !unsafe { clingo_configuration_value_get_size(&self.0, key, &mut size) } {
             return Err(ClingoError::new_internal(
@@ -3142,7 +3249,7 @@ impl<'a> Backend<'a> {
     pub fn add_atom(&mut self, symbol: Option<Symbol>) -> Result<Atom, ClingoError> {
         match symbol {
             Some(Symbol(mut symbol)) => {
-                let mut atom = 0 as clingo_atom_t;
+                let mut atom = 0;
                 if unsafe { clingo_backend_add_atom(self.theref, &mut symbol, &mut atom) } {
                     Ok(Atom(atom))
                 } else {
@@ -3152,7 +3259,7 @@ impl<'a> Backend<'a> {
                 }
             }
             None => {
-                let mut atom = 0 as clingo_atom_t;
+                let mut atom = 0;
                 let null = std::ptr::null_mut();
                 if unsafe { clingo_backend_add_atom(self.theref, null, &mut atom) } {
                     Ok(Atom(atom))
@@ -3172,7 +3279,7 @@ pub struct Statistics(clingo_statistics_t);
 impl Statistics {
     /// Get the root key of the statistics.
     pub fn root(&self) -> Result<u64, ClingoError> {
-        let mut root_key = 0 as u64;
+        let mut root_key = 0;
         if !unsafe { clingo_statistics_root(&self.0, &mut root_key) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_statistics_root() failed",
@@ -3187,7 +3294,7 @@ impl Statistics {
     ///
     /// * `key` - the key
     pub fn statistics_type(&self, key: u64) -> Result<StatisticsType, ClingoError> {
-        let mut stype = 0 as clingo_statistics_type_t;
+        let mut stype = 0;
         if !unsafe { clingo_statistics_type(&self.0, key, &mut stype) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_statistics_type() failed",
@@ -3207,7 +3314,7 @@ impl Statistics {
     ///
     /// * `key` - the key
     pub fn array_size(&self, key: u64) -> Result<usize, ClingoError> {
-        let mut size = 0 as usize;
+        let mut size = 0;
         if !unsafe { clingo_statistics_array_size(&self.0, key, &mut size) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_statistics_array_size() failed",
@@ -3228,7 +3335,7 @@ impl Statistics {
     /// * `key` - the key
     /// * `offset` - the offset in the array
     pub fn array_at(&self, key: u64, offset: usize) -> Result<u64, ClingoError> {
-        let mut subkey = 0 as u64;
+        let mut subkey = 0;
         if !unsafe { clingo_statistics_array_at(&self.0, key, offset, &mut subkey) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_statistics_array_at() failed",
@@ -3249,7 +3356,7 @@ impl Statistics {
     /// * `key` - the key
     /// * `stype` -  the type of the new subkey
     pub fn array_push(&mut self, key: u64, stype: StatisticsType) -> Result<u64, ClingoError> {
-        let mut subkey = 0 as u64;
+        let mut subkey = 0;
         if !unsafe {
             clingo_statistics_array_push(
                 &mut self.0,
@@ -3276,7 +3383,7 @@ impl Statistics {
     ///
     /// * `key` - the key
     pub fn map_size(&self, key: u64) -> Result<usize, ClingoError> {
-        let mut size = 0 as usize;
+        let mut size = 0;
         if !unsafe { clingo_statistics_map_size(&self.0, key, &mut size) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_statistics_map_size() failed",
@@ -3328,7 +3435,7 @@ impl Statistics {
     ///
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError)
     /// - [`ClingoError::Utf8Error`](enum.ClingoError.html#variant.Utf8Error)
-    pub fn map_subkey_name<'a>(&'a self, key: u64, offset: usize) -> Result<&'a str, ClingoError> {
+    pub fn map_subkey_name(&self, key: u64, offset: usize) -> Result<&str, ClingoError> {
         let mut name = std::ptr::null();
         if !unsafe { clingo_statistics_map_subkey_name(&self.0, key, offset, &mut name) } {
             return Err(ClingoError::new_internal(
@@ -3362,7 +3469,7 @@ impl Statistics {
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError)
     /// - [`ClingoError::NulError`](enum.ClingoError.html#variant.NulError) - if `name` contains a nul byte
     pub fn map_at(&self, key: u64, name: &str) -> Result<u64, ClingoError> {
-        let mut subkey = 0 as u64;
+        let mut subkey = 0;
         let name = CString::new(name)?;
         if !unsafe { clingo_statistics_map_at(&self.0, key, name.as_ptr(), &mut subkey) } {
             return Err(ClingoError::new_internal(
@@ -3397,7 +3504,7 @@ impl Statistics {
         name: &str,
         stype: StatisticsType,
     ) -> Result<u64, ClingoError> {
-        let mut subkey = 0 as u64;
+        let mut subkey = 0;
         let name = CString::new(name)?;
         if !unsafe {
             clingo_statistics_map_add_subkey(
@@ -3426,7 +3533,7 @@ impl Statistics {
     ///
     /// * `key` - the key
     pub fn value_get(&self, key: u64) -> Result<f64, ClingoError> {
-        let mut value = 0.0 as f64;
+        let mut value = 0.0;
         if !unsafe { clingo_statistics_value_get(&self.0, key, &mut value) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_symbolic_atoms_size() failed",
@@ -3461,7 +3568,7 @@ pub struct SymbolicAtoms(clingo_symbolic_atoms_t);
 impl SymbolicAtoms {
     /// Get the number of different atoms occurring in a logic program.
     pub fn size(&self) -> Result<usize, ClingoError> {
-        let mut size = 0 as usize;
+        let mut size = 0;
         if !unsafe { clingo_symbolic_atoms_size(&self.0, &mut size) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_symbolic_atoms_size() failed",
@@ -3472,13 +3579,13 @@ impl SymbolicAtoms {
 
     /// Get a forward iterator of the sequence of all symbolic atoms.
     pub fn iter(&self) -> Result<SymbolicAtomsIterator, ClingoError> {
-        let mut begin = 0 as clingo_symbolic_atom_iterator_t;
+        let mut begin = 0;
         if !unsafe { clingo_symbolic_atoms_begin(&self.0, std::ptr::null(), &mut begin) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_symbolic_atoms_begin() failed",
             ));
         }
-        let mut end = 0 as clingo_symbolic_atom_iterator_t;
+        let mut end = 0;
         if !unsafe { clingo_symbolic_atoms_end(&self.0, &mut end) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_symbolic_atoms_end() failed",
@@ -3497,15 +3604,15 @@ impl SymbolicAtoms {
     /// * `signature` - the signature
     pub fn iter_with_signature(
         &self,
-        sig: &Signature,
+        sig: Signature,
     ) -> Result<SymbolicAtomsIterator, ClingoError> {
-        let mut begin = 0 as clingo_symbolic_atom_iterator_t;
+        let mut begin = 0;
         if !unsafe { clingo_symbolic_atoms_begin(&self.0, &sig.0, &mut begin) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_symbolic_atoms_begin() failed",
             ));
         }
-        let mut end = 0 as clingo_symbolic_atom_iterator_t;
+        let mut end = 0;
         if !unsafe { clingo_symbolic_atoms_end(&self.0, &mut end) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_symbolic_atoms_end() failed",
@@ -3518,7 +3625,7 @@ impl SymbolicAtoms {
         })
     }
 
-    //NODO: fn clingo_symbolic_atoms_signatures_size()
+    // NODO: fn clingo_symbolic_atoms_signatures_size()
 
     /// Get the predicate signatures occurring in a logic program.
     ///
@@ -3548,7 +3655,7 @@ impl SymbolicAtoms {
         Ok(signatures)
     }
 
-    //NODO clingo_symbolic_atoms_is_valid()
+    // NODO: fn clingo_symbolic_atoms_is_valid()
 }
 /// An iterator over symbolic atoms.
 pub struct SymbolicAtomsIterator<'a> {
@@ -3621,7 +3728,7 @@ impl<'a> SymbolicAtom<'a> {
 
     /// Get the symbolic representation of an atom.
     pub fn symbol(&self) -> Result<Symbol, ClingoError> {
-        let mut symbol = 0 as clingo_symbol_t;
+        let mut symbol = 0;
         if !unsafe { clingo_symbolic_atoms_symbol(self.atoms, self.cur, &mut symbol) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_symbolic_atoms_symbol() failed",
@@ -3635,7 +3742,7 @@ impl<'a> SymbolicAtom<'a> {
     /// Such a literal can be mapped to a solver literal (see [`Propagator`](struct.Propagator)).
     /// or be used in rules in aspif format (see [`ProgramBuilder`](struct.ProgramBuilder.html)).
     pub fn literal(&self) -> Result<Literal, ClingoError> {
-        let mut literal = 0 as clingo_literal_t;
+        let mut literal = 0;
         if !unsafe { clingo_symbolic_atoms_literal(self.atoms, self.cur, &mut literal) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_symbolic_atoms_literal() failed",
@@ -3653,7 +3760,7 @@ pub struct TheoryAtoms(clingo_theory_atoms_t);
 impl TheoryAtoms {
     /// Get the total number of theory atoms.
     pub fn size(&self) -> Result<usize, ClingoError> {
-        let mut size = 0 as usize;
+        let mut size = 0;
         if !unsafe { clingo_theory_atoms_size(&self.0, &mut size) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_theory_atoms_size() failed",
@@ -3676,7 +3783,7 @@ impl TheoryAtoms {
     ///
     /// * `term` - id of the term
     pub fn term_type(&self, Id(term): Id) -> Result<TheoryTermType, ClingoError> {
-        let mut ttype = 0 as clingo_theory_term_type_t;
+        let mut ttype = 0;
         if !unsafe { clingo_theory_atoms_term_type(&self.0, term, &mut ttype) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_theory_atoms_term_type() failed",
@@ -3711,6 +3818,9 @@ impl TheoryAtoms {
     /// The term must be of type [`TermType::Function`](enum.TermType.html#variant.Function) or
     /// [`TermType::Symbol`](enum.TermType.html#variant.Symbol).
     ///
+    /// **Note:**
+    /// The lifetime of the string is tied to the current solve step.
+    ///
     /// # Arguments
     ///
     /// * `term` id of the term
@@ -3744,7 +3854,7 @@ impl TheoryAtoms {
     /// # Arguments
     ///
     /// * `term` - id of the term
-    pub fn term_arguments<'a>(&'a self, Id(term): Id) -> Result<&'a [Id], ClingoError> {
+    pub fn term_arguments(&self, Id(term): Id) -> Result<&[Id], ClingoError> {
         let mut size = 0;
         let mut c_ptr = std::ptr::null();
         if !unsafe { clingo_theory_atoms_term_arguments(&self.0, term, &mut c_ptr, &mut size) } {
@@ -3756,7 +3866,7 @@ impl TheoryAtoms {
         Ok(arguments_ref)
     }
 
-    //NODO: pub fn clingo_theory_atoms_term_to_string_size()
+    // NODO: fn clingo_theory_atoms_term_to_string_size()
 
     /// Get the string representation of the given theory term.
     ///
@@ -3852,7 +3962,7 @@ impl TheoryAtoms {
         Ok(Literal(unsafe { *condition_ptr }))
     }
 
-    //NODO: pub fn clingo_theory_atoms_element_to_string_size()
+    // NODO: fn clingo_theory_atoms_element_to_string_size()
 
     /// Get the string representation of the given theory element.
     ///
@@ -3890,7 +4000,7 @@ impl TheoryAtoms {
     ///
     /// * `atom` - id of the atom
     pub fn atom_term(&self, Id(atom): Id) -> Result<Id, ClingoError> {
-        let mut term = 0 as clingo_id_t;
+        let mut term = 0;
         if !unsafe { clingo_theory_atoms_atom_term(&self.0, atom, &mut term) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_theory_atoms_atom_term() failed",
@@ -3935,6 +4045,9 @@ impl TheoryAtoms {
 
     /// Get the guard consisting of a theory operator and a theory term of the given theory atom.
     ///
+    /// **Note:**
+    /// The lifetime of the string is tied to the current solve step.
+    ///
     /// # Arguments
     ///
     /// * `atom` - id of the atom
@@ -3945,7 +4058,7 @@ impl TheoryAtoms {
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError)
     pub fn atom_guard(&self, Id(atom): Id) -> Result<(&str, Id), ClingoError> {
         let mut c_ptr = std::ptr::null() as *const c_char;
-        let mut term = 0 as clingo_id_t;
+        let mut term = 0;
         if !unsafe { clingo_theory_atoms_atom_guard(&self.0, atom, &mut c_ptr, &mut term) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_theory_atoms_atom_guard() failed",
@@ -3966,7 +4079,7 @@ impl TheoryAtoms {
     ///
     /// * `atom` id of the atom
     pub fn atom_literal(&self, Id(atom): Id) -> Result<Literal, ClingoError> {
-        let mut literal = 0 as clingo_literal_t;
+        let mut literal = 0;
         if !unsafe { clingo_theory_atoms_atom_literal(&self.0, atom, &mut literal) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_theory_atoms_atom_literal() failed",
@@ -3975,7 +4088,7 @@ impl TheoryAtoms {
         Ok(Literal(literal))
     }
 
-    //NODO: pub fn clingo_theory_atoms_atom_to_string_size()
+    // NODO: fn clingo_theory_atoms_atom_to_string_size()
 
     /// Get the string representation of the given theory atom.
     ///
@@ -4035,7 +4148,7 @@ pub struct Model(clingo_model_t);
 impl Model {
     /// Get the type of the model.
     pub fn model_type(&self) -> Result<ModelType, ClingoError> {
-        let mut mtype = 0 as clingo_model_type_t;
+        let mut mtype = 0;
         if !unsafe { clingo_model_type(&self.0, &mut mtype) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_model_type() failed",
@@ -4055,7 +4168,7 @@ impl Model {
         Ok(number)
     }
 
-    //NODO: pub fn clingo_model_symbols_size()
+    // NODO: fn clingo_model_symbols_size()
 
     /// Get the symbols of the selected types in the model.
     ///
@@ -4124,7 +4237,7 @@ impl Model {
         Ok(is_true)
     }
 
-    //NODO: pub fn clingo_model_cost_size(model: *mut Model, size: *mut size_t) -> u8;
+    // NODO: fn clingo_model_cost_size(model: *mut Model, size: *mut size_t) -> u8;
 
     /// Get the cost vector of a model.
     ///
@@ -4165,7 +4278,7 @@ impl Model {
 
     /// Get the id of the solver thread that found the model.
     pub fn thread_id(&self) -> Result<Id, ClingoError> {
-        let mut id = 0 as clingo_id_t;
+        let mut id = 0;
         if !unsafe { clingo_model_thread_id(&self.0, &mut id) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_model_thread_id() failed",
@@ -4174,11 +4287,11 @@ impl Model {
         Ok(Id(id))
     }
 
-    /// Add symbols to the model."]
+    /// Add symbols to the model.
     ///
     /// These symbols will appear in clingo\'s output, which means that this
-    /// function is only meaningful if there is an underlying clingo application."]
-    /// Only models passed to the ::clingo_solve_event_callback_t are extendable."]
+    /// function is only meaningful if there is an underlying clingo application.
+    /// Only models passed to the ::clingo_solve_event_callback_t are extendable.
     ///
     /// # Arguments
     ///
@@ -4198,7 +4311,7 @@ impl Model {
     /// Get the associated solve control object of a model.
     ///
     /// This object allows for adding clauses during model enumeration.
-    pub fn context<'a>(&'a self) -> Result<&'a mut SolveControl, ClingoError> {
+    pub fn context(&self) -> Result<&mut SolveControl, ClingoError> {
         let control_ptr = std::ptr::null_mut();
         if !unsafe { clingo_model_context(&self.0, control_ptr) } {
             return Err(ClingoError::new_internal(
@@ -4325,7 +4438,7 @@ impl Assignment {
     ///
     /// **Returns** the decision literal for the given decision level
     pub fn decision(&self, level: u32) -> Result<Literal, ClingoError> {
-        let mut lit = 0 as clingo_literal_t;
+        let mut lit = 0;
         if !unsafe { clingo_assignment_decision(&self.0, level, &mut lit) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_assignment_decision() failed",
@@ -4401,19 +4514,102 @@ impl Assignment {
         TruthValue::try_from(value)
     }
 
-    /// The number of assigned literals in the assignment.
+    /// The number of (positive) literals in the assignment.
     pub fn size(&self) -> usize {
         unsafe { clingo_assignment_size(&self.0) }
     }
 
-    /// The maximum size of the assignment (if all literals are assigned).
-    pub fn max_size(&self) -> usize {
-        unsafe { clingo_assignment_max_size(&self.0) }
+    /// The (positive) literal at the given offset in the assignment.
+    ///
+    /// # Arguments
+    ///
+    /// * `offset` - the offset of the literal
+    ///
+    /// **Returns** the literal
+    pub fn at(&self, offset: usize) -> Result<Literal, ClingoError> {
+        let mut lit = 0;
+        if !unsafe { clingo_assignment_at(&self.0, offset, &mut lit) } {
+            return Err(ClingoError::new_internal(
+                "Call to clingo_assignment_at() failed",
+            ));
+        }
+        Ok(Literal(lit))
     }
 
-    /// Check if the assignmen is total, i.e. - size == max_size.
+    /// Check if the assignmen is total, i.e. there are no free literal.
     pub fn is_total(&self) -> bool {
         unsafe { clingo_assignment_is_total(&self.0) }
+    }
+
+    /// Returns the number of literals in the trail, i.e., the number of assigned literals.
+    pub fn trail_size(&self) -> Result<u32, ClingoError> {
+        let mut size = 0;
+        if !unsafe { clingo_assignment_trail_size(&self.0, &mut size) } {
+            return Err(ClingoError::new_internal(
+                "Call to clingo_assignment_trail_size() failed",
+            ));
+        }
+        Ok(size)
+    }
+
+    /// Returns the offset of the decision literal with the given decision level in
+    /// the trail.
+    ///
+    /// **Note:** Literals in the trail are ordered by decision levels, where the first
+    /// literal with a larger level than the previous literals is a decision; the
+    /// following literals with same level are implied by this decision literal.
+    /// Each decision level up to and including the current decision level has a
+    /// valid offset in the trail.
+    ///
+    /// # Arguments
+    ///
+    /// * `level` - the decision level
+    ///
+    /// **Returns** the offset of the decision literal
+    pub fn trail_begin(&self, level: u32) -> Result<u32, ClingoError> {
+        let mut offset = 0;
+        if !unsafe { clingo_assignment_trail_begin(&self.0, level, &mut offset) } {
+            return Err(ClingoError::new_internal(
+                "Call to clingo_assignment_trail_begin() failed",
+            ));
+        }
+        Ok(offset)
+    }
+
+    /// Returns the offset following the last literal with the given decision level.
+    ///
+    /// **Note:** This function is the counter part to clingo_assignment_trail_begin().
+    ///
+    /// # Arguments
+    ///
+    /// * `level` - the decision level
+    ///
+    /// **Returns** the offset
+    pub fn trail_end(&self, level: u32) -> Result<u32, ClingoError> {
+        let mut offset = 0;
+        if !unsafe { clingo_assignment_trail_end(&self.0, level, &mut offset) } {
+            return Err(ClingoError::new_internal(
+                "Call to clingo_assignment_trail_end() failed",
+            ));
+        }
+        Ok(offset)
+    }
+
+    /// Returns the literal at the given position in the trail.
+    ///
+    /// # Arguments
+    ///
+    /// * `offset` - the offset of the literal
+    ///
+    /// **Returns** the literal
+    pub fn trail_at(&self, offset: u32) -> Result<Literal, ClingoError> {
+        let mut lit = 0;
+        if !unsafe { clingo_assignment_trail_at(&self.0, offset, &mut lit) } {
+            return Err(ClingoError::new_internal(
+                "Call to clingo_assignment_trail_at() failed",
+            ));
+        }
+        Ok(Literal(lit))
     }
 }
 
@@ -4527,6 +4723,8 @@ impl PropagateControl {
     /// * `clause` - the clause to add
     /// * `ctype` - the clause type determining its lifetime
     ///
+    /// **Returns** result indicating whether propagation has to be stopped
+    ///
     /// # Errors
     ///
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
@@ -4596,7 +4794,7 @@ impl PropagateInit {
     ///
     /// **Returns** the corresponding solver literal
     pub fn solver_literal(&self, Literal(aspif_literal): Literal) -> Result<Literal, ClingoError> {
-        let mut solver_literal = 0 as clingo_literal_t;
+        let mut solver_literal = 0;
         if !unsafe {
             clingo_propagate_init_solver_literal(&self.0, aspif_literal, &mut solver_literal)
         } {
@@ -4718,13 +4916,46 @@ impl PropagateInit {
         }
     }
 
+    /// Add a literal to the solver.
+    ///
+    /// To be able to use the variable in clauses during propagation or add watches to it, it has to be frozen.
+    /// Otherwise, it might be removed during preprocessing.
+    ///
+    /// **Attention** If varibales were added, subsequent calls to functions adding constraints or ::clingo_propagate_init_propagate() are expensive.
+    /// It is best to add varables in batches.
+    ///
+    /// # Arguments
+    ///
+    /// * `freeze` - whether to freeze the literal
+    /// **Returns** the added literal
+    ///
+    /// # Errors
+    ///
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    pub fn add_literal(&mut self, freeze: bool) -> Result<&mut Literal, ClingoError> {
+        let literal_ptr = std::ptr::null_mut() as *mut clingo_literal_t;
+        if !unsafe { clingo_propagate_init_add_literal(&mut self.0, freeze, literal_ptr) } {
+            return Err(ClingoError::new_internal(
+                "Call to clingo_propagate_init_add_literal() failed",
+            ));
+        }
+        match unsafe { (literal_ptr as *mut Literal).as_mut() } {
+            Some(x) => Ok(x),
+            None => Err(ClingoError::FFIError {
+                msg: "Tried casting a null pointer to &mut Literal.",
+            }),
+        }
+    }
+
     /// Add the given clause to the solver.
     ///
-    /// This method sets its result to false if the clause is causing a conflict.
+    /// **Attention** No further calls on the init object or functions on the assignment should be called when the result of this method is false.
     ///
     /// # Arguments
     ///
     /// * `clause` - the clause to add
+    ///
+    ///  **Returns** whether the problem became unsatisfiable
     ///
     /// # Errors
     ///
@@ -4745,14 +4976,107 @@ impl PropagateInit {
         }
         Ok(result)
     }
+
+    /// Add the given weight constraint to the solver.
+    ///
+    /// This function adds a constraint of form `literal <=> { lit=weight | (lit, weight) in literals } >= bound` to the solver.
+    /// Depending on the type the `<=>` connective can be either a left implication, right implication, or equivalence.
+    ///
+    /// **Attention** No further calls on the init object or functions on the assignment should be called when the result of this method is false.
+    ///
+    /// * `literal` - the literal of the constraint
+    /// * `literals` - the weighted literals
+    /// * `bound` - the bound of the constraint
+    /// * `wctype` - the type of the weight constraint
+    /// * `compare_equal` - if true compare equal instead of less than equal
+    ///
+    /// **Returns** result indicating whether the problem became unsatisfiable
+    ///
+    /// # Errors
+    ///
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    pub fn add_weight_constraint(
+        &mut self,
+        literal: Literal,
+        literals: &[WeightedLiteral],
+        bound: i32,
+        wctype: WeigthConstraintType,
+        compare_equal: bool,
+    ) -> Result<bool, ClingoError> {
+        let mut result = false;
+        if !unsafe {
+            clingo_propagate_init_add_weight_constraint(
+                &mut self.0,
+                literal.0,
+                literals.as_ptr() as *const clingo_weighted_literal_t,
+                literals.len(),
+                bound,
+                wctype as i32,
+                compare_equal,
+                &mut result,
+            )
+        } {
+            return Err(ClingoError::new_internal(
+                "Call to clingo_propagate_init_add_weight_constraint() failed",
+            ));
+        }
+        Ok(result)
+    }
+    /// Add the given literal to minimize to the solver.
+    ///
+    /// This corresponds to a weak constraint of form `:~ literal. [weight@priority]`.
+    ///
+    /// * `literal` - the literal to minimize
+    /// * `weight` - the weight of the literal
+    /// * `priority` - the priority of the literal
+    ///
+    /// # Errors
+    ///
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    pub fn add_minimize(
+        &mut self,
+        literal: Literal,
+        weight: i32,
+        priority: i32,
+    ) -> Result<(), ClingoError> {
+        if !unsafe { clingo_propagate_init_add_minimize(&mut self.0, literal.0, weight, priority) }
+        {
+            return Err(ClingoError::new_internal(
+                "Call to clingo_propagate_init_add_minimize() failed",
+            ));
+        }
+        Ok(())
+    }
+
+    /// Propagates consequences of the underlying problem excluding registered propagators.
+    ///
+    /// **Note** The function has no effect if SAT-preprocessing is enabled.
+    ///
+    /// **Attention** No further calls on the init object or functions on the assignment should be called when the result of this method is false.
+    ///
+    /// **Returns** result indicating whether the problem became unsatisfiable
+    ///
+    /// # Errors
+    ///
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    pub fn propagate(&mut self) -> Result<bool, ClingoError> {
+        let mut result = false;
+        if !unsafe { clingo_propagate_init_propagate(&mut self.0, &mut result) } {
+            return Err(ClingoError::new_internal(
+                "Call to clingo_propagate_init_propagate() failed",
+            ));
+        }
+        Ok(result)
+    }
 }
 
 /// Search handle to a solve call.
 #[derive(Debug)]
-pub struct SolveHandle<'a> {
-    theref: &'a mut clingo_solve_handle_t,
+pub struct SolveHandle {
+    handle: NonNull<clingo_solve_handle_t>,
+    ctl: Control,
 }
-impl<'a> SolveHandle<'a> {
+impl SolveHandle {
     /// Get the next solve result.
     ///
     /// Blocks until the result is ready.
@@ -4765,7 +5089,7 @@ impl<'a> SolveHandle<'a> {
     /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if solving fails
     pub fn get(&mut self) -> Result<SolveResult, ClingoError> {
         let mut result = 0;
-        if !unsafe { clingo_solve_handle_get(self.theref, &mut result) } {
+        if !unsafe { clingo_solve_handle_get(self.handle.as_ptr(), &mut result) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_solve_handle_get() failed",
             ));
@@ -4790,7 +5114,7 @@ impl<'a> SolveHandle<'a> {
     /// * `timeout` - the maximum time to wait
     pub fn wait(&mut self, timeout: f64) -> bool {
         let mut result = false;
-        unsafe { clingo_solve_handle_wait(self.theref, timeout, &mut result) }
+        unsafe { clingo_solve_handle_wait(self.handle.as_ptr(), timeout, &mut result) }
         result
     }
 
@@ -4802,12 +5126,45 @@ impl<'a> SolveHandle<'a> {
     /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if solving fails
     pub fn model(&mut self) -> Result<Option<&Model>, ClingoError> {
         let mut model = std::ptr::null_mut() as *const clingo_model_t;
-        if !unsafe { clingo_solve_handle_model(self.theref, &mut model) } {
+        if !unsafe { clingo_solve_handle_model(self.handle.as_ptr(), &mut model) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_solve_handle_model() failed",
             ));
         }
         Ok(unsafe { (model as *const Model).as_ref() })
+    }
+
+    /// When a problem is unsatisfiable, get a subset of the assumptions that made the problem unsatisfiable.
+    ///
+    /// If the program is not unsatisfiable, an empty vector is returned.
+    ///
+    /// **Returns** the unsatisfiable core
+    ///
+    /// # Errors
+    ///
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    pub fn core(&mut self) -> Result<Vec<Literal>, ClingoError> {
+        let mut literal_ptr = std::ptr::null();
+        let mut size: usize = 0;
+        if !unsafe { clingo_solve_handle_core(self.handle.as_ptr(), &mut literal_ptr, &mut size) } {
+            return Err(ClingoError::new_internal(
+                "Call to clingo_solve_handle_core() failed",
+            ));
+        }
+        // let literals = unsafe {std::slice::from_raw_parts(literal_ptr, size)};
+
+        let mut literals = Vec::<Literal>::with_capacity(size);
+        for _ in 0..size {
+            if literal_ptr.is_null() {
+                return Err(ClingoError::FFIError {
+                    msg: "clingo_solve_handle_core() returned a null pointer.",
+                });
+            }
+            let nliteral = unsafe { *literal_ptr };
+            literals.push(Literal(nliteral));
+            literal_ptr = unsafe { literal_ptr.offset(1) };
+        }
+        Ok(literals)
     }
 
     /// Get the next model or None if there are no more models.
@@ -4818,7 +5175,7 @@ impl<'a> SolveHandle<'a> {
     /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if solving fails
     pub fn model_mut(&mut self) -> Result<&mut Model, ClingoError> {
         let mut model = std::ptr::null_mut() as *const clingo_model_t;
-        if !unsafe { clingo_solve_handle_model(self.theref, &mut model) } {
+        if !unsafe { clingo_solve_handle_model(self.handle.as_ptr(), &mut model) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_solve_handle_model() failed",
             ));
@@ -4842,7 +5199,7 @@ impl<'a> SolveHandle<'a> {
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if solving fails
     pub fn resume(&mut self) -> Result<(), ClingoError> {
-        if !unsafe { clingo_solve_handle_resume(self.theref) } {
+        if !unsafe { clingo_solve_handle_resume(self.handle.as_ptr()) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_solve_handle_resume() failed",
             ));
@@ -4857,7 +5214,7 @@ impl<'a> SolveHandle<'a> {
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if solving fails
     pub fn cancel(&mut self) -> Result<(), ClingoError> {
-        if !unsafe { clingo_solve_handle_cancel(self.theref) } {
+        if !unsafe { clingo_solve_handle_cancel(self.handle.as_ptr()) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_solve_handle_cancel() failed",
             ));
@@ -4874,19 +5231,19 @@ impl<'a> SolveHandle<'a> {
     ///
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if solving fails
-    pub fn close(self) -> Result<(), ClingoError> {
-        if !unsafe { clingo_solve_handle_close(self.theref) } {
+    pub fn close(self) -> Result<Control, ClingoError> {
+        if !unsafe { clingo_solve_handle_close(self.handle.as_ptr()) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_solve_handle_close() failed",
             ));
         }
-        Ok(())
+        Ok(self.ctl)
     }
 }
 
-pub struct OptimalModels<'a>(SolveHandle<'a>);
+pub struct OptimalModels(SolveHandle);
 
-impl<'a, 'b> Iterator for OptimalModels<'a> {
+impl Iterator for OptimalModels {
     type Item = MModel;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -4913,8 +5270,8 @@ impl<'a, 'b> Iterator for OptimalModels<'a> {
         }
     }
 }
-pub struct AllModels<'a>(SolveHandle<'a>);
-impl<'a, 'b> Iterator for AllModels<'a> {
+pub struct AllModels(SolveHandle);
+impl Iterator for AllModels {
     type Item = MModel;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -4946,12 +5303,199 @@ pub struct MModel {
     pub model_type: ModelType,
     pub number: u64,
 }
+// #[doc = "! Callback to customize clingo main function."]
+// #[doc = "!"]
+// #[doc = "! @param[in] control corresponding control object"]
+// #[doc = "! @param[in] files files passed via command line arguments"]
+// #[doc = "! @param[in] size number of files"]
+// #[doc = "! @param[in] data user data for the callback"]
+// #[doc = "!"]
+// #[doc = "! @return whether the call was successful"]
+// pub type clingo_main_function_t = ::std::option::Option<
+//     unsafe extern "C" fn(
+//         control: *mut clingo_control_t,
+//         files: *const *const ::std::os::raw::c_char,
+//         size: usize,
+//         data: *mut ::std::os::raw::c_void,
+//     ) -> bool,
+// >;
+// #[doc = "! Callback to print a model in default format."]
+// #[doc = "!"]
+// #[doc = "! @param[in] data user data for the callback"]
+// #[doc = "!"]
+// #[doc = "! @return whether the call was successful"]
+// pub type clingo_default_model_printer_t =
+//     ::std::option::Option<unsafe extern "C" fn(data: *mut ::std::os::raw::c_void) -> bool>;
+// #[doc = "! Callback to customize model printing."]
+// #[doc = "!"]
+// #[doc = "! @param[in] model the model"]
+// #[doc = "! @param[in] printer the default model printer"]
+// #[doc = "! @param[in] printer_data user data for the printer"]
+// #[doc = "! @param[in] data user data for the callback"]
+// #[doc = "!"]
+// #[doc = "! @return whether the call was successful"]
+// pub type clingo_model_printer_t = ::std::option::Option<
+//     unsafe extern "C" fn(
+//         model: *const clingo_model_t,
+//         printer: clingo_default_model_printer_t,
+//         printer_data: *mut ::std::os::raw::c_void,
+//         data: *mut ::std::os::raw::c_void,
+//     ) -> bool,
+// >;
+// #[doc = "! This struct contains a set of functions to customize the clingo application."]
+// #[repr(C)]
+// #[derive(Debug, Copy, Clone)]
+// pub struct clingo_application {
+//     #[doc = "!< callback to obtain program name"]
+//     pub program_name: ::std::option::Option<
+//         unsafe extern "C" fn(data: *mut ::std::os::raw::c_void) -> *const ::std::os::raw::c_char,
+//     >,
+//     #[doc = "!< callback to obtain version information"]
+//     pub version: ::std::option::Option<
+//         unsafe extern "C" fn(data: *mut ::std::os::raw::c_void) -> *const ::std::os::raw::c_char,
+//     >,
+//     #[doc = "!< callback to obtain message limit"]
+//     pub message_limit: ::std::option::Option<
+//         unsafe extern "C" fn(data: *mut ::std::os::raw::c_void) -> ::std::os::raw::c_uint,
+//     >,
+//     #[doc = "!< callback to override clingo's main function"]
+//     pub main: clingo_main_function_t,
+//     #[doc = "!< callback to override default logger"]
+//     pub logger: clingo_logger_t,
+//     #[doc = "!< callback to override default model printing"]
+//     pub printer: clingo_model_printer_t,
+//     #[doc = "!< callback to register options"]
+//     pub register_options: ::std::option::Option<
+//         unsafe extern "C" fn(
+//             options: *mut clingo_options_t,
+//             data: *mut ::std::os::raw::c_void,
+//         ) -> bool,
+//     >,
+//     #[doc = "!< callback validate options"]
+//     pub validate_options:
+//         ::std::option::Option<unsafe extern "C" fn(data: *mut ::std::os::raw::c_void) -> bool>,
+// }
+// #[doc = "! This struct contains a set of functions to customize the clingo application."]
+// pub type clingo_application_t = clingo_application;
+// pub trait Application {
+//     fn program_name(&self) -> String;
+//     #[doc(hidden)]
+//     unsafe extern "C" fn unsafe_program_name<T: Application>(data: *mut ::std::os::raw::c_void) -> *const ::std::os::raw::c_char {
+//         // check for null pointers
+//         if data.is_null()
+//         {
+//             set_internal_error(
+//                 ErrorType::Runtime,
+//                 "unsafe_program_name() got a null pointer.",
+//             );
+//             return std::ptr::null();
+//         }
+//         let data = &mut *(data as *mut T);
 
+//         let name = data.program_name();
+//         let c_name: CStr = name.into();
+//         c_name.as_ptr()
+//     }
+// }
+
+// extern "C" {
+//     #[doc = "! Add an option that is processed with a custom parser."]
+//     #[doc = "!"]
+//     #[doc = "! Note that the parser also has to take care of storing the semantic value of"]
+//     #[doc = "! the option somewhere."]
+//     #[doc = "!"]
+//     #[doc = "! Parameter option specifies the name(s) of the option."]
+//     #[doc = "! For example, \"ping,p\" adds the short option \"-p\" and its long form \"--ping\"."]
+//     #[doc = "! It is also possible to associate an option with a help level by adding \",@l\" to the option specification."]
+//     #[doc = "! Options with a level greater than zero are only shown if the argument to help is greater or equal to l."]
+//     #[doc = "!"]
+//     #[doc = "! @param[in] options object to register the option with"]
+//     #[doc = "! @param[in] group options are grouped into sections as given by this string"]
+//     #[doc = "! @param[in] option specifies the command line option"]
+//     #[doc = "! @param[in] description the description of the option"]
+//     #[doc = "! @param[in] parse callback to parse the value of the option"]
+//     #[doc = "! @param[in] data user data for the callback"]
+//     #[doc = "! @param[in] multi whether the option can appear multiple times on the command-line"]
+//     #[doc = "! @param[in] argument optional string to change the value name in the generated help output"]
+//     #[doc = "! @return whether the call was successful"]
+//     pub fn clingo_options_add(
+//         options: *mut clingo_options_t,
+//         group: *const ::std::os::raw::c_char,
+//         option: *const ::std::os::raw::c_char,
+//         description: *const ::std::os::raw::c_char,
+//         parse: ::std::option::Option<
+//             unsafe extern "C" fn(
+//                 value: *const ::std::os::raw::c_char,
+//                 data: *mut ::std::os::raw::c_void,
+//             ) -> bool,
+//         >,
+//         data: *mut ::std::os::raw::c_void,
+//         multi: bool,
+//         argument: *const ::std::os::raw::c_char,
+//     ) -> bool;
+// }
+// extern "C" {
+//     #[doc = "! Add an option that is a simple flag."]
+//     #[doc = "!"]
+//     #[doc = "! This function is similar to @ref clingo_options_add() but simpler because it only supports flags, which do not have values."]
+//     #[doc = "! If a flag is passed via the command-line the parameter target is set to true."]
+//     #[doc = "!"]
+//     #[doc = "! @param[in] options object to register the option with"]
+//     #[doc = "! @param[in] group options are grouped into sections as given by this string"]
+//     #[doc = "! @param[in] option specifies the command line option"]
+//     #[doc = "! @param[in] description the description of the option"]
+//     #[doc = "! @param[in] target boolean set to true if the flag is given on the command-line"]
+//     #[doc = "! @return whether the call was successful"]
+//     pub fn clingo_options_add_flag(
+//         options: *mut clingo_options_t,
+//         group: *const ::std::os::raw::c_char,
+//         option: *const ::std::os::raw::c_char,
+//         description: *const ::std::os::raw::c_char,
+//         target: *mut bool,
+//     ) -> bool;
+// }
+
+// extern "C" {
+//     #[doc = "! Run clingo with a customized main function (similar to python and lua embedding)."]
+//     #[doc = "!"]
+//     #[doc = "! @param[in] application struct with callbacks to override default clingo functionality"]
+//     #[doc = "! @param[in] arguments command line arguments"]
+//     #[doc = "! @param[in] size number of arguments"]
+//     #[doc = "! @param[in] data user data to pass to callbacks in application"]
+//     #[doc = "! @return exit code to return from main function"]
+// pub fn clingo_mai<T: Application>(app:&mut T, arguments: Vec<String>) -> Result<i32,ClingoError> {
+//     let c_app = clingo_application{
+//         program_name: Some(<T>::unsafe_program_name::<T>),
+//         version: Some(<T>::unsafe_version::<T>),
+//         message_limit: Some(<T>::unsafe_message_limit::<T>),
+//         main: Some(<T>::unsafe_main::<T>),
+//         logger: Some(<T>::unsafe_logger::<T>),
+//         printer: Some(<T>::unsafe_printer::<T>),
+//         register_options: Some(<T>::unsafe_register_options::<T>),
+//         validate_options: Some(<T>::unsafe_validate_options::<T>)
+//     };
+//     let mut args = vec![];
+//     for arg in arguments {
+//         args.push(CString::new(arg)?);
+//     }
+//     // convert the strings to raw pointers
+//     let c_args = args
+//         .iter()
+//         .map(|arg| arg.as_ptr())
+//         .collect::<Vec<*const c_char>>();
+//     Ok(unsafe { clingo_main(&mut c_app, c_args.as_ptr(), arguments.len(), app as *mut c_void) } )
+// }
+//     pub fn clingo_main(
+//         application: *mut clingo_application_t,
+//         arguments: *const *const ::std::os::raw::c_char,
+//         size: usize,
+//         data: *mut ::std::os::raw::c_void,
+//     ) -> ::std::os::raw::c_int;
+// }
 /// Internalize a string.
 ///
 /// This functions takes a string as input and returns an equal unique string
-/// that is (at the moment) not freed until the program is closed.  All strings
-/// returned from clingo API functions are internalized and must not be freed.
+/// that is (at the moment) not freed until the program is closed.
 ///
 /// # Arguments
 ///
@@ -5010,7 +5554,7 @@ fn internalize_string(string: &str) -> Result<*const c_char, ClingoError> {
 /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if parsing fails
 pub fn parse_term(string: &str) -> Result<Symbol, ClingoError> {
     let c_str = CString::new(string)?;
-    let mut symbol = 0 as clingo_symbol_t;
+    let mut symbol = 0;
     if !unsafe { clingo_parse_term(c_str.as_ptr(), None, std::ptr::null_mut(), 0, &mut symbol) } {
         return Err(ClingoError::new_internal(
             "Call to clingo_parse_term() failed",
@@ -5042,7 +5586,7 @@ pub fn parse_term_with_logger<L: Logger>(
 ) -> Result<Symbol, ClingoError> {
     let c_str = CString::new(string)?;
     let logger = logger as *mut L;
-    let mut symbol = 0 as clingo_symbol_t;
+    let mut symbol = 0;
     if !unsafe {
         clingo_parse_term(
             c_str.as_ptr(),
@@ -5058,7 +5602,17 @@ pub fn parse_term_with_logger<L: Logger>(
     }
     Ok(Symbol(symbol))
 }
-
+/// An instance of this struct has to be registered with a solver to observe ground directives as they are passed to the solver.
+///
+/// **Note:** This interface is closely modeled after the aspif format.
+/// For more information please refer to the specification of the aspif format.
+///
+/// Not all callbacks have to be implemented and can be set to NULL if not needed.
+/// If one of the callbacks in the struct fails, grounding is stopped.
+/// If a non-recoverable clingo API call fails, a callback must return false.
+/// Otherwise ::clingo_error_unknown should be set and false returned.
+///
+// See [`Control::register_observer`](struct.Control.html#method.register_observer).
 pub trait GroundProgramObserver {
     /// Called once in the beginning.
     ///
@@ -5981,6 +6535,111 @@ impl<T: ToSymbol> ToSymbol for &T {
     }
 }
 
+pub trait FromSymbol: Sized {
+    type Error;
+
+    fn from_symbol(symbol: Symbol) -> Result<Self, Self::Error>;
+}
+
+impl FromSymbol for Symbol {
+    type Error = Infallible;
+    fn from_symbol(symbol: Symbol) -> Result<Self, Self::Error> {
+        Ok(symbol)
+    }
+}
+impl FromSymbol for u8 {
+    type Error = ClingoError;
+    fn from_symbol(symbol: Symbol) -> Result<Self, Self::Error> {
+        symbol
+            .number()?
+            .try_into()
+            .map_err(|_| ClingoError::new_external("Could not convert to u8"))
+    }
+}
+impl FromSymbol for i8 {
+    type Error = ClingoError;
+    fn from_symbol(symbol: Symbol) -> Result<Self, Self::Error> {
+        symbol
+            .number()?
+            .try_into()
+            .map_err(|_| ClingoError::new_external("Could not convert to i8"))
+    }
+}
+impl FromSymbol for u16 {
+    type Error = ClingoError;
+    fn from_symbol(symbol: Symbol) -> Result<Self, Self::Error> {
+        symbol
+            .number()?
+            .try_into()
+            .map_err(|_| ClingoError::new_external("Could not convert to u16"))
+    }
+}
+impl FromSymbol for i16 {
+    type Error = ClingoError;
+    fn from_symbol(symbol: Symbol) -> Result<Self, Self::Error> {
+        symbol
+            .number()?
+            .try_into()
+            .map_err(|_| ClingoError::new_external("Could not convert to i16"))
+    }
+}
+impl FromSymbol for u32 {
+    type Error = ClingoError;
+    fn from_symbol(symbol: Symbol) -> Result<Self, Self::Error> {
+        symbol
+            .number()?
+            .try_into()
+            .map_err(|_| ClingoError::new_external("Could not convert to u32"))
+    }
+}
+impl FromSymbol for i32 {
+    type Error = ClingoError;
+    fn from_symbol(symbol: Symbol) -> Result<Self, Self::Error> {
+        symbol.number()
+    }
+}
+impl FromSymbol for u64 {
+    type Error = ClingoError;
+    fn from_symbol(symbol: Symbol) -> Result<Self, Self::Error> {
+        symbol
+            .number()?
+            .try_into()
+            .map_err(|_| ClingoError::new_external("Could not convert to u64"))
+    }
+}
+impl FromSymbol for i64 {
+    type Error = ClingoError;
+    fn from_symbol(symbol: Symbol) -> Result<Self, Self::Error> {
+        Ok(symbol.number()? as i64)
+    }
+}
+impl FromSymbol for u128 {
+    type Error = ClingoError;
+    fn from_symbol(symbol: Symbol) -> Result<Self, Self::Error> {
+        symbol
+            .number()?
+            .try_into()
+            .map_err(|_| ClingoError::new_external("Could not convert to u128"))
+    }
+}
+impl FromSymbol for i128 {
+    type Error = ClingoError;
+    fn from_symbol(symbol: Symbol) -> Result<Self, Self::Error> {
+        Ok(symbol.number()? as i128)
+    }
+}
+impl FromSymbol for String {
+    type Error = ClingoError;
+    fn from_symbol(symbol: Symbol) -> Result<Self, Self::Error> {
+        Ok(symbol.string()?.into())
+    }
+}
+impl FromSymbol for &'static str {
+    type Error = ClingoError;
+    fn from_symbol(symbol: Symbol) -> Result<Self, Self::Error> {
+        symbol.string()
+    }
+}
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct FactBase {
     facts: HashSet<Symbol>,
@@ -6006,12 +6665,12 @@ impl FactBase {
     }
     pub fn union(&mut self, facts: &FactBase) {
         for s in &facts.facts {
-            self.facts.insert(s.clone());
+            self.facts.insert(*s);
         }
     }
     pub fn print(&self) {
         for fact in &self.facts {
-            print!("{}.", fact.to_string().unwrap());
+            print!("{}.", fact.to_string());
         }
         println!();
     }

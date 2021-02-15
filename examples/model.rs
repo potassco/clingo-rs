@@ -9,14 +9,13 @@ fn print_model(model: &Model, label: &str, show: ShowType) {
         .symbols(show)
         .expect("Failed to retrieve symbols in the model.");
 
-    for atom in atoms {
-        // retrieve and print the symbol's string
-        print!(" {}", atom.to_string().unwrap());
+    for symbol in atoms {
+        print!(" {}", symbol);
     }
     println!();
 }
 
-fn solve(ctl: &mut Control) {
+fn solve(ctl: Control) {
     // get a solve handle
     let mut handle = ctl
         .solve(SolveMode::YIELD, &[])
@@ -78,5 +77,5 @@ fn main() {
         .expect("Failed to ground a logic program.");
 
     // solve
-    solve(&mut ctl);
+    solve(ctl);
 }

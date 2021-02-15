@@ -26,7 +26,7 @@ fn main() {
     let mut atoms_iterator = atoms.iter().unwrap();
     while let Some(item) = atoms_iterator.next() {
         let symbol = item.symbol().unwrap();
-        print!("  {}", symbol.to_string().unwrap());
+        print!("  {}", symbol);
 
         if item.is_fact().unwrap() {
             print!(", fact");

@@ -8,8 +8,8 @@ struct MySEHandler {
     atom: AtomicBool,
 }
 impl SolveEventHandler for MySEHandler {
-    fn on_solve_event(&mut self, type_: SolveEventType, _goon: &mut bool) -> bool {
-        if type_ == SolveEventType::Finish {
+    fn on_solve_event(&mut self, event: SolveEvent, _goon: &mut bool) -> bool {
+        if let SolveEvent::Finish(_result) = event {
             self.atom.store(false, Ordering::SeqCst);
         }
         true

@@ -21,9 +21,9 @@ impl<'a, 'b> StatementHandler for OnStatementData<'a, 'b> {
                 }
 
                 // create atom enable
-                let lit = ast::Literal::from_term(ast::Sign::None, &self.atom);
+                let lit = ast::Literal::from_term(ast::Sign::NoSign, &self.atom);
                 // add atom enable to the rule body
-                let blit = ast::BodyLiteral::from_literal(ast::Sign::None, &lit);
+                let blit = ast::BodyLiteral::from_literal(ast::Sign::NoSign, &lit);
                 extended_body.push(blit);
 
                 // initialize the rule
@@ -57,14 +57,13 @@ fn print_model(model: &Model) {
 
     print!("Model:");
 
-    for atom in atoms {
-        // retrieve and print the symbol's string
-        print!(" {}", atom.to_string().unwrap());
+    for symbol in atoms {
+        print!(" {}", symbol);
     }
     println!();
 }
 
-fn solve(ctl: &mut Control) {
+fn solve(ctl: Control) -> Control {
     // get a solve handle
     let mut handle = ctl
         .solve(SolveMode::YIELD, &[])
@@ -86,7 +85,7 @@ fn solve(ctl: &mut Control) {
     handle
         .get()
         .expect("Failed to get result from solve handle.");
-    handle.close().expect("Failed to close solve handle.");
+    handle.close().expect("Failed to close solve handle.")
 }
 
 fn main() {
@@ -134,17 +133,17 @@ fn main() {
 
     // solve with external enable = false
     println!("Solving with enable = false...");
-    solve(&mut ctl);
+    ctl = solve(ctl);
 
     // solve with external enable = true
     println!("Solving with enable = true...");
     ctl.assign_external(atm, TruthValue::True)
         .expect("Failed to assign #external enable true.");
-    solve(&mut ctl);
+    ctl = solve(ctl);
 
     // solve with external enable = false
     println!("Solving with enable = false...");
     ctl.assign_external(atm, TruthValue::False)
         .expect("Failed to assign #external enable false.");
-    solve(&mut ctl);
+    let _ = solve(ctl);
 }

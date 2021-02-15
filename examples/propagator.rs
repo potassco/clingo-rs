@@ -2,7 +2,6 @@ use clingo::*;
 use std::cell::RefCell;
 use std::env;
 use std::rc::Rc;
-use std::vec::Vec;
 
 fn print_model(model: &Model) {
     // retrieve the symbols in the model
@@ -12,14 +11,13 @@ fn print_model(model: &Model) {
 
     print!("Model:");
 
-    for atom in atoms {
-        // retrieve and print the symbol's string
-        print!(" {}", atom.to_string().unwrap());
+    for symbol in atoms {
+        print!(" {}", symbol);
     }
     println!();
 }
 
-fn solve(ctl: &mut Control) {
+fn solve(ctl: Control) {
     // get a solve handle
     let mut handle = ctl
         .solve(SolveMode::YIELD, &[])
@@ -109,7 +107,7 @@ impl Propagator for PropagatorT {
 
                 // get an iterator for place/2 atoms
                 // (atom order corresponds to grounding order (and is unpredictable))
-                let mut atoms_iterator = atoms.iter_with_signature(&sig).unwrap();
+                let mut atoms_iterator = atoms.iter_with_signature(sig).unwrap();
 
                 if pass == 1 {
                     // allocate memory for the assignment literal -> hole mapping
@@ -201,7 +199,7 @@ impl Propagator for PropagatorT {
         true
     }
 
-    fn undo(&mut self, control: &mut PropagateControl, changes: &[Literal]) -> bool {
+    fn undo(&mut self, control: &mut PropagateControl, changes: &[Literal]) {
         // get the thread specific state
         let mut state = self.states[control.thread_id() as usize].borrow_mut();
 
@@ -216,7 +214,6 @@ impl Propagator for PropagatorT {
                 }
             }
         }
-        true
     }
 }
 
@@ -250,9 +247,9 @@ fn main() {
             // ground the pigeon part
 
             // set the number of holes
-            let arg0 = Symbol::create_number(7);
+            let arg0 = Symbol::create_number(3);
             // set the number of pigeons
-            let arg1 = Symbol::create_number(8);
+            let arg1 = Symbol::create_number(2);
 
             let args = vec![arg0, arg1];
 
@@ -263,7 +260,7 @@ fn main() {
                 .expect("Failed to ground a logic program.");
 
             // solve using a model callback
-            solve(&mut ctl);
+            solve(ctl);
         }
         Err(e) => {
             panic!("Error: {}", e);
