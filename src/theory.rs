@@ -35,7 +35,7 @@ pub trait Theory<'a> {
     /// does not throw
     fn get_symbol(&mut self, index: usize) -> Symbol;
     /// an iterator over the assigned theory values
-    fn assignment(&'a mut self, thread_id: Id) -> Self::AssignmentIterator;
+    fn assignment(&'a self, thread_id: Id) -> Self::AssignmentIterator;
     /// configure theory manually (without using clingo's options facility)
     /// Note that the theory has to be configured before registering it and cannot be reconfigured.
     fn configure(&mut self, key: &str, value: &str) -> bool;
