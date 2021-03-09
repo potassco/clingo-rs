@@ -223,7 +223,7 @@ fn main() {
 
     // create a propagator with the functions above
     // using the default implementation for the model check
-    let mut prop = PropagatorT {
+    let prop = PropagatorT {
         pigeons: vec![],
         states: vec![],
     };
@@ -232,7 +232,7 @@ fn main() {
     match Control::new(options) {
         Ok(mut ctl) => {
             // register the propagator
-            ctl.register_propagator(&mut prop, false)
+            ctl.register_propagator(Box::new(prop), false)
                 .expect("Failed to register propagator.");
 
             // add a logic program to the pigeon part
