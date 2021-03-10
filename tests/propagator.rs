@@ -400,11 +400,13 @@ struct TestAddWatch {
     propagated: HashSet<Literal>,
     a: Option<Literal>,
     b: Option<Literal>,
+}
+struct TestPropagator {
+    inner: Rc<RefCell<TestAddWatch>>,
     mutex: Mutex<u32>,
     cv: Condvar,
     done: bool,
 }
-struct TestPropagator{ inner: Rc<RefCell<TestAddWatch>>}
 impl Propagator for TestPropagator {
     fn init(&mut self, init: &mut PropagateInit) -> bool {
         assert_eq!(init.number_of_threads(), 2);
@@ -461,27 +463,27 @@ impl Propagator for TestPropagator {
         assert_eq!(assignment.truth_value(b_).unwrap(), TruthValue::Free);
         assert_eq!(assignment.truth_value(c).unwrap(), TruthValue::True);
         assert_eq!(assignment.truth_value(d).unwrap(), TruthValue::False);
-        (*self.inner).borrow_mut().done = false;
+        self.done = false;
         true
     }
     fn propagate(&mut self, ctl: &mut PropagateControl, changes: &[Literal]) -> bool {
         if ctl.thread_id() == 0 {
             // wait for thread 1 to propagate b
-            while !self.inner.borrow().done {
-                let temp = self.inner.borrow();
-                let _mut_ = self.inner.borrow().cv.wait(temp.mutex.lock().unwrap()).unwrap();
+            while !self.done {
+                let _mut_ = self.cv.wait(self.mutex.lock().unwrap()).unwrap();
             }
         } else {
+            let mut s = (*self.inner).borrow_mut();
             for lit in changes {
-                // let mut_ = self.mutex.lock().unwrap();
-                (*self.inner).borrow_mut().done = true;
+                let _mut_ = self.mutex.lock().unwrap();
+                self.done = true;
                 if lit.get_integer() < 0 {
-                    (*self.inner).borrow_mut().propagated.insert(lit.negate());
+                    s.propagated.insert(lit.negate());
                 } else {
-                    (*self.inner).borrow_mut().propagated.insert(*lit);
+                    s.propagated.insert(*lit);
                 }
             }
-            self.inner.borrow().cv.notify_one();
+            self.cv.notify_one();
         }
         true
     }
@@ -494,17 +496,19 @@ fn add_watch_propagator() {
         propagated: HashSet::new(),
         a: None,
         b: None,
+    }));
+    let pr = TestPropagator {
+        inner: p.clone(),
         mutex: Mutex::new(0),
         cv: Condvar::new(),
         done: false,
-    }));
-    let pr = TestPropagator{ inner: p.clone()};
+    };
     let conf = ctl.configuration_mut().unwrap();
     let root_key = conf.root().unwrap();
     let sub_key = conf.map_at(root_key, "solve.parallel_mode").unwrap();
     conf.value_set(sub_key, "2")
         .expect("Failed to set solve.parallel_mode to 2.");
-    ctl.register_propagator( Box::new(pr), false)
+    ctl.register_propagator(Box::new(pr), false)
         .expect("Failed to register propagator.");
     ctl.add("base", &[], "{a;b;c;d}. c. :- d.")
         .expect("Failed to add a logic program.");
@@ -538,7 +542,9 @@ struct TestAddClause {
     b: Option<Literal>,
     count: usize,
 }
-struct TestPropagator2{ inner: Rc<RefCell<TestAddClause>>}
+struct TestPropagator2 {
+    inner: Rc<RefCell<TestAddClause>>,
+}
 impl Propagator for TestPropagator2 {
     fn init(&mut self, init: &mut PropagateInit) -> bool {
         let mut s = (*self.inner).borrow_mut();
@@ -595,15 +601,17 @@ impl Propagator for TestPropagator2 {
 #[test_case(ClauseType::VolatileStatic, 3, 4; "volatile_static")]
 fn add_clause(clause_type: ClauseType, m1: usize, m2: usize) {
     let mut ctl = Control::new(vec!["0".into()]).unwrap();
-    let data =Rc::new(RefCell::new(TestAddClause {
+    let data = Rc::new(RefCell::new(TestAddClause {
         clause_type,
         enable: true,
         a: None,
         b: None,
         count: 0,
     }));
-    let p = TestPropagator2{inner: data.clone()};
-    ctl.register_propagator( Box::new(p), false)
+    let p = TestPropagator2 {
+        inner: data.clone(),
+    };
+    ctl.register_propagator(Box::new(p), false)
         .expect("Failed to register propagator.");
     ctl.add("base", &[], "{a; b}.")
         .expect("Failed to add a logic program.");
