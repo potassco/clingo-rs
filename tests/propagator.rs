@@ -179,7 +179,9 @@ impl Propagator for PigeonPropagator {
     }
 }
 
-fn solve(ctl: Control) -> Result<(Vec<Vec<String>>, Control), ClingoError> {
+fn solve<P: Propagator>(
+    ctl: ControlWithPropagator<P>,
+) -> Result<(Vec<Vec<String>>, ControlWithPropagator<P>), ClingoError> {
     let mut ret = Vec::<Vec<String>>::new();
     // get a solve handle
     let mut handle = ctl
@@ -216,12 +218,13 @@ fn string_model(model: &Model) -> Vec<String> {
 #[test_case(2, 2, 2; "sat")]
 #[test_case(5, 6, 0; "unsat")]
 fn pigeon_propagator(holes: i32, pigeons: i32, number_of_models: usize) {
-    let mut ctl = Control::new(vec!["0".into()]).unwrap();
+    let ctl = control(vec!["0".into()]).unwrap();
     let prop = PigeonPropagator {
         pigeons: vec![],
         states: vec![],
     };
-    ctl.register_propagator(Box::new(prop), false)
+    let mut ctl = ctl
+        .register_propagator(prop, false)
         .expect("Failed to register propagator.");
     ctl.add(
         "pigeon",
@@ -327,14 +330,15 @@ impl Propagator for TestAssignment {
 
 #[test]
 fn assignment_propagator() {
-    let mut ctl = Control::new(vec!["0".into()]).unwrap();
+    let ctl = control(vec!["0".into()]).unwrap();
     let p = TestAssignment {
         a: None,
         b: None,
         c: None,
         count: 0,
     };
-    ctl.register_propagator(Box::new(p), false)
+    let mut ctl = ctl
+        .register_propagator(p, false)
         .expect("Failed to register propagator.");
     ctl.add("base", &[], "{a; b}. c.")
         .expect("Failed to add a logic program.");
@@ -375,9 +379,10 @@ impl Propagator for TestMode {
 
 #[test]
 fn mode_propagator() {
-    let mut ctl = Control::new(vec!["0".into()]).unwrap();
+    let ctl = control(vec!["0".into()]).unwrap();
     let p = TestMode { lits: vec![] };
-    ctl.register_propagator(Box::new(p), false)
+    let mut ctl = ctl
+        .register_propagator(p, false)
         .expect("Failed to register propagator.");
     ctl.add("base", &[], "{p(1..9)}.")
         .expect("Failed to add a logic program.");
@@ -491,7 +496,7 @@ impl Propagator for TestPropagator {
 
 #[test]
 fn add_watch_propagator() {
-    let mut ctl = Control::new(vec!["0".into()]).unwrap();
+    let mut ctl = control(vec!["0".into()]).unwrap();
     let p = Rc::new(RefCell::new(TestAddWatch {
         propagated: HashSet::new(),
         a: None,
@@ -508,7 +513,8 @@ fn add_watch_propagator() {
     let sub_key = conf.map_at(root_key, "solve.parallel_mode").unwrap();
     conf.value_set(sub_key, "2")
         .expect("Failed to set solve.parallel_mode to 2.");
-    ctl.register_propagator(Box::new(pr), false)
+    let mut ctl = ctl
+        .register_propagator(pr, false)
         .expect("Failed to register propagator.");
     ctl.add("base", &[], "{a;b;c;d}. c. :- d.")
         .expect("Failed to add a logic program.");
@@ -600,7 +606,7 @@ impl Propagator for TestPropagator2 {
 #[test_case(ClauseType::Volatile, 3, 4; "volatile")]
 #[test_case(ClauseType::VolatileStatic, 3, 4; "volatile_static")]
 fn add_clause(clause_type: ClauseType, m1: usize, m2: usize) {
-    let mut ctl = Control::new(vec!["0".into()]).unwrap();
+    let ctl = control(vec!["0".into()]).unwrap();
     let data = Rc::new(RefCell::new(TestAddClause {
         clause_type,
         enable: true,
@@ -611,7 +617,8 @@ fn add_clause(clause_type: ClauseType, m1: usize, m2: usize) {
     let p = TestPropagator2 {
         inner: data.clone(),
     };
-    ctl.register_propagator(Box::new(p), false)
+    let mut ctl = ctl
+        .register_propagator(p, false)
         .expect("Failed to register propagator.");
     ctl.add("base", &[], "{a; b}.")
         .expect("Failed to add a logic program.");

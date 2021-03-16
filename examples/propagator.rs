@@ -17,7 +17,7 @@ fn print_model(model: &Model) {
     println!();
 }
 
-fn solve(ctl: Control) {
+fn solve<P: Propagator>(ctl: ControlWithPropagator<P>) {
     // get a solve handle
     let mut handle = ctl
         .solve(SolveMode::YIELD, &[])
@@ -227,14 +227,14 @@ fn main() {
         pigeons: vec![],
         states: vec![],
     };
-
+    
     // create a control object and pass command line arguments
-    match Control::new(options) {
-        Ok(mut ctl) => {
+    match control(options) {
+        Ok(ctl) => {
             // register the propagator
-            ctl.register_propagator(Box::new(prop), false)
+            let mut ctl = ctl
+                .register_propagator(prop, false)
                 .expect("Failed to register propagator.");
-
             // add a logic program to the pigeon part
             // parameters for the pigeon part
             ctl.add(
