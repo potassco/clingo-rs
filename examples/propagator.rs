@@ -227,7 +227,7 @@ fn main() {
         pigeons: vec![],
         states: vec![],
     };
-    
+
     // create a control object and pass command line arguments
     match control(options) {
         Ok(ctl) => {

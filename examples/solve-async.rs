@@ -48,9 +48,9 @@ fn main() {
         .solve_with_event_handler(
             SolveMode::ASYNC | SolveMode::YIELD,
             &[],
-            Box::new(MySEHandler {
+            MySEHandler {
                 atom: running.clone(),
-            }),
+            },
         )
         .expect("Failed to retrieve solve handle.");
 

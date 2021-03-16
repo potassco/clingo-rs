@@ -3442,7 +3442,7 @@ pub struct ProgramBuilder<'a> {
 }
 impl<'a> ProgramBuilder<'a> {
     /// Get an object to add non-ground directives to the program.
-    pub fn from<L: Logger, P: Propagator, O: GroundProgramObserver, F: ExternalFunctionHandler>(
+    pub fn from<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>(
         ctl: &'a mut ControlLPOF<L, P, O, F>,
     ) -> Result<ProgramBuilder<'a>, ClingoError> {
         let mut builder = std::ptr::null_mut();

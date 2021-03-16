@@ -722,7 +722,9 @@ pub trait SolveEventHandler {
     /// **Returns** whether the call was successful
     ///
     /// **See:** [`Control::solve()`](struct.Control.html#method.solve)
-    fn on_solve_event(&mut self, event: SolveEvent, goon: &mut bool) -> bool;
+    fn on_solve_event(&mut self, _event: SolveEvent, _goon: &mut bool) -> bool {
+        true
+    }
 }
 unsafe extern "C" fn unsafe_solve_callback<T: SolveEventHandler>(
     event_type: clingo_solve_event_type_t,
@@ -887,7 +889,7 @@ type GroundCallback = unsafe extern "C" fn(
     symbol_callback: clingo_symbol_callback_t,
     symbol_callback_data: *mut c_void,
 ) -> bool;
-pub trait ExternalFunctionHandler {
+pub trait FunctionHandler {
     /// Callback function to implement external functions.
     ///
     /// If an external function of form `@name(parameters)` occurs in a logic program,
@@ -927,7 +929,7 @@ pub trait ExternalFunctionHandler {
         arguments: &[Symbol],
     ) -> Result<Vec<Symbol>, ExternalError>;
 }
-unsafe extern "C" fn unsafe_ground_callback<T: ExternalFunctionHandler>(
+unsafe extern "C" fn unsafe_ground_callback<T: FunctionHandler>(
     location: *const clingo_location_t,
     name: *const c_char,
     arguments: *const clingo_symbol_t,
@@ -972,7 +974,7 @@ unsafe extern "C" fn unsafe_ground_callback<T: ExternalFunctionHandler>(
         }
     }
 }
-unsafe fn try_symbol_callback<T: ExternalFunctionHandler>(
+unsafe fn try_symbol_callback<T: FunctionHandler>(
     efh: &mut T,
     location: &Location,
     name: &CStr,
@@ -1871,7 +1873,7 @@ impl Propagator for NoPropagator {}
 pub struct NoObserver;
 impl GroundProgramObserver for NoObserver {}
 pub struct NoFunctionHandler;
-impl ExternalFunctionHandler for NoFunctionHandler {
+impl FunctionHandler for NoFunctionHandler {
     fn on_external_function(
         &mut self,
         _location: &Location,
@@ -1884,20 +1886,15 @@ impl ExternalFunctionHandler for NoFunctionHandler {
 
 /// Control object holding grounding and solving state.
 #[derive(Debug)]
-pub struct ControlLPOF<
-    L: Logger,
-    P: Propagator,
-    O: GroundProgramObserver,
-    F: ExternalFunctionHandler,
-> {
+pub struct ControlLPOF<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler> {
     ctl: NonNull<clingo_control_t>,
     copied: bool,
     logger: Box<L>,
     propagator: Box<P>,
     observer: Box<O>,
-    external_function_handler: Box<F>,
+    function_handler: Box<F>,
 }
-impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: ExternalFunctionHandler> Drop
+impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler> Drop
     for ControlLPOF<L, P, O, F>
 {
     fn drop(&mut self) {
@@ -1910,7 +1907,7 @@ pub type ControlWithLogger<L> = ControlLPOF<L, NoPropagator, NoObserver, NoFunct
 pub type ControlWithPropagator<P> = ControlLPOF<NoLogger, P, NoObserver, NoFunctionHandler>;
 pub type Control = ControlLPOF<NoLogger, NoPropagator, NoObserver, NoFunctionHandler>;
 
-impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: ExternalFunctionHandler>
+impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
     ControlLPOF<L, P, O, F>
 {
     /// Ground the selected [parts](struct.Part.html) of the current (non-ground) logic
@@ -1941,8 +1938,8 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: ExternalFunctionHand
                 self.ctl.as_ptr(),
                 parts.as_ptr(),
                 parts_size,
-                None,
-                std::ptr::null_mut(),
+                Some(unsafe_ground_callback::<F> as GroundCallback),
+                self.function_handler.as_mut() as *mut F as *mut c_void,
             )
         } {
             return Err(ClingoError::new_internal(
@@ -1951,49 +1948,29 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: ExternalFunctionHand
         }
         Ok(())
     }
-    /// Ground the selected [parts](struct.Part.html) of the current (non-ground) logic
-    /// program.
-    ///
-    /// After grounding, logic programs can be solved with [`solve()`](struct.Control.html#method.solve).
-    ///
-    /// **Note:** Parts of a logic program without an explicit `#program`
-    /// specification are by default put into a program called `base` - without
-    /// arguments.
+    /// Register a handler for external functions
     ///
     /// # Arguments
     ///
-    /// * `parts` - array of [parts](struct.Part.html) to ground
-    /// * `handler` - implementing the trait [`ExternalFunctionHandler`](trait.ExternalFunctionHandler.html) to evaluate external functions
-    ///
-    /// # Errors
-    ///
-    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
-    pub fn ground_with_event_handler<T: ExternalFunctionHandler>(
-        &mut self,
-        parts: &[Part],
-        handler: &mut T,
-    ) -> Result<(), ClingoError> {
-        let parts_size = parts.len();
-        let parts = parts
-            .iter()
-            .map(|arg| arg.from())
-            .collect::<Vec<clingo_part>>();
+    /// * `function_handler` - implementing the trait [`FunctionHandler`](trait.FunctionHandler.html)
+    pub fn register_function_handler<T: FunctionHandler>(
+        mut self,
+        function_handler: T,
+    ) -> ControlLPOF<L, P, O, T> {
+        let function_handler = Box::new(function_handler);
+        let logger = unsafe { Box::from_raw(self.logger.as_mut()) };
+        let propagator = unsafe { Box::from_raw(self.propagator.as_mut()) };
+        let observer = unsafe { Box::from_raw(self.observer.as_mut()) };
 
-        let handler = handler as *mut T;
-        if !unsafe {
-            clingo_control_ground(
-                self.ctl.as_ptr(),
-                parts.as_ptr(),
-                parts_size,
-                Some(unsafe_ground_callback::<T> as GroundCallback),
-                handler as *mut c_void,
-            )
-        } {
-            return Err(ClingoError::new_internal(
-                "Call to clingo_control_ground() failed",
-            ));
+        self.copied = true;
+        ControlLPOF {
+            ctl: self.ctl,
+            copied: false,
+            logger,
+            propagator,
+            observer,
+            function_handler,
         }
-        Ok(())
     }
 
     /// Solve the currently [grounded](struct.Control.html#method.ground) logic program
@@ -2012,7 +1989,7 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: ExternalFunctionHand
         self,
         mode: SolveMode,
         assumptions: &[Literal],
-    ) -> Result<SolveHandleLPOF<L, P, O, F>, ClingoError> {
+    ) -> Result<SolveHandleLPOFE<L, P, O, F, NoEventHandler>, ClingoError> {
         let mut handle = std::ptr::null_mut();
         let event_handler = std::ptr::null_mut();
         if !unsafe {
@@ -2031,10 +2008,10 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: ExternalFunctionHand
             ));
         }
         match NonNull::new(handle) {
-            Some(handle) => Ok(SolveHandleLPOF {
+            Some(handle) => Ok(SolveHandleLPOFE {
                 handle,
                 ctl: self,
-                event_handler,
+                _event_handler: Box::new(NoEventHandler),
             }),
             None => Err(ClingoError::FFIError {
                 msg: "Tried creating NonNull from a null pointer.",
@@ -2058,10 +2035,10 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: ExternalFunctionHand
         self,
         mode: SolveMode,
         assumptions: &[Literal],
-        event_handler: Box<T>,
-    ) -> Result<SolveHandleLPOF<L, P, O, F>, ClingoError> {
+        event_handler: T,
+    ) -> Result<SolveHandleLPOFE<L, P, O, F, T>, ClingoError> {
         let mut handle = std::ptr::null_mut();
-        let event_handler = Box::into_raw(event_handler) as *mut c_void;
+        let mut event_handler = Box::new(event_handler);
         if !unsafe {
             clingo_control_solve(
                 self.ctl.as_ptr(),
@@ -2069,7 +2046,7 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: ExternalFunctionHand
                 assumptions.as_ptr() as *const clingo_literal_t,
                 assumptions.len(),
                 Some(unsafe_solve_callback::<T> as SolveEventCallback),
-                event_handler,
+                event_handler.as_mut() as *mut T as *mut c_void,
                 &mut handle,
             )
         } {
@@ -2078,10 +2055,10 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: ExternalFunctionHand
             ));
         }
         match NonNull::new(handle) {
-            Some(handle) => Ok(SolveHandleLPOF {
+            Some(handle) => Ok(SolveHandleLPOFE {
                 handle,
                 ctl: self,
-                event_handler,
+                _event_handler: event_handler,
             }),
             None => Err(ClingoError::FFIError {
                 msg: "Tried creating NonNull from a null pointer.",
@@ -2235,11 +2212,11 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: ExternalFunctionHand
         mut self,
         propagator: T,
         sequential: bool,
-    ) -> Result<ControlLPOF<L,T,O,F>, ClingoError> {
+    ) -> Result<ControlLPOF<L, T, O, F>, ClingoError> {
         let mut propagator = Box::new(propagator);
-        let logger = unsafe{Box::from_raw(self.logger.as_mut())};
-        let observer = unsafe{Box::from_raw(self.observer.as_mut())};
-        let external_function_handler = unsafe{Box::from_raw(self.external_function_handler.as_mut())};
+        let logger = unsafe { Box::from_raw(self.logger.as_mut()) };
+        let observer = unsafe { Box::from_raw(self.observer.as_mut()) };
+        let function_handler = unsafe { Box::from_raw(self.function_handler.as_mut()) };
         let clingo_propagator = clingo_propagator_t {
             init: Some(unsafe_init::<T>),
             propagate: Some(unsafe_propagate::<T>),
@@ -2266,7 +2243,7 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: ExternalFunctionHand
             logger,
             propagator,
             observer,
-            external_function_handler,
+            function_handler,
         })
     }
 
@@ -2478,11 +2455,15 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: ExternalFunctionHand
     /// * `replace` - just pass the grounding to the observer but not the solver
     ///
     /// **Returns** whether the call was successful
-    pub fn register_observer<T: GroundProgramObserver>(mut self, observer: T, replace: bool) -> Result<ControlLPOF<L,P,T,F>,ClingoError> {
+    pub fn register_observer<T: GroundProgramObserver>(
+        mut self,
+        observer: T,
+        replace: bool,
+    ) -> Result<ControlLPOF<L, P, T, F>, ClingoError> {
         let mut observer = Box::new(observer);
-        let logger = unsafe{Box::from_raw(self.logger.as_mut())};
-        let propagator = unsafe{Box::from_raw(self.propagator.as_mut())};
-        let external_function_handler = unsafe{Box::from_raw(self.external_function_handler.as_mut())};
+        let logger = unsafe { Box::from_raw(self.logger.as_mut()) };
+        let propagator = unsafe { Box::from_raw(self.propagator.as_mut()) };
+        let function_handler = unsafe { Box::from_raw(self.function_handler.as_mut()) };
         let gpo = clingo_ground_program_observer_t {
             init_program: Some(unsafe_init_program::<T>),
             begin_step: Some(unsafe_begin_step::<T>),
@@ -2505,14 +2486,14 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: ExternalFunctionHand
             theory_atom: Some(unsafe_theory_atom::<T>),
             theory_atom_with_guard: Some(unsafe_theory_atom_with_guard::<T>),
         };
-        if   unsafe {
+        if unsafe {
             clingo_control_register_observer(
                 self.ctl.as_ptr(),
                 &gpo,
                 replace,
                 observer.as_mut() as *mut T as *mut c_void,
             )
-        }{
+        } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_control_register_observer() failed",
             ));
@@ -2524,7 +2505,7 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: ExternalFunctionHand
             logger,
             propagator,
             observer,
-            external_function_handler,
+            function_handler,
         })
     }
     /// Get an object to add ground directives to the program.
@@ -2590,7 +2571,7 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: ExternalFunctionHand
     ///
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if solving could not be started
-    pub fn all_models(self) -> Result<AllModelsLPOF<L, P, O, F>, ClingoError> {
+    pub fn all_models(self) -> Result<AllModelsLPOF<L, P, O, F, NoEventHandler>, ClingoError> {
         let mut handle = std::ptr::null_mut();
         let event_handler = std::ptr::null_mut();
         if !unsafe {
@@ -2609,10 +2590,10 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: ExternalFunctionHand
             ));
         }
         match NonNull::new(handle) {
-            Some(handle) => Ok(AllModelsLPOF(SolveHandleLPOF {
+            Some(handle) => Ok(AllModelsLPOF(SolveHandleLPOFE {
                 handle,
                 ctl: self,
-                event_handler,
+                _event_handler: Box::new(NoEventHandler),
             })),
             None => Err(ClingoError::FFIError {
                 msg: "Tried creating NonNull from a null pointer.",
@@ -2627,7 +2608,9 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: ExternalFunctionHand
     ///
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if solving could not be started
-    pub fn optimal_models(self) -> Result<OptimalModelsLPOF<L, P, O, F>, ClingoError> {
+    pub fn optimal_models(
+        self,
+    ) -> Result<OptimalModelsLPOF<L, P, O, F, NoEventHandler>, ClingoError> {
         let mut handle = std::ptr::null_mut();
         let event_handler = std::ptr::null_mut();
         if !unsafe {
@@ -2646,10 +2629,10 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: ExternalFunctionHand
             ));
         }
         match NonNull::new(handle) {
-            Some(handle) => Ok(OptimalModelsLPOF(SolveHandleLPOF {
+            Some(handle) => Ok(OptimalModelsLPOF(SolveHandleLPOFE {
                 handle,
                 ctl: self,
-                event_handler,
+                _event_handler: Box::new(NoEventHandler),
             })),
             None => Err(ClingoError::FFIError {
                 msg: "Tried creating NonNull from a null pointer.",
@@ -2714,7 +2697,7 @@ pub fn control(arguments: std::vec::Vec<String>) -> Result<Control, ClingoError>
             logger: Box::new(NoLogger),
             propagator: Box::new(NoPropagator),
             observer: Box::new(NoObserver),
-            external_function_handler: Box::new(NoFunctionHandler),
+            function_handler: Box::new(NoFunctionHandler),
         }),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
@@ -2780,7 +2763,7 @@ pub fn control_with_logger<L: Logger>(
             logger,
             propagator: Box::new(NoPropagator),
             observer: Box::new(NoObserver),
-            external_function_handler: Box::new(NoFunctionHandler),
+            function_handler: Box::new(NoFunctionHandler),
         }),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
@@ -5157,20 +5140,30 @@ impl PropagateInit {
 }
 
 /// Search handle to a solve call.
-#[derive(Debug)]
-pub struct SolveHandleLPOF<
+// #[derive(Debug)]
+pub struct SolveHandleLPOFE<
     L: Logger,
     P: Propagator,
     O: GroundProgramObserver,
-    F: ExternalFunctionHandler,
+    F: FunctionHandler,
+    E: SolveEventHandler,
 > {
     handle: NonNull<clingo_solve_handle_t>,
     ctl: ControlLPOF<L, P, O, F>,
-    event_handler: *mut c_void,
+    _event_handler: Box<E>,
 }
-pub type SolveHandle = SolveHandleLPOF<NoLogger, NoPropagator, NoObserver, NoFunctionHandler>;
-impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: ExternalFunctionHandler>
-    SolveHandleLPOF<L, P, O, F>
+pub struct NoEventHandler;
+impl SolveEventHandler for NoEventHandler {}
+
+pub type SolveHandle =
+    SolveHandleLPOFE<NoLogger, NoPropagator, NoObserver, NoFunctionHandler, NoEventHandler>;
+impl<
+        L: Logger,
+        P: Propagator,
+        O: GroundProgramObserver,
+        F: FunctionHandler,
+        E: SolveEventHandler,
+    > SolveHandleLPOFE<L, P, O, F, E>
 {
     /// Get the next solve result.
     ///
@@ -5321,9 +5314,6 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: ExternalFunctionHand
                 "Call to clingo_solve_handle_close() failed",
             ));
         }
-        if !self.event_handler.is_null() {
-            unsafe { Box::from_raw(self.event_handler) };
-        }
         Ok(self.ctl)
     }
 }
@@ -5331,10 +5321,16 @@ pub struct OptimalModelsLPOF<
     L: Logger,
     P: Propagator,
     O: GroundProgramObserver,
-    F: ExternalFunctionHandler,
->(SolveHandleLPOF<L, P, O, F>);
-impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: ExternalFunctionHandler> Iterator
-    for OptimalModelsLPOF<L, P, O, F>
+    F: FunctionHandler,
+    E: SolveEventHandler,
+>(SolveHandleLPOFE<L, P, O, F, E>);
+impl<
+        L: Logger,
+        P: Propagator,
+        O: GroundProgramObserver,
+        F: FunctionHandler,
+        E: SolveEventHandler,
+    > Iterator for OptimalModelsLPOF<L, P, O, F, E>
 {
     type Item = MModel;
 
@@ -5366,10 +5362,16 @@ pub struct AllModelsLPOF<
     L: Logger,
     P: Propagator,
     O: GroundProgramObserver,
-    F: ExternalFunctionHandler,
->(SolveHandleLPOF<L, P, O, F>);
-impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: ExternalFunctionHandler> Iterator
-    for AllModelsLPOF<L, P, O, F>
+    F: FunctionHandler,
+    E: SolveEventHandler,
+>(SolveHandleLPOFE<L, P, O, F, E>);
+impl<
+        L: Logger,
+        P: Propagator,
+        O: GroundProgramObserver,
+        F: FunctionHandler,
+        E: SolveEventHandler,
+    > Iterator for AllModelsLPOF<L, P, O, F, E>
 {
     type Item = MModel;
 
