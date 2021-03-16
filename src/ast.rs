@@ -80,6 +80,39 @@ enum HeadLiteralType {
         clingo_ast_head_literal_type_clingo_ast_head_literal_type_head_aggregate as isize,
     TheoryAtom = clingo_ast_head_literal_type_clingo_ast_head_literal_type_theory_atom as isize,
 }
+impl HeadLiteralType {
+    fn try_from(code: u32) -> Result<HeadLiteralType, ClingoError> {
+        match code {
+            clingo_ast_head_literal_type_clingo_ast_head_literal_type_literal => {
+                Ok(HeadLiteralType::Literal)
+            }
+            clingo_ast_head_literal_type_clingo_ast_head_literal_type_disjunction => {
+                Ok(HeadLiteralType::Disjunction)
+            }
+            clingo_ast_head_literal_type_clingo_ast_head_literal_type_aggregate => {
+                Ok(HeadLiteralType::Aggregate)
+            }
+            clingo_ast_head_literal_type_clingo_ast_head_literal_type_head_aggregate => {
+                Ok(HeadLiteralType::HeadAggregate)
+            }
+            clingo_ast_head_literal_type_clingo_ast_head_literal_type_theory_atom => {
+                Ok(HeadLiteralType::TheoryAtom)
+            }
+            x => {
+                eprintln!(
+                    "FFIError in {} {}, {} : Failed to match clingo_ast_head_literal_type {}",
+                    file!(),
+                    line!(),
+                    column!(),
+                    x
+                );
+                Err(ClingoError::FFIError {
+                    msg: "Failed to match clingo_ast_head_literal_type.",
+                })
+            }
+        }
+    }
+}
 #[derive(Debug, Copy, Clone)]
 /// Enumeration of script types.
 pub enum ScriptType {
@@ -355,34 +388,34 @@ pub struct HeadLiteral<'a> {
 }
 impl fmt::Debug for HeadLiteral<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self.data.type_ as u32 {
-            clingo_ast_head_literal_type_clingo_ast_head_literal_type_literal => {
+        match HeadLiteralType::try_from(self.data.type_ as u32) {
+            Ok(HeadLiteralType::Literal) => {
                 let literal = unsafe { self.data.__bindgen_anon_1.literal } as *const Literal;
                 let literal = unsafe { literal.as_ref() }.unwrap();
                 write!(f, "HeadLiteral {{ literal: {:?} }}", literal)
             }
-            clingo_ast_head_literal_type_clingo_ast_head_literal_type_disjunction => {
+            Ok(HeadLiteralType::Disjunction) => {
                 let dis = unsafe { self.data.__bindgen_anon_1.disjunction } as *const Disjunction;
                 let dis = unsafe { dis.as_ref() }.unwrap();
                 write!(f, "HeadLiteral {{ disjunction: {:?} }}", dis)
             }
-            clingo_ast_head_literal_type_clingo_ast_head_literal_type_aggregate => {
+            Ok(HeadLiteralType::Aggregate) => {
                 let agg = unsafe { self.data.__bindgen_anon_1.aggregate } as *const Aggregate;
                 let agg = unsafe { agg.as_ref() }.unwrap();
                 write!(f, "HeadLiteral {{ aggregate: {:?} }}", agg)
             }
-            clingo_ast_head_literal_type_clingo_ast_head_literal_type_head_aggregate => {
+            Ok(HeadLiteralType::HeadAggregate) => {
                 let hagg =
                     unsafe { self.data.__bindgen_anon_1.head_aggregate } as *const HeadAggregate;
                 let hagg = unsafe { hagg.as_ref() }.unwrap();
                 write!(f, "HeadLiteral {{ head_aggregate: {:?} }}", hagg)
             }
-            clingo_ast_head_literal_type_clingo_ast_head_literal_type_theory_atom => {
+            Ok(HeadLiteralType::TheoryAtom) => {
                 let atom = unsafe { self.data.__bindgen_anon_1.theory_atom } as *const TheoryAtom;
                 let atom = unsafe { atom.as_ref() }.unwrap();
                 write!(f, "HeadLiteral {{ theory_atom: {:?} }}", atom)
             }
-            x => panic!("Failed to match clingo_ast_head_literal_type: {}!", x),
+            Err(e) => panic!("Failed to match clingo_ast_head_literal_type: {}!", e),
         }
     }
 }
@@ -453,11 +486,6 @@ impl<'a> From<&'a TheoryAtom<'a>> for HeadLiteral<'a> {
             },
             _lifetime: PhantomData,
         }
-    }
-}
-impl<'a> HeadLiteral<'a> {
-    pub fn print_lit(&self) -> Option<&clingo_sys::clingo_ast_literal> {
-        unsafe { self.data.__bindgen_anon_1.literal.as_ref() }
     }
 }
 
@@ -3414,7 +3442,9 @@ pub struct ProgramBuilder<'a> {
 }
 impl<'a> ProgramBuilder<'a> {
     /// Get an object to add non-ground directives to the program.
-    pub fn from(ctl: &'a mut Control) -> Result<ProgramBuilder<'a>, ClingoError> {
+    pub fn from<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>(
+        ctl: &'a mut ControlLPOF<L, P, O, F>,
+    ) -> Result<ProgramBuilder<'a>, ClingoError> {
         let mut builder = std::ptr::null_mut();
         if !unsafe { clingo_control_program_builder(ctl.ctl.as_mut(), &mut builder) } {
             return Err(ClingoError::new_internal(

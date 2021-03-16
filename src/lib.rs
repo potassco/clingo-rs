@@ -234,8 +234,8 @@ pub enum TruthValue {
     False = clingo_truth_value_clingo_truth_value_false as isize,
 }
 impl TruthValue {
-    fn try_from(code: i32) -> Result<TruthValue, ClingoError> {
-        match code as u32 {
+    fn try_from(code: u32) -> Result<TruthValue, ClingoError> {
+        match code {
             clingo_truth_value_clingo_truth_value_false => Ok(TruthValue::False),
             clingo_truth_value_clingo_truth_value_true => Ok(TruthValue::True),
             clingo_truth_value_clingo_truth_value_free => Ok(TruthValue::Free),
@@ -335,8 +335,8 @@ pub enum StatisticsType {
     Map = clingo_statistics_type_clingo_statistics_type_map as isize,
 }
 impl StatisticsType {
-    fn try_from(code: i32) -> Result<StatisticsType, ClingoError> {
-        match code as u32 {
+    fn try_from(code: u32) -> Result<StatisticsType, ClingoError> {
+        match code {
             clingo_statistics_type_clingo_statistics_type_empty => Ok(StatisticsType::Empty),
             clingo_statistics_type_clingo_statistics_type_value => Ok(StatisticsType::Value),
             clingo_statistics_type_clingo_statistics_type_array => Ok(StatisticsType::Array),
@@ -372,8 +372,8 @@ pub enum SymbolType {
     Supremum = clingo_symbol_type_clingo_symbol_type_supremum as isize,
 }
 impl SymbolType {
-    fn try_from(code: i32) -> Result<SymbolType, ClingoError> {
-        match code as u32 {
+    fn try_from(code: u32) -> Result<SymbolType, ClingoError> {
+        match code {
             clingo_symbol_type_clingo_symbol_type_infimum => Ok(SymbolType::Infimum),
             clingo_symbol_type_clingo_symbol_type_number => Ok(SymbolType::Number),
             clingo_symbol_type_clingo_symbol_type_string => Ok(SymbolType::String),
@@ -414,8 +414,8 @@ pub enum Warning {
     Other = clingo_warning_clingo_warning_other as isize,
 }
 impl Warning {
-    fn try_from(code: i32) -> Result<Warning, ClingoError> {
-        match code as u32 {
+    fn try_from(code: u32) -> Result<Warning, ClingoError> {
+        match code {
             clingo_warning_clingo_warning_atom_undefined => Ok(Warning::AtomUndefined),
             clingo_warning_clingo_warning_file_included => Ok(Warning::FileIncluded),
             clingo_warning_clingo_warning_global_variable => Ok(Warning::GlobalVariable),
@@ -452,8 +452,8 @@ pub enum ExternalType {
     Release = clingo_external_type_clingo_external_type_release as isize,
 }
 impl ExternalType {
-    fn try_from(code: i32) -> Result<ExternalType, ClingoError> {
-        match code as u32 {
+    fn try_from(code: u32) -> Result<ExternalType, ClingoError> {
+        match code {
             clingo_external_type_clingo_external_type_false => Ok(ExternalType::False),
             clingo_external_type_clingo_external_type_free => Ok(ExternalType::Free),
             clingo_external_type_clingo_external_type_release => Ok(ExternalType::Release),
@@ -490,8 +490,8 @@ pub enum HeuristicType {
     False = clingo_heuristic_type_clingo_heuristic_type_false as isize,
 }
 impl HeuristicType {
-    fn try_from(code: i32) -> Result<HeuristicType, ClingoError> {
-        match code as u32 {
+    fn try_from(code: u32) -> Result<HeuristicType, ClingoError> {
+        match code {
             clingo_heuristic_type_clingo_heuristic_type_factor => Ok(HeuristicType::Factor),
             clingo_heuristic_type_clingo_heuristic_type_false => Ok(HeuristicType::False),
             clingo_heuristic_type_clingo_heuristic_type_init => Ok(HeuristicType::Init),
@@ -531,8 +531,8 @@ pub enum TheoryTermType {
     Symbol = clingo_theory_term_type_clingo_theory_term_type_symbol as isize,
 }
 impl TheoryTermType {
-    fn try_from(code: i32) -> Result<TheoryTermType, ClingoError> {
-        match code as u32 {
+    fn try_from(code: u32) -> Result<TheoryTermType, ClingoError> {
+        match code {
             clingo_theory_term_type_clingo_theory_term_type_tuple => Ok(TheoryTermType::Tuple),
             clingo_theory_term_type_clingo_theory_term_type_list => Ok(TheoryTermType::List),
             clingo_theory_term_type_clingo_theory_term_type_set => Ok(TheoryTermType::Set),
@@ -568,8 +568,8 @@ pub enum ModelType {
     CautiousConsequences = clingo_model_type_clingo_model_type_cautious_consequences as isize,
 }
 impl ModelType {
-    fn try_from(code: i32) -> Result<ModelType, ClingoError> {
-        match code as u32 {
+    fn try_from(code: u32) -> Result<ModelType, ClingoError> {
+        match code {
             clingo_model_type_clingo_model_type_stable_model => Ok(ModelType::StableModel),
             clingo_model_type_clingo_model_type_brave_consequences => {
                 Ok(ModelType::BraveConsequences)
@@ -608,8 +608,8 @@ pub enum PropagatorCheckMode {
     Both = clingo_propagator_check_mode_clingo_propagator_check_mode_both as isize,
 }
 impl PropagatorCheckMode {
-    fn try_from(code: i32) -> Result<PropagatorCheckMode, ClingoError> {
-        match code as u32 {
+    fn try_from(code: u32) -> Result<PropagatorCheckMode, ClingoError> {
+        match code {
             clingo_propagator_check_mode_clingo_propagator_check_mode_fixpoint => {
                 Ok(PropagatorCheckMode::Fixpoint)
             }
@@ -722,9 +722,10 @@ pub trait SolveEventHandler {
     /// **Returns** whether the call was successful
     ///
     /// **See:** [`Control::solve()`](struct.Control.html#method.solve)
-    fn on_solve_event(&mut self, event: SolveEvent, goon: &mut bool) -> bool;
+    fn on_solve_event(&mut self, _event: SolveEvent, _goon: &mut bool) -> bool {
+        true
+    }
 }
-#[doc(hidden)]
 unsafe extern "C" fn unsafe_solve_callback<T: SolveEventHandler>(
     event_type: clingo_solve_event_type_t,
     event_data: *mut c_void,
@@ -810,7 +811,6 @@ pub trait StatementHandler {
     /// **Returns** whether the call was successful
     fn on_statement(&mut self, arg1: &ast::Statement) -> bool;
 }
-#[doc(hidden)]
 unsafe extern "C" fn unsafe_ast_callback<T: StatementHandler>(
     stm: *const clingo_ast_statement_t,
     event_handler: *mut c_void,
@@ -845,10 +845,10 @@ pub trait Logger {
     /// * [`parse_term_with_logger()`](fn.parse_term_with_logger.html)
     /// * [`parse_program_with_logger()`](fn.parse_program_with_logger.html)
     fn log(&mut self, code: Warning, message: &str) {
-        print!("warn {:?}: {}", code, message);
+        eprintln!("warn {:?}: {}", code, message);
     }
 }
-#[doc(hidden)]
+
 unsafe extern "C" fn unsafe_logging_callback<L: Logger>(
     code: clingo_warning_t,
     message: *const c_char,
@@ -865,18 +865,17 @@ unsafe extern "C" fn unsafe_logging_callback<L: Logger>(
     let message = CStr::from_ptr(message);
     let logger = &mut *(logger as *mut L);
 
-    if let Err(e) = try_logging_callback(logger,code, message) {
+    if let Err(e) = try_logging_callback(logger, code, message) {
         eprintln!("Error in unsafe_logging_callback(): {}.", e);
         set_internal_error(ErrorType::Runtime, "Error in unsafe_logging_callback().");
     }
 }
-#[doc(hidden)]
 fn try_logging_callback<L: Logger>(
     logger: &mut L,
     code: clingo_warning_t,
     message: &CStr,
 ) -> Result<(), ClingoError> {
-    let code = Warning::try_from(code)?;
+    let code = Warning::try_from(code as u32)?;
     let message = message.to_str()?;
     logger.log(code, message);
     Ok(())
@@ -890,7 +889,7 @@ type GroundCallback = unsafe extern "C" fn(
     symbol_callback: clingo_symbol_callback_t,
     symbol_callback_data: *mut c_void,
 ) -> bool;
-pub trait ExternalFunctionHandler {
+pub trait FunctionHandler {
     /// Callback function to implement external functions.
     ///
     /// If an external function of form `@name(parameters)` occurs in a logic program,
@@ -930,8 +929,7 @@ pub trait ExternalFunctionHandler {
         arguments: &[Symbol],
     ) -> Result<Vec<Symbol>, ExternalError>;
 }
-#[doc(hidden)]
-unsafe extern "C" fn unsafe_ground_callback<T: ExternalFunctionHandler>(
+unsafe extern "C" fn unsafe_ground_callback<T: FunctionHandler>(
     location: *const clingo_location_t,
     name: *const c_char,
     arguments: *const clingo_symbol_t,
@@ -957,7 +955,8 @@ unsafe extern "C" fn unsafe_ground_callback<T: ExternalFunctionHandler>(
     let arguments = std::slice::from_raw_parts(arguments as *const Symbol, arguments_size);
     let event_handler = &mut *(event_handler as *mut T);
 
-    match try_symbol_callback(event_handler,
+    match try_symbol_callback(
+        event_handler,
         location,
         name,
         arguments,
@@ -975,8 +974,7 @@ unsafe extern "C" fn unsafe_ground_callback<T: ExternalFunctionHandler>(
         }
     }
 }
-#[doc(hidden)]
-unsafe fn try_symbol_callback<T: ExternalFunctionHandler>(
+unsafe fn try_symbol_callback<T: FunctionHandler>(
     efh: &mut T,
     location: &Location,
     name: &CStr,
@@ -1271,7 +1269,7 @@ impl fmt::Display for Symbol {
                 return Err(fmt::Error);
             }
         };
-        str::fmt(str_slice, f)
+        std::fmt::Display::fmt(str_slice, f)
     }
 }
 impl Symbol {
@@ -1511,7 +1509,7 @@ impl Symbol {
     ///
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) - may failed to match clingo symbol type
     pub fn symbol_type(self) -> Result<SymbolType, ClingoError> {
-        SymbolType::try_from(unsafe { clingo_symbol_type(self.0) })
+        SymbolType::try_from(unsafe { clingo_symbol_type(self.0) } as u32)
     }
 }
 
@@ -1786,7 +1784,6 @@ pub trait Propagator {
         true
     }
 }
-#[doc(hidden)]
 unsafe extern "C" fn unsafe_init<T: Propagator>(
     init: *mut clingo_propagate_init_t,
     propagator: *mut c_void,
@@ -1801,7 +1798,6 @@ unsafe extern "C" fn unsafe_init<T: Propagator>(
 
     propagator.init(init)
 }
-#[doc(hidden)]
 unsafe extern "C" fn unsafe_propagate<T: Propagator>(
     control: *mut clingo_propagate_control_t,
     changes: *const clingo_literal_t,
@@ -1819,7 +1815,6 @@ unsafe extern "C" fn unsafe_propagate<T: Propagator>(
 
     propagator.propagate(control, changes)
 }
-#[doc(hidden)]
 unsafe extern "C" fn unsafe_undo<T: Propagator>(
     control: *const clingo_propagate_control_t,
     changes: *const clingo_literal_t,
@@ -1837,7 +1832,6 @@ unsafe extern "C" fn unsafe_undo<T: Propagator>(
 
     propagator.undo(control, changes)
 }
-#[doc(hidden)]
 unsafe extern "C" fn unsafe_check<T: Propagator>(
     control: *mut clingo_propagate_control_t,
     propagator: *mut c_void,
@@ -1852,7 +1846,6 @@ unsafe extern "C" fn unsafe_check<T: Propagator>(
 
     propagator.check(control)
 }
-#[doc(hidden)]
 unsafe extern "C" fn unsafe_decide<T: Propagator>(
     thread_id: clingo_id_t,
     assignment: *const clingo_assignment_t,
@@ -1872,129 +1865,201 @@ unsafe extern "C" fn unsafe_decide<T: Propagator>(
 
     propagator.decide(Id(thread_id), assignment, fallback, decision)
 }
-/// Control object holding grounding and solving state.
-#[derive(Debug)]
-pub struct Control {
-    ctl: NonNull<clingo_control_t>
-}
-impl Drop for Control {
-    fn drop(&mut self) {
-        unsafe { clingo_control_free(self.ctl.as_ptr()) }
+
+pub struct NoLogger;
+impl Logger for NoLogger {}
+pub struct NoPropagator;
+impl Propagator for NoPropagator {}
+pub struct NoObserver;
+impl GroundProgramObserver for NoObserver {}
+pub struct NoFunctionHandler;
+impl FunctionHandler for NoFunctionHandler {
+    fn on_external_function(
+        &mut self,
+        _location: &Location,
+        _name: &str,
+        _arguments: &[Symbol],
+    ) -> Result<Vec<Symbol>, ExternalError> {
+        Ok(vec![])
     }
 }
-impl Control {
-    /// Create a new control object.
+
+/// Control object holding grounding and solving state.
+#[derive(Debug)]
+pub struct ControlLPOF<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler> {
+    ctl: NonNull<clingo_control_t>,
+    copied: bool,
+    logger: Box<L>,
+    propagator: Box<P>,
+    observer: Box<O>,
+    function_handler: Box<F>,
+}
+impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler> Drop
+    for ControlLPOF<L, P, O, F>
+{
+    fn drop(&mut self) {
+        if !self.copied {
+            unsafe { clingo_control_free(self.ctl.as_ptr()) }
+        }
+    }
+}
+pub type ControlWithLogger<L> = ControlLPOF<L, NoPropagator, NoObserver, NoFunctionHandler>;
+pub type ControlWithPropagator<P> = ControlLPOF<NoLogger, P, NoObserver, NoFunctionHandler>;
+pub type Control = ControlLPOF<NoLogger, NoPropagator, NoObserver, NoFunctionHandler>;
+
+impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
+    ControlLPOF<L, P, O, F>
+{
+    /// Ground the selected [parts](struct.Part.html) of the current (non-ground) logic
+    /// program.
     ///
-    /// **Note:** Only gringo options (without `--output`) and clasp's options are supported as
-    /// arguments,  except basic options such as `--help`.
-    /// Furthermore, a control object is blocked while a search call is active;
-    /// you must not call any member function during search.
+    /// After grounding, logic programs can be solved with [`solve()`](struct.Control.html#method.solve).
     ///
-    /// Messages are printed to stderr.
+    /// **Note:** Parts of a logic program without an explicit `#program`
+    /// specification are by default put into a program called `base` - without
+    /// arguments.
     ///
     /// # Arguments
     ///
-    /// * `arguments` - string array of command line arguments
+    /// * `parts` -  array of [parts](struct.Part.html) to ground
     ///
     /// # Errors
     ///
-    /// - [`ClingoError::NulError`](enum.ClingoError.html#variant.NulError) - if an argument contains a nul byte
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
-    /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if argument parsing fails
-    pub fn new(arguments: std::vec::Vec<String>) -> Result<Control, ClingoError> {
-        let logger = None;
-        let logger_data = std::ptr::null_mut();
-
-        // create a vector of zero terminated strings
-        let mut args = vec![];
-        for arg in arguments {
-            args.push(CString::new(arg)?);
-        }
-
-        // convert the strings to raw pointers
-        let c_args = args
+    pub fn ground(&mut self, parts: &[Part]) -> Result<(), ClingoError> {
+        let parts_size = parts.len();
+        let parts = parts
             .iter()
-            .map(|arg| arg.as_ptr())
-            .collect::<Vec<*const c_char>>();
-
-        let mut ctl_ptr = std::ptr::null_mut();
+            .map(|arg| arg.from())
+            .collect::<Vec<clingo_part>>();
 
         if !unsafe {
-            clingo_control_new(
-                c_args.as_ptr(),
-                c_args.len(),
-                logger,
-                logger_data,
-                0,
-                &mut ctl_ptr,
+            clingo_control_ground(
+                self.ctl.as_ptr(),
+                parts.as_ptr(),
+                parts_size,
+                Some(unsafe_ground_callback::<F> as GroundCallback),
+                self.function_handler.as_mut() as *mut F as *mut c_void,
             )
         } {
             return Err(ClingoError::new_internal(
-                "Call to clingo_control_new() failed",
+                "Call to clingo_control_ground() failed",
             ));
         }
-        match NonNull::new(ctl_ptr) {
-            Some(ctl) => Ok(Control { ctl }),
+        Ok(())
+    }
+    /// Register a handler for external functions
+    ///
+    /// # Arguments
+    ///
+    /// * `function_handler` - implementing the trait [`FunctionHandler`](trait.FunctionHandler.html)
+    pub fn register_function_handler<T: FunctionHandler>(
+        mut self,
+        function_handler: T,
+    ) -> ControlLPOF<L, P, O, T> {
+        let function_handler = Box::new(function_handler);
+        let logger = unsafe { Box::from_raw(self.logger.as_mut()) };
+        let propagator = unsafe { Box::from_raw(self.propagator.as_mut()) };
+        let observer = unsafe { Box::from_raw(self.observer.as_mut()) };
+
+        self.copied = true;
+        ControlLPOF {
+            ctl: self.ctl,
+            copied: false,
+            logger,
+            propagator,
+            observer,
+            function_handler,
+        }
+    }
+
+    /// Solve the currently [grounded](struct.Control.html#method.ground) logic program
+    /// enumerating its models.
+    ///
+    /// # Arguments
+    ///
+    /// * `mode` - configures the search mode
+    /// * `assumptions` - array of assumptions to solve under
+    ///
+    /// # Errors
+    ///
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if solving could not be started
+    pub fn solve(
+        self,
+        mode: SolveMode,
+        assumptions: &[Literal],
+    ) -> Result<SolveHandleLPOFE<L, P, O, F, NoEventHandler>, ClingoError> {
+        let mut handle = std::ptr::null_mut();
+        let event_handler = std::ptr::null_mut();
+        if !unsafe {
+            clingo_control_solve(
+                self.ctl.as_ptr(),
+                mode.bits(),
+                assumptions.as_ptr() as *const clingo_literal_t,
+                assumptions.len(),
+                None,
+                event_handler,
+                &mut handle,
+            )
+        } {
+            return Err(ClingoError::new_internal(
+                "Call to clingo_control_solve() failed",
+            ));
+        }
+        match NonNull::new(handle) {
+            Some(handle) => Ok(SolveHandleLPOFE {
+                handle,
+                ctl: self,
+                _event_handler: Box::new(NoEventHandler),
+            }),
             None => Err(ClingoError::FFIError {
                 msg: "Tried creating NonNull from a null pointer.",
             })?,
         }
     }
-
-    /// Create a new control object.
-    ///
-    /// **Note:** Only gringo options (without `--output`) and clasp's options are supported as
-    /// arguments,
-    /// except basic options such as `--help`.
-    /// Furthermore, a control object is blocked while a search call is active;
-    /// you must not call any member function during search.
+    /// Solve the currently [grounded](struct.Control.html#method.ground) logic program
+    /// enumerating its models.
     ///
     /// # Arguments
     ///
-    /// * `arguments` - string array of command line arguments
-    /// * `logger` - callback functions for warnings and info messages
-    /// * `message_limit` - maximum number of times the logger callback is called
+    /// * `mode` - configures the search mode
+    /// * `assumptions` - array of assumptions to solve under
+    /// * `handler` - implementing the trait [`SolveEventHandler`](trait.SolveEventHandler.html)
     ///
     /// # Errors
     ///
-    /// - [`ClingoError::NulError`](enum.ClingoError.html#variant.NulError) - if an argument contains a nul byte
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
-    /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if argument parsing fails
-    pub fn new_with_logger<L: Logger>(
-        arguments: Vec<String>,
-        logger: &mut L,
-        message_limit: u32,
-    ) -> Result<Control, ClingoError> {
-        let mut args = vec![];
-        for arg in arguments {
-            args.push(CString::new(arg)?);
-        }
-
-        // convert the strings to raw pointers
-        let c_args = args
-            .iter()
-            .map(|arg| arg.as_ptr())
-            .collect::<Vec<*const c_char>>();
-
-        let mut ctl_ptr = std::ptr::null_mut();
-
-        let logger = logger as *mut L;
+    /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if solving could not be started
+    pub fn solve_with_event_handler<T: SolveEventHandler>(
+        self,
+        mode: SolveMode,
+        assumptions: &[Literal],
+        event_handler: T,
+    ) -> Result<SolveHandleLPOFE<L, P, O, F, T>, ClingoError> {
+        let mut handle = std::ptr::null_mut();
+        let mut event_handler = Box::new(event_handler);
         if !unsafe {
-            clingo_control_new(
-                c_args.as_ptr(),
-                c_args.len(),
-                Some(unsafe_logging_callback::<L> as LoggingCallback),
-                logger as *mut c_void,
-                message_limit,
-                &mut ctl_ptr,
+            clingo_control_solve(
+                self.ctl.as_ptr(),
+                mode.bits(),
+                assumptions.as_ptr() as *const clingo_literal_t,
+                assumptions.len(),
+                Some(unsafe_solve_callback::<T> as SolveEventCallback),
+                event_handler.as_mut() as *mut T as *mut c_void,
+                &mut handle,
             )
         } {
             return Err(ClingoError::new_internal(
-                "Call to clingo_control_new() failed",
+                "Call to clingo_control_solve() failed",
             ));
         }
-        match NonNull::new(ctl_ptr) {
-            Some(ctl) => Ok(Control { ctl }),
+        match NonNull::new(handle) {
+            Some(handle) => Ok(SolveHandleLPOFE {
+                handle,
+                ctl: self,
+                _event_handler: event_handler,
+            }),
             None => Err(ClingoError::FFIError {
                 msg: "Tried creating NonNull from a null pointer.",
             })?,
@@ -2061,272 +2126,6 @@ impl Control {
         }
         Ok(())
     }
-    pub fn add_facts(&mut self, facts: &FactBase) {
-        for sym in facts.iter() {
-            // print!("{}",sym.to_string().unwrap());
-
-            // initilize atom to add
-            let atom = ast::Term::from(*sym);
-
-            // create literal
-            let lit = ast::Literal::from_term(ast::Sign::NoSign, &atom);
-
-            // create headliteral
-            let hlit = ast::HeadLiteral::from(&lit);
-
-            // create (fact) rule
-            let rule = ast::Rule::new(hlit, &[]);
-
-            // initialize the statement
-            let stm = rule.ast_statement();
-
-            // get the program builder
-            let mut builder = ast::ProgramBuilder::from(self).unwrap();
-
-            // add the rewritten statement to the program
-            builder
-                .add(&stm)
-                .expect("Failed to add statement to ProgramBuilder.");
-
-            builder.end().expect("Failed to finish building a program.");
-        }
-    }
-    /// Ground the selected [parts](struct.Part.html) of the current (non-ground) logic
-    /// program.
-    ///
-    /// After grounding, logic programs can be solved with [`solve()`](struct.Control.html#method.solve).
-    ///
-    /// **Note:** Parts of a logic program without an explicit `#program`
-    /// specification are by default put into a program called `base` - without
-    /// arguments.
-    ///
-    /// # Arguments
-    ///
-    /// * `parts` -  array of [parts](struct.Part.html) to ground
-    ///
-    /// # Errors
-    ///
-    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
-    pub fn ground(&mut self, parts: &[Part]) -> Result<(), ClingoError> {
-        let parts_size = parts.len();
-        let parts = parts
-            .iter()
-            .map(|arg| arg.from())
-            .collect::<Vec<clingo_part>>();
-
-        if !unsafe {
-            clingo_control_ground(
-                self.ctl.as_ptr(),
-                parts.as_ptr(),
-                parts_size,
-                None,
-                std::ptr::null_mut(),
-            )
-        } {
-            return Err(ClingoError::new_internal(
-                "Call to clingo_control_ground() failed",
-            ));
-        }
-        Ok(())
-    }
-
-    /// Ground the selected [parts](struct.Part.html) of the current (non-ground) logic
-    /// program.
-    ///
-    /// After grounding, logic programs can be solved with [`solve()`](struct.Control.html#method.solve).
-    ///
-    /// **Note:** Parts of a logic program without an explicit `#program`
-    /// specification are by default put into a program called `base` - without
-    /// arguments.
-    ///
-    /// # Arguments
-    ///
-    /// * `parts` - array of [parts](struct.Part.html) to ground
-    /// * `handler` - implementing the trait [`ExternalFunctionHandler`](trait.ExternalFunctionHandler.html) to evaluate external functions
-    ///
-    /// # Errors
-    ///
-    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
-    pub fn ground_with_event_handler<T: ExternalFunctionHandler>(
-        &mut self,
-        parts: &[Part],
-        handler: &mut T,
-    ) -> Result<(), ClingoError> {
-        let parts_size = parts.len();
-        let parts = parts
-            .iter()
-            .map(|arg| arg.from())
-            .collect::<Vec<clingo_part>>();
-
-        let handler = handler as *mut T;
-        if !unsafe {
-            clingo_control_ground(
-                self.ctl.as_ptr(),
-                parts.as_ptr(),
-                parts_size,
-                Some(unsafe_ground_callback::<T> as GroundCallback),
-                handler as *mut c_void,
-            )
-        } {
-            return Err(ClingoError::new_internal(
-                "Call to clingo_control_ground() failed",
-            ));
-        }
-        Ok(())
-    }
-
-    /// Solve the currently [grounded](struct.Control.html#method.ground) logic program
-    /// enumerating its models.
-    ///
-    /// # Arguments
-    ///
-    /// * `mode` - configures the search mode
-    /// * `assumptions` - array of assumptions to solve under
-    ///
-    /// # Errors
-    ///
-    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
-    /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if solving could not be started
-    pub fn solve(
-        self,
-        mode: SolveMode,
-        assumptions: &[Literal],
-    ) -> Result<SolveHandle<c_void>, ClingoError> {
-        let mut handle = std::ptr::null_mut();
-        let event_handler = std::ptr::null_mut();
-        if !unsafe {
-            clingo_control_solve(
-                self.ctl.as_ptr(),
-                mode.bits(),
-                assumptions.as_ptr() as *const clingo_literal_t,
-                assumptions.len(),
-                None,
-                event_handler,
-                &mut handle,
-            )
-        } {
-            return Err(ClingoError::new_internal(
-                "Call to clingo_control_solve() failed",
-            ));
-        }
-        match NonNull::new(handle) {
-            Some(handle) => Ok(SolveHandle { handle, ctl: self ,event_handler}),
-            None => Err(ClingoError::FFIError {
-                msg: "Tried creating NonNull from a null pointer.",
-            })?,
-        }
-    }
-
-    /// Covenience function that returns an iterator over the models.
-    /// Uses [`solve()`](struct.Control.html#method.solve) with [SolveMode::Yield](enum.SolveMode.html#variant.YIELD) and empty assumptions.
-    ///
-    /// # Errors
-    ///
-    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
-    /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if solving could not be started
-    pub fn all_models(self) -> Result<AllModels<c_void>, ClingoError> {
-        let mut handle = std::ptr::null_mut();
-        let event_handler = std::ptr::null_mut();
-        if !unsafe {
-            clingo_control_solve(
-                self.ctl.as_ptr(),
-                SolveMode::YIELD.bits(),
-                std::ptr::null() as *const clingo_literal_t,
-                0,
-                None,
-                event_handler,
-                &mut handle,
-            )
-        } {
-            return Err(ClingoError::new_internal(
-                "Call to clingo_control_solve() failed",
-            ));
-        }
-        match NonNull::new(handle) {
-            Some(handle) => Ok(AllModels(SolveHandle { handle, ctl: self,event_handler })),
-            None => Err(ClingoError::FFIError {
-                msg: "Tried creating NonNull from a null pointer.",
-            })?,
-        }
-    }
-
-    /// Covenience function that returns an iterator over the optimal models.
-    /// Uses [`solve()`](struct.Control.html#method.solve) with [SolveMode::Yield](enum.SolveMode.html#variant.YIELD) and empty assumptions.
-    ///
-    /// # Errors
-    ///
-    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
-    /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if solving could not be started
-    pub fn optimal_models(self) -> Result<OptimalModels<c_void>, ClingoError> {
-        let mut handle = std::ptr::null_mut();
-        let event_handler = std::ptr::null_mut();
-        if !unsafe {
-            clingo_control_solve(
-                self.ctl.as_ptr(),
-                SolveMode::YIELD.bits(),
-                std::ptr::null() as *const clingo_literal_t,
-                0,
-                None,
-                event_handler,
-                &mut handle,
-            )
-        } {
-            return Err(ClingoError::new_internal(
-                "Call to clingo_control_solve() failed",
-            ));
-        }
-        match NonNull::new(handle) {
-            Some(handle) => Ok(OptimalModels(SolveHandle { handle, ctl: self, event_handler })),
-            None => Err(ClingoError::FFIError {
-                msg: "Tried creating NonNull from a null pointer.",
-            })?,
-        }
-    }
-
-    /// Solve the currently [grounded](struct.Control.html#method.ground) logic program
-    /// enumerating its models.
-    ///
-    /// # Arguments
-    ///
-    /// * `mode` - configures the search mode
-    /// * `assumptions` - array of assumptions to solve under
-    /// * `handler` - implementing the trait [`SolveEventHandler`](trait.SolveEventHandler.html)
-    ///
-    /// # Errors
-    ///
-    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
-    /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if solving could not be started
-    pub fn solve_with_event_handler<T: SolveEventHandler>(
-        self,
-        mode: SolveMode,
-        assumptions: &[Literal],
-        event_handler: Box<T>,
-    ) -> Result<SolveHandle<T>, ClingoError> {
-        let mut handle = std::ptr::null_mut();
-        let event_handler = Box::into_raw(event_handler);
-        eprintln!("solve_with_handler: {:?}",event_handler);
-        if !unsafe {
-            clingo_control_solve(
-                self.ctl.as_ptr(),
-                mode.bits(),
-                assumptions.as_ptr() as *const clingo_literal_t,
-                assumptions.len(),
-                Some(unsafe_solve_callback::<T> as SolveEventCallback),
-                event_handler as *mut c_void,
-                &mut handle,
-            )
-        } {
-            return Err(ClingoError::new_internal(
-                "Call to clingo_control_solve() failed",
-            ));
-        }
-        match NonNull::new(handle) {
-            Some(handle) => Ok(SolveHandle { handle, ctl: self, event_handler }),
-            None => Err(ClingoError::FFIError {
-                msg: "Tried creating NonNull from a null pointer.",
-            })?,
-        }
-    }
     /// **See:** [`Control::get_enable_cleanup()`](struct.Control.html#method.get_enable_cleanup) and [`Control::set_enable_cleanup()`](struct.Control.html#method.set_enable_cleanup)
     ///
     /// # Errors
@@ -2340,7 +2139,6 @@ impl Control {
         }
         Ok(())
     }
-
     /// Assign a truth value to an external atom.
     ///
     /// If a negative literal is passed, the corresponding atom is assigned the
@@ -2374,7 +2172,6 @@ impl Control {
         }
         Ok(())
     }
-
     /// Release an external atom.
     ///
     /// If a negative literal is passed, the corresponding atom is released.
@@ -2398,7 +2195,6 @@ impl Control {
         }
         Ok(())
     }
-
     /// Register a custom propagator with the control object.
     ///
     /// If the sequential flag is set to true, the propagator is called
@@ -2413,11 +2209,14 @@ impl Control {
     ///
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     pub fn register_propagator<T: Propagator>(
-        &mut self,
-        propagator: &mut T,
+        mut self,
+        propagator: T,
         sequential: bool,
-    ) -> Result<(), ClingoError> {
-        let propagator = propagator as *mut T;
+    ) -> Result<ControlLPOF<L, T, O, F>, ClingoError> {
+        let mut propagator = Box::new(propagator);
+        let logger = unsafe { Box::from_raw(self.logger.as_mut()) };
+        let observer = unsafe { Box::from_raw(self.observer.as_mut()) };
+        let function_handler = unsafe { Box::from_raw(self.function_handler.as_mut()) };
         let clingo_propagator = clingo_propagator_t {
             init: Some(unsafe_init::<T>),
             propagate: Some(unsafe_propagate::<T>),
@@ -2429,7 +2228,7 @@ impl Control {
             clingo_control_register_propagator(
                 self.ctl.as_ptr(),
                 &clingo_propagator,
-                propagator as *mut c_void,
+                propagator.as_mut() as *mut T as *mut c_void,
                 sequential,
             )
         } {
@@ -2437,7 +2236,15 @@ impl Control {
                 "Call to clingo_control_register_propagator() failed",
             ));
         }
-        Ok(())
+        self.copied = true;
+        Ok(ControlLPOF {
+            ctl: self.ctl,
+            copied: false,
+            logger,
+            propagator,
+            observer,
+            function_handler,
+        })
     }
 
     /// Check if the solver has determined that the internal program representation is conflicting.
@@ -2450,7 +2257,6 @@ impl Control {
     pub fn is_conflicting(&self) -> bool {
         unsafe { clingo_control_is_conflicting(self.ctl.as_ptr()) }
     }
-
     /// Get a statistics object to inspect solver statistics.
     ///
     /// Statistics are updated after a solve call.
@@ -2482,14 +2288,12 @@ impl Control {
             }),
         }
     }
-
     /// Interrupt the active solve call (or the following solve call right at the beginning).
     pub fn interrupt(&mut self) {
         unsafe {
             clingo_control_interrupt(self.ctl.as_ptr());
         }
     }
-
     /// Get a configuration object to change the solver configuration.
     pub fn configuration_mut(&mut self) -> Result<&mut Configuration, ClingoError> {
         let mut conf = std::ptr::null_mut();
@@ -2505,7 +2309,6 @@ impl Control {
             }),
         }
     }
-
     /// Get a configuration object to change the solver configuration.
     pub fn configuration(&self) -> Result<&Configuration, ClingoError> {
         let mut conf = std::ptr::null_mut();
@@ -2521,7 +2324,6 @@ impl Control {
             }),
         }
     }
-
     /// Configure how learnt constraints are handled during enumeration.
     ///
     /// If the enumeration assumption is enabled, then all information learnt from
@@ -2593,7 +2395,6 @@ impl Control {
         }
         Ok(Symbol(symbol))
     }
-
     /// Check if there is a constant definition for the given constant.
     ///
     /// # Arguments
@@ -2616,7 +2417,6 @@ impl Control {
         }
         Ok(exist)
     }
-
     /// Get an object to inspect symbolic atoms (the relevant Herbrand base) used
     pub fn symbolic_atoms<'a>(&self) -> Result<&'a SymbolicAtoms, ClingoError> {
         let mut atoms = std::ptr::null();
@@ -2632,7 +2432,6 @@ impl Control {
             }),
         }
     }
-
     /// Get an object to inspect theory atoms that occur in the grounding.
     pub fn theory_atoms(&self) -> Result<&TheoryAtoms, ClingoError> {
         let mut atoms = std::ptr::null();
@@ -2648,7 +2447,6 @@ impl Control {
             }),
         }
     }
-
     /// Register a program observer with the control object.
     ///
     /// # Arguments
@@ -2658,11 +2456,14 @@ impl Control {
     ///
     /// **Returns** whether the call was successful
     pub fn register_observer<T: GroundProgramObserver>(
-        &mut self,
-        observer: &mut T,
+        mut self,
+        observer: T,
         replace: bool,
-    ) -> bool {
-        let observer = observer as *mut T;
+    ) -> Result<ControlLPOF<L, P, T, F>, ClingoError> {
+        let mut observer = Box::new(observer);
+        let logger = unsafe { Box::from_raw(self.logger.as_mut()) };
+        let propagator = unsafe { Box::from_raw(self.propagator.as_mut()) };
+        let function_handler = unsafe { Box::from_raw(self.function_handler.as_mut()) };
         let gpo = clingo_ground_program_observer_t {
             init_program: Some(unsafe_init_program::<T>),
             begin_step: Some(unsafe_begin_step::<T>),
@@ -2685,16 +2486,28 @@ impl Control {
             theory_atom: Some(unsafe_theory_atom::<T>),
             theory_atom_with_guard: Some(unsafe_theory_atom_with_guard::<T>),
         };
-        unsafe {
+        if unsafe {
             clingo_control_register_observer(
                 self.ctl.as_ptr(),
                 &gpo,
                 replace,
-                observer as *mut c_void,
+                observer.as_mut() as *mut T as *mut c_void,
             )
+        } {
+            return Err(ClingoError::new_internal(
+                "Call to clingo_control_register_observer() failed",
+            ));
         }
+        self.copied = true;
+        Ok(ControlLPOF {
+            ctl: self.ctl,
+            copied: false,
+            logger,
+            propagator,
+            observer,
+            function_handler,
+        })
     }
-
     /// Get an object to add ground directives to the program.
     ///
     /// # Errors
@@ -2722,7 +2535,240 @@ impl Control {
         }
     }
 
-    // NODO: pub fn clingo_control_clasp_facade()
+    pub fn add_facts(&mut self, facts: &FactBase) {
+        for sym in facts.iter() {
+            // initilize atom to add
+            let atom = ast::Term::from(*sym);
+
+            // create literal
+            let lit = ast::Literal::from_term(ast::Sign::NoSign, &atom);
+
+            // create headliteral
+            let hlit = ast::HeadLiteral::from(&lit);
+
+            // create (fact) rule
+            let rule = ast::Rule::new(hlit, &[]);
+
+            // initialize the statement
+            let stm = rule.ast_statement();
+
+            // get the program builder
+            let mut builder = ast::ProgramBuilder::from(self).unwrap();
+
+            // add the rewritten statement to the program
+            builder
+                .add(&stm)
+                .expect("Failed to add statement to ProgramBuilder.");
+
+            builder.end().expect("Failed to finish building a program.");
+        }
+    }
+
+    /// Covenience function that returns an iterator over the models.
+    /// Uses [`solve()`](struct.Control.html#method.solve) with [SolveMode::Yield](enum.SolveMode.html#variant.YIELD) and empty assumptions.
+    ///
+    /// # Errors
+    ///
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if solving could not be started
+    pub fn all_models(self) -> Result<AllModelsLPOF<L, P, O, F, NoEventHandler>, ClingoError> {
+        let mut handle = std::ptr::null_mut();
+        let event_handler = std::ptr::null_mut();
+        if !unsafe {
+            clingo_control_solve(
+                self.ctl.as_ptr(),
+                SolveMode::YIELD.bits(),
+                std::ptr::null() as *const clingo_literal_t,
+                0,
+                None,
+                event_handler,
+                &mut handle,
+            )
+        } {
+            return Err(ClingoError::new_internal(
+                "Call to clingo_control_solve() failed",
+            ));
+        }
+        match NonNull::new(handle) {
+            Some(handle) => Ok(AllModelsLPOF(SolveHandleLPOFE {
+                handle,
+                ctl: self,
+                _event_handler: Box::new(NoEventHandler),
+            })),
+            None => Err(ClingoError::FFIError {
+                msg: "Tried creating NonNull from a null pointer.",
+            })?,
+        }
+    }
+
+    /// Covenience function that returns an iterator over the optimal models.
+    /// Uses [`solve()`](struct.Control.html#method.solve) with [SolveMode::Yield](enum.SolveMode.html#variant.YIELD) and empty assumptions.
+    ///
+    /// # Errors
+    ///
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if solving could not be started
+    pub fn optimal_models(
+        self,
+    ) -> Result<OptimalModelsLPOF<L, P, O, F, NoEventHandler>, ClingoError> {
+        let mut handle = std::ptr::null_mut();
+        let event_handler = std::ptr::null_mut();
+        if !unsafe {
+            clingo_control_solve(
+                self.ctl.as_ptr(),
+                SolveMode::YIELD.bits(),
+                std::ptr::null() as *const clingo_literal_t,
+                0,
+                None,
+                event_handler,
+                &mut handle,
+            )
+        } {
+            return Err(ClingoError::new_internal(
+                "Call to clingo_control_solve() failed",
+            ));
+        }
+        match NonNull::new(handle) {
+            Some(handle) => Ok(OptimalModelsLPOF(SolveHandleLPOFE {
+                handle,
+                ctl: self,
+                _event_handler: Box::new(NoEventHandler),
+            })),
+            None => Err(ClingoError::FFIError {
+                msg: "Tried creating NonNull from a null pointer.",
+            })?,
+        }
+    }
+}
+/// Create a new control object.
+///
+/// **Note:** Only gringo options (without `--output`) and clasp's options are supported as
+/// arguments,  except basic options such as `--help`.
+/// Furthermore, a control object is blocked while a search call is active;
+/// you must not call any member function during search.
+///
+/// Messages are printed to stderr.
+///
+/// # Arguments
+///
+/// * `arguments` - string array of command line arguments
+///
+/// # Errors
+///
+/// - [`ClingoError::NulError`](enum.ClingoError.html#variant.NulError) - if an argument contains a nul byte
+/// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+/// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if argument parsing fails
+pub fn control(arguments: std::vec::Vec<String>) -> Result<Control, ClingoError> {
+    let logger = None;
+    let logger_data = std::ptr::null_mut();
+
+    // create a vector of zero terminated strings
+    let mut args = vec![];
+    for arg in arguments {
+        args.push(CString::new(arg)?);
+    }
+
+    // convert the strings to raw pointers
+    let c_args = args
+        .iter()
+        .map(|arg| arg.as_ptr())
+        .collect::<Vec<*const c_char>>();
+
+    let mut ctl_ptr = std::ptr::null_mut();
+
+    if !unsafe {
+        clingo_control_new(
+            c_args.as_ptr(),
+            c_args.len(),
+            logger,
+            logger_data,
+            0,
+            &mut ctl_ptr,
+        )
+    } {
+        return Err(ClingoError::new_internal(
+            "Call to clingo_control_new() failed",
+        ));
+    }
+    match NonNull::new(ctl_ptr) {
+        Some(ctl) => Ok(ControlLPOF {
+            ctl,
+            copied: false,
+            logger: Box::new(NoLogger),
+            propagator: Box::new(NoPropagator),
+            observer: Box::new(NoObserver),
+            function_handler: Box::new(NoFunctionHandler),
+        }),
+        None => Err(ClingoError::FFIError {
+            msg: "Tried creating NonNull from a null pointer.",
+        })?,
+    }
+}
+/// Create a new control object.
+///
+/// **Note:** Only gringo options (without `--output`) and clasp's options are supported as
+/// arguments,
+/// except basic options such as `--help`.
+/// Furthermore, a control object is blocked while a search call is active;
+/// you must not call any member function during search.
+///
+/// # Arguments
+///
+/// * `arguments` - string array of command line arguments
+/// * `logger` - callback functions for warnings and info messages
+/// * `message_limit` - maximum number of times the logger callback is called
+///
+/// # Errors
+///
+/// - [`ClingoError::NulError`](enum.ClingoError.html#variant.NulError) - if an argument contains a nul byte
+/// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+/// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if argument parsing fails
+pub fn control_with_logger<L: Logger>(
+    arguments: Vec<String>,
+    logger: L,
+    message_limit: u32,
+) -> Result<ControlWithLogger<L>, ClingoError> {
+    let mut args = vec![];
+    for arg in arguments {
+        args.push(CString::new(arg)?);
+    }
+
+    // convert the strings to raw pointers
+    let c_args = args
+        .iter()
+        .map(|arg| arg.as_ptr())
+        .collect::<Vec<*const c_char>>();
+
+    let mut ctl_ptr = std::ptr::null_mut();
+    let mut logger = Box::new(logger);
+
+    if !unsafe {
+        clingo_control_new(
+            c_args.as_ptr(),
+            c_args.len(),
+            Some(unsafe_logging_callback::<L> as LoggingCallback),
+            logger.as_mut() as *mut L as *mut c_void,
+            message_limit,
+            &mut ctl_ptr,
+        )
+    } {
+        return Err(ClingoError::new_internal(
+            "Call to clingo_control_new() failed",
+        ));
+    }
+    match NonNull::new(ctl_ptr) {
+        Some(ctl) => Ok(ControlLPOF {
+            ctl,
+            copied: false,
+            logger,
+            propagator: Box::new(NoPropagator),
+            observer: Box::new(NoObserver),
+            function_handler: Box::new(NoFunctionHandler),
+        }),
+        None => Err(ClingoError::FFIError {
+            msg: "Tried creating NonNull from a null pointer.",
+        })?,
+    }
 }
 /// Handle for the solver configuration.
 #[derive(Debug)]
@@ -3321,7 +3367,7 @@ impl Statistics {
                 "Call to clingo_statistics_type() failed",
             ));
         }
-        StatisticsType::try_from(stype)
+        StatisticsType::try_from(stype as u32)
     }
 
     /// Get the size of an array entry.
@@ -3810,7 +3856,7 @@ impl TheoryAtoms {
                 "Call to clingo_theory_atoms_term_type() failed",
             ));
         }
-        TheoryTermType::try_from(ttype)
+        TheoryTermType::try_from(ttype as u32)
     }
 
     /// Get the number of the given numeric theory term.
@@ -4175,7 +4221,7 @@ impl Model {
                 "Call to clingo_model_type() failed",
             ));
         }
-        ModelType::try_from(mtype)
+        ModelType::try_from(mtype as u32)
     }
 
     /// Get the running number of the model.
@@ -4532,7 +4578,7 @@ impl Assignment {
                 "Call to clingo_assignment_truth_value() failed",
             ));
         }
-        TruthValue::try_from(value)
+        TruthValue::try_from(value as u32)
     }
 
     /// The number of (positive) literals in the assignment.
@@ -4922,7 +4968,9 @@ impl PropagateInit {
     ///
     /// **See:** [`PropagateInit::set_check_mode()`](struct.PropagateInit.html#method.set_check_mode)
     pub fn get_check_mode(&self) -> Result<PropagatorCheckMode, ClingoError> {
-        PropagatorCheckMode::try_from(unsafe { clingo_propagate_init_get_check_mode(&self.0) })
+        PropagatorCheckMode::try_from(
+            unsafe { clingo_propagate_init_get_check_mode(&self.0) } as u32
+        )
     }
 
     /// Get the top level assignment solver.
@@ -5092,13 +5140,31 @@ impl PropagateInit {
 }
 
 /// Search handle to a solve call.
-#[derive(Debug)]
-pub struct SolveHandle<T> {
+// #[derive(Debug)]
+pub struct SolveHandleLPOFE<
+    L: Logger,
+    P: Propagator,
+    O: GroundProgramObserver,
+    F: FunctionHandler,
+    E: SolveEventHandler,
+> {
     handle: NonNull<clingo_solve_handle_t>,
-    ctl: Control,
-    event_handler: *mut T
+    ctl: ControlLPOF<L, P, O, F>,
+    _event_handler: Box<E>,
 }
-impl<T> SolveHandle<T> {
+pub struct NoEventHandler;
+impl SolveEventHandler for NoEventHandler {}
+
+pub type SolveHandle =
+    SolveHandleLPOFE<NoLogger, NoPropagator, NoObserver, NoFunctionHandler, NoEventHandler>;
+impl<
+        L: Logger,
+        P: Propagator,
+        O: GroundProgramObserver,
+        F: FunctionHandler,
+        E: SolveEventHandler,
+    > SolveHandleLPOFE<L, P, O, F, E>
+{
     /// Get the next solve result.
     ///
     /// Blocks until the result is ready.
@@ -5125,7 +5191,6 @@ impl<T> SolveHandle<T> {
             })
         }
     }
-
     /// Wait for the specified amount of time to check if the next result is ready.
     ///
     /// If the time is set to zero, this function can be used to poll if the search is still active.
@@ -5139,7 +5204,6 @@ impl<T> SolveHandle<T> {
         unsafe { clingo_solve_handle_wait(self.handle.as_ptr(), timeout, &mut result) }
         result
     }
-
     /// Get the next model or None if there are no more models.
     ///
     /// # Errors
@@ -5168,9 +5232,8 @@ impl<T> SolveHandle<T> {
                 "Call to clingo_solve_handle_model() failed",
             ));
         }
-        Ok( unsafe { (model as *mut Model).as_mut() })
+        Ok(unsafe { (model as *mut Model).as_mut() })
     }
-
     /// When a problem is unsatisfiable, get a subset of the assumptions that made the problem unsatisfiable.
     ///
     /// If the program is not unsatisfiable, an empty vector is returned.
@@ -5203,7 +5266,6 @@ impl<T> SolveHandle<T> {
         }
         Ok(literals)
     }
-
     /// Discards the last model and starts the search for the next one.
     ///
     /// If the search has been started asynchronously, this function continues the search in the
@@ -5223,7 +5285,6 @@ impl<T> SolveHandle<T> {
         }
         Ok(())
     }
-
     /// Stop the running search and block until done.
     ///
     /// # Errors
@@ -5238,7 +5299,6 @@ impl<T> SolveHandle<T> {
         }
         Ok(())
     }
-
     /// Stops the running search and releases the handle.
     ///
     /// Blocks until the search is stopped (as if an implicit cancel was called before the handle is
@@ -5248,20 +5308,30 @@ impl<T> SolveHandle<T> {
     ///
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if solving fails
-    pub fn close(self) -> Result<Control, ClingoError> {
+    pub fn close(self) -> Result<ControlLPOF<L, P, O, F>, ClingoError> {
         if !unsafe { clingo_solve_handle_close(self.handle.as_ptr()) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_solve_handle_close() failed",
             ));
         }
-        unsafe{Box::from_raw(self.event_handler)};
         Ok(self.ctl)
     }
 }
-pub type PlainSolveHandle = SolveHandle<c_void>;
-pub struct OptimalModels<T>(SolveHandle<T>);
-
-impl<T> Iterator for OptimalModels<T> {
+pub struct OptimalModelsLPOF<
+    L: Logger,
+    P: Propagator,
+    O: GroundProgramObserver,
+    F: FunctionHandler,
+    E: SolveEventHandler,
+>(SolveHandleLPOFE<L, P, O, F, E>);
+impl<
+        L: Logger,
+        P: Propagator,
+        O: GroundProgramObserver,
+        F: FunctionHandler,
+        E: SolveEventHandler,
+    > Iterator for OptimalModelsLPOF<L, P, O, F, E>
+{
     type Item = MModel;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -5288,8 +5358,21 @@ impl<T> Iterator for OptimalModels<T> {
         }
     }
 }
-pub struct AllModels<T>(SolveHandle<T>);
-impl<T> Iterator for AllModels<T> {
+pub struct AllModelsLPOF<
+    L: Logger,
+    P: Propagator,
+    O: GroundProgramObserver,
+    F: FunctionHandler,
+    E: SolveEventHandler,
+>(SolveHandleLPOFE<L, P, O, F, E>);
+impl<
+        L: Logger,
+        P: Propagator,
+        O: GroundProgramObserver,
+        F: FunctionHandler,
+        E: SolveEventHandler,
+    > Iterator for AllModelsLPOF<L, P, O, F, E>
+{
     type Item = MModel;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -5397,25 +5480,23 @@ pub struct MModel {
 // pub type clingo_application_t = clingo_application;
 // pub trait Application {
 //     fn program_name(&self) -> String;
-//     #[doc(hidden)]
-//     unsafe extern "C" fn unsafe_program_name<T: Application>(data: *mut ::std::os::raw::c_void) -> *const ::std::os::raw::c_char {
-//         // check for null pointers
-//         if data.is_null()
-//         {
-//             set_internal_error(
-//                 ErrorType::Runtime,
-//                 "unsafe_program_name() got a null pointer.",
-//             );
-//             return std::ptr::null();
-//         }
-//         let data = &mut *(data as *mut T);
 
-//         let name = data.program_name();
-//         let c_name: CStr = name.into();
-//         c_name.as_ptr()
-//     }
 // }
-
+// unsafe extern "C" fn unsafe_program_name<T: Application>(data: *mut ::std::os::raw::c_void) -> *const ::std::os::raw::c_char {
+//     // check for null pointers
+//     if data.is_null()
+//     {
+//         set_internal_error(
+//             ErrorType::Runtime,
+//             "unsafe_program_name() got a null pointer.",
+//         );
+//         return std::ptr::null();
+//     }
+//     let data = &mut *(data as *mut T);
+//     let name = data.program_name();
+//     let c_name: CStr = name.into();
+//     c_name.as_ptr()
+// }
 // extern "C" {
 //     #[doc = "! Add an option that is processed with a custom parser."]
 //     #[doc = "!"]
@@ -5642,14 +5723,18 @@ pub trait GroundProgramObserver {
     /// * `incremental` - whether the program is incremental
     ///
     /// **Returns** whether the call was successful
-    fn init_program(&mut self, incremental: bool) -> bool;
+    fn init_program(&mut self, _incremental: bool) -> bool {
+        true
+    }
 
     /// Marks the beginning of a block of directives passed to the solver.
     ///
     /// **See:** [`end_step()`](trait.GroundProgramObserver.html#tymethod.end_step)
     ///
     /// **Returns** whether the call was successful
-    fn begin_step(&mut self) -> bool;
+    fn begin_step(&mut self) -> bool {
+        true
+    }
 
     /// Marks the end of a block of directives passed to the solver.
     ///
@@ -5658,7 +5743,9 @@ pub trait GroundProgramObserver {
     /// **See:** [`begin_step()`](trait.GroundProgramObserver.html#tymethod.begin_step)
     ///
     /// **Returns** whether the call was successful
-    fn end_step(&mut self) -> bool;
+    fn end_step(&mut self) -> bool {
+        true
+    }
 
     /// Observe rules passed to the solver.
     ///
@@ -5669,8 +5756,9 @@ pub trait GroundProgramObserver {
     /// * `body` - the body literals
     ///
     /// **Returns** whether the call was successful
-    fn rule(&mut self, choice: bool, head: &[Atom], body: &[Literal]) -> bool;
-
+    fn rule(&mut self, _choice: bool, _head: &[Atom], _body: &[Literal]) -> bool {
+        true
+    }
     /// Observe weight rules passed to the solver.
     ///
     /// # Arguments
@@ -5683,11 +5771,13 @@ pub trait GroundProgramObserver {
     /// **Returns** whether the call was successful
     fn weight_rule(
         &mut self,
-        choice: bool,
-        head: &[Atom],
-        lower_bound: i32,
-        body: &[WeightedLiteral],
-    ) -> bool;
+        _choice: bool,
+        _head: &[Atom],
+        _lower_bound: i32,
+        _body: &[WeightedLiteral],
+    ) -> bool {
+        true
+    }
 
     /// Observe minimize constraints (or weak constraints) passed to the solver.
     ///
@@ -5697,7 +5787,9 @@ pub trait GroundProgramObserver {
     /// * `literals` - the weighted literals whose sum to minimize
     ///
     /// **Returns** whether the call was successful
-    fn minimize(&mut self, priority: i32, literals: &[WeightedLiteral]) -> bool;
+    fn minimize(&mut self, _priority: i32, _literals: &[WeightedLiteral]) -> bool {
+        true
+    }
 
     /// Observe projection directives passed to the solver.
     ///
@@ -5706,7 +5798,9 @@ pub trait GroundProgramObserver {
     /// * `atoms` - the atoms to project on
     ///
     /// **Returns** whether the call was successful
-    fn project(&mut self, atoms: &[Atom]) -> bool;
+    fn project(&mut self, _atoms: &[Atom]) -> bool {
+        true
+    }
 
     /// Observe shown atoms passed to the solver.
     ///
@@ -5719,8 +5813,9 @@ pub trait GroundProgramObserver {
     /// * `atom` - the aspif atom (0 for facts)
     ///
     /// **Returns** whether the call was successful
-    fn output_atom(&mut self, symbol: Symbol, atom: Atom) -> bool;
-
+    fn output_atom(&mut self, _symbol: Symbol, _atom: Atom) -> bool {
+        true
+    }
     /// Observe shown terms passed to the solver.
     ///
     /// # Arguments
@@ -5729,8 +5824,9 @@ pub trait GroundProgramObserver {
     /// * `condition` - the literals of the condition
     ///
     /// **Returns** whether the call was successful
-    fn output_term(&mut self, symbol: Symbol, condition: &[Literal]) -> bool;
-
+    fn output_term(&mut self, _symbol: Symbol, _condition: &[Literal]) -> bool {
+        true
+    }
     /// Observe shown csp variables passed to the solver.
     ///
     /// # Arguments
@@ -5740,7 +5836,9 @@ pub trait GroundProgramObserver {
     /// * `condition` - the literals of the condition
     ///
     /// **Returns** whether the call was successful
-    fn output_csp(&mut self, symbol: Symbol, value: i32, condition: &[Literal]) -> bool;
+    fn output_csp(&mut self, _symbol: Symbol, _value: i32, _condition: &[Literal]) -> bool {
+        true
+    }
 
     /// Observe external statements passed to the solver.
     ///
@@ -5750,7 +5848,9 @@ pub trait GroundProgramObserver {
     /// * `etype` - the type of the external statement
     ///
     /// **Returns** whether the call was successful
-    fn external(&mut self, atom: Atom, type_: ExternalType) -> bool;
+    fn external(&mut self, _atom: Atom, _type_: ExternalType) -> bool {
+        true
+    }
 
     /// Observe assumption directives passed to the solver.
     ///
@@ -5760,7 +5860,9 @@ pub trait GroundProgramObserver {
     /// false for the next solve call)
     ///
     /// **Returns** whether the call was successful
-    fn assume(&mut self, literals: &[Literal]) -> bool;
+    fn assume(&mut self, _literals: &[Literal]) -> bool {
+        true
+    }
 
     /// Observe heuristic directives passed to the solver.
     ///
@@ -5775,13 +5877,14 @@ pub trait GroundProgramObserver {
     /// **Returns** whether the call was successful
     fn heuristic(
         &mut self,
-        atom: Atom,
-        type_: HeuristicType,
-        bias: i32,
-        priority: u32,
-        condition: &[Literal],
-    ) -> bool;
-
+        _atom: Atom,
+        _type_: HeuristicType,
+        _bias: i32,
+        _priority: u32,
+        _condition: &[Literal],
+    ) -> bool {
+        true
+    }
     /// Observe edge directives passed to the solver.
     ///
     /// # Arguments
@@ -5791,8 +5894,9 @@ pub trait GroundProgramObserver {
     /// * `condition` - the condition under which the edge is part of the graph
     ///
     /// **Returns** whether the call was successful
-    fn acyc_edge(&mut self, node_u: i32, node_v: i32, condition: &[Literal]) -> bool;
-
+    fn acyc_edge(&mut self, _node_u: i32, _node_v: i32, _condition: &[Literal]) -> bool {
+        true
+    }
     /// Observe numeric theory terms.
     ///
     /// # Arguments
@@ -5801,8 +5905,9 @@ pub trait GroundProgramObserver {
     /// * `number` - the value of the term
     ///
     /// **Returns** whether the call was successful
-    fn theory_term_number(&mut self, term_id: Id, number: i32) -> bool;
-
+    fn theory_term_number(&mut self, _term_id: Id, _number: i32) -> bool {
+        true
+    }
     /// Observe string theory terms.
     ///
     /// # Arguments
@@ -5811,7 +5916,9 @@ pub trait GroundProgramObserver {
     /// * `name` - the value of the term
     ///
     /// **Returns** whether the call was successful
-    fn theory_term_string(&mut self, term_id: Id, name: &str) -> bool;
+    fn theory_term_string(&mut self, _term_id: Id, _name: &str) -> bool {
+        true
+    }
 
     /// Observe compound theory terms.
     ///
@@ -5829,9 +5936,14 @@ pub trait GroundProgramObserver {
     /// * `arguments` - the arguments of the term
     ///
     /// **Returns** whether the call was successful
-    fn theory_term_compound(&mut self, term_id: Id, name_id_or_type: i32, arguments: &[Id])
-        -> bool;
-
+    fn theory_term_compound(
+        &mut self,
+        _term_id: Id,
+        _name_id_or_type: i32,
+        _arguments: &[Id],
+    ) -> bool {
+        true
+    }
     /// Observe theory elements.
     ///
     /// # Arguments
@@ -5841,9 +5953,9 @@ pub trait GroundProgramObserver {
     /// * `condition` - the condition of the element
     ///
     /// **Returns** whether the call was successful
-    fn theory_element(&mut self, element_id: Id, terms: &[Id], condition: &[Literal]) -> bool;
-
-
+    fn theory_element(&mut self, _element_id: Id, _terms: &[Id], _condition: &[Literal]) -> bool {
+        true
+    }
     /// Observe theory atoms without guard.
     ///
     /// # Arguments
@@ -5853,9 +5965,9 @@ pub trait GroundProgramObserver {
     /// * `elements` - the elements of the atom
     ///
     /// **Returns** whether the call was successful
-    fn theory_atom(&mut self, atom_id_or_zero: Id, term_id: Id, elements: &[Id]) -> bool;
-
-
+    fn theory_atom(&mut self, _atom_id_or_zero: Id, _term_id: Id, _elements: &[Id]) -> bool {
+        true
+    }
     /// Observe theory atoms with guard.
     ///
     /// # Arguments
@@ -5869,14 +5981,15 @@ pub trait GroundProgramObserver {
     /// **Returns** whether the call was successful
     fn theory_atom_with_guard(
         &mut self,
-        atom_id_or_zero: Id,
-        term_id: Id,
-        elements: &[Id],
-        operator_id: Id,
-        right_hand_side_id: Id,
-    ) -> bool;
+        _atom_id_or_zero: Id,
+        _term_id: Id,
+        _elements: &[Id],
+        _operator_id: Id,
+        _right_hand_side_id: Id,
+    ) -> bool {
+        true
+    }
 }
-#[doc(hidden)]
 unsafe extern "C" fn unsafe_init_program<T: GroundProgramObserver>(
     incremental: bool,
     gpo: *mut c_void,
@@ -5891,7 +6004,6 @@ unsafe extern "C" fn unsafe_init_program<T: GroundProgramObserver>(
         false
     }
 }
-#[doc(hidden)]
 unsafe extern "C" fn unsafe_begin_step<T: GroundProgramObserver>(gpo: *mut c_void) -> bool {
     if let Some(gpo) = (gpo as *mut T).as_mut() {
         gpo.begin_step()
@@ -5903,7 +6015,6 @@ unsafe extern "C" fn unsafe_begin_step<T: GroundProgramObserver>(gpo: *mut c_voi
         false
     }
 }
-#[doc(hidden)]
 unsafe extern "C" fn unsafe_end_step<T: GroundProgramObserver>(gpo: *mut c_void) -> bool {
     if let Some(gpo) = (gpo as *mut T).as_mut() {
         gpo.end_step()
@@ -5915,7 +6026,6 @@ unsafe extern "C" fn unsafe_end_step<T: GroundProgramObserver>(gpo: *mut c_void)
         false
     }
 }
-#[doc(hidden)]
 unsafe extern "C" fn unsafe_rule<T: GroundProgramObserver>(
     choice: bool,
     head: *const clingo_atom_t,
@@ -5935,7 +6045,6 @@ unsafe extern "C" fn unsafe_rule<T: GroundProgramObserver>(
 
     gpo.rule(choice, head, body)
 }
-#[doc(hidden)]
 unsafe extern "C" fn unsafe_minimize<T: GroundProgramObserver>(
     priority: clingo_weight_t,
     literals: *const clingo_weighted_literal_t,
@@ -5952,7 +6061,6 @@ unsafe extern "C" fn unsafe_minimize<T: GroundProgramObserver>(
 
     gpo.minimize(priority, literals)
 }
-#[doc(hidden)]
 unsafe extern "C" fn unsafe_project<T: GroundProgramObserver>(
     atoms: *const clingo_atom_t,
     size: usize,
@@ -5968,7 +6076,6 @@ unsafe extern "C" fn unsafe_project<T: GroundProgramObserver>(
 
     gpo.project(atoms)
 }
-#[doc(hidden)]
 unsafe extern "C" fn unsafe_weight_rule<T: GroundProgramObserver>(
     choice: bool,
     head: *const clingo_atom_t,
@@ -5992,7 +6099,6 @@ unsafe extern "C" fn unsafe_weight_rule<T: GroundProgramObserver>(
 
     gpo.weight_rule(choice, head, lower_bound, body)
 }
-#[doc(hidden)]
 unsafe extern "C" fn unsafe_output_atom<T: GroundProgramObserver>(
     symbol: clingo_symbol_t,
     atom: clingo_atom_t,
@@ -6008,7 +6114,6 @@ unsafe extern "C" fn unsafe_output_atom<T: GroundProgramObserver>(
         false
     }
 }
-#[doc(hidden)]
 unsafe extern "C" fn unsafe_output_term<T: GroundProgramObserver>(
     symbol: clingo_symbol_t,
     condition: *const clingo_literal_t,
@@ -6028,7 +6133,6 @@ unsafe extern "C" fn unsafe_output_term<T: GroundProgramObserver>(
 
     gpo.output_term(Symbol(symbol), condition)
 }
-#[doc(hidden)]
 unsafe extern "C" fn unsafe_output_csp<T: GroundProgramObserver>(
     symbol: clingo_symbol_t,
     value: ::std::os::raw::c_int,
@@ -6049,7 +6153,6 @@ unsafe extern "C" fn unsafe_output_csp<T: GroundProgramObserver>(
 
     gpo.output_csp(Symbol(symbol), value, condition)
 }
-#[doc(hidden)]
 unsafe extern "C" fn unsafe_external<T: GroundProgramObserver>(
     atom: clingo_atom_t,
     etype: clingo_external_type_t,
@@ -6062,7 +6165,7 @@ unsafe extern "C" fn unsafe_external<T: GroundProgramObserver>(
     }
     let gpo = &mut *(gpo as *mut T);
 
-    match ExternalType::try_from(etype) {
+    match ExternalType::try_from(etype as u32) {
         Err(e) => {
             eprintln!("Error in unsafe_external(): {}.", e);
             set_internal_error(ErrorType::Runtime, "Error in unsafe_external().");
@@ -6071,7 +6174,6 @@ unsafe extern "C" fn unsafe_external<T: GroundProgramObserver>(
         Ok(etype) => gpo.external(Atom(atom), etype),
     }
 }
-#[doc(hidden)]
 unsafe extern "C" fn unsafe_assume<T: GroundProgramObserver>(
     literals: *const clingo_literal_t,
     size: usize,
@@ -6087,7 +6189,6 @@ unsafe extern "C" fn unsafe_assume<T: GroundProgramObserver>(
 
     gpo.assume(literals)
 }
-#[doc(hidden)]
 unsafe extern "C" fn unsafe_heuristic<T: GroundProgramObserver>(
     atom: clingo_atom_t,
     htype: clingo_heuristic_type_t,
@@ -6105,7 +6206,7 @@ unsafe extern "C" fn unsafe_heuristic<T: GroundProgramObserver>(
     let condition = std::slice::from_raw_parts(condition as *const Literal, size);
     let gpo = &mut *(gpo as *mut T);
 
-    match HeuristicType::try_from(htype) {
+    match HeuristicType::try_from(htype as u32) {
         Err(e) => {
             eprintln!("Error in unsafe_heuristic(): {}.", e);
             set_internal_error(ErrorType::Runtime, "Error in unsafe_heuristic().");
@@ -6114,7 +6215,6 @@ unsafe extern "C" fn unsafe_heuristic<T: GroundProgramObserver>(
         Ok(htype) => gpo.heuristic(Atom(atom), htype, bias, priority, condition),
     }
 }
-#[doc(hidden)]
 unsafe extern "C" fn unsafe_acyc_edge<T: GroundProgramObserver>(
     node_u: ::std::os::raw::c_int,
     node_v: ::std::os::raw::c_int,
@@ -6132,7 +6232,6 @@ unsafe extern "C" fn unsafe_acyc_edge<T: GroundProgramObserver>(
 
     gpo.acyc_edge(node_u, node_v, condition)
 }
-#[doc(hidden)]
 unsafe extern "C" fn unsafe_theory_term_number<T: GroundProgramObserver>(
     term_id: clingo_id_t,
     number: ::std::os::raw::c_int,
@@ -6142,13 +6241,12 @@ unsafe extern "C" fn unsafe_theory_term_number<T: GroundProgramObserver>(
         gpo.theory_term_number(Id(term_id), number)
     } else {
         set_internal_error(
-                    ErrorType::Runtime,
-                        "unsafe_theory_term_number tried casting a null pointer to &mut GroundProgramObserver."
-                );
+            ErrorType::Runtime,
+            "unsafe_theory_term_number tried casting a null pointer to &mut GroundProgramObserver.",
+        );
         false
     }
 }
-#[doc(hidden)]
 unsafe extern "C" fn unsafe_theory_term_string<T: GroundProgramObserver>(
     term_id: clingo_id_t,
     name: *const c_char,
@@ -6177,7 +6275,6 @@ unsafe extern "C" fn unsafe_theory_term_string<T: GroundProgramObserver>(
         }
     }
 }
-#[doc(hidden)]
 unsafe extern "C" fn unsafe_theory_term_compound<T: GroundProgramObserver>(
     term_id: clingo_id_t,
     name_id_or_type: ::std::os::raw::c_int,
@@ -6198,7 +6295,6 @@ unsafe extern "C" fn unsafe_theory_term_compound<T: GroundProgramObserver>(
 
     gpo.theory_term_compound(Id(term_id), name_id_or_type, arguments)
 }
-#[doc(hidden)]
 unsafe extern "C" fn unsafe_theory_element<T: GroundProgramObserver>(
     element_id: clingo_id_t,
     terms: *const clingo_id_t,
@@ -6224,7 +6320,6 @@ unsafe extern "C" fn unsafe_theory_element<T: GroundProgramObserver>(
 
     gpo.theory_element(Id(element_id), terms, condition)
 }
-#[doc(hidden)]
 unsafe extern "C" fn unsafe_theory_atom<T: GroundProgramObserver>(
     atom_id_or_zero: clingo_id_t,
     term_id: clingo_id_t,
@@ -6245,7 +6340,6 @@ unsafe extern "C" fn unsafe_theory_atom<T: GroundProgramObserver>(
 
     gpo.theory_atom(Id(atom_id_or_zero), Id(term_id), elements)
 }
-#[doc(hidden)]
 unsafe extern "C" fn unsafe_theory_atom_with_guard<T: GroundProgramObserver>(
     atom_id_or_zero: clingo_id_t,
     term_id: clingo_id_t,

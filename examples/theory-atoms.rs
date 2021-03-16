@@ -76,7 +76,7 @@ fn main() {
     let options = env::args().skip(1).collect();
 
     // create a control object and pass command line arguments
-    let mut ctl = Control::new(options).expect("Failed creating clingo_control.");
+    let mut ctl = control(options).expect("Failed creating clingo_control.");
 
     // add a logic program to the base part
     ctl.add(

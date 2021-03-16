@@ -22,7 +22,7 @@ fn main() {
     let options = env::args().skip(1).collect();
 
     // create a control object and pass command line arguments
-    let mut ctl = Control::new(options).expect("Failed creating Control.");
+    let mut ctl = control(options).expect("Failed creating Control.");
 
     // add a logic program to the base part
     ctl.add(
@@ -48,9 +48,9 @@ fn main() {
         .solve_with_event_handler(
             SolveMode::ASYNC | SolveMode::YIELD,
             &[],
-            Box::new(MySEHandler {
+            MySEHandler {
                 atom: running.clone(),
-            }),
+            },
         )
         .expect("Failed to retrieve solve handle.");
 

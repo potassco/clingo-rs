@@ -115,14 +115,14 @@ impl Propagator for PigeonPropagator {
             // initially no pigeons are assigned to any holes
             // so the hole -> literal mapping is initialized with zero
             // which is not a valid literal
-            self.states[i].borrow_mut().holes = vec![None; holes as usize];
+            (*self.states[i]).borrow_mut().holes = vec![None; holes as usize];
         }
         true
     }
 
     fn propagate(&mut self, control: &mut PropagateControl, changes: &[Literal]) -> bool {
         // get the thread specific state
-        let mut state = self.states[control.thread_id() as usize].borrow_mut();
+        let mut state = (*self.states[control.thread_id() as usize]).borrow_mut();
 
         // apply and check the pigeon assignments done by the solver
         for &lit in changes.iter() {
@@ -163,7 +163,7 @@ impl Propagator for PigeonPropagator {
 
     fn undo(&mut self, control: &mut PropagateControl, changes: &[Literal]) {
         // get the thread specific state
-        let mut state = self.states[control.thread_id() as usize].borrow_mut();
+        let mut state = (*self.states[control.thread_id() as usize]).borrow_mut();
 
         // undo the assignments made in propagate
         for &lit in changes.iter() {
@@ -179,7 +179,9 @@ impl Propagator for PigeonPropagator {
     }
 }
 
-fn solve(ctl: Control) -> Result<(Vec<Vec<String>>, Control), ClingoError> {
+fn solve<P: Propagator>(
+    ctl: ControlWithPropagator<P>,
+) -> Result<(Vec<Vec<String>>, ControlWithPropagator<P>), ClingoError> {
     let mut ret = Vec::<Vec<String>>::new();
     // get a solve handle
     let mut handle = ctl
@@ -216,12 +218,13 @@ fn string_model(model: &Model) -> Vec<String> {
 #[test_case(2, 2, 2; "sat")]
 #[test_case(5, 6, 0; "unsat")]
 fn pigeon_propagator(holes: i32, pigeons: i32, number_of_models: usize) {
-    let mut ctl = Control::new(vec!["0".into()]).unwrap();
-    let mut prop = PigeonPropagator {
+    let ctl = control(vec!["0".into()]).unwrap();
+    let prop = PigeonPropagator {
         pigeons: vec![],
         states: vec![],
     };
-    ctl.register_propagator(&mut prop, false)
+    let mut ctl = ctl
+        .register_propagator(prop, false)
         .expect("Failed to register propagator.");
     ctl.add(
         "pigeon",
@@ -327,14 +330,15 @@ impl Propagator for TestAssignment {
 
 #[test]
 fn assignment_propagator() {
-    let mut ctl = Control::new(vec!["0".into()]).unwrap();
-    let mut p = TestAssignment {
+    let ctl = control(vec!["0".into()]).unwrap();
+    let p = TestAssignment {
         a: None,
         b: None,
         c: None,
         count: 0,
     };
-    ctl.register_propagator(&mut p, false)
+    let mut ctl = ctl
+        .register_propagator(p, false)
         .expect("Failed to register propagator.");
     ctl.add("base", &[], "{a; b}. c.")
         .expect("Failed to add a logic program.");
@@ -375,9 +379,10 @@ impl Propagator for TestMode {
 
 #[test]
 fn mode_propagator() {
-    let mut ctl = Control::new(vec!["0".into()]).unwrap();
-    let mut p = TestMode { lits: vec![] };
-    ctl.register_propagator(&mut p, false)
+    let ctl = control(vec!["0".into()]).unwrap();
+    let p = TestMode { lits: vec![] };
+    let mut ctl = ctl
+        .register_propagator(p, false)
         .expect("Failed to register propagator.");
     ctl.add("base", &[], "{p(1..9)}.")
         .expect("Failed to add a logic program.");
@@ -400,11 +405,14 @@ struct TestAddWatch {
     propagated: HashSet<Literal>,
     a: Option<Literal>,
     b: Option<Literal>,
+}
+struct TestPropagator {
+    inner: Rc<RefCell<TestAddWatch>>,
     mutex: Mutex<u32>,
     cv: Condvar,
     done: bool,
 }
-impl Propagator for TestAddWatch {
+impl Propagator for TestPropagator {
     fn init(&mut self, init: &mut PropagateInit) -> bool {
         assert_eq!(init.number_of_threads(), 2);
         let a1 = init
@@ -416,7 +424,7 @@ impl Propagator for TestAddWatch {
             .unwrap()
             .literal()
             .unwrap();
-        self.a = Some(init.solver_literal(a1).unwrap());
+        (*self.inner).borrow_mut().a = Some(init.solver_literal(a1).unwrap());
         let b1 = init
             .symbolic_atoms()
             .unwrap()
@@ -426,7 +434,7 @@ impl Propagator for TestAddWatch {
             .unwrap()
             .literal()
             .unwrap();
-        self.b = Some(init.solver_literal(b1).unwrap());
+        (*self.inner).borrow_mut().b = Some(init.solver_literal(b1).unwrap());
         let c1 = init
             .symbolic_atoms()
             .unwrap()
@@ -447,8 +455,8 @@ impl Propagator for TestAddWatch {
             .literal()
             .unwrap();
         let d = init.solver_literal(d1).unwrap();
-        let a_ = self.a.unwrap();
-        let b_ = self.b.unwrap();
+        let a_ = self.inner.borrow().a.unwrap();
+        let b_ = self.inner.borrow().b.unwrap();
         init.add_watch_to_thread(a_, 0).unwrap();
         init.add_watch_to_thread(a_.negate(), 0).unwrap();
         init.add_watch_to_thread(b_, 0).unwrap();
@@ -470,13 +478,14 @@ impl Propagator for TestAddWatch {
                 let _mut_ = self.cv.wait(self.mutex.lock().unwrap()).unwrap();
             }
         } else {
+            let mut s = (*self.inner).borrow_mut();
             for lit in changes {
-                // let mut_ = self.mutex.lock().unwrap();
+                let _mut_ = self.mutex.lock().unwrap();
                 self.done = true;
                 if lit.get_integer() < 0 {
-                    self.propagated.insert(lit.negate());
+                    s.propagated.insert(lit.negate());
                 } else {
-                    self.propagated.insert(*lit);
+                    s.propagated.insert(*lit);
                 }
             }
             self.cv.notify_one();
@@ -487,11 +496,14 @@ impl Propagator for TestAddWatch {
 
 #[test]
 fn add_watch_propagator() {
-    let mut ctl = Control::new(vec!["0".into()]).unwrap();
-    let mut p = TestAddWatch {
+    let mut ctl = control(vec!["0".into()]).unwrap();
+    let p = Rc::new(RefCell::new(TestAddWatch {
         propagated: HashSet::new(),
         a: None,
         b: None,
+    }));
+    let pr = TestPropagator {
+        inner: p.clone(),
         mutex: Mutex::new(0),
         cv: Condvar::new(),
         done: false,
@@ -501,7 +513,8 @@ fn add_watch_propagator() {
     let sub_key = conf.map_at(root_key, "solve.parallel_mode").unwrap();
     conf.value_set(sub_key, "2")
         .expect("Failed to set solve.parallel_mode to 2.");
-    ctl.register_propagator(&mut p, false)
+    let mut ctl = ctl
+        .register_propagator(pr, false)
         .expect("Failed to register propagator.");
     ctl.add("base", &[], "{a;b;c;d}. c. :- d.")
         .expect("Failed to add a logic program.");
@@ -522,10 +535,10 @@ fn add_watch_propagator() {
             vec!["c"],
         ]
     );
-    let b = p.b.unwrap();
+    let b = p.borrow().b.unwrap();
     let mut test_set = HashSet::new();
     test_set.insert(b);
-    assert_eq!(p.propagated, test_set);
+    assert_eq!(p.borrow().propagated, test_set);
 }
 
 struct TestAddClause {
@@ -535,8 +548,12 @@ struct TestAddClause {
     b: Option<Literal>,
     count: usize,
 }
-impl Propagator for TestAddClause {
+struct TestPropagator2 {
+    inner: Rc<RefCell<TestAddClause>>,
+}
+impl Propagator for TestPropagator2 {
     fn init(&mut self, init: &mut PropagateInit) -> bool {
+        let mut s = (*self.inner).borrow_mut();
         let a1 = init
             .symbolic_atoms()
             .unwrap()
@@ -546,7 +563,7 @@ impl Propagator for TestAddClause {
             .unwrap()
             .literal()
             .unwrap();
-        self.a = Some(init.solver_literal(a1).unwrap());
+        s.a = Some(init.solver_literal(a1).unwrap());
         let b1 = init
             .symbolic_atoms()
             .unwrap()
@@ -556,18 +573,19 @@ impl Propagator for TestAddClause {
             .unwrap()
             .literal()
             .unwrap();
-        self.b = Some(init.solver_literal(b1).unwrap());
-        init.add_watch(self.a.unwrap()).unwrap();
-        init.add_watch(self.b.unwrap()).unwrap();
+        s.b = Some(init.solver_literal(b1).unwrap());
+        init.add_watch(s.a.unwrap()).unwrap();
+        init.add_watch(s.b.unwrap()).unwrap();
         true
     }
     fn propagate(&mut self, ctl: &mut PropagateControl, changes: &[Literal]) -> bool {
-        self.count += changes.len();
-        if self.enable && self.count == 2 {
+        let mut s = (*self.inner).borrow_mut();
+        s.count += changes.len();
+        if s.enable && s.count == 2 {
             let b1 = ctl
                 .add_clause(
-                    &[self.a.unwrap().negate(), self.b.unwrap().negate()],
-                    self.clause_type,
+                    &[s.a.unwrap().negate(), s.b.unwrap().negate()],
+                    s.clause_type,
                 )
                 .unwrap();
             let b2 = ctl.propagate().unwrap();
@@ -578,7 +596,8 @@ impl Propagator for TestAddClause {
         true
     }
     fn undo(&mut self, _ctl: &mut PropagateControl, undo: &[Literal]) {
-        self.count -= undo.len();
+        let mut s = (*self.inner).borrow_mut();
+        s.count -= undo.len();
     }
 }
 
@@ -587,15 +606,19 @@ impl Propagator for TestAddClause {
 #[test_case(ClauseType::Volatile, 3, 4; "volatile")]
 #[test_case(ClauseType::VolatileStatic, 3, 4; "volatile_static")]
 fn add_clause(clause_type: ClauseType, m1: usize, m2: usize) {
-    let mut ctl = Control::new(vec!["0".into()]).unwrap();
-    let mut p = TestAddClause {
+    let ctl = control(vec!["0".into()]).unwrap();
+    let data = Rc::new(RefCell::new(TestAddClause {
         clause_type,
         enable: true,
         a: None,
         b: None,
         count: 0,
+    }));
+    let p = TestPropagator2 {
+        inner: data.clone(),
     };
-    ctl.register_propagator(&mut p, false)
+    let mut ctl = ctl
+        .register_propagator(p, false)
         .expect("Failed to register propagator.");
     ctl.add("base", &[], "{a; b}.")
         .expect("Failed to add a logic program.");
@@ -608,7 +631,7 @@ fn add_clause(clause_type: ClauseType, m1: usize, m2: usize) {
     let (models, ctl) = solve(ctl).unwrap();
 
     assert_eq!(models.len(), m1);
-    p.enable = false;
+    (*data).borrow_mut().enable = false;
     let (models, _) = solve(ctl).unwrap();
     assert_eq!(models.len(), m2);
 }

@@ -86,7 +86,7 @@ fn symbol() {
 }
 #[test]
 fn configuration() {
-    let mut ctl = Control::new(vec![]).unwrap();
+    let mut ctl = control(vec![]).unwrap();
     // get the configuration object and its root key
     let conf = ctl.configuration_mut().unwrap();
     let root_key = conf.root().unwrap();
@@ -99,7 +99,7 @@ fn configuration() {
 }
 #[test]
 fn backend() {
-    let mut ctl = Control::new(vec![]).unwrap();
+    let mut ctl = control(vec![]).unwrap();
     ctl.add("base", &[], "{a; b; c}.").unwrap();
 
     let part = Part::new("base", &[]).unwrap();
@@ -126,7 +126,7 @@ fn symbols() {
 }
 #[test]
 fn theory_atoms() {
-    let mut ctl = Control::new(vec![]).unwrap();
+    let mut ctl = control(vec![]).unwrap();
     ctl.add(
         "base",
         &[],
@@ -157,7 +157,7 @@ fn test_statement(stmt: &Statement, string: &str) {
     let string2 = format!("{:?}", stmt);
     assert_eq!(string2, string);
 
-    let mut ctl = Control::new(vec![]).unwrap();
+    let mut ctl = control(vec![]).unwrap();
 
     // get the program builder
     let mut builder = ast::ProgramBuilder::from(&mut ctl).unwrap();
