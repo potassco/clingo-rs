@@ -1889,10 +1889,10 @@ impl FunctionHandler for NoFunctionHandler {
 pub struct ControlLPOF<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler> {
     ctl: NonNull<clingo_control_t>,
     copied: bool,
-    logger: Box<L>,
-    propagator: Box<P>,
-    observer: Box<O>,
-    function_handler: Box<F>,
+    logger: Option<Box<L>>,
+    propagator: Option<Box<P>>,
+    observer: Option<Box<O>>,
+    function_handler: Option<Box<F>>,
 }
 impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler> Drop
     for ControlLPOF<L, P, O, F>
@@ -1932,21 +1932,25 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
             .iter()
             .map(|arg| arg.from())
             .collect::<Vec<clingo_part>>();
-
-        if !unsafe {
-            clingo_control_ground(
-                self.ctl.as_ptr(),
-                parts.as_ptr(),
-                parts_size,
-                Some(unsafe_ground_callback::<F> as GroundCallback),
-                self.function_handler.as_mut() as *mut F as *mut c_void,
-            )
-        } {
-            return Err(ClingoError::new_internal(
-                "Call to clingo_control_ground() failed",
-            ));
+        match &mut self.function_handler {
+            Some(function_handler) => {
+                if !unsafe {
+                    clingo_control_ground(
+                        self.ctl.as_ptr(),
+                        parts.as_ptr(),
+                        parts_size,
+                        Some(unsafe_ground_callback::<F> as GroundCallback),
+                        function_handler.as_mut() as *mut F as *mut c_void,
+                    )
+                } {
+                    return Err(ClingoError::new_internal(
+                        "Call to clingo_control_ground() failed",
+                    ));
+                }
+                Ok(())
+            }
+            None => unreachable!(),
         }
-        Ok(())
     }
     /// Register a handler for external functions
     ///
@@ -1957,10 +1961,10 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
         mut self,
         function_handler: T,
     ) -> ControlLPOF<L, P, O, T> {
-        let function_handler = Box::new(function_handler);
-        let logger = unsafe { Box::from_raw(self.logger.as_mut()) };
-        let propagator = unsafe { Box::from_raw(self.propagator.as_mut()) };
-        let observer = unsafe { Box::from_raw(self.observer.as_mut()) };
+        let function_handler = Some(Box::new(function_handler));
+        let logger = self.logger.take();
+        let propagator = self.propagator.take();
+        let observer = self.observer.take();
 
         self.copied = true;
         ControlLPOF {
@@ -2214,9 +2218,9 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
         sequential: bool,
     ) -> Result<ControlLPOF<L, T, O, F>, ClingoError> {
         let mut propagator = Box::new(propagator);
-        let logger = unsafe { Box::from_raw(self.logger.as_mut()) };
-        let observer = unsafe { Box::from_raw(self.observer.as_mut()) };
-        let function_handler = unsafe { Box::from_raw(self.function_handler.as_mut()) };
+        let logger = self.logger.take();
+        let observer = self.observer.take();
+        let function_handler = self.function_handler.take();
         let clingo_propagator = clingo_propagator_t {
             init: Some(unsafe_init::<T>),
             propagate: Some(unsafe_propagate::<T>),
@@ -2241,7 +2245,7 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
             ctl: self.ctl,
             copied: false,
             logger,
-            propagator,
+            propagator: Some(propagator),
             observer,
             function_handler,
         })
@@ -2461,9 +2465,9 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
         replace: bool,
     ) -> Result<ControlLPOF<L, P, T, F>, ClingoError> {
         let mut observer = Box::new(observer);
-        let logger = unsafe { Box::from_raw(self.logger.as_mut()) };
-        let propagator = unsafe { Box::from_raw(self.propagator.as_mut()) };
-        let function_handler = unsafe { Box::from_raw(self.function_handler.as_mut()) };
+        let logger = self.logger.take();
+        let propagator = self.propagator.take();
+        let function_handler = self.function_handler.take();
         let gpo = clingo_ground_program_observer_t {
             init_program: Some(unsafe_init_program::<T>),
             begin_step: Some(unsafe_begin_step::<T>),
@@ -2504,7 +2508,7 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
             copied: false,
             logger,
             propagator,
-            observer,
+            observer: Some(observer),
             function_handler,
         })
     }
@@ -2694,10 +2698,10 @@ pub fn control(arguments: std::vec::Vec<String>) -> Result<Control, ClingoError>
         Some(ctl) => Ok(ControlLPOF {
             ctl,
             copied: false,
-            logger: Box::new(NoLogger),
-            propagator: Box::new(NoPropagator),
-            observer: Box::new(NoObserver),
-            function_handler: Box::new(NoFunctionHandler),
+            logger: Some(Box::new(NoLogger)),
+            propagator: Some(Box::new(NoPropagator)),
+            observer: Some(Box::new(NoObserver)),
+            function_handler: Some(Box::new(NoFunctionHandler)),
         }),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
@@ -2760,10 +2764,10 @@ pub fn control_with_logger<L: Logger>(
         Some(ctl) => Ok(ControlLPOF {
             ctl,
             copied: false,
-            logger,
-            propagator: Box::new(NoPropagator),
-            observer: Box::new(NoObserver),
-            function_handler: Box::new(NoFunctionHandler),
+            logger: Some(logger),
+            propagator: Some(Box::new(NoPropagator)),
+            observer: Some(Box::new(NoObserver)),
+            function_handler: Some(Box::new(NoFunctionHandler)),
         }),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
