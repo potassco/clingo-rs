@@ -133,15 +133,15 @@ pub struct ExternalError {
 #[derive(Debug, Copy, Clone)]
 pub enum ErrorType {
     /// Successful API calls
-    Success = clingo_error_clingo_error_success as isize,
+    Success = clingo_error_e_clingo_error_success as isize,
     /// Errors only detectable at runtime like invalid input
-    Runtime = clingo_error_clingo_error_runtime as isize,
+    Runtime = clingo_error_e_clingo_error_runtime as isize,
     /// Wrong usage of the clingo API
-    Logic = clingo_error_clingo_error_logic as isize,
+    Logic = clingo_error_e_clingo_error_logic as isize,
     /// Memory could not be allocated
-    BadAlloc = clingo_error_clingo_error_bad_alloc as isize,
+    BadAlloc = clingo_error_e_clingo_error_bad_alloc as isize,
     /// Errors unrelated to clingo
-    Unknown = clingo_error_clingo_error_unknown as isize,
+    Unknown = clingo_error_e_clingo_error_unknown as isize,
 }
 /// Enumeration of clingo error codes for [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError).
 #[derive(Debug, Copy, Clone)]
@@ -162,11 +162,11 @@ pub enum ErrorCode {
 impl From<i32> for ErrorCode {
     fn from(error: i32) -> Self {
         match error as u32 {
-            clingo_error_clingo_error_success => ErrorCode::Success,
-            clingo_error_clingo_error_runtime => ErrorCode::Runtime,
-            clingo_error_clingo_error_logic => ErrorCode::Logic,
-            clingo_error_clingo_error_bad_alloc => ErrorCode::BadAlloc,
-            clingo_error_clingo_error_unknown => ErrorCode::Unknown,
+            clingo_error_e_clingo_error_success => ErrorCode::Success,
+            clingo_error_e_clingo_error_runtime => ErrorCode::Runtime,
+            clingo_error_e_clingo_error_logic => ErrorCode::Logic,
+            clingo_error_e_clingo_error_bad_alloc => ErrorCode::BadAlloc,
+            clingo_error_e_clingo_error_unknown => ErrorCode::Unknown,
             x => {
                 eprintln!(
                     "FFIError in {} {}, {} : Failed to match clingo_error {}",
@@ -227,18 +227,18 @@ pub struct Options(clingo_options_t);
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum TruthValue {
     /// No truth value
-    Free = clingo_truth_value_clingo_truth_value_free as isize,
+    Free = clingo_truth_value_e_clingo_truth_value_free as isize,
     /// True
-    True = clingo_truth_value_clingo_truth_value_true as isize,
+    True = clingo_truth_value_e_clingo_truth_value_true as isize,
     /// False
-    False = clingo_truth_value_clingo_truth_value_false as isize,
+    False = clingo_truth_value_e_clingo_truth_value_false as isize,
 }
 impl TruthValue {
     fn try_from(code: u32) -> Result<TruthValue, ClingoError> {
         match code {
-            clingo_truth_value_clingo_truth_value_false => Ok(TruthValue::False),
-            clingo_truth_value_clingo_truth_value_true => Ok(TruthValue::True),
-            clingo_truth_value_clingo_truth_value_free => Ok(TruthValue::Free),
+            clingo_truth_value_e_clingo_truth_value_false => Ok(TruthValue::False),
+            clingo_truth_value_e_clingo_truth_value_true => Ok(TruthValue::True),
+            clingo_truth_value_e_clingo_truth_value_free => Ok(TruthValue::Free),
             x => {
                 eprintln!(
                     "FFIError in {} {}, {} : Failed to match clingo_truth_value {}",
@@ -262,35 +262,35 @@ impl TruthValue {
 #[derive(Debug, Copy, Clone)]
 pub enum ClauseType {
     /// The clause is subject to the solvers deletion policy
-    Learnt = clingo_clause_type_clingo_clause_type_learnt as isize,
+    Learnt = clingo_clause_type_e_clingo_clause_type_learnt as isize,
     /// The clause is not subject to the solvers deletion policy
-    Static = clingo_clause_type_clingo_clause_type_static as isize,
+    Static = clingo_clause_type_e_clingo_clause_type_static as isize,
     /// Like `Learnt` but the clause is deleted after a solving step
-    Volatile = clingo_clause_type_clingo_clause_type_volatile as isize,
+    Volatile = clingo_clause_type_e_clingo_clause_type_volatile as isize,
     /// Like `Static` but the clause is deleted after a solving step
-    VolatileStatic = clingo_clause_type_clingo_clause_type_volatile_static as isize,
+    VolatileStatic = clingo_clause_type_e_clingo_clause_type_volatile_static as isize,
 }
 /// Enumeration of solve events.
 #[derive(Debug)]
 enum SolveEventType {
     /// Issued if a model is found.
-    Model = clingo_solve_event_type_clingo_solve_event_type_model as isize,
+    Model = clingo_solve_event_type_e_clingo_solve_event_type_model as isize,
     /// Issued if an optimization problem is found unsatisfiable.
-    Unsat = clingo_solve_event_type_clingo_solve_event_type_unsat as isize,
+    Unsat = clingo_solve_event_type_e_clingo_solve_event_type_unsat as isize,
     /// Issued when the statistics can be updated.
-    Statistics = clingo_solve_event_type_clingo_solve_event_type_statistics as isize,
+    Statistics = clingo_solve_event_type_e_clingo_solve_event_type_statistics as isize,
     /// Issued if the search has completed.
-    Finish = clingo_solve_event_type_clingo_solve_event_type_finish as isize,
+    Finish = clingo_solve_event_type_e_clingo_solve_event_type_finish as isize,
 }
 impl SolveEventType {
     fn try_from(code: u32) -> Result<SolveEventType, ClingoError> {
         match code {
-            clingo_solve_event_type_clingo_solve_event_type_model => Ok(SolveEventType::Model),
-            clingo_solve_event_type_clingo_solve_event_type_unsat => Ok(SolveEventType::Unsat),
-            clingo_solve_event_type_clingo_solve_event_type_statistics => {
+            clingo_solve_event_type_e_clingo_solve_event_type_model => Ok(SolveEventType::Model),
+            clingo_solve_event_type_e_clingo_solve_event_type_unsat => Ok(SolveEventType::Unsat),
+            clingo_solve_event_type_e_clingo_solve_event_type_statistics => {
                 Ok(SolveEventType::Statistics)
             }
-            clingo_solve_event_type_clingo_solve_event_type_finish => Ok(SolveEventType::Finish),
+            clingo_solve_event_type_e_clingo_solve_event_type_finish => Ok(SolveEventType::Finish),
             x => {
                 eprintln!(
                     "FFIError in {} {}, {} : Failed to match clingo_solve_event_type {}",
@@ -326,21 +326,21 @@ pub enum SolveEvent<'a> {
 #[derive(Debug, Copy, Clone)]
 pub enum StatisticsType {
     /// The entry is invalid (has neither of the types below)
-    Empty = clingo_statistics_type_clingo_statistics_type_empty as isize,
+    Empty = clingo_statistics_type_e_clingo_statistics_type_empty as isize,
     /// The entry is a (double) value
-    Value = clingo_statistics_type_clingo_statistics_type_value as isize,
+    Value = clingo_statistics_type_e_clingo_statistics_type_value as isize,
     /// The entry is an array
-    Array = clingo_statistics_type_clingo_statistics_type_array as isize,
+    Array = clingo_statistics_type_e_clingo_statistics_type_array as isize,
     /// The entry is a map
-    Map = clingo_statistics_type_clingo_statistics_type_map as isize,
+    Map = clingo_statistics_type_e_clingo_statistics_type_map as isize,
 }
 impl StatisticsType {
     fn try_from(code: u32) -> Result<StatisticsType, ClingoError> {
         match code {
-            clingo_statistics_type_clingo_statistics_type_empty => Ok(StatisticsType::Empty),
-            clingo_statistics_type_clingo_statistics_type_value => Ok(StatisticsType::Value),
-            clingo_statistics_type_clingo_statistics_type_array => Ok(StatisticsType::Array),
-            clingo_statistics_type_clingo_statistics_type_map => Ok(StatisticsType::Map),
+            clingo_statistics_type_e_clingo_statistics_type_empty => Ok(StatisticsType::Empty),
+            clingo_statistics_type_e_clingo_statistics_type_value => Ok(StatisticsType::Value),
+            clingo_statistics_type_e_clingo_statistics_type_array => Ok(StatisticsType::Array),
+            clingo_statistics_type_e_clingo_statistics_type_map => Ok(StatisticsType::Map),
             x => {
                 eprintln!(
                     "FFIError in {} {}, {} : Failed to match clingo_statistics_type {}",
@@ -361,24 +361,24 @@ impl StatisticsType {
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum SymbolType {
     /// The `#inf` symbol
-    Infimum = clingo_symbol_type_clingo_symbol_type_infimum as isize,
+    Infimum = clingo_symbol_type_e_clingo_symbol_type_infimum as isize,
     /// A numeric symbol, e.g., `1`
-    Number = clingo_symbol_type_clingo_symbol_type_number as isize,
+    Number = clingo_symbol_type_e_clingo_symbol_type_number as isize,
     /// A string symbol, e.g., `"a"`
-    String = clingo_symbol_type_clingo_symbol_type_string as isize,
+    String = clingo_symbol_type_e_clingo_symbol_type_string as isize,
     /// A numeric symbol, e.g., `c`, `(1, "a")`, or `f(1,"a")`
-    Function = clingo_symbol_type_clingo_symbol_type_function as isize,
+    Function = clingo_symbol_type_e_clingo_symbol_type_function as isize,
     /// The `#sup` symbol
-    Supremum = clingo_symbol_type_clingo_symbol_type_supremum as isize,
+    Supremum = clingo_symbol_type_e_clingo_symbol_type_supremum as isize,
 }
 impl SymbolType {
     fn try_from(code: u32) -> Result<SymbolType, ClingoError> {
         match code {
-            clingo_symbol_type_clingo_symbol_type_infimum => Ok(SymbolType::Infimum),
-            clingo_symbol_type_clingo_symbol_type_number => Ok(SymbolType::Number),
-            clingo_symbol_type_clingo_symbol_type_string => Ok(SymbolType::String),
-            clingo_symbol_type_clingo_symbol_type_function => Ok(SymbolType::Function),
-            clingo_symbol_type_clingo_symbol_type_supremum => Ok(SymbolType::Supremum),
+            clingo_symbol_type_e_clingo_symbol_type_infimum => Ok(SymbolType::Infimum),
+            clingo_symbol_type_e_clingo_symbol_type_number => Ok(SymbolType::Number),
+            clingo_symbol_type_e_clingo_symbol_type_string => Ok(SymbolType::String),
+            clingo_symbol_type_e_clingo_symbol_type_function => Ok(SymbolType::Function),
+            clingo_symbol_type_e_clingo_symbol_type_supremum => Ok(SymbolType::Supremum),
             x => {
                 eprintln!(
                     "FFIError in {} {}, {} : Failed to match clingo_symbol_type {}",
@@ -399,30 +399,30 @@ impl SymbolType {
 #[derive(Debug, Copy, Clone)]
 pub enum Warning {
     /// Undefined arithmetic operation or weight of aggregate
-    OperationUndefined = clingo_warning_clingo_warning_operation_undefined as isize,
+    OperationUndefined = clingo_warning_e_clingo_warning_operation_undefined as isize,
     /// To report multiple errors; a corresponding runtime error is raised later
-    RuntimeError = clingo_warning_clingo_warning_runtime_error as isize,
+    RuntimeError = clingo_warning_e_clingo_warning_runtime_error as isize,
     /// An undefined atom in program
-    AtomUndefined = clingo_warning_clingo_warning_atom_undefined as isize,
+    AtomUndefined = clingo_warning_e_clingo_warning_atom_undefined as isize,
     /// The Same file included multiple times
-    FileIncluded = clingo_warning_clingo_warning_file_included as isize,
+    FileIncluded = clingo_warning_e_clingo_warning_file_included as isize,
     /// CSP variable with unbounded domain
-    VariableUnbound = clingo_warning_clingo_warning_variable_unbounded as isize,
+    VariableUnbound = clingo_warning_e_clingo_warning_variable_unbounded as isize,
     /// A global variable in tuple of aggregate element
-    GlobalVariable = clingo_warning_clingo_warning_global_variable as isize,
+    GlobalVariable = clingo_warning_e_clingo_warning_global_variable as isize,
     /// Other kinds of warnings
-    Other = clingo_warning_clingo_warning_other as isize,
+    Other = clingo_warning_e_clingo_warning_other as isize,
 }
 impl Warning {
     fn try_from(code: u32) -> Result<Warning, ClingoError> {
         match code {
-            clingo_warning_clingo_warning_atom_undefined => Ok(Warning::AtomUndefined),
-            clingo_warning_clingo_warning_file_included => Ok(Warning::FileIncluded),
-            clingo_warning_clingo_warning_global_variable => Ok(Warning::GlobalVariable),
-            clingo_warning_clingo_warning_operation_undefined => Ok(Warning::OperationUndefined),
-            clingo_warning_clingo_warning_other => Ok(Warning::Other),
-            clingo_warning_clingo_warning_runtime_error => Ok(Warning::RuntimeError),
-            clingo_warning_clingo_warning_variable_unbounded => Ok(Warning::VariableUnbound),
+            clingo_warning_e_clingo_warning_atom_undefined => Ok(Warning::AtomUndefined),
+            clingo_warning_e_clingo_warning_file_included => Ok(Warning::FileIncluded),
+            clingo_warning_e_clingo_warning_global_variable => Ok(Warning::GlobalVariable),
+            clingo_warning_e_clingo_warning_operation_undefined => Ok(Warning::OperationUndefined),
+            clingo_warning_e_clingo_warning_other => Ok(Warning::Other),
+            clingo_warning_e_clingo_warning_runtime_error => Ok(Warning::RuntimeError),
+            clingo_warning_e_clingo_warning_variable_unbounded => Ok(Warning::VariableUnbound),
             x => {
                 eprintln!(
                     "FFIError in {} {}, {} : Failed to match clingo_warning {}",
@@ -443,21 +443,21 @@ impl Warning {
 #[derive(Debug, Copy, Clone)]
 pub enum ExternalType {
     /// Allow an external to be assigned freely
-    Free = clingo_external_type_clingo_external_type_free as isize,
+    Free = clingo_external_type_e_clingo_external_type_free as isize,
     /// Assign an external to true
-    True = clingo_external_type_clingo_external_type_true as isize,
+    True = clingo_external_type_e_clingo_external_type_true as isize,
     /// Assign an external to false
-    False = clingo_external_type_clingo_external_type_false as isize,
+    False = clingo_external_type_e_clingo_external_type_false as isize,
     /// No longer treat an atom as external
-    Release = clingo_external_type_clingo_external_type_release as isize,
+    Release = clingo_external_type_e_clingo_external_type_release as isize,
 }
 impl ExternalType {
     fn try_from(code: u32) -> Result<ExternalType, ClingoError> {
         match code {
-            clingo_external_type_clingo_external_type_false => Ok(ExternalType::False),
-            clingo_external_type_clingo_external_type_free => Ok(ExternalType::Free),
-            clingo_external_type_clingo_external_type_release => Ok(ExternalType::Release),
-            clingo_external_type_clingo_external_type_true => Ok(ExternalType::True),
+            clingo_external_type_e_clingo_external_type_false => Ok(ExternalType::False),
+            clingo_external_type_e_clingo_external_type_free => Ok(ExternalType::Free),
+            clingo_external_type_e_clingo_external_type_release => Ok(ExternalType::Release),
+            clingo_external_type_e_clingo_external_type_true => Ok(ExternalType::True),
             x => {
                 eprintln!(
                     "FFIError in {} {}, {} : Failed to match clingo_external_type {}",
@@ -477,27 +477,27 @@ impl ExternalType {
 #[derive(Debug, Copy, Clone)]
 pub enum HeuristicType {
     /// Set the level of an atom
-    Level = clingo_heuristic_type_clingo_heuristic_type_level as isize,
+    Level = clingo_heuristic_type_e_clingo_heuristic_type_level as isize,
     /// Configure which sign to chose for an atom
-    Sign = clingo_heuristic_type_clingo_heuristic_type_sign as isize,
+    Sign = clingo_heuristic_type_e_clingo_heuristic_type_sign as isize,
     /// Modify VSIDS factor of an atom
-    Factor = clingo_heuristic_type_clingo_heuristic_type_factor as isize,
+    Factor = clingo_heuristic_type_e_clingo_heuristic_type_factor as isize,
     /// Modify the initial VSIDS score of an atom
-    Init = clingo_heuristic_type_clingo_heuristic_type_init as isize,
+    Init = clingo_heuristic_type_e_clingo_heuristic_type_init as isize,
     /// Set the level of an atom and choose a positive sign
-    True = clingo_heuristic_type_clingo_heuristic_type_true as isize,
+    True = clingo_heuristic_type_e_clingo_heuristic_type_true as isize,
     /// Set the level of an atom and choose a negative sign
-    False = clingo_heuristic_type_clingo_heuristic_type_false as isize,
+    False = clingo_heuristic_type_e_clingo_heuristic_type_false as isize,
 }
 impl HeuristicType {
     fn try_from(code: u32) -> Result<HeuristicType, ClingoError> {
         match code {
-            clingo_heuristic_type_clingo_heuristic_type_factor => Ok(HeuristicType::Factor),
-            clingo_heuristic_type_clingo_heuristic_type_false => Ok(HeuristicType::False),
-            clingo_heuristic_type_clingo_heuristic_type_init => Ok(HeuristicType::Init),
-            clingo_heuristic_type_clingo_heuristic_type_level => Ok(HeuristicType::Level),
-            clingo_heuristic_type_clingo_heuristic_type_sign => Ok(HeuristicType::Sign),
-            clingo_heuristic_type_clingo_heuristic_type_true => Ok(HeuristicType::True),
+            clingo_heuristic_type_e_clingo_heuristic_type_factor => Ok(HeuristicType::Factor),
+            clingo_heuristic_type_e_clingo_heuristic_type_false => Ok(HeuristicType::False),
+            clingo_heuristic_type_e_clingo_heuristic_type_init => Ok(HeuristicType::Init),
+            clingo_heuristic_type_e_clingo_heuristic_type_level => Ok(HeuristicType::Level),
+            clingo_heuristic_type_e_clingo_heuristic_type_sign => Ok(HeuristicType::Sign),
+            clingo_heuristic_type_e_clingo_heuristic_type_true => Ok(HeuristicType::True),
             x => {
                 eprintln!(
                     "FFIError in {} {}, {} : Failed to match clingo_heuristic_type {}",
@@ -518,29 +518,29 @@ impl HeuristicType {
 #[derive(Debug, Copy, Clone)]
 pub enum TheoryTermType {
     /// A tuple term, e.g., `(1,2,3)`
-    Tuple = clingo_theory_term_type_clingo_theory_term_type_tuple as isize,
+    Tuple = clingo_theory_term_type_e_clingo_theory_term_type_tuple as isize,
     /// A list term, e.g., `[1,2,3]`
-    List = clingo_theory_term_type_clingo_theory_term_type_list as isize,
+    List = clingo_theory_term_type_e_clingo_theory_term_type_list as isize,
     /// A set term, e.g., `{1,2,3}`
-    Set = clingo_theory_term_type_clingo_theory_term_type_set as isize,
+    Set = clingo_theory_term_type_e_clingo_theory_term_type_set as isize,
     /// A function term, e.g., `f(1,2,3)`
-    Function = clingo_theory_term_type_clingo_theory_term_type_function as isize,
+    Function = clingo_theory_term_type_e_clingo_theory_term_type_function as isize,
     /// A number term, e.g., `42`
-    Number = clingo_theory_term_type_clingo_theory_term_type_number as isize,
+    Number = clingo_theory_term_type_e_clingo_theory_term_type_number as isize,
     /// A symbol term, e.g., `c`
-    Symbol = clingo_theory_term_type_clingo_theory_term_type_symbol as isize,
+    Symbol = clingo_theory_term_type_e_clingo_theory_term_type_symbol as isize,
 }
 impl TheoryTermType {
     fn try_from(code: u32) -> Result<TheoryTermType, ClingoError> {
         match code {
-            clingo_theory_term_type_clingo_theory_term_type_tuple => Ok(TheoryTermType::Tuple),
-            clingo_theory_term_type_clingo_theory_term_type_list => Ok(TheoryTermType::List),
-            clingo_theory_term_type_clingo_theory_term_type_set => Ok(TheoryTermType::Set),
-            clingo_theory_term_type_clingo_theory_term_type_function => {
+            clingo_theory_term_type_e_clingo_theory_term_type_tuple => Ok(TheoryTermType::Tuple),
+            clingo_theory_term_type_e_clingo_theory_term_type_list => Ok(TheoryTermType::List),
+            clingo_theory_term_type_e_clingo_theory_term_type_set => Ok(TheoryTermType::Set),
+            clingo_theory_term_type_e_clingo_theory_term_type_function => {
                 Ok(TheoryTermType::Function)
             }
-            clingo_theory_term_type_clingo_theory_term_type_number => Ok(TheoryTermType::Number),
-            clingo_theory_term_type_clingo_theory_term_type_symbol => Ok(TheoryTermType::Symbol),
+            clingo_theory_term_type_e_clingo_theory_term_type_number => Ok(TheoryTermType::Number),
+            clingo_theory_term_type_e_clingo_theory_term_type_symbol => Ok(TheoryTermType::Symbol),
             x => {
                 eprintln!(
                     "FFIError in {} {}, {} : Failed to match clingo_theory_term_type {}",
@@ -561,20 +561,20 @@ impl TheoryTermType {
 #[derive(Debug, Copy, Clone)]
 pub enum ModelType {
     /// The model represents a stable model.
-    StableModel = clingo_model_type_clingo_model_type_stable_model as isize,
+    StableModel = clingo_model_type_e_clingo_model_type_stable_model as isize,
     /// The model represents a set of brave consequences.
-    BraveConsequences = clingo_model_type_clingo_model_type_brave_consequences as isize,
+    BraveConsequences = clingo_model_type_e_clingo_model_type_brave_consequences as isize,
     /// The model represents a set of cautious consequences.
-    CautiousConsequences = clingo_model_type_clingo_model_type_cautious_consequences as isize,
+    CautiousConsequences = clingo_model_type_e_clingo_model_type_cautious_consequences as isize,
 }
 impl ModelType {
     fn try_from(code: u32) -> Result<ModelType, ClingoError> {
         match code {
-            clingo_model_type_clingo_model_type_stable_model => Ok(ModelType::StableModel),
-            clingo_model_type_clingo_model_type_brave_consequences => {
+            clingo_model_type_e_clingo_model_type_stable_model => Ok(ModelType::StableModel),
+            clingo_model_type_e_clingo_model_type_brave_consequences => {
                 Ok(ModelType::BraveConsequences)
             }
-            clingo_model_type_clingo_model_type_cautious_consequences => {
+            clingo_model_type_e_clingo_model_type_cautious_consequences => {
                 Ok(ModelType::CautiousConsequences)
             }
             x => {
@@ -599,24 +599,24 @@ impl ModelType {
 #[derive(Debug, Copy, Clone)]
 pub enum PropagatorCheckMode {
     /// Do not call [`Propagator::check()`](trait.Propagator.html#method.check) at all
-    None = clingo_propagator_check_mode_clingo_propagator_check_mode_none as isize,
+    None = clingo_propagator_check_mode_e_clingo_propagator_check_mode_none as isize,
     /// Call [`Propagator::check()`](trait.Propagator.html#method.check) on total assignments
-    Total = clingo_propagator_check_mode_clingo_propagator_check_mode_total as isize,
+    Total = clingo_propagator_check_mode_e_clingo_propagator_check_mode_total as isize,
     /// Call [`Propagator::check()`](trait.Propagator.html#method.check) on propagation fixpoints
-    Fixpoint = clingo_propagator_check_mode_clingo_propagator_check_mode_fixpoint as isize,
+    Fixpoint = clingo_propagator_check_mode_e_clingo_propagator_check_mode_fixpoint as isize,
     /// Call [`Propagator::check()`](trait.Propagator.html#method.check) on propagation fixpoints and total assignments
-    Both = clingo_propagator_check_mode_clingo_propagator_check_mode_both as isize,
+    Both = clingo_propagator_check_mode_e_clingo_propagator_check_mode_both as isize,
 }
 impl PropagatorCheckMode {
     fn try_from(code: u32) -> Result<PropagatorCheckMode, ClingoError> {
         match code {
-            clingo_propagator_check_mode_clingo_propagator_check_mode_fixpoint => {
+            clingo_propagator_check_mode_e_clingo_propagator_check_mode_fixpoint => {
                 Ok(PropagatorCheckMode::Fixpoint)
             }
-            clingo_propagator_check_mode_clingo_propagator_check_mode_total => {
+            clingo_propagator_check_mode_e_clingo_propagator_check_mode_total => {
                 Ok(PropagatorCheckMode::Total)
             }
-            clingo_propagator_check_mode_clingo_propagator_check_mode_none => {
+            clingo_propagator_check_mode_e_clingo_propagator_check_mode_none => {
                 Ok(PropagatorCheckMode::None)
             }
             x => {
@@ -639,12 +639,13 @@ impl PropagatorCheckMode {
 pub enum WeigthConstraintType {
     /// The weight constraint implies the literal
     ImplicationLeft =
-        clingo_weight_constraint_type_clingo_weight_constraint_type_implication_left as isize,
+        clingo_weight_constraint_type_e_clingo_weight_constraint_type_implication_left as isize,
     /// The literal implies the weight constraint
     ImplicationRight =
-        clingo_weight_constraint_type_clingo_weight_constraint_type_implication_right as isize,
+        clingo_weight_constraint_type_e_clingo_weight_constraint_type_implication_right as isize,
     /// The weight constraint is equivalent to the literal
-    Equivalence = clingo_weight_constraint_type_clingo_weight_constraint_type_equivalence as isize,
+    Equivalence =
+        clingo_weight_constraint_type_e_clingo_weight_constraint_type_equivalence as isize,
 }
 
 bitflags! {
@@ -652,55 +653,55 @@ bitflags! {
     pub struct ConfigurationType: u32 {
         /// The entry is a (string) value.
         const VALUE =
-            clingo_configuration_type_clingo_configuration_type_value;
+            clingo_configuration_type_e_clingo_configuration_type_value;
         /// The entry is an array.
         const ARRAY =
-            clingo_configuration_type_clingo_configuration_type_array;
+            clingo_configuration_type_e_clingo_configuration_type_array;
         /// The entry is a map.
         const MAP =
-            clingo_configuration_type_clingo_configuration_type_map;
+            clingo_configuration_type_e_clingo_configuration_type_map;
     }
 }
 bitflags! {
     /// Bit flags describing solve modes.
     pub struct SolveMode: u32 {
         /// Enable non-blocking search.
-        const ASYNC = clingo_solve_mode_clingo_solve_mode_async;
+        const ASYNC = clingo_solve_mode_e_clingo_solve_mode_async;
         /// Yield models in calls to clingo_solve_handle_model.
-        const YIELD = clingo_solve_mode_clingo_solve_mode_yield;
+        const YIELD = clingo_solve_mode_e_clingo_solve_mode_yield;
     }
 }
 bitflags! {
     /// Bit flags to select symbols in models.
     pub struct ShowType: u32 {
         /// Select symbols added by theory.
-        const THEORY = clingo_show_type_clingo_show_type_theory;
+        const THEORY = clingo_show_type_e_clingo_show_type_theory;
         /// Select CSP assignments.
-        const CSP  = clingo_show_type_clingo_show_type_csp;
+        const CSP  = clingo_show_type_e_clingo_show_type_csp;
         /// Select shown atoms and terms.
-        const SHOWN = clingo_show_type_clingo_show_type_shown;
+        const SHOWN = clingo_show_type_e_clingo_show_type_shown;
         /// Select all atoms.
-        const ATOMS = clingo_show_type_clingo_show_type_atoms;
+        const ATOMS = clingo_show_type_e_clingo_show_type_atoms;
         /// Select all terms.
-        const TERMS = clingo_show_type_clingo_show_type_terms;
+        const TERMS = clingo_show_type_e_clingo_show_type_terms;
         /// Select everything.
-        const ALL = clingo_show_type_clingo_show_type_all;
+        const ALL = clingo_show_type_e_clingo_show_type_all;
         /// Select false instead of true atoms (Atoms) or terms (Terms)."
-        const COMPLEMENT = clingo_show_type_clingo_show_type_complement;
+        const COMPLEMENT = clingo_show_type_e_clingo_show_type_complement;
     }
 }
 bitflags! {
     /// Bit flags that describes the result of a solve call.
     pub struct SolveResult: u32 {
         /// The problem is satisfiable.
-        const SATISFIABLE = clingo_solve_result_clingo_solve_result_satisfiable;
+        const SATISFIABLE = clingo_solve_result_e_clingo_solve_result_satisfiable;
         /// The problem is unsatisfiable.
         const UNSATISFIABLE =
-            clingo_solve_result_clingo_solve_result_unsatisfiable;
+            clingo_solve_result_e_clingo_solve_result_unsatisfiable;
         /// The search space was exhausted.
-        const EXHAUSTED = clingo_solve_result_clingo_solve_result_exhausted;
+        const EXHAUSTED = clingo_solve_result_e_clingo_solve_result_exhausted;
         /// The search was interupted.
-        const INTERRUPTED = clingo_solve_result_clingo_solve_result_interrupted;
+        const INTERRUPTED = clingo_solve_result_e_clingo_solve_result_interrupted;
     }
 }
 type SolveEventCallback = unsafe extern "C" fn(
@@ -803,31 +804,6 @@ unsafe extern "C" fn unsafe_solve_callback<T: SolveEventHandler>(
     }
 }
 
-type AstCallback =
-    unsafe extern "C" fn(arg1: *const clingo_ast_statement_t, arg2: *mut c_void) -> bool;
-pub trait StatementHandler {
-    /// Callback function called on an ast statement while traversing the ast.
-    ///
-    /// **Returns** whether the call was successful
-    fn on_statement(&mut self, arg1: &ast::Statement) -> bool;
-}
-unsafe extern "C" fn unsafe_ast_callback<T: StatementHandler>(
-    stm: *const clingo_ast_statement_t,
-    event_handler: *mut c_void,
-) -> bool {
-    // check for null pointers
-    if stm.is_null() | event_handler.is_null() {
-        set_internal_error(
-            ErrorType::Runtime,
-            "unsafe_ast_callback() got a null pointer.",
-        );
-        return false;
-    }
-    let stm = &*(stm as *const ast::Statement);
-    let event_handler = &mut *(event_handler as *mut T);
-
-    event_handler.on_statement(stm)
-}
 type LoggingCallback =
     unsafe extern "C" fn(code: clingo_warning_t, message: *const c_char, logger: *mut c_void);
 /// An instance of this trait has to be registered with a solver to implement a custom logging.
@@ -1045,16 +1021,16 @@ impl WeightedLiteral {
 pub struct Location(clingo_location);
 impl Location {
     /// Create a default location.
-    fn default() -> clingo_location {
+    pub fn default() -> Location {
         let file = CString::new("").unwrap();
-        clingo_location {
+        Location(clingo_location {
             begin_line: 0,
             end_line: 0,
             begin_column: 0,
             end_column: 0,
             begin_file: file.as_ptr(),
             end_file: file.as_ptr(),
-        }
+        })
     }
     /// Create a new location.
     ///
@@ -1511,85 +1487,6 @@ impl Symbol {
     pub fn symbol_type(self) -> Result<SymbolType, ClingoError> {
         SymbolType::try_from(unsafe { clingo_symbol_type(self.0) } as u32)
     }
-}
-
-/// Parse the given program and return an abstract syntax tree for each statement via a callback.
-///
-/// # Arguments
-///
-/// * `program` - the program in gringo syntax
-/// * `handler` - implementing the trait [`StatementHandler`](trait.StatementHandler.html)
-///
-/// # Errors
-///
-/// - [`ClingoError::NulError`](enum.ClingoError.html#variant.NulError) - if `program` contains a nul byte
-/// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if parsing fails
-///  or with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
-pub fn parse_program<T: StatementHandler>(
-    program: &str,
-    handler: &mut T,
-) -> Result<(), ClingoError> {
-    let logger = None;
-    let logger_data = std::ptr::null_mut();
-    let program = CString::new(program)?;
-    let handler = handler as *mut T;
-    if !unsafe {
-        clingo_parse_program(
-            program.as_ptr(),
-            Some(unsafe_ast_callback::<T> as AstCallback),
-            handler as *mut c_void,
-            logger,
-            logger_data,
-            0,
-        )
-    } {
-        return Err(ClingoError::new_internal(
-            "Call to clingo_parse_program() failed",
-        ));
-    }
-    Ok(())
-}
-
-// NODO: fn clingo_parse_files(files ...) -> bool;
-
-/// Parse the given program and return an abstract syntax tree for each statement via a callback.
-///
-/// # Arguments
-///
-/// * `program` - the program in gringo syntax
-/// * `handler` - implementating the trait [`StatementHandler`](trait.StatementHandler.html)
-/// * `logger` - implementing the trait [`Logger`](trait.Logger.html) to report messages during parsing
-/// * `message_limit` - the maximum number of times the logger is called
-///
-/// # Errors
-///
-/// - [`ClingoError::NulError`](enum.ClingoError.html#variant.NulError) - if `program` contains a nul byte
-/// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if parsing fails
-/// or [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
-pub fn parse_program_with_logger<T: StatementHandler, L: Logger>(
-    program: &str,
-    handler: &mut T,
-    logger: &mut L,
-    message_limit: u32,
-) -> Result<(), ClingoError> {
-    let handler = handler as *mut T;
-    let logger = logger as *mut L;
-    let program = CString::new(program)?;
-    if !unsafe {
-        clingo_parse_program(
-            program.as_ptr(),
-            Some(unsafe_ast_callback::<T> as AstCallback),
-            handler as *mut c_void,
-            Some(unsafe_logging_callback::<L> as LoggingCallback),
-            logger as *mut c_void,
-            message_limit,
-        )
-    } {
-        return Err(ClingoError::new_internal(
-            "Call to clingo_parse_program() failed",
-        ));
-    }
-    Ok(())
 }
 
 /// Obtain the clingo version.
@@ -2539,33 +2436,29 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
         }
     }
 
-    pub fn add_facts(&mut self, facts: &FactBase) {
+    pub fn add_facts(&mut self, facts: &FactBase) -> Result<(),ClingoError>{
         for sym in facts.iter() {
+            let loc = Location::default();
             // initilize atom to add
-            let atom = ast::Term::from(*sym);
+            let atom = ast::SymbolicTerm(&loc,sym).unwrap();
 
             // create literal
-            let lit = ast::Literal::from_term(ast::Sign::NoSign, &atom);
+            let lit = ast::Literal(&loc,ast::Sign::NoSign, &atom).unwrap();
 
-            // create headliteral
-            let hlit = ast::HeadLiteral::from(&lit);
-
+            
             // create (fact) rule
-            let rule = ast::Rule::new(hlit, &[]);
-
-            // initialize the statement
-            let stm = rule.ast_statement();
-
+            let fact = ast::Rule(&loc,lit, &[]).unwrap();
             // get the program builder
             let mut builder = ast::ProgramBuilder::from(self).unwrap();
 
             // add the rewritten statement to the program
             builder
-                .add(&stm)
+                .add(&fact)
                 .expect("Failed to add statement to ProgramBuilder.");
 
             builder.end().expect("Failed to finish building a program.");
         }
+        Ok(())
     }
 
     /// Covenience function that returns an iterator over the models.
@@ -5357,7 +5250,7 @@ impl<
                 Ok(None) => {
                     return None;
                 }
-                Err(e) => panic!(e),
+                Err(e) => panic!("{}", e),
             }
         }
     }
@@ -5396,7 +5289,7 @@ impl<
                 Ok(None) => {
                     return None;
                 }
-                Err(e) => panic!(e),
+                Err(e) => panic!("{}", e),
             }
         }
     }

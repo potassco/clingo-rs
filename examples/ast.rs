@@ -1,51 +1,47 @@
-use clingo::*;
+use clingo::{
+    ast, control, Control, Location, Model, Part, ShowType, SolveMode, Symbol, TruthValue,
+};
 use std::env;
 
 pub struct OnStatementData<'a, 'b> {
-    atom: &'b ast::Term<'b>,
-    control: &'a mut Control,
+    atom: &'b ast::Ast,
+    builder: &'a mut ast::ProgramBuilder<'a>,
 }
 
-impl<'a, 'b> StatementHandler for OnStatementData<'a, 'b> {
+impl<'a, 'b> ast::StatementHandler for OnStatementData<'a, 'b> {
     // adds atom enable to all rule bodies
-    fn on_statement(&mut self, stm: &ast::Statement) -> bool {
+    fn on_statement(&mut self, stm: &mut ast::Ast) -> bool {
         // pass through all statements that are not rules
-        let mut builder = ast::ProgramBuilder::from(self.control).unwrap();
 
-        match stm.statement_type() {
-            ast::StatementType::Rule(rule) => {
-                let body = rule.body();
-                let mut extended_body = std::vec::Vec::with_capacity(body.len() + 1);
-                for e in body {
+        match stm.get_type() {
+            Ok(ast::AstType::Rule) => {
+                let body = stm.ast_array(ast::AstAttribute::Body);
+                let mut extended_body = std::vec::Vec::with_capacity(body.size().unwrap() + 1);
+                for e in body.iter() {
                     extended_body.push(e.clone());
                 }
-
-                // create atom enable
-                let lit = ast::Literal::from_term(ast::Sign::NoSign, &self.atom);
-                // add atom enable to the rule body
-                let blit = ast::BodyLiteral::from_literal(ast::Sign::NoSign, &lit);
-                extended_body.push(blit);
+                // create literal enable
+                let loc = Location::default();
+                let lit: clingo::ast::Ast =
+                    ast::Literal(&loc, ast::Sign::NoSign, &self.atom).unwrap();
+                extended_body.push(lit);
 
                 // initialize the rule
-                let head = rule.head();
-                let rule = ast::Rule::new(*head, &extended_body);
+                let head = stm.get_attribute_ast(&ast::AstAttribute::Head).unwrap();
+                let rule = ast::Rule(&loc, head, &extended_body).unwrap();
 
-                // initialize the statement
-                let stm2 = rule.ast_statement();
-
-                // add the rewritten statement to the program
-                builder
-                    .add(&stm2)
-                    .expect("Failed to add statement to ProgramBuilder.");
-                true
+                // add the rewritten rule to the program builder
+                self.builder
+                    .add(&rule)
+                    .expect("Failed to add Ast to ProgramBuilder.");
             }
             _ => {
-                builder
+                self.builder
                     .add(stm)
-                    .expect("Failed to add statement to ProgramBuilder.");
-                true
+                    .expect("Failed to add Ast to ProgramBuilder.");
             }
         }
+        true
     }
 }
 
@@ -93,31 +89,33 @@ fn main() {
     let options = env::args().skip(1).collect();
 
     let mut ctl = control(options).expect("Failed creating Control.");
+    let mut builder = ast::ProgramBuilder::from(&mut ctl).unwrap();
 
-    let sym = Symbol::create_id("enable", true).unwrap();
+    let loc = Location::default();
+    let id = ast::Function(&loc, "enable", &[], false).unwrap();
+    let atom = ast::SymbolicAtom(id).unwrap();
 
-    {
-        // initilize atom to add and the program builder
-        let mut data = OnStatementData {
-            atom: &ast::Term::from(sym),
-            control: &mut ctl,
-        };
+    // add the external statement: #external enable. [false]
+    let sym = Symbol::create_id("false", true).unwrap();
+    let external_type = ast::SymbolicTerm(&loc, &sym).unwrap();
+    let mut ext = ast::External(&loc, &atom, &[], &external_type).unwrap();
 
-        // get the AST of the program
-        parse_program("a :- not b. b :- not a.", &mut data)
-            .expect("Failed to parse logic program.");
+    builder
+        .add(&mut ext)
+        .expect("Failed to add statement to ProgramBuilder.");
 
-        // add the external statement: #external enable. [false]
-        let ext = ast::External::new(ast::Term::from(sym), &[]);
-        let mut builder = ast::ProgramBuilder::from(&mut ctl).unwrap();
-        let stm = ext.ast_statement();
-        builder
-            .add(&stm)
-            .expect("Failed to add statement to ProgramBuilder.");
+    let mut stm_handler = OnStatementData {
+        atom: &atom,
+        builder: &mut builder,
+    };
 
-        // finish building a program
-        builder.end().expect("Failed to finish building a program.");
-    }
+    // get the AST of the program
+    ast::parse_string_with_statement_handler("a :- not b. b :- not a.", &mut stm_handler)
+        .expect("Failed to parse logic program.");
+
+    // finish building a program
+    let builder = ast::ProgramBuilder::from(&mut ctl).unwrap();
+    builder.end().expect("Failed to finish building a program.");
 
     // ground the base part
     let part = Part::new("base", &[]).unwrap();
@@ -128,6 +126,8 @@ fn main() {
     // get the program literal corresponding to the external atom
     let atoms = ctl.symbolic_atoms().unwrap();
     let mut atm_it = atoms.iter().unwrap();
+
+    let sym = Symbol::create_id("enable", true).unwrap();
     let item = atm_it.find(|e| e.symbol().unwrap() == sym).unwrap();
     let atm = item.literal().unwrap();
 
