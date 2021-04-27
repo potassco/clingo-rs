@@ -4,31 +4,34 @@ use clingo::{
 use std::env;
 
 pub struct OnStatementData<'a, 'b> {
-    atom: &'b ast::Ast,
+    atom: &'b ast::SymbolicAtom,
     builder: &'a mut ast::ProgramBuilder<'a>,
 }
 
 impl<'a, 'b> ast::StatementHandler for OnStatementData<'a, 'b> {
     // adds atom enable to all rule bodies
-    fn on_statement(&mut self, stm: &mut ast::Ast) -> bool {
+    fn on_statement(&mut self, stm: &mut ast::Statement) -> bool {
         // pass through all statements that are not rules
 
-        match stm.get_type() {
-            Ok(ast::AstType::Rule) => {
-                let body = stm.ast_array(ast::AstAttribute::Body);
+        match stm {
+            ast::Statement::Rule(stm) => {
+                let body = stm.body();
                 let mut extended_body = std::vec::Vec::with_capacity(body.size().unwrap() + 1);
                 for e in body.iter() {
                     extended_body.push(e.clone());
                 }
                 // create literal enable
                 let loc = Location::default();
-                let lit: clingo::ast::Ast =
-                    ast::Literal(&loc, ast::Sign::NoSign, &self.atom).unwrap();
-                extended_body.push(lit);
+                let lit =
+                    ast::Literal::literal_from_symbolic_atom(&loc, ast::Sign::NoSign, &self.atom)
+                        .unwrap();
+                let blit = ast::BodyLiteral::body_literal(&lit);
+                extended_body.push(blit);
 
                 // initialize the rule
-                let head = stm.get_attribute_ast(&ast::AstAttribute::Head).unwrap();
-                let rule = ast::Rule(&loc, head, &extended_body).unwrap();
+                let head = stm.head();
+                let rule =
+                    ast::Statement::rule(&loc, &head, &mut extended_body.into_iter()).unwrap();
 
                 // add the rewritten rule to the program builder
                 self.builder
@@ -92,13 +95,13 @@ fn main() {
     let mut builder = ast::ProgramBuilder::from(&mut ctl).unwrap();
 
     let loc = Location::default();
-    let id = ast::Function(&loc, "enable", &[], false).unwrap();
-    let atom = ast::SymbolicAtom(id).unwrap();
+    let id = ast::Term::function(&loc, "enable", &[], false).unwrap();
+    let atom = ast::SymbolicAtom::symbolic_atom(id).unwrap();
 
     // add the external statement: #external enable. [false]
     let sym = Symbol::create_id("false", true).unwrap();
-    let external_type = ast::SymbolicTerm(&loc, &sym).unwrap();
-    let mut ext = ast::External(&loc, &atom, &[], &external_type).unwrap();
+    let external_type = ast::Term::symbolic_term(&loc, &sym).unwrap();
+    let mut ext = ast::Statement::external(&loc, &atom, &[], &external_type).unwrap();
 
     builder
         .add(&mut ext)

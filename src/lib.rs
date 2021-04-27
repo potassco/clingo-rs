@@ -2436,18 +2436,20 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
         }
     }
 
-    pub fn add_facts(&mut self, facts: &FactBase) -> Result<(),ClingoError>{
+    pub fn add_facts(&mut self, facts: &FactBase) -> Result<(), ClingoError> {
         for sym in facts.iter() {
             let loc = Location::default();
             // initilize atom to add
-            let atom = ast::SymbolicTerm(&loc,sym).unwrap();
-
+            let term = ast::Term::symbolic_term(&loc, sym)?;
+            let atom = ast::SymbolicAtom::symbolic_atom(term)?;
             // create literal
-            let lit = ast::Literal(&loc,ast::Sign::NoSign, &atom).unwrap();
+            let lit =
+                ast::Literal::literal_from_symbolic_atom(&loc, ast::Sign::NoSign, &atom).unwrap();
+            let head = ast::Head::head(lit);
 
-            
             // create (fact) rule
-            let fact = ast::Rule(&loc,lit, &[]).unwrap();
+            let body = vec![];
+            let fact = ast::Statement::rule(&loc, &head, &mut body.into_iter()).unwrap();
             // get the program builder
             let mut builder = ast::ProgramBuilder::from(self).unwrap();
 
