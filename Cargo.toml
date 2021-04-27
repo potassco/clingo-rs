@@ -20,14 +20,14 @@ name = "clingo"
 path = "src/lib.rs"
 
 [features]
-dynamic_linking = ["clingo-sys/dynamic_linking"]
-dl_theory = ["clingo-dl-sys"]
+static_linking = ["clingo-sys/static_linking"]
+# dl_theory = ["clingo-dl-sys"]
 # Provide derive(ToSymbol) macro.
 derive = ["clingo-derive"]
 
 [dependencies]
-clingo-sys = { git = "https://github.com/potassco/clingo-sys", branch="st/wip" }
-clingo-dl-sys = { git = "https://github.com/potassco/clingo-dl-sys", branch="main", optional = true}
+clingo-sys = { git = "https://github.com/potassco/clingo-sys", branch="st/fix_muability" }
+# clingo-dl-sys = { git = "https://github.com/potassco/clingo-dl-sys", branch="main", optional = true}
 clingo-derive = { version = "0.2.0", optional = true }
 thiserror = "1.0"
 bitflags = "1.2"
