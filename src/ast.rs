@@ -1,16 +1,91 @@
 #![allow(clippy::needless_lifetimes)]
+use crate::ErrorType;
 use crate::{
     internalize_string, set_internal_error, ClingoError, ControlLPOF, FunctionHandler,
     GroundProgramObserver, Location, Logger, Propagator, Symbol,
 };
-use crate::ErrorType;
 use clingo_sys::*;
 use std::ffi::CStr;
 use std::ffi::CString;
 use std::os::raw::c_char;
 use std::os::raw::c_void;
 use std::ptr::NonNull;
+pub struct Body<'a> {
+    ast: &'a Ast,
+    attribute: AstAttribute,
+}
+impl<'a> Body<'a> {
+    /// Get the size of an AstArray
+    ///
+    /// @param[in] ast the target AstArray
+    /// @param[in] attribute the target attribute"]
+    /// @param[out] size the resulting size"]
+    /// @return whether the call was successful; might set one of the following error codes:"]
+    /// - ::clingo_error_runtime"]
 
+    pub fn size(&self) -> Result<usize, ClingoError> {
+        let mut size: usize = 0;
+        if !unsafe {
+            clingo_ast_attribute_size_ast_array(
+                self.ast.0.as_ptr(),
+                self.attribute as i32,
+                &mut size,
+            )
+        } {
+            return Err(ClingoError::new_internal(
+                "Call to clingo_ast_attribute_size_ast_array() failed.",
+            ));
+        }
+        Ok(size)
+    }
+
+    ///  Returns an iterator over the theory atoms.
+    pub fn iter(&self) -> BodyIter {
+        BodyIter {
+            ast_array: self,
+            index: 0,
+        }
+    }
+}
+pub struct BodyIter<'a> {
+    ast_array: &'a Body<'a>,
+    index: usize,
+}
+impl<'a> Iterator for BodyIter<'a> {
+    type Item = BodyLiteral;
+
+    fn next(&mut self) -> Option<BodyLiteral> {
+        let size = self.ast_array.size().unwrap(); //Err->None
+
+        if size == self.index {
+            return None;
+        }
+
+        let mut ast = std::ptr::null_mut();
+        if !unsafe {
+            clingo_ast_attribute_get_ast_at(
+                self.ast_array.ast.0.as_ptr(),
+                self.ast_array.attribute as i32,
+                self.index,
+                &mut ast,
+            )
+        } {
+            return None;
+        }
+        self.index += 1;
+        match NonNull::new(ast) {
+            Some(x) => Some(BodyLiteral(Ast(x))),
+            None => None,
+        }
+    }
+}
+#[derive(Debug, Copy, Clone)]
+pub struct BodyLiteral(Ast);
+impl BodyLiteral {
+    pub fn body_literal(lit: &Literal) -> BodyLiteral {
+        BodyLiteral(lit.0)
+    }
+}
 pub struct AstArray<'a> {
     ast: &'a Ast,
     attribute: AstAttribute,
@@ -85,7 +160,7 @@ pub trait StatementHandler {
     /// Callback function called on an ast statement while traversing the ast.
     ///
     /// **Returns** whether the call was successful
-    fn on_statement(&mut self, ast: &mut Ast) -> bool;
+    fn on_statement(&mut self, ast: &mut Statement) -> bool;
 }
 unsafe extern "C" fn unsafe_ast_callback<T: StatementHandler>(
     ast: *mut clingo_ast_t,
@@ -103,9 +178,13 @@ unsafe extern "C" fn unsafe_ast_callback<T: StatementHandler>(
 
     let event_handler = &mut *(event_handler as *mut T);
 
-    // println!("ast2: {:?}",ast);
     match ast2 {
-        Some(x) => event_handler.on_statement(&mut Ast(x)),
+        Some(x) => match Ast(x).get_type() {
+            Ok(AstType::Program) => event_handler.on_statement(&mut Statement::Program(Ast(x))),
+            Ok(AstType::Rule) => event_handler.on_statement(&mut Statement::Rule(Rule(Ast(x)))),
+            Ok(AstType::External) => event_handler.on_statement(&mut Statement::External(Ast(x))),
+            _ => unimplemented!(),
+        },
         None => panic!("ast.as_mut() returned None"),
     }
 
@@ -260,81 +339,86 @@ impl<'a> ProgramBuilder<'a> {
     ///
     /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) for statements of invalid form
     /// or [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
-    pub fn add(&mut self, stm: &Ast) -> Result<(), ClingoError> {
-        println!("add stm {:?}", stm);
-        let bla = stm.to_string();
-        println!("add stm.to_string {:?}", bla);
-        let bla = stm.get_type();
-        println!("add stm.get_type {:?}", bla);
-        match bla {
-            Ok(AstType::Program) => {
-                let attribute = AstAttribute::Parameters;
-                let blub = stm.get_attribute_type(&attribute);
-                println!("stm.get_attribute_type {:?} {:?}", attribute, blub);
-            }
-            Ok(AstType::Rule) => {
-                let attribute = AstAttribute::Head;
-                let blub = stm.get_attribute_type(&attribute);
-                println!("stm.get_attribute_type {:?} {:?}", attribute, blub);
-                let blub = stm.get_attribute_ast(&attribute).unwrap();
-                println!("stm.get_attribute_ast {:?} {:?}", attribute, blub);
-                let blub = blub.to_string();
-                println!("stm.get_attribute_ast_to_string {:?} {:?}", attribute, blub);
-                let attribute = AstAttribute::Body;
-                let blub = stm.get_attribute_type(&attribute);
-                println!("stm.get_attribute_type {:?} {:?}", attribute, blub);
-            }
-            Ok(AstType::External) => {
-                let attribute = AstAttribute::Atom;
-                let blub = stm.get_attribute_type(&attribute);
-                println!("stm.get_attribute_type {:?} {:?}", attribute, blub);
-                let ast = stm.get_attribute_ast(&attribute).unwrap();
-                println!("   stm.get_attribute_ast {:?} {:?}", attribute, ast);
-                let string = ast.to_string();
-                println!("   ast.to_string {:?}", string);
-                let bla = ast.get_type();
-                println!("   ast.get_type {:?}", bla);
-                let attribute = AstAttribute::Symbol;
-                let blub = ast.get_attribute_type(&attribute);
-                println!("   ast.get_attribute_type {:?} {:?}", attribute, blub);
+    pub fn add(&mut self, stm: &Statement) -> Result<(), ClingoError> {
+        let ast = match stm {
+            Statement::Program(ast) => ast,
+            Statement::Rule(Rule(ast)) => ast,
+            Statement::External(ast) => ast,
 
-                let ast2 = ast.get_attribute_ast(&attribute).unwrap();
-                println!("        ast.get_attribute_ast {:?} {:?}", attribute, ast2);
-                let string = ast2.to_string();
-                println!("        ast2.to_string {:?}", string);
-                let ast_type = ast2.get_type();
-                println!("        ast2.get_type {:?}", ast_type);
+            // println!("add stm {:?}", stm);
+            // let bla = stm.to_string();
+            // println!("add stm.to_string {:?}", bla);
+            // let bla = stm.get_type();
+            // println!("add stm.get_type {:?}", bla);
+            // match bla {
+            // Ok(AstType::Program) => {
+            //     let attribute = AstAttribute::Parameters;
+            //     let blub = stm.get_attribute_type(&attribute);
+            //     println!("stm.get_attribute_type {:?} {:?}", attribute, blub);
+            // }
+            // Ok(AstType::Rule) => {
+            //     let attribute = AstAttribute::Head;
+            //     let blub = stm.get_attribute_type(&attribute);
+            //     println!("stm.get_attribute_type {:?} {:?}", attribute, blub);
+            //     let blub = stm.get_attribute_ast(&attribute).unwrap();
+            //     println!("stm.get_attribute_ast {:?} {:?}", attribute, blub);
+            //     let blub = blub.to_string();
+            //     println!("stm.get_attribute_ast_to_string {:?} {:?}", attribute, blub);
+            //     let attribute = AstAttribute::Body;
+            //     let blub = stm.get_attribute_type(&attribute);
+            //     println!("stm.get_attribute_type {:?} {:?}", attribute, blub);
+            // }
+            // Ok(AstType::External) => {
+            //     let attribute = AstAttribute::Atom;
+            //     let blub = stm.get_attribute_type(&attribute);
+            //     println!("stm.get_attribute_type {:?} {:?}", attribute, blub);
+            //     let ast = stm.get_attribute_ast(&attribute).unwrap();
+            //     println!("   stm.get_attribute_ast {:?} {:?}", attribute, ast);
+            //     let string = ast.to_string();
+            //     println!("   ast.to_string {:?}", string);
+            //     let bla = ast.get_type();
+            //     println!("   ast.get_type {:?}", bla);
+            //     let attribute = AstAttribute::Symbol;
+            //     let blub = ast.get_attribute_type(&attribute);
+            //     println!("   ast.get_attribute_type {:?} {:?}", attribute, blub);
 
-                let attribute = AstAttribute::Body;
-                let blub = stm.get_attribute_type(&attribute);
-                println!("stm.get_attribute_type {:?} {:?}", attribute, blub);
-                // let ast = stm.get_attribute_ast_at(&attribute,0).unwrap();
-                // println!("stm.get_attribute_ast_ast {:?} {:?}", attribute, ast);
-                // let string = ast.to_string();
-                // println!("ast.to_string {:?} {:?}", attribute, string);
+            //     let ast2 = ast.get_attribute_ast(&attribute).unwrap();
+            //     println!("        ast.get_attribute_ast {:?} {:?}", attribute, ast2);
+            //     let string = ast2.to_string();
+            //     println!("        ast2.to_string {:?}", string);
+            //     let ast_type = ast2.get_type();
+            //     println!("        ast2.get_type {:?}", ast_type);
 
-                let attribute = AstAttribute::ExternalType;
-                let blub = stm.get_attribute_type(&attribute);
-                println!("stm.get_attribute_type {:?} {:?}", attribute, blub);
-                let ast = stm.get_attribute_ast(&attribute).unwrap();
-                println!("    stm.get_attribute_ast {:?} {:?}", attribute, ast);
-                let string = ast.to_string();
-                println!("    ast.to_string {:?}", string);
-                let bla = ast.get_type();
-                println!("    ast.get_type {:?}", bla);
+            //     let attribute = AstAttribute::Body;
+            //     let blub = stm.get_attribute_type(&attribute);
+            //     println!("stm.get_attribute_type {:?} {:?}", attribute, blub);
+            //     // let ast = stm.get_attribute_ast_at(&attribute,0).unwrap();
+            //     // println!("stm.get_attribute_ast_ast {:?} {:?}", attribute, ast);
+            //     // let string = ast.to_string();
+            //     // println!("ast.to_string {:?} {:?}", attribute, string);
 
-                let attribute = AstAttribute::Symbol;
-                let blub = ast.get_attribute_type(&attribute);
-                println!("    ast.get_attribute_type {:?} {:?}", attribute, blub);
-                // let sym = ast.get_symbol().unwrap();
-                // println!("        ast.get_symbol() {:?}", sym);
-                // let string = sym.to_string();
-                // println!("        sym.to_string {:?}", string);
-            }
-            _ => println!("unmatched ast_type {:?}", bla),
-        }
+            //     let attribute = AstAttribute::ExternalType;
+            //     let blub = stm.get_attribute_type(&attribute);
+            //     println!("stm.get_attribute_type {:?} {:?}", attribute, blub);
+            //     let ast = stm.get_attribute_ast(&attribute).unwrap();
+            //     println!("    stm.get_attribute_ast {:?} {:?}", attribute, ast);
+            //     let string = ast.to_string();
+            //     println!("    ast.to_string {:?}", string);
+            //     let bla = ast.get_type();
+            //     println!("    ast.get_type {:?}", bla);
 
-        if !unsafe { clingo_program_builder_add(self.theref, stm.0.as_ptr()) } {
+            //     let attribute = AstAttribute::Symbol;
+            //     let blub = ast.get_attribute_type(&attribute);
+            //     println!("    ast.get_attribute_type {:?} {:?}", attribute, blub);
+            //     // let sym = ast.get_symbol().unwrap();
+            //     // println!("        ast.get_symbol() {:?}", sym);
+            //     // let string = sym.to_string();
+            //     // println!("        sym.to_string {:?}", string);
+            // }
+            x => panic!("unmatched statement/ast_type {:?}", x),
+        };
+
+        if !unsafe { clingo_program_builder_add(self.theref, ast.0.as_ptr()) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_program_builder_add() failed",
             ));
@@ -728,33 +812,84 @@ pub fn Variable(location: &Location, name: &str) -> Result<Ast, ClingoError> {
     }
 }
 
-/// Construct an AST node of type `ASTType.SymbolicTerm`.
-pub fn SymbolicTerm(location: &Location, symbol: &Symbol) -> Result<Ast, ClingoError> {
-    let mut ast = std::ptr::null_mut();
-
-    if !unsafe {
-        clingo_ast_build(
-            clingo_ast_type_e_clingo_ast_type_symbolic_term as i32,
-            &mut ast,
-            location,
-            symbol.0,
-        )
-    } {
-        return Err(ClingoError::new_internal(
-            "Call to clingo_ast_build() failed.",
-        ));
+#[derive(Debug, Copy, Clone)]
+pub struct Term(Ast);
+impl Term {
+    pub fn to_string(&self) -> Result<String, ClingoError> {
+        self.0.to_string()
     }
-    println!("in SymbolicTerm");
-    let x = match NonNull::new(ast) {
-        Some(ast) => Ok(Ast(ast)),
+    pub fn get_type(&self) -> Result<AstType, ClingoError> {
+        self.0.get_type()
+    }
+    /// Construct an AST node of type `ASTType.SymbolicTerm`.
+    pub fn symbolic_term(location: &Location, symbol: &Symbol) -> Result<Term, ClingoError> {
+        let mut ast = std::ptr::null_mut();
 
-        None => Err(ClingoError::FFIError {
-            msg: "tried casting a null pointer to &mut clingo_ast.",
-        }),
-    };
-    x
+        if !unsafe {
+            clingo_ast_build(
+                clingo_ast_type_e_clingo_ast_type_symbolic_term as i32,
+                &mut ast,
+                location,
+                symbol.0,
+            )
+        } {
+            return Err(ClingoError::new_internal(
+                "Call to clingo_ast_build() failed.",
+            ));
+        }
+        println!("in SymbolicTerm");
+        match NonNull::new(ast) {
+            Some(ast) => Ok(Term(Ast(ast))),
+
+            None => Err(ClingoError::FFIError {
+                msg: "tried casting a null pointer to &mut clingo_ast.",
+            }),
+        }
+    }
+    /// Construct an AST node of type `ASTType.Function`.
+    pub fn function(
+        location: &Location,
+        name: &str,
+        arguments: &[Term],
+        external: bool,
+    ) -> Result<Term, ClingoError> {
+        println!("in function");
+        let mut ast = std::ptr::null_mut();
+        let name = internalize_string(name)?;
+        if !unsafe {
+            clingo_ast_build(
+                clingo_ast_type_e_clingo_ast_type_function as i32,
+                &mut ast,
+                &location,
+                name,
+                arguments.as_ptr() as *const clingo_ast_t,
+                0, //arguments.len(),
+                external as i32,
+            )
+        } {
+            return Err(ClingoError::new_internal(
+                "Call to clingo_ast_build() failed.",
+            ));
+        }
+        let mut ast_type = 0;
+        if !unsafe { clingo_ast_get_type(ast, &mut ast_type) } {
+            return Err(ClingoError::new_internal(
+                "Call to clingo_ast_get_type() failed.",
+            ));
+        }
+        println!("A {}", ast_type);
+        match NonNull::new(ast) {
+            Some(ast) => {
+                // let x = Ast(ast_ref);
+                // println!("B {:?}", x.get_type());
+                Ok(Term(Ast(ast)))
+            }
+            None => Err(ClingoError::FFIError {
+                msg: "tried casting a null pointer to &mut clingo_ast.",
+            }),
+        }
+    }
 }
-
 /// Construct an AST node of type `ASTType.UnaryOperation`.
 pub fn UnaryOperation(
     location: Location,
@@ -837,50 +972,6 @@ pub fn Interval(location: Location, left: Ast, right: Ast) -> Result<Ast, Clingo
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
         })?,
-    }
-}
-
-/// Construct an AST node of type `ASTType.Function`.
-pub fn Function(
-    location: &Location,
-    name: &str,
-    arguments: &[Ast],
-    external: bool,
-) -> Result<Ast, ClingoError> {
-    println!("in function");
-    let mut ast = std::ptr::null_mut();
-    let name = internalize_string(name)?;
-    if !unsafe {
-        clingo_ast_build(
-            clingo_ast_type_e_clingo_ast_type_function as i32,
-            &mut ast,
-            &location,
-            name,
-            arguments.as_ptr() as *const clingo_ast_t,
-            0, //arguments.len(),
-            external as i32,
-        )
-    } {
-        return Err(ClingoError::new_internal(
-            "Call to clingo_ast_build() failed.",
-        ));
-    }
-    let mut ast_type = 0;
-    if !unsafe { clingo_ast_get_type(ast, &mut ast_type) } {
-        return Err(ClingoError::new_internal(
-            "Call to clingo_ast_get_type() failed.",
-        ));
-    }
-    println!("A {}", ast_type);
-    match NonNull::new(ast) {
-        Some(ast_ref) => {
-            let x = Ast(ast_ref);
-            println!("B {:?}", x.get_type());
-            Ok(x)
-        }
-        None => Err(ClingoError::FFIError {
-            msg: "tried casting a null pointer to &mut clingo_ast.",
-        }),
     }
 }
 
@@ -1010,28 +1101,34 @@ pub fn BooleanConstant(value: bool) -> Result<Ast, ClingoError> {
     }
 }
 
-/// Construct an AST node of type `ASTType.SymbolicAtom`.
-pub fn SymbolicAtom(symbol: Ast) -> Result<Ast, ClingoError> {
-    let mut ast = std::ptr::null_mut();
-    if !unsafe {
-        clingo_ast_build(
-            clingo_ast_type_e_clingo_ast_type_symbolic_atom as i32,
-            &mut ast,
-            symbol.0,
-        )
-    } {
-        return Err(ClingoError::new_internal(
-            "Call to clingo_ast_build() failed.",
-        ));
+#[derive(Debug, Copy, Clone)]
+pub struct SymbolicAtom(Ast);
+impl SymbolicAtom {
+    pub fn to_string(&self) -> Result<String, ClingoError> {
+        self.0.to_string()
     }
-    match NonNull::new(ast) {
-        Some(ast) => Ok(Ast(ast)),
-        None => Err(ClingoError::FFIError {
-            msg: "Tried creating NonNull from a null pointer.",
-        })?,
+    /// Construct an AST node of type `ASTType.SymbolicAtom`.
+    pub fn symbolic_atom(symbol: Term) -> Result<SymbolicAtom, ClingoError> {
+        let mut ast = std::ptr::null_mut();
+        if !unsafe {
+            clingo_ast_build(
+                clingo_ast_type_e_clingo_ast_type_symbolic_atom as i32,
+                &mut ast,
+                symbol.0 .0,
+            )
+        } {
+            return Err(ClingoError::new_internal(
+                "Call to clingo_ast_build() failed.",
+            ));
+        }
+        match NonNull::new(ast) {
+            Some(ast) => Ok(SymbolicAtom(Ast(ast))),
+            None => Err(ClingoError::FFIError {
+                msg: "Tried creating NonNull from a null pointer.",
+            })?,
+        }
     }
 }
-
 /// Construct an AST node of type `ASTType.Comparison`.
 pub fn Comparison(
     comparison: ComparisonOperator,
@@ -1546,32 +1643,38 @@ pub fn TheoryAtom(
         })?,
     }
 }
+#[derive(Debug, Copy, Clone)]
+pub struct Literal(Ast);
+impl Literal {
+    /// Construct an AST node of type `ASTType.Literal`.
+    pub fn literal_from_symbolic_atom(
+        location: &Location,
+        sign: Sign,
+        atom: &SymbolicAtom,
+    ) -> Result<Literal, ClingoError> {
+        let mut ast = std::ptr::null_mut();
 
-/// Construct an AST node of type `ASTType.Literal`.
-pub fn Literal(location: &Location, sign: Sign, atom: &Ast) -> Result<Ast, ClingoError> {
-    let mut ast = std::ptr::null_mut();
-
-    if !unsafe {
-        clingo_ast_build(
-            clingo_ast_type_e_clingo_ast_type_literal as i32,
-            &mut ast,
-            location,
-            sign as i32,
-            atom.0,
-        )
-    } {
-        return Err(ClingoError::new_internal(
-            "Call to clingo_ast_build() failed.",
-        ));
-    }
-    match NonNull::new(ast) {
-        Some(ast) => Ok(Ast(ast)),
-        None => Err(ClingoError::FFIError {
-            msg: "Tried creating NonNull from a null pointer.",
-        })?,
+        if !unsafe {
+            clingo_ast_build(
+                clingo_ast_type_e_clingo_ast_type_literal as i32,
+                &mut ast,
+                location,
+                sign as i32,
+                atom.0 .0,
+            )
+        } {
+            return Err(ClingoError::new_internal(
+                "Call to clingo_ast_build() failed.",
+            ));
+        }
+        match NonNull::new(ast) {
+            Some(ast) => Ok(Literal(Ast(ast))),
+            None => Err(ClingoError::FFIError {
+                msg: "Tried creating NonNull from a null pointer.",
+            })?,
+        }
     }
 }
-
 /// Construct an AST node of type `ASTType.TheoryOperatorDefinition`.
 pub fn TheoryOperatorDefinition(
     location: Location,
@@ -1709,33 +1812,79 @@ pub fn TheoryAtomDefinition(
         })?,
     }
 }
-
-/// Construct an AST node of type `ASTType.Rule`.
-pub fn Rule(location: &Location, head: Ast, body: &[Ast]) -> Result<Ast, ClingoError> {
-    let mut ast = std::ptr::null_mut();
-
-    if !unsafe {
-        clingo_ast_build(
-            clingo_ast_type_e_clingo_ast_type_rule as i32,
-            &mut ast,
-            location,
-            head.0,
-            body.as_ptr() as *const clingo_ast_t,
-            body.len(),
-        )
-    } {
-        return Err(ClingoError::new_internal(
-            "Call to clingo_ast_build() failed.",
-        ));
-    }
-    match NonNull::new(ast) {
-        Some(ast) => Ok(Ast(ast)),
-        None => Err(ClingoError::FFIError {
-            msg: "Tried creating NonNull from a null pointer.",
-        })?,
+#[derive(Debug, Copy, Clone)]
+pub struct Head(Ast);
+impl Head {
+    pub fn head(lit: Literal) -> Head {
+        Head(lit.0)
     }
 }
 
+#[derive(Debug, Copy, Clone)]
+pub struct Rule(Ast);
+impl Rule {
+    /// Construct an AST node of type `ASTType.Rule`.
+    pub fn rule(
+        location: &Location,
+        head: &Head,
+        body: &mut Iterator<Item = BodyLiteral>,
+    ) -> Result<Rule, ClingoError> {
+        let mut ast = std::ptr::null_mut();
+        if let Some(first) = body.next() {
+            println!("Body > 0");
+            // let len = body.count();
+            let body_ptr = &first;
+
+            if !unsafe {
+                clingo_ast_build(
+                    clingo_ast_type_e_clingo_ast_type_rule as i32,
+                    &mut ast,
+                    location,
+                    head.0,
+                    body_ptr,
+                    1, // TODO get len
+                )
+            } {
+                return Err(ClingoError::new_internal(
+                    "Call to clingo_ast_build() failed.",
+                ));
+            }
+        } else {
+            let body_ptr = std::ptr::null();
+
+            if !unsafe {
+                clingo_ast_build(
+                    clingo_ast_type_e_clingo_ast_type_rule as i32,
+                    &mut ast,
+                    location,
+                    head.0,
+                    body_ptr as *const clingo_ast_t,
+                    0,
+                )
+            } {
+                return Err(ClingoError::new_internal(
+                    "Call to clingo_ast_build() failed.",
+                ));
+            }
+        }
+        match NonNull::new(ast) {
+            Some(ast) => Ok(Rule(Ast(ast))),
+            None => Err(ClingoError::FFIError {
+                msg: "Tried creating NonNull from a null pointer.",
+            })?,
+        }
+    }
+    pub fn body(&self) -> Body {
+        Body {
+            ast: &self.0,
+            attribute: AstAttribute::Body,
+        }
+    }
+    pub fn head(&self) -> Head {
+        let ast = self.0.get_attribute_ast(&AstAttribute::Head).unwrap();
+        Head(ast)
+    }
+}
 /// Construct an AST node of type `ASTType.Definition`.
 pub fn Definition(
     location: Location,
@@ -1921,41 +2070,53 @@ pub fn Program(location: Location, name: &str, parameters: &[Ast]) -> Result<Ast
     }
 }
 
-/// Construct an AST node of type `ASTType.External`.
-pub fn External(
-    location: &Location,
-    atom: &Ast,
-    body: &[Ast],
-    external_type: &Ast,
-) -> Result<Ast, ClingoError> {
-    println!("in External");
-    let mut ast = std::ptr::null_mut();
+#[derive(Debug, Copy, Clone)]
+pub enum Statement {
+    Program(Ast),
+    Rule(Rule),
+    External(Ast),
+}
+impl Statement {
+    /// Construct an AST node of type `ASTType.External`.
+    pub fn external(
+        location: &Location,
+        atom: &SymbolicAtom,
+        body: &[Ast],
+        external_type: &Term,
+    ) -> Result<Statement, ClingoError> {
+        let mut ast = std::ptr::null_mut();
 
-    if !unsafe {
-        clingo_ast_build(
-            clingo_ast_type_e_clingo_ast_type_external as i32,
-            &mut ast,
-            &location,
-            atom.0,
-            body.as_ptr() as *const clingo_ast_t,
-            0,
-            external_type.0,
-        )
-    } {
-        return Err(ClingoError::new_internal(
-            "Call to clingo_ast_build() failed.",
-        ));
+        if !unsafe {
+            clingo_ast_build(
+                clingo_ast_type_e_clingo_ast_type_external as i32,
+                &mut ast,
+                location,
+                atom.0,
+                body.as_ptr() as *const clingo_ast_t,
+                body.len(),
+                external_type.0,
+            )
+        } {
+            return Err(ClingoError::new_internal(
+                "Call to clingo_ast_build() failed.",
+            ));
+        }
+        match NonNull::new(ast) {
+            Some(ast) => Ok(Statement::External(Ast(ast))),
+            None => Err(ClingoError::FFIError {
+                msg: "Tried creating NonNull from a null pointer.",
+            })?,
+        }
     }
-    println!("out External");
-    println!("External pointer: {:?}", ast);
-    match NonNull::new(ast) {
-        Some(ast) => Ok(Ast(ast)),
-        None => Err(ClingoError::FFIError {
-            msg: "Tried creating NonNull from a null pointer.",
-        })?,
+    pub fn rule(
+        location: &Location,
+        head: &Head,
+        body: &mut Iterator<Item = BodyLiteral>,
+    ) -> Result<Statement, ClingoError> {
+        let rule = Rule::rule(location, head, body)?;
+        Ok(Statement::Rule(rule))
     }
 }
-
 /// Construct an AST node of type `ASTType.Edge`.
 pub fn Edge(
     location: Location,

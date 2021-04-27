@@ -153,7 +153,7 @@ fn theory_atoms() {
     }
 }
 
-fn test_statement(stmt: &Ast, string: &str) {
+fn test_statement(stmt: &Statement, string: &str) {
     let string2 = format!("{:?}", stmt);
     assert_eq!(string2, string);
 
@@ -197,23 +197,26 @@ fn ast_term() {
     let sym4 = Symbol::create_supremum();
     let sym5 = Symbol::create_infimum();
 
-    let term1 = SymbolicTerm(&loc, &sym1).unwrap();
+    let term1 = Term::symbolic_term(&loc, &sym1).unwrap();
     assert_eq!(format!("{}", term1.to_string().unwrap()), "42");
     let tt = term1.get_type().unwrap();
     assert_eq!(format!("{:?}", tt), "SymbolicTerm");
 
-    let term2 = SymbolicTerm(&loc,&sym2).unwrap();
+    let term2 = Term::symbolic_term(&loc, &sym2).unwrap();
     assert_eq!(format!("{}", term2.to_string().unwrap()), "\"test\"");
     let tt = term2.get_type().unwrap();
     assert_eq!(format!("{:?}", tt), "SymbolicTerm");
 
-    let term = SymbolicTerm(&loc,&sym3).unwrap();
-    assert_eq!(format!("{}", term.to_string().unwrap()), "fun1(42,\"test\")");
+    let term = Term::symbolic_term(&loc, &sym3).unwrap();
+    assert_eq!(
+        format!("{}", term.to_string().unwrap()),
+        "fun1(42,\"test\")"
+    );
 
-    let term = SymbolicTerm(&loc,&sym4).unwrap();
+    let term = Term::symbolic_term(&loc, &sym4).unwrap();
     assert_eq!(format!("{:?}", term.to_string().unwrap()), "\"#sup\"");
 
-    let term = SymbolicTerm(&loc,&sym5).unwrap();
+    let term = Term::symbolic_term(&loc, &sym5).unwrap();
     assert_eq!(format!("{:?}", term.to_string().unwrap()), "\"#inf\"");
 
     let term = Variable(&loc, "Var").unwrap();
