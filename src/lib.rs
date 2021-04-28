@@ -2448,8 +2448,7 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
             let head = ast::Head::head(lit);
 
             // create (fact) rule
-            let body = vec![];
-            let fact = ast::Statement::rule(&loc, &head, &mut body.into_iter()).unwrap();
+            let fact = ast::Statement::rule(&loc, &head, &[]).unwrap();
             // get the program builder
             let mut builder = ast::ProgramBuilder::from(self).unwrap();
 

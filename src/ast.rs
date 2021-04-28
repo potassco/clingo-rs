@@ -1827,46 +1827,25 @@ impl Rule {
     pub fn rule(
         location: &Location,
         head: &Head,
-        body: &mut Iterator<Item = BodyLiteral>,
+        body: &[BodyLiteral],
     ) -> Result<Rule, ClingoError> {
         let mut ast = std::ptr::null_mut();
-        if let Some(first) = body.next() {
-            println!("Body > 0");
-            // let len = body.count();
-            let body_ptr = &first;
 
-            if !unsafe {
-                clingo_ast_build(
-                    clingo_ast_type_e_clingo_ast_type_rule as i32,
-                    &mut ast,
-                    location,
-                    head.0,
-                    body_ptr,
-                    1, // TODO get len
-                )
-            } {
-                return Err(ClingoError::new_internal(
-                    "Call to clingo_ast_build() failed.",
-                ));
-            }
-        } else {
-            let body_ptr = std::ptr::null();
-
-            if !unsafe {
-                clingo_ast_build(
-                    clingo_ast_type_e_clingo_ast_type_rule as i32,
-                    &mut ast,
-                    location,
-                    head.0,
-                    body_ptr as *const clingo_ast_t,
-                    0,
-                )
-            } {
-                return Err(ClingoError::new_internal(
-                    "Call to clingo_ast_build() failed.",
-                ));
-            }
+        if !unsafe {
+            clingo_ast_build(
+                clingo_ast_type_e_clingo_ast_type_rule as i32,
+                &mut ast,
+                location,
+                head.0,
+                body,
+                body.len(),
+            )
+        } {
+            return Err(ClingoError::new_internal(
+                "Call to clingo_ast_build() failed.",
+            ));
         }
+
         match NonNull::new(ast) {
             Some(ast) => Ok(Rule(Ast(ast))),
             None => Err(ClingoError::FFIError {
@@ -2111,7 +2090,7 @@ impl Statement {
     pub fn rule(
         location: &Location,
         head: &Head,
-        body: &mut Iterator<Item = BodyLiteral>,
+        body: &[BodyLiteral],
     ) -> Result<Statement, ClingoError> {
         let rule = Rule::rule(location, head, body)?;
         Ok(Statement::Rule(rule))
