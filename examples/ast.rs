@@ -12,7 +12,6 @@ impl<'a, 'b> ast::StatementHandler for OnStatementData<'a, 'b> {
     // adds atom enable to all rule bodies
     fn on_statement(&mut self, stm: &mut ast::Statement) -> bool {
         // pass through all statements that are not rules
-
         match stm {
             ast::Statement::Rule(stm) => {
                 let body = stm.body();
@@ -94,12 +93,15 @@ fn main() {
     let mut builder = ast::ProgramBuilder::from(&mut ctl).unwrap();
 
     let loc = Location::default();
-    let id = ast::Term::function(&loc, "enable", &[], false).unwrap();
-    let atom = ast::SymbolicAtom::symbolic_atom(id).unwrap();
+    let id = ast::Function::function(&loc, "enable", &[], false).unwrap();
+
+    let term = ast::Term::function(&id);
+    let atom = ast::SymbolicAtom::symbolic_atom(term).unwrap();
 
     // add the external statement: #external enable. [false]
     let sym = Symbol::create_id("false", true).unwrap();
-    let external_type = ast::Term::symbolic_term(&loc, &sym).unwrap();
+    let symbolic_term = ast::SymbolicTerm::symbolic_term(&loc, &sym).unwrap();
+    let external_type = ast::Term::symbolic_term(&symbolic_term);
     let mut ext = ast::Statement::external(&loc, &atom, &[], &external_type).unwrap();
 
     builder
