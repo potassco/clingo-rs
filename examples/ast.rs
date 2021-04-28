@@ -30,8 +30,7 @@ impl<'a, 'b> ast::StatementHandler for OnStatementData<'a, 'b> {
 
                 // initialize the rule
                 let head = stm.head();
-                let rule =
-                    ast::Statement::rule(&loc, &head, &mut extended_body.into_iter()).unwrap();
+                let rule = ast::Statement::rule(&loc, &head, &extended_body).unwrap();
 
                 // add the rewritten rule to the program builder
                 self.builder
