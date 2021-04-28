@@ -214,20 +214,23 @@ fn ast_term() {
 
     let term = SymbolicTerm::symbolic_term(&loc, &sym4).unwrap();
     let term = Term::symbolic_term(&term);
-    assert_eq!(format!("{:?}", term.to_string().unwrap()), "\"#sup\"");
+    assert_eq!(format!("{}", term.to_string().unwrap()), "#sup");
 
     let term = SymbolicTerm::symbolic_term(&loc, &sym5).unwrap();
     let term = Term::symbolic_term(&term);
-    assert_eq!(format!("{:?}", term.to_string().unwrap()), "\"#inf\"");
+    assert_eq!(format!("{}", term.to_string().unwrap()), "#inf");
 
     let term = Variable::variable(&loc, "Var").unwrap();
-    assert_eq!(format!("{:?}", term.to_string().unwrap()), "\"Var\"");
+    assert_eq!(format!("{}", term.to_string().unwrap()), "Var");
 
-    // let uop = UnaryOperation::negation(term1);
+    let negation = UnaryOperator::Negation;
+    let uop = UnaryOperation::unary_operation(&loc, negation, term1).unwrap();
     // let op = uop.unary_operator();
     // assert_eq!(format!("{:?}", op), "Negation");
     // let arg = uop.argument();
     // assert_eq!(format!("{:?}", arg), "Term { symbol: 42 }");
+    let uop = Term::unary_operation(&uop);
+    assert_eq!(format!("{}", uop.to_string().unwrap()), "~42");
 
     // let bop = BinaryOperation::xor(term1, term2);
     // let op = bop.binary_operator();

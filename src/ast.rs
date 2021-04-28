@@ -909,6 +909,7 @@ pub enum Term {
     Variable(Variable),
     SymbolicTerm(SymbolicTerm),
     Function(Function),
+    UnaryOperation(UnaryOperation),
 }
 impl Term {
     pub fn to_string(&self) -> Result<String, ClingoError> {
@@ -916,6 +917,7 @@ impl Term {
             Term::Variable(ast) => ast.to_string(),
             Term::SymbolicTerm(ast) => ast.to_string(),
             Term::Function(ast) => ast.to_string(),
+            Term::UnaryOperation(UnaryOperation(ast)) => ast.to_string(),
         }
     }
     /// Construct an AST node of type `ASTType.Variable`.
@@ -934,38 +936,54 @@ impl Term {
             Term::Variable(Variable(ast)) => *ast,
             Term::SymbolicTerm(SymbolicTerm(ast)) => *ast,
             Term::Function(Function(ast)) => *ast,
-        }   
+            Term::UnaryOperation(UnaryOperation(ast)) => *ast,
+        }
     }
-}
-/// Construct an AST node of type `ASTType.UnaryOperation`.
-pub fn UnaryOperation(
-    location: Location,
-    operator_type: UnaryOperator,
-    argument: Ast,
-) -> Result<Ast, ClingoError> {
-    let mut ast = std::ptr::null_mut();
-
-    if !unsafe {
-        clingo_ast_build(
-            clingo_ast_type_e_clingo_ast_type_unary_operation as i32,
-            &mut ast,
-            &location,
-            operator_type as i32,
-            argument,
-        )
-    } {
-        return Err(ClingoError::new_internal(
-            "Call to clingo_ast_build() failed.",
-        ));
-    }
-    match NonNull::new(ast) {
-        Some(ast) => Ok(Ast(ast)),
-        None => Err(ClingoError::FFIError {
-            msg: "Tried creating NonNull from a null pointer.",
-        })?,
+    /// Construct an AST node of type `ASTType.UnaryOperation`.
+    pub fn unary_operation(op: &UnaryOperation) -> Term {
+        Term::UnaryOperation(*op)
     }
 }
 
+#[derive(Debug, Copy, Clone)]
+pub struct UnaryOperation(Ast);
+impl UnaryOperation {
+    /// Construct an AST node of type `ASTType.UnaryOperation`.
+    pub fn unary_operation(
+        location: &Location,
+        operator_type: UnaryOperator,
+        argument: Term,
+    ) -> Result<UnaryOperation, ClingoError> {
+        let mut ast = std::ptr::null_mut();
+        let argument_ast = argument.get_ast();
+
+        if !unsafe {
+            clingo_ast_build(
+                clingo_ast_type_e_clingo_ast_type_unary_operation as i32,
+                &mut ast,
+                location,
+                operator_type as i32,
+                argument_ast,
+            )
+        } {
+            return Err(ClingoError::new_internal(
+                "Call to clingo_ast_build() failed.",
+            ));
+        }
+        match NonNull::new(ast) {
+            Some(ast) => Ok(UnaryOperation(Ast(ast))),
+            None => Err(ClingoError::FFIError {
+                msg: "Tried creating NonNull from a null pointer.",
+            })?,
+        }
+    }
+    pub fn unary_operator(self) -> UnaryOperator {
+       unimplemented!()
+    }
+    pub fn argument(self) -> Term {
+       unimplemented!()
+    }
+}
 /// Construct an AST node of type `ASTType.BinaryOperation`.
 pub fn BinaryOperation(
     location: Location,
@@ -2112,7 +2130,7 @@ impl Statement {
         external_type: &Term,
     ) -> Result<Statement, ClingoError> {
         let mut ast = std::ptr::null_mut();
-        let external_type_ast = external_type.get_ast(); 
+        let external_type_ast = external_type.get_ast();
         if !unsafe {
             clingo_ast_build(
                 clingo_ast_type_e_clingo_ast_type_external as i32,
