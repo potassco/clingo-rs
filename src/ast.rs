@@ -787,42 +787,48 @@ pub fn Id(location: Location, name: &str) -> Result<Ast, ClingoError> {
     }
 }
 
-/// Construct an AST node of type `ASTType.Variable`.
-pub fn Variable(location: &Location, name: &str) -> Result<Ast, ClingoError> {
-    let mut ast = std::ptr::null_mut();
-
-    let variable = internalize_string(name)?;
-    if !unsafe {
-        clingo_ast_build(
-            clingo_ast_type_e_clingo_ast_type_variable as i32,
-            &mut ast,
-            location,
-            variable,
-        )
-    } {
-        return Err(ClingoError::new_internal(
-            "Call to clingo_ast_build() failed.",
-        ));
-    }
-    match NonNull::new(ast) {
-        Some(ast) => Ok(Ast(ast)),
-        None => Err(ClingoError::FFIError {
-            msg: "Tried creating NonNull from a null pointer.",
-        })?,
-    }
-}
-
 #[derive(Debug, Copy, Clone)]
-pub struct Term(Ast);
-impl Term {
+pub struct Variable(Ast);
+impl Variable {
     pub fn to_string(&self) -> Result<String, ClingoError> {
         self.0.to_string()
     }
-    pub fn get_type(&self) -> Result<AstType, ClingoError> {
-        self.0.get_type()
+    /// Construct an AST node of type `ASTType.Variable`.
+    pub fn variable(location: &Location, name: &str) -> Result<Variable, ClingoError> {
+        let mut ast = std::ptr::null_mut();
+
+        let variable = internalize_string(name)?;
+        if !unsafe {
+            clingo_ast_build(
+                clingo_ast_type_e_clingo_ast_type_variable as i32,
+                &mut ast,
+                location,
+                variable,
+            )
+        } {
+            return Err(ClingoError::new_internal(
+                "Call to clingo_ast_build() failed.",
+            ));
+        }
+        match NonNull::new(ast) {
+            Some(ast) => Ok(Variable(Ast(ast))),
+            None => Err(ClingoError::FFIError {
+                msg: "Tried creating NonNull from a null pointer.",
+            })?,
+        }
+    }
+}
+#[derive(Debug, Copy, Clone)]
+pub struct SymbolicTerm(Ast);
+impl SymbolicTerm {
+    pub fn to_string(&self) -> Result<String, ClingoError> {
+        self.0.to_string()
     }
     /// Construct an AST node of type `ASTType.SymbolicTerm`.
-    pub fn symbolic_term(location: &Location, symbol: &Symbol) -> Result<Term, ClingoError> {
+    pub fn symbolic_term(
+        location: &Location,
+        symbol: &Symbol,
+    ) -> Result<SymbolicTerm, ClingoError> {
         let mut ast = std::ptr::null_mut();
 
         if !unsafe {
@@ -839,12 +845,20 @@ impl Term {
         }
         println!("in SymbolicTerm");
         match NonNull::new(ast) {
-            Some(ast) => Ok(Term(Ast(ast))),
+            Some(ast) => Ok(SymbolicTerm(Ast(ast))),
 
             None => Err(ClingoError::FFIError {
                 msg: "tried casting a null pointer to &mut clingo_ast.",
             }),
         }
+    }
+}
+
+#[derive(Debug, Copy, Clone)]
+pub struct Function(Ast);
+impl Function {
+    pub fn to_string(&self) -> Result<String, ClingoError> {
+        self.0.to_string()
     }
     /// Construct an AST node of type `ASTType.Function`.
     pub fn function(
@@ -852,7 +866,7 @@ impl Term {
         name: &str,
         arguments: &[Term],
         external: bool,
-    ) -> Result<Term, ClingoError> {
+    ) -> Result<Function, ClingoError> {
         println!("in function");
         let mut ast = std::ptr::null_mut();
         let name = internalize_string(name)?;
@@ -882,12 +896,45 @@ impl Term {
             Some(ast) => {
                 // let x = Ast(ast_ref);
                 // println!("B {:?}", x.get_type());
-                Ok(Term(Ast(ast)))
+                Ok(Function(Ast(ast)))
             }
             None => Err(ClingoError::FFIError {
                 msg: "tried casting a null pointer to &mut clingo_ast.",
             }),
         }
+    }
+}
+#[derive(Debug, Copy, Clone)]
+pub enum Term {
+    Variable(Variable),
+    SymbolicTerm(SymbolicTerm),
+    Function(Function),
+}
+impl Term {
+    pub fn to_string(&self) -> Result<String, ClingoError> {
+        match self {
+            Term::Variable(ast) => ast.to_string(),
+            Term::SymbolicTerm(ast) => ast.to_string(),
+            Term::Function(ast) => ast.to_string(),
+        }
+    }
+    /// Construct an AST node of type `ASTType.Variable`.
+    pub fn variable(var: &Variable) -> Term {
+        Term::Variable(*var)
+    }
+    /// Construct an AST node of type `ASTType.Variable`.
+    pub fn symbolic_term(term: &SymbolicTerm) -> Term {
+        Term::SymbolicTerm(*term)
+    }
+    pub fn function(f: &Function) -> Term {
+        Term::Function(*f)
+    }
+    fn get_ast(&self) -> Ast {
+        match self {
+            Term::Variable(Variable(ast)) => *ast,
+            Term::SymbolicTerm(SymbolicTerm(ast)) => *ast,
+            Term::Function(Function(ast)) => *ast,
+        }   
     }
 }
 /// Construct an AST node of type `ASTType.UnaryOperation`.
@@ -1109,12 +1156,13 @@ impl SymbolicAtom {
     }
     /// Construct an AST node of type `ASTType.SymbolicAtom`.
     pub fn symbolic_atom(symbol: Term) -> Result<SymbolicAtom, ClingoError> {
+        let symbol_ast = symbol.get_ast();
         let mut ast = std::ptr::null_mut();
         if !unsafe {
             clingo_ast_build(
                 clingo_ast_type_e_clingo_ast_type_symbolic_atom as i32,
                 &mut ast,
-                symbol.0 .0,
+                symbol_ast,
             )
         } {
             return Err(ClingoError::new_internal(
@@ -2064,7 +2112,7 @@ impl Statement {
         external_type: &Term,
     ) -> Result<Statement, ClingoError> {
         let mut ast = std::ptr::null_mut();
-
+        let external_type_ast = external_type.get_ast(); 
         if !unsafe {
             clingo_ast_build(
                 clingo_ast_type_e_clingo_ast_type_external as i32,
@@ -2073,7 +2121,7 @@ impl Statement {
                 atom.0,
                 body.as_ptr() as *const clingo_ast_t,
                 body.len(),
-                external_type.0,
+                external_type_ast,
             )
         } {
             return Err(ClingoError::new_internal(

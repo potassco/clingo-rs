@@ -2440,7 +2440,8 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
         for sym in facts.iter() {
             let loc = Location::default();
             // initilize atom to add
-            let term = ast::Term::symbolic_term(&loc, sym)?;
+            let symbolic_term = ast::SymbolicTerm::symbolic_term(&loc, sym)?;
+            let term = ast::Term::symbolic_term(&symbolic_term);
             let atom = ast::SymbolicAtom::symbolic_atom(term)?;
             // create literal
             let lit =
