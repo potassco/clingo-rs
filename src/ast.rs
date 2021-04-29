@@ -344,7 +344,6 @@ impl<'a> ProgramBuilder<'a> {
             Statement::Program(ast) => ast,
             Statement::Rule(Rule(ast)) => ast,
             Statement::External(ast) => ast,
-
             // println!("add stm {:?}", stm);
             // let bla = stm.to_string();
             // println!("add stm.to_string {:?}", bla);
@@ -823,39 +822,34 @@ impl Variable {
 }
 #[derive(Debug, Copy, Clone)]
 pub struct SymbolicTerm(Ast);
-    /// Construct an AST node of type `ASTType.SymbolicTerm`.
-    pub fn symbolic_term(
-        location: &Location,
-        symbol: &Symbol,
-    ) -> Result<SymbolicTerm, ClingoError> {
-        let mut ast = std::ptr::null_mut();
+/// Construct an AST node of type `ASTType.SymbolicTerm`.
+pub fn symbolic_term(location: &Location, symbol: &Symbol) -> Result<SymbolicTerm, ClingoError> {
+    let mut ast = std::ptr::null_mut();
 
-        if !unsafe {
-            clingo_ast_build(
-                clingo_ast_type_e_clingo_ast_type_symbolic_term as i32,
-                &mut ast,
-                location,
-                symbol.0,
-            )
-        } {
-            return Err(ClingoError::new_internal(
-                "Call to clingo_ast_build() failed.",
-            ));
-        }
-        println!("in SymbolicTerm");
-        match NonNull::new(ast) {
-            Some(ast) => Ok(SymbolicTerm(Ast(ast))),
-
-            None => Err(ClingoError::FFIError {
-                msg: "tried casting a null pointer to &mut clingo_ast.",
-            }),
-        }
+    if !unsafe {
+        clingo_ast_build(
+            clingo_ast_type_e_clingo_ast_type_symbolic_term as i32,
+            &mut ast,
+            location,
+            symbol.0,
+        )
+    } {
+        return Err(ClingoError::new_internal(
+            "Call to clingo_ast_build() failed.",
+        ));
     }
+    match NonNull::new(ast) {
+        Some(ast) => Ok(SymbolicTerm(Ast(ast))),
+
+        None => Err(ClingoError::FFIError {
+            msg: "tried casting a null pointer to &mut clingo_ast.",
+        }),
+    }
+}
 impl SymbolicTerm {
     pub fn to_string(&self) -> Result<String, ClingoError> {
         self.0.to_string()
     }
-
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -1061,11 +1055,7 @@ impl BinaryOperation {
 pub struct Interval(Ast);
 impl Interval {
     /// Construct an AST node of type `ASTType.Interval`.
-    pub fn interval(
-        location: &Location,
-        left: Term,
-        right: Term,
-    ) -> Result<Interval, ClingoError> {
+    pub fn interval(location: &Location, left: Term, right: Term) -> Result<Interval, ClingoError> {
         let mut ast = std::ptr::null_mut();
         if !unsafe {
             clingo_ast_build(
@@ -1127,7 +1117,7 @@ impl Pool {
 pub struct CspProduct(Ast);
 /// Construct an AST node of type `ASTType.CspProduct`.
 pub fn csp_product(
-    location: Location,
+    location: &Location,
     coefficient: Term,
     variable: Option<Term>,
 ) -> Result<CspProduct, ClingoError> {
@@ -1138,7 +1128,7 @@ pub fn csp_product(
             clingo_ast_build(
                 clingo_ast_type_e_clingo_ast_type_csp_product as i32,
                 &mut ast,
-                &location,
+                location,
                 coefficient.0,
                 variable.0,
             )
@@ -1289,7 +1279,6 @@ impl SymbolicAtom {
         self.0.to_string()
     }
 }
-
 #[derive(Debug, Copy, Clone)]
 pub struct Comparison(Ast);
 /// Construct an AST node of type `ASTType.Comparison`.
@@ -1320,15 +1309,21 @@ pub fn comparison(
     }
 }
 
+#[derive(Debug, Copy, Clone)]
+pub struct CspLiteral(Ast);
 /// Construct an AST node of type `ASTType.CspLiteral`.
-pub fn CspLiteral(location: Location, term: Ast, guards: &[Ast]) -> Result<Ast, ClingoError> {
+pub fn csp_literal(
+    location: &Location,
+    term: CspTerm,
+    guards: &[CspGuard],
+) -> Result<CspLiteral, ClingoError> {
     let mut ast = std::ptr::null_mut();
 
     if !unsafe {
         clingo_ast_build(
             clingo_ast_type_e_clingo_ast_type_csp_literal as i32,
             &mut ast,
-            &location,
+            location,
             term.0,
             guards.as_ptr() as *const clingo_ast_t,
             guards.len(),
@@ -1339,15 +1334,20 @@ pub fn CspLiteral(location: Location, term: Ast, guards: &[Ast]) -> Result<Ast, 
         ));
     }
     match NonNull::new(ast) {
-        Some(ast) => Ok(Ast(ast)),
+        Some(ast) => Ok(CspLiteral(Ast(ast))),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
         })?,
     }
 }
 
+#[derive(Debug, Copy, Clone)]
+pub struct AggregateGuard(Ast);
 /// Construct an AST node of type `ASTType.AggregateGuard`.
-pub fn AggregateGuard(comparison: ComparisonOperator, term: Ast) -> Result<Ast, ClingoError> {
+pub fn aggregate_guard(
+    comparison: ComparisonOperator,
+    term: Term,
+) -> Result<AggregateGuard, ClingoError> {
     let mut ast = std::ptr::null_mut();
     if !unsafe {
         clingo_ast_build(
@@ -1362,19 +1362,21 @@ pub fn AggregateGuard(comparison: ComparisonOperator, term: Ast) -> Result<Ast, 
         ));
     }
     match NonNull::new(ast) {
-        Some(ast) => Ok(Ast(ast)),
+        Some(ast) => Ok(AggregateGuard(Ast(ast))),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
         })?,
     }
 }
 
+#[derive(Debug, Copy, Clone)]
+pub struct ConditionalLiteral(Ast);
 /// Construct an AST node of type `ASTType.ConditionalLiteral`.
-pub fn ConditionalLiteral(
+pub fn conditional_literal(
     location: &Location,
-    literal: Ast,
-    condition: &[Ast],
-) -> Result<Ast, ClingoError> {
+    literal: Literal,
+    condition: &[Literal],
+) -> Result<ConditionalLiteral, ClingoError> {
     let mut ast = std::ptr::null_mut();
 
     if !unsafe {
@@ -1392,20 +1394,22 @@ pub fn ConditionalLiteral(
         ));
     }
     match NonNull::new(ast) {
-        Some(ast) => Ok(Ast(ast)),
+        Some(ast) => Ok(ConditionalLiteral(Ast(ast))),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
         })?,
     }
 }
 
+#[derive(Debug, Copy, Clone)]
+pub struct Aggregate(Ast);
 /// Construct an AST node of type `ASTType.Aggregate`.
-pub fn Aggregate(
-    location: Location,
-    left_guard: Option<Ast>,
-    elements: &[Ast],
-    right_guard: Option<Ast>,
-) -> Result<Ast, ClingoError> {
+pub fn aggregate(
+    location: &Location,
+    left_guard: Option<AggregateGuard>,
+    elements: &[ConditionalLiteral],
+    right_guard: Option<AggregateGuard>,
+) -> Result<Aggregate, ClingoError> {
     let mut ast = std::ptr::null_mut();
     let left_guard = match &left_guard {
         Some(left_guard) => &left_guard.0,
@@ -1431,15 +1435,20 @@ pub fn Aggregate(
         ));
     }
     match NonNull::new(ast) {
-        Some(ast) => Ok(Ast(ast)),
+        Some(ast) => Ok(Aggregate(Ast(ast))),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
         })?,
     }
 }
 
+#[derive(Debug, Copy, Clone)]
+pub struct BodyAggregateElement(Ast);
 /// Construct an AST node of type `ASTType.BodyAggregateElement`.
-pub fn BodyAggregateElement(terms: &[Ast], condition: &[Ast]) -> Result<Ast, ClingoError> {
+pub fn body_aggregate_element(
+    terms: &[Term],
+    condition: &[Literal],
+) -> Result<BodyAggregateElement, ClingoError> {
     let mut ast = std::ptr::null_mut();
     if !unsafe {
         clingo_ast_build(
@@ -1456,107 +1465,160 @@ pub fn BodyAggregateElement(terms: &[Ast], condition: &[Ast]) -> Result<Ast, Cli
         ));
     }
     match NonNull::new(ast) {
-        Some(ast) => Ok(Ast(ast)),
+        Some(ast) => Ok(BodyAggregateElement(Ast(ast))),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
         })?,
     }
 }
 
-// pub fn BodyAggregate(location: Location, left_guard: Option<Ast>, function: int, elements: &[Ast],
-//                   right_guard: Option<Ast>) -> Result<Ast,ClingoError> {
-//     /// Construct an AST node of type `ASTType.BodyAggregate`.
+#[derive(Debug, Copy, Clone)]
+pub struct BodyAggregate(Ast);
+/// Construct an AST node of type `ASTType.BodyAggregate`.
+pub fn body_aggregate(
+    location: &Location,
+    left_guard: Option<Ast>,
+    function: i32,
+    elements: &[Ast],
+    right_guard: Option<Ast>,
+) -> Result<BodyAggregate, ClingoError> {
+    let mut ast = std::ptr::null_mut();
 
-//     let mut ast = std::ptr::null_mut();
+    let left_guard = if let Some(left_guard) = left_guard {
+        left_guard.0.as_ptr()
+    } else {
+        std::ptr::null()
+    };
+    let right_guard = if let Some(right_guard) = right_guard {
+        right_guard.0.as_ptr()
+    } else {
+        std::ptr::null()
+    };
+    if !unsafe {
+        clingo_ast_build(
+            clingo_ast_type_e_clingo_ast_type_body_aggregate as i32,
+            &mut ast,
+            location,
+            left_guard,
+            function as i32,
+            elements.as_ptr(),
+            elements.len(),
+            right_guard,
+        )
+    } {
+        return Err(ClingoError::new_internal(
+            "Call to clingo_ast_build() failed.",
+        ));
+    }
+    match NonNull::new(ast) {
+        Some(ast_ref) => Ok(BodyAggregate(Ast(ast_ref))),
+        None => Err(ClingoError::FFIError {
+            msg: "tried casting a null pointer to &mut clingo_ast.",
+        }),
+    }
+}
 
-//     if !unsafe { clingo_ast_build(
-//         clingo_ast_type_e_clingo_ast_type_body_aggregate as i32, &mut ast,
-//         &location,
-//         _ffi.NULL if left_guard is None else left_guard.0,
-//         _ffi.cast('int', function),
-//         _ffi.new('clingo_ast_t*[]', [ x.0 for x in elements ]),
-//         _ffi.cast('size_t', len(elements)),
-//         _ffi.NULL if right_guard is None else right_guard.0) } {
-//             return Err(ClingoError::new_internal(
-//                 "Call to clingo_ast_build() failed.",
-//             ));
-//         }
-//         match unsafe { ast.as_mut() } {
-//             Some( ast_ref) => Ok(Ast(ast_ref)),
-//             None => Err(ClingoError::FFIError {
-//                 msg: "tried casting a null pointer to &mut clingo_ast.",
-//             }),
-//         }
-//     }
+#[derive(Debug, Copy, Clone)]
+pub struct HeadAggregateElement(Ast);
+/// Construct an AST node of type `ASTType.HeadAggregateElement`.
+pub fn head_aggregate_element(
+    terms: &[Ast],
+    condition: Ast,
+) -> Result<HeadAggregateElement, ClingoError> {
+    let mut ast = std::ptr::null_mut();
+    if !unsafe {
+        clingo_ast_build(
+            clingo_ast_type_e_clingo_ast_type_head_aggregate_element as i32,
+            &mut ast,
+            terms.as_ptr() as *const clingo_ast_t,
+            terms.len(),
+            condition.0,
+        )
+    } {
+        return Err(ClingoError::new_internal(
+            "Call to clingo_ast_build() failed.",
+        ));
+    }
+    match NonNull::new(ast) {
+        Some(ast_ref) => Ok(HeadAggregateElement(Ast(ast_ref))),
+        None => Err(ClingoError::FFIError {
+            msg: "tried casting a null pointer to &mut clingo_ast.",
+        }),
+    }
+}
 
-// pub fn HeadAggregateElement(terms: &[Ast], condition: Ast) -> Result<Ast,ClingoError> {
-//     /// Construct an AST node of type `ASTType.HeadAggregateElement`.
+#[derive(Debug, Copy, Clone)]
+pub struct HeadAggregate(Ast);
+/// Construct an AST node of type `ASTType.HeadAggregate`.
+pub fn head_aggregate(
+    location: Location,
+    left_guard: Option<Ast>,
+    function: i32,
+    elements: &[Ast],
+    right_guard: Option<Ast>,
+) -> Result<HeadAggregate, ClingoError> {
+    let mut ast = std::ptr::null_mut();
+    let left_guard = if let Some(left_guard) = left_guard {
+        left_guard.0.as_ptr()
+    } else {
+        std::ptr::null()
+    };
+    let right_guard = if let Some(right_guard) = right_guard {
+        right_guard.0.as_ptr()
+    } else {
+        std::ptr::null()
+    };
 
-//     let mut ast = std::ptr::null_mut();
-//     if !unsafe { clingo_ast_build(
-//         clingo_ast_type_e_clingo_ast_type_head_aggregate_element as i32, &mut ast,
-//         terms.as_ptr() as *const clingo_ast_t,
-//         terms.len(),
-//         condition.0) } {
-//             return Err(ClingoError::new_internal(
-//                 "Call to clingo_ast_build() failed.",
-//             ));
-//         }
-//         match unsafe { ast.as_mut() } {
-//             Some( ast_ref) => Ok(Ast(ast_ref)),
-//             None => Err(ClingoError::FFIError {
-//                 msg: "tried casting a null pointer to &mut clingo_ast.",
-//             }),
-//         }
-//     }
+    if !unsafe {
+        clingo_ast_build(
+            clingo_ast_type_e_clingo_ast_type_head_aggregate as i32,
+            &mut ast,
+            location,
+            left_guard,
+            function as i32,
+            elements.as_ptr(),
+            elements.len(),
+            right_guard,
+        )
+    } {
+        return Err(ClingoError::new_internal(
+            "Call to clingo_ast_build() failed.",
+        ));
+    }
+    match NonNull::new(ast) {
+        Some(ast_ref) => Ok(HeadAggregate(Ast(ast_ref))),
+        None => Err(ClingoError::FFIError {
+            msg: "tried casting a null pointer to &mut clingo_ast.",
+        }),
+    }
+}
 
-// pub fn HeadAggregate(location: Location, left_guard: Option<Ast>, function: int, elements: &[Ast],
-//                   right_guard: Option<Ast>) -> Result<Ast,ClingoError> {
-//     /// Construct an AST node of type `ASTType.HeadAggregate`.
+#[derive(Debug, Copy, Clone)]
+pub struct Disjunction(Ast);
+/// Construct an AST node of type `ASTType.Disjunction`.
+pub fn disjunction(location: Location, elements: &[Ast]) -> Result<Disjunction, ClingoError> {
+    let mut ast = std::ptr::null_mut();
 
-//     let mut ast = std::ptr::null_mut();
-
-//     if !unsafe { clingo_ast_build(
-//         clingo_ast_type_e_clingo_ast_type_head_aggregate as i32, &mut ast,
-//         &location,
-//         _ffi.NULL if left_guard is None else left_guard.0,
-//         _ffi.cast('int', function),
-//         _ffi.new('clingo_ast_t*[]', [ x.0 for x in elements ]),
-//         _ffi.cast('size_t', len(elements)),
-//         _ffi.NULL if right_guard is None else right_guard.0) } {
-//             return Err(ClingoError::new_internal(
-//                 "Call to clingo_ast_build() failed.",
-//             ));
-//         }
-//         match unsafe { ast.as_mut() } {
-//             Some( ast_ref) => Ok(Ast(ast_ref)),
-//             None => Err(ClingoError::FFIError {
-//                 msg: "tried casting a null pointer to &mut clingo_ast.",
-//             }),
-//         }
-//     }
-
-// pub fn Disjunction(location: Location, elements: &[Ast]) -> Result<Ast,ClingoError> {
-//     /// Construct an AST node of type `ASTType.Disjunction`.
-
-//     let mut ast = std::ptr::null_mut();
-
-//     if !unsafe { clingo_ast_build(
-//         clingo_ast_type_e_clingo_ast_type_disjunction as i32, &mut ast,
-//         &location,
-//         _ffi.new('clingo_ast_t*[]', [ x.0 for x in elements ]),
-//         _ffi.cast('size_t', len(elements))) } {
-//             return Err(ClingoError::new_internal(
-//                 "Call to clingo_ast_build() failed.",
-//             ));
-//         }
-//         match unsafe { ast.as_mut() } {
-//             Some( ast_ref) => Ok(Ast(ast_ref)),
-//             None => Err(ClingoError::FFIError {
-//                 msg: "tried casting a null pointer to &mut clingo_ast.",
-//             }),
-//         }
-//     }
+    if !unsafe {
+        clingo_ast_build(
+            clingo_ast_type_e_clingo_ast_type_disjunction as i32,
+            &mut ast,
+            location,
+            elements.as_ptr(),
+            elements.len(),
+        )
+    } {
+        return Err(ClingoError::new_internal(
+            "Call to clingo_ast_build() failed.",
+        ));
+    }
+    match NonNull::new(ast) {
+        Some(ast) => Ok(Disjunction(Ast(ast))),
+        None => Err(ClingoError::FFIError {
+            msg: "tried casting a null pointer to &mut clingo_ast.",
+        }),
+    }
+}
 
 /// Construct an AST node of type `ASTType.DisjointElement`.
 pub fn DisjointElement(

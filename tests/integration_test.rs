@@ -291,15 +291,16 @@ fn ast_literal() {
     let term4 = symbolic_term(&loc, &sym4).unwrap();
     let term4 = Term::from(term4);
 
-    // let comp = Comparison::gt(term2, term3);
+    let gt = ComparisonOperator::GreaterThan;
+    let comp = comparison(gt, term2, term3).unwrap();
 
-    //     let csp_prod_term1 = CspProductTerm::new(term1, &term2);
-    //     let csp_prod_term2 = CspProductTerm::new(term3, &term4);
-    //     let csp_prod_terms1 = vec![csp_prod_term1];
-    //     let csp_prod_terms2 = vec![csp_prod_term2];
+    let csp_prod_term1 = csp_product(&loc, term1, Some(term2)).unwrap();
+    let csp_prod_term2 = csp_product(&loc, term3, Some(term4)).unwrap();
+    let csp_prod_terms1 = vec![csp_prod_term1];
+    let csp_prod_terms2 = vec![csp_prod_term2];
 
-    //     let csp_sum_term1 = CspSumTerm::new(&csp_prod_terms1);
-    //     let csp_sum_term2 = CspSumTerm::new(&csp_prod_terms2);
+    // let csp_sum_term1 = csp_sum(&loc,csp_prod_terms1);
+    // let csp_sum_term2 = csp_sum(&loc,csp_prod_terms2);
 
     //     let csp_guard = CspGuard::gt(csp_sum_term1);
     //     let csp_guards = vec![csp_guard];
