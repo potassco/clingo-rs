@@ -12,8 +12,8 @@ impl<'a, 'b> ast::StatementHandler for OnStatementData<'a, 'b> {
     // adds atom enable to all rule bodies
     fn on_statement(&mut self, stm: &mut ast::Statement) -> bool {
         // pass through all statements that are not rules
-        match stm {
-            ast::Statement::Rule(stm) => {
+        match stm.get_tterm().unwrap() {
+            ast::TStatement::Rule(stm) => {
                 let body = stm.body();
                 let mut extended_body = std::vec::Vec::with_capacity(body.size().unwrap() + 1);
                 for e in body.iter() {
@@ -29,11 +29,11 @@ impl<'a, 'b> ast::StatementHandler for OnStatementData<'a, 'b> {
 
                 // initialize the rule
                 let head = stm.head();
-                let rule = ast::Statement::rule(&loc, &head, &extended_body).unwrap();
+                let rule = ast::rule(&loc, &head, &extended_body).unwrap();
 
                 // add the rewritten rule to the program builder
                 self.builder
-                    .add(&rule)
+                    .add(&rule.into())
                     .expect("Failed to add Ast to ProgramBuilder.");
             }
             _ => {
@@ -100,10 +100,10 @@ fn main() {
     // add the external statement: #external enable. [false]
     let sym = Symbol::create_id("false", true).unwrap();
     let external_type = ast::symbolic_term(&loc, &sym).unwrap();
-    let mut ext = ast::Statement::external(&loc, atom, &[], external_type.into()).unwrap();
+    let ext = ast::external(&loc, atom, &[], external_type.into()).unwrap();
 
     builder
-        .add(&mut ext)
+        .add(&mut ext.into())
         .expect("Failed to add statement to ProgramBuilder.");
 
     let mut stm_handler = OnStatementData {

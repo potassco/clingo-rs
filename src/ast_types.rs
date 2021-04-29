@@ -77,7 +77,43 @@ impl From<Literal> for BodyLiteral {
 #[derive(Debug, Copy, Clone)]
 pub struct TheoryTerm(Ast);
 
-// TODO
+#[derive(Debug, Copy, Clone)]
+pub struct Statement(Ast);
+impl Statement {
+    pub fn get_tterm(&self) -> Result<TStatement, ClingoError> {
+        match self.0.get_type()? {
+            AstType::Program => Ok(TStatement::Program(Program(self.0))),
+            AstType::Rule => Ok(TStatement::Rule(Rule(self.0))),
+            AstType::External => Ok(TStatement::External(External(self.0))),
+            x => panic!("unexpected AstType: {:?}", x),
+        }
+    }
+    pub fn to_string(&self) -> Result<String, ClingoError> {
+        self.0.to_string()
+    }
+}
+#[derive(Debug, Copy, Clone)]
+pub enum TStatement {
+    Program(Program),
+    Rule(Rule),
+    External(External),
+}
+impl From<Program> for Statement {
+    fn from(prg: Program) -> Self {
+        Statement(prg.0)
+    }
+}
+impl From<Rule> for Statement {
+    fn from(rule: Rule) -> Self {
+        Statement(rule.0)
+    }
+}
+impl From<External> for Statement {
+    fn from(ext: External) -> Self {
+        Statement(ext.0)
+    }
+}
+
 // extern "C" {
 //     #[doc = "! Construct an AST of the given type."]
 //     #[doc = "!"]
@@ -95,14 +131,14 @@ pub struct TheoryTerm(Ast);
 pub struct Id(Ast);
 impl Id {
     /// Construct an AST node of type `ASTType.Id`.
-    pub fn new(location: Location, name: &str) -> Result<Id, ClingoError> {
+    pub fn new(location: &Location, name: &str) -> Result<Id, ClingoError> {
         let mut ast = std::ptr::null_mut();
         let variable = internalize_string(name)?;
         if !unsafe {
             clingo_ast_build(
                 clingo_ast_type_e_clingo_ast_type_id as i32,
                 &mut ast,
-                &location,
+                location,
                 variable,
             )
         } {
@@ -401,7 +437,7 @@ pub fn csp_product(
             clingo_ast_build(
                 clingo_ast_type_e_clingo_ast_type_csp_product as i32,
                 &mut ast,
-                &location,
+                location,
                 coefficient.0,
                 std::ptr::null() as *const clingo_ast_t,
             )
@@ -433,7 +469,7 @@ pub fn csp_sum(
         clingo_ast_build(
             clingo_ast_type_e_clingo_ast_type_csp_sum as i32,
             &mut ast,
-            &location,
+            location,
             coefficient.0,
             variable.0,
         )
@@ -469,7 +505,7 @@ pub fn csp_guard(
         clingo_ast_build(
             clingo_ast_type_e_clingo_ast_type_csp_guard as i32,
             &mut ast,
-            &location,
+            location,
             comparison as i32,
             term.0,
         )
@@ -682,7 +718,7 @@ pub fn aggregate(
         clingo_ast_build(
             clingo_ast_type_e_clingo_ast_type_aggregate as i32,
             &mut ast,
-            &location,
+            location,
             left_guard,
             elements.as_ptr() as *const clingo_ast_t,
             elements.len(),
@@ -810,7 +846,7 @@ pub fn head_aggregate_element(
 pub struct HeadAggregate(Ast);
 /// Construct an AST node of type `ASTType.HeadAggregate`.
 pub fn head_aggregate(
-    location: Location,
+    location: &Location,
     left_guard: Option<AggregateGuard>,
     function: AggregateFunction,
     elements: &[HeadAggregateElement],
@@ -856,7 +892,7 @@ pub fn head_aggregate(
 pub struct Disjunction(Ast);
 /// Construct an AST node of type `ASTType.Disjunction`.
 pub fn disjunction(
-    location: Location,
+    location: &Location,
     elements: &[ConditionalLiteral],
 ) -> Result<Disjunction, ClingoError> {
     let mut ast = std::ptr::null_mut();
@@ -897,7 +933,7 @@ pub fn disjoint_element(
         clingo_ast_build(
             clingo_ast_type_e_clingo_ast_type_disjoint_element as i32,
             &mut ast,
-            &location,
+            location,
             terms.as_ptr() as *const clingo_ast_t,
             terms.len(),
             term.0,
@@ -929,7 +965,7 @@ pub fn disjoint(
         clingo_ast_build(
             clingo_ast_type_e_clingo_ast_type_disjoint as i32,
             &mut ast,
-            &location,
+            location,
             elements.as_ptr() as *const clingo_ast_t,
             elements.len(),
         )
@@ -950,7 +986,7 @@ pub fn disjoint(
 pub struct TheorySequence(Ast);
 /// Construct an AST node of type `ASTType.TheorySequence`.
 pub fn theory_sequence(
-    location: Location,
+    location: &Location,
     sequence_type: TheoryTermSequenceType,
     terms: &[TheoryTerm],
 ) -> Result<TheorySequence, ClingoError> {
@@ -960,7 +996,7 @@ pub fn theory_sequence(
         clingo_ast_build(
             clingo_ast_type_e_clingo_ast_type_theory_sequence as i32,
             &mut ast,
-            &location,
+            location,
             sequence_type as i32,
             terms.as_ptr() as *const clingo_ast_t,
             terms.len(),
@@ -992,7 +1028,7 @@ pub fn theory_function(
         clingo_ast_build(
             clingo_ast_type_e_clingo_ast_type_theory_function as i32,
             &mut ast,
-            &location,
+            location,
             name,
             arguments.as_ptr() as *const clingo_ast_t,
             arguments.len(),
@@ -1042,7 +1078,10 @@ pub fn theory_unparsed_term_element(
 #[derive(Debug, Copy, Clone)]
 pub struct TheoryUnparsedTerm(Ast);
 /// Construct an AST node of type `ASTType.TheoryUnparsedTerm`.
-pub fn theory_unparsed_term(location: &Location, elements: &[TheoryUnparsedTermElement]) -> Result<TheoryUnparsedTerm, ClingoError> {
+pub fn theory_unparsed_term(
+    location: &Location,
+    elements: &[TheoryUnparsedTermElement],
+) -> Result<TheoryUnparsedTerm, ClingoError> {
     let mut ast = std::ptr::null_mut();
 
     if !unsafe {
@@ -1066,8 +1105,10 @@ pub fn theory_unparsed_term(location: &Location, elements: &[TheoryUnparsedTermE
     }
 }
 
+#[derive(Debug, Copy, Clone)]
+pub struct TheoryGuard(Ast);
 /// Construct an AST node of type `ASTType.TheoryGuard`.
-pub fn TheoryGuard(operator_name: &str, term: Ast) -> Result<Ast, ClingoError> {
+pub fn theory_guard(operator_name: &str, term: TheoryTerm) -> Result<TheoryGuard, ClingoError> {
     let mut ast = std::ptr::null_mut();
     let operator_name = internalize_string(operator_name)?;
     if !unsafe {
@@ -1083,15 +1124,20 @@ pub fn TheoryGuard(operator_name: &str, term: Ast) -> Result<Ast, ClingoError> {
         ));
     }
     match NonNull::new(ast) {
-        Some(ast) => Ok(Ast(ast)),
+        Some(ast) => Ok(TheoryGuard(Ast(ast))),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
         })?,
     }
 }
 
+#[derive(Debug, Copy, Clone)]
+pub struct TheoryAtomElement(Ast);
 /// Construct an AST node of type `ASTType.TheoryAtomElement`.
-pub fn TheoryAtomElement(terms: &[Ast], condition: &[Ast]) -> Result<Ast, ClingoError> {
+pub fn theory_atom_element(
+    terms: &[TheoryTerm],
+    condition: &[Literal],
+) -> Result<TheoryAtomElement, ClingoError> {
     let mut ast = std::ptr::null_mut();
     if !unsafe {
         clingo_ast_build(
@@ -1108,20 +1154,22 @@ pub fn TheoryAtomElement(terms: &[Ast], condition: &[Ast]) -> Result<Ast, Clingo
         ));
     }
     match NonNull::new(ast) {
-        Some(ast) => Ok(Ast(ast)),
+        Some(ast) => Ok(TheoryAtomElement(Ast(ast))),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
         })?,
     }
 }
 
+#[derive(Debug, Copy, Clone)]
+pub struct TheoryAtom(Ast);
 /// Construct an AST node of type `ASTType.TheoryAtom`.
-pub fn TheoryAtom(
-    location: Location,
-    term: Ast,
-    elements: &[Ast],
-    guard: Option<Ast>,
-) -> Result<Ast, ClingoError> {
+pub fn theory_atom(
+    location: &Location,
+    term: Term,
+    elements: &[TheoryAtomElement],
+    guard: Option<TheoryGuard>,
+) -> Result<TheoryAtom, ClingoError> {
     let mut ast = std::ptr::null_mut();
 
     let guard = match &guard {
@@ -1132,7 +1180,7 @@ pub fn TheoryAtom(
         clingo_ast_build(
             clingo_ast_type_e_clingo_ast_type_theory_atom as i32,
             &mut ast,
-            &location,
+            location,
             term.0,
             elements.as_ptr() as *const clingo_ast_t,
             elements.len(),
@@ -1144,7 +1192,7 @@ pub fn TheoryAtom(
         ));
     }
     match NonNull::new(ast) {
-        Some(ast) => Ok(Ast(ast)),
+        Some(ast) => Ok(TheoryAtom(Ast(ast))),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
         })?,
@@ -1182,13 +1230,15 @@ impl Literal {
         }
     }
 }
+#[derive(Debug, Copy, Clone)]
+pub struct TheoryOperatorDefinition(Ast);
 /// Construct an AST node of type `ASTType.TheoryOperatorDefinition`.
-pub fn TheoryOperatorDefinition(
-    location: Location,
+pub fn theory_operator_definition(
+    location: &Location,
     name: &str,
     priority: u32,
     operator_type: u32,
-) -> Result<Ast, ClingoError> {
+) -> Result<TheoryOperatorDefinition, ClingoError> {
     let mut ast = std::ptr::null_mut();
 
     let name = internalize_string(name)?;
@@ -1196,7 +1246,7 @@ pub fn TheoryOperatorDefinition(
         clingo_ast_build(
             clingo_ast_type_e_clingo_ast_type_theory_operator_definition as i32,
             &mut ast,
-            &location,
+            location,
             name,
             priority,
             operator_type as i32,
@@ -1207,19 +1257,21 @@ pub fn TheoryOperatorDefinition(
         ));
     }
     match NonNull::new(ast) {
-        Some(ast) => Ok(Ast(ast)),
+        Some(ast) => Ok(TheoryOperatorDefinition(Ast(ast))),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
         })?,
     }
 }
 
+#[derive(Debug, Copy, Clone)]
+pub struct TheoryTermDefinition(Ast);
 /// Construct an AST node of type `ASTType.TheoryTermDefinition`.
-pub fn TheoryTermDefinition(
-    location: Location,
+pub fn theory_term_definition(
+    location: &Location,
     name: &str,
-    operators: &[Ast],
-) -> Result<Ast, ClingoError> {
+    operators: &[TheoryOperatorDefinition],
+) -> Result<TheoryTermDefinition, ClingoError> {
     let mut ast = std::ptr::null_mut();
     let name = internalize_string(name)?;
 
@@ -1227,7 +1279,7 @@ pub fn TheoryTermDefinition(
         clingo_ast_build(
             clingo_ast_type_e_clingo_ast_type_theory_term_definition as i32,
             &mut ast,
-            &location,
+            location,
             name,
             operators.as_ptr() as *const clingo_ast_t,
             operators.len(),
@@ -1238,15 +1290,20 @@ pub fn TheoryTermDefinition(
         ));
     }
     match NonNull::new(ast) {
-        Some(ast) => Ok(Ast(ast)),
+        Some(ast) => Ok(TheoryTermDefinition(Ast(ast))),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
         })?,
     }
 }
 
+#[derive(Debug, Copy, Clone)]
+pub struct TheoryGuardDefinition(Ast);
 /// Construct an AST node of type `ASTType.TheoryGuardDefinition`.
-pub fn TheoryGuardDefinition(operators: &[&str], term: &str) -> Result<Ast, ClingoError> {
+pub fn theory_guard_definition(
+    operators: &[&str],
+    term: &str,
+) -> Result<TheoryGuardDefinition, ClingoError> {
     let mut ast = std::ptr::null_mut();
     let term = internalize_string(term)?;
     let mut args = vec![];
@@ -1272,22 +1329,24 @@ pub fn TheoryGuardDefinition(operators: &[&str], term: &str) -> Result<Ast, Clin
         ));
     }
     match NonNull::new(ast) {
-        Some(ast) => Ok(Ast(ast)),
+        Some(ast) => Ok(TheoryGuardDefinition(Ast(ast))),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
         })?,
     }
 }
 
+#[derive(Debug, Copy, Clone)]
+pub struct TheoryAtomDefinition(Ast);
 /// Construct an AST node of type `ASTType.TheoryAtomDefinition`.
-pub fn TheoryAtomDefinition(
-    location: Location,
+pub fn theory_atom_definition(
+    location: &Location,
     atom_type: TheoryAtomType,
     name: &str,
     arity: u32,
     term: &str,
-    guard: Option<Ast>,
-) -> Result<Ast, ClingoError> {
+    guard: Option<TheoryGuardDefinition>,
+) -> Result<TheoryAtomDefinition, ClingoError> {
     let mut ast = std::ptr::null_mut();
     let name = internalize_string(name)?;
     let term = internalize_string(term)?;
@@ -1300,7 +1359,7 @@ pub fn TheoryAtomDefinition(
         clingo_ast_build(
             clingo_ast_type_e_clingo_ast_type_theory_atom_definition as i32,
             &mut ast,
-            &location,
+            location,
             atom_type as i32,
             name,
             arity,
@@ -1313,7 +1372,7 @@ pub fn TheoryAtomDefinition(
         ));
     }
     match NonNull::new(ast) {
-        Some(ast) => Ok(Ast(ast)),
+        Some(ast) => Ok(TheoryAtomDefinition(Ast(ast))),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
         })?,
@@ -1329,7 +1388,7 @@ impl Head {
 
 #[derive(Debug, Copy, Clone)]
 pub struct Rule(Ast);
-impl Rule {
+
     /// Construct an AST node of type `ASTType.Rule`.
     pub fn rule(
         location: &Location,
@@ -1360,6 +1419,7 @@ impl Rule {
             })?,
         }
     }
+impl Rule {
     pub fn body(&self) -> Body {
         Body {
             ast: &self.0,
@@ -1371,13 +1431,16 @@ impl Rule {
         Head(ast)
     }
 }
+
+#[derive(Debug, Copy, Clone)]
+pub struct Definition(Ast);
 /// Construct an AST node of type `ASTType.Definition`.
-pub fn Definition(
-    location: Location,
+pub fn definition(
+    location: &Location,
     name: &str,
-    value: Ast,
+    value: Term,
     is_default: bool,
-) -> Result<Ast, ClingoError> {
+) -> Result<Definition, ClingoError> {
     let mut ast = std::ptr::null_mut();
     let name = internalize_string(name)?;
 
@@ -1385,7 +1448,7 @@ pub fn Definition(
         clingo_ast_build(
             clingo_ast_type_e_clingo_ast_type_definition as i32,
             &mut ast,
-            &location,
+            location,
             name,
             value.0,
             is_default as i32,
@@ -1396,21 +1459,23 @@ pub fn Definition(
         ));
     }
     match NonNull::new(ast) {
-        Some(ast) => Ok(Ast(ast)),
+        Some(ast) => Ok(Definition(Ast(ast))),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
         })?,
     }
 }
 
+#[derive(Debug, Copy, Clone)]
+pub struct ShowSignature(Ast);
 /// Construct an AST node of type `ASTType.ShowSignature`.
-pub fn ShowSignature(
-    location: Location,
+pub fn show_signature(
+    location: &Location,
     name: &str,
     arity: u32,
     positive: bool,
     csp: bool,
-) -> Result<Ast, ClingoError> {
+) -> Result<ShowSignature, ClingoError> {
     let mut ast = std::ptr::null_mut();
     let name = internalize_string(name)?;
 
@@ -1418,7 +1483,7 @@ pub fn ShowSignature(
         clingo_ast_build(
             clingo_ast_type_e_clingo_ast_type_show_signature as i32,
             &mut ast,
-            &location,
+            location,
             name,
             arity,
             positive as i32,
@@ -1430,26 +1495,28 @@ pub fn ShowSignature(
         ));
     }
     match NonNull::new(ast) {
-        Some(ast) => Ok(Ast(ast)),
+        Some(ast) => Ok(ShowSignature(Ast(ast))),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
         })?,
     }
 }
 
+#[derive(Debug, Copy, Clone)]
+pub struct ShowTerm(Ast);
 /// Construct an AST node of type `ASTType.ShowTerm`.
-pub fn ShowTerm(
-    location: Location,
-    term: Ast,
-    body: &[Ast],
+pub fn show_term(
+    location: &Location,
+    term: Term,
+    body: &[BodyLiteral],
     csp: bool,
-) -> Result<Ast, ClingoError> {
+) -> Result<ShowTerm, ClingoError> {
     let mut ast = std::ptr::null_mut();
     if !unsafe {
         clingo_ast_build(
             clingo_ast_type_e_clingo_ast_type_show_term as i32,
             &mut ast,
-            &location,
+            location,
             term.0,
             body.as_ptr() as *const clingo_ast_t,
             body.len(),
@@ -1461,28 +1528,30 @@ pub fn ShowTerm(
         ));
     }
     match NonNull::new(ast) {
-        Some(ast) => Ok(Ast(ast)),
+        Some(ast) => Ok(ShowTerm(Ast(ast))),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
         })?,
     }
 }
 
+#[derive(Debug, Copy, Clone)]
+pub struct Minimize(Ast);
 /// Construct an AST node of type `ASTType.Minimize`.
-pub fn Minimize(
-    location: Location,
-    weight: Ast,
-    priority: Ast,
-    terms: &[Ast],
-    body: &[Ast],
-) -> Result<Ast, ClingoError> {
+pub fn minimize(
+    location: &Location,
+    weight: Term,
+    priority: Term,
+    terms: &[Term],
+    body: &[BodyLiteral],
+) -> Result<Minimize, ClingoError> {
     let mut ast = std::ptr::null_mut();
 
     if !unsafe {
         clingo_ast_build(
             clingo_ast_type_e_clingo_ast_type_minimize as i32,
             &mut ast,
-            &location,
+            location,
             weight.0,
             priority.0,
             terms.as_ptr() as *const clingo_ast_t,
@@ -1496,15 +1565,17 @@ pub fn Minimize(
         ));
     }
     match NonNull::new(ast) {
-        Some(ast) => Ok(Ast(ast)),
+        Some(ast) => Ok(Minimize(Ast(ast))),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
         })?,
     }
 }
 
+#[derive(Debug, Copy, Clone)]
+pub struct Script(Ast);
 /// Construct an AST node of type `ASTType.Script`.
-pub fn Script(location: Location, script_type: ScriptType, code: &str) -> Result<Ast, ClingoError> {
+pub fn script(location: &Location, script_type: ScriptType, code: &str) -> Result<Script, ClingoError> {
     let mut ast = std::ptr::null_mut();
     let code = internalize_string(code);
 
@@ -1512,7 +1583,7 @@ pub fn Script(location: Location, script_type: ScriptType, code: &str) -> Result
         clingo_ast_build(
             clingo_ast_type_e_clingo_ast_type_script as i32,
             &mut ast,
-            &location,
+            location,
             script_type as i32,
             code,
         )
@@ -1522,15 +1593,17 @@ pub fn Script(location: Location, script_type: ScriptType, code: &str) -> Result
         ));
     }
     match NonNull::new(ast) {
-        Some(ast) => Ok(Ast(ast)),
+        Some(ast) => Ok(Script(Ast(ast))),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
         })?,
     }
 }
 
+#[derive(Debug, Copy, Clone)]
+pub struct Program(Ast);
 /// Construct an AST node of type `ASTType.Program`.
-pub fn Program(location: Location, name: &str, parameters: &[Ast]) -> Result<Ast, ClingoError> {
+pub fn program(location: &Location, name: &str, parameters: &[Id]) -> Result<Program, ClingoError> {
     let mut ast = std::ptr::null_mut();
     let name = internalize_string(name)?;
 
@@ -1538,7 +1611,7 @@ pub fn Program(location: Location, name: &str, parameters: &[Ast]) -> Result<Ast
         clingo_ast_build(
             clingo_ast_type_e_clingo_ast_type_program as i32,
             &mut ast,
-            &location,
+            location,
             name,
             parameters.as_ptr() as *const clingo_ast_t,
             parameters.len(),
@@ -1549,7 +1622,7 @@ pub fn Program(location: Location, name: &str, parameters: &[Ast]) -> Result<Ast
         ));
     }
     match NonNull::new(ast) {
-        Some(ast) => Ok(Ast(ast)),
+        Some(ast) => Ok(Program(Ast(ast))),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
         })?,
@@ -1557,65 +1630,53 @@ pub fn Program(location: Location, name: &str, parameters: &[Ast]) -> Result<Ast
 }
 
 #[derive(Debug, Copy, Clone)]
-pub enum Statement {
-    Program(Ast),
-    Rule(Rule),
-    External(Ast),
-}
-impl Statement {
-    /// Construct an AST node of type `ASTType.External`.
-    pub fn external(
-        location: &Location,
-        atom: SymbolicAtom,
-        body: &[Ast],
-        external_type: Term,
-    ) -> Result<Statement, ClingoError> {
-        let mut ast = std::ptr::null_mut();
-        if !unsafe {
-            clingo_ast_build(
-                clingo_ast_type_e_clingo_ast_type_external as i32,
-                &mut ast,
-                location,
-                atom.0,
-                body.as_ptr() as *const clingo_ast_t,
-                body.len(),
-                external_type.0,
-            )
-        } {
-            return Err(ClingoError::new_internal(
-                "Call to clingo_ast_build() failed.",
-            ));
-        }
-        match NonNull::new(ast) {
-            Some(ast) => Ok(Statement::External(Ast(ast))),
-            None => Err(ClingoError::FFIError {
-                msg: "Tried creating NonNull from a null pointer.",
-            })?,
-        }
+pub struct External(Ast);
+pub fn external(
+    location: &Location,
+    atom: SymbolicAtom,
+    body: &[BodyLiteral],
+    external_type: Term,
+) -> Result<External, ClingoError> {
+    let mut ast = std::ptr::null_mut();
+    if !unsafe {
+        clingo_ast_build(
+            clingo_ast_type_e_clingo_ast_type_external as i32,
+            &mut ast,
+            location,
+            atom.0,
+            body.as_ptr() as *const clingo_ast_t,
+            body.len(),
+            external_type.0,
+        )
+    } {
+        return Err(ClingoError::new_internal(
+            "Call to clingo_ast_build() failed.",
+        ));
     }
-    pub fn rule(
-        location: &Location,
-        head: &Head,
-        body: &[BodyLiteral],
-    ) -> Result<Statement, ClingoError> {
-        let rule = Rule::rule(location, head, body)?;
-        Ok(Statement::Rule(rule))
+    match NonNull::new(ast) {
+        Some(ast) => Ok(External(Ast(ast))),
+        None => Err(ClingoError::FFIError {
+            msg: "Tried creating NonNull from a null pointer.",
+        })?,
     }
 }
+
+#[derive(Debug, Copy, Clone)]
+pub struct Edge(Ast);
 /// Construct an AST node of type `ASTType.Edge`.
-pub fn Edge(
-    location: Location,
-    node_u: Ast,
-    node_v: Ast,
-    body: &[Ast],
-) -> Result<Ast, ClingoError> {
+pub fn edge(
+    location: &Location,
+    node_u: Term,
+    node_v: Term,
+    body: &[BodyLiteral],
+) -> Result<Edge, ClingoError> {
     let mut ast = std::ptr::null_mut();
 
     if !unsafe {
         clingo_ast_build(
             clingo_ast_type_e_clingo_ast_type_edge as i32,
             &mut ast,
-            &location,
+            location,
             node_u.0,
             node_v.0,
             body.as_ptr() as *const clingo_ast_t,
@@ -1627,29 +1688,31 @@ pub fn Edge(
         ));
     }
     match NonNull::new(ast) {
-        Some(ast) => Ok(Ast(ast)),
+        Some(ast) => Ok(Edge(Ast(ast))),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
         })?,
     }
 }
 
+#[derive(Debug, Copy, Clone)]
+pub struct Heuristic(Ast);
 /// Construct an AST node of type `ASTType.Heuristic`.
-pub fn Heuristic(
-    location: Location,
-    atom: Ast,
-    body: &[Ast],
-    bias: Ast,
-    priority: Ast,
-    modifier: Ast,
-) -> Result<Ast, ClingoError> {
+pub fn heuristic(
+    location: &Location,
+    atom: SymbolicAtom,
+    body: &[BodyLiteral],
+    bias: Term,
+    priority: Term,
+    modifier: Term,
+) -> Result<Heuristic, ClingoError> {
     let mut ast = std::ptr::null_mut();
 
     if !unsafe {
         clingo_ast_build(
             clingo_ast_type_e_clingo_ast_type_heuristic as i32,
             &mut ast,
-            &location,
+            location,
             atom.0,
             body.as_ptr() as *const clingo_ast_t,
             body.len(),
@@ -1663,22 +1726,24 @@ pub fn Heuristic(
         ));
     }
     match NonNull::new(ast) {
-        Some(ast) => Ok(Ast(ast)),
+        Some(ast) => Ok(Heuristic(Ast(ast))),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
         })?,
     }
 }
 
+#[derive(Debug, Copy, Clone)]
+pub struct ProjectAtom(Ast);
 /// Construct an AST node of type `ASTType.ProjectAtom`.
-pub fn ProjectAtom(location: Location, atom: Ast, body: &[Ast]) -> Result<Ast, ClingoError> {
+pub fn project_atom(location: &Location, atom: SymbolicAtom, body: &[BodyLiteral]) -> Result<ProjectAtom, ClingoError> {
     let mut ast = std::ptr::null_mut();
 
     if !unsafe {
         clingo_ast_build(
             clingo_ast_type_e_clingo_ast_type_project_atom as i32,
             &mut ast,
-            &location,
+            location,
             atom.0,
             body.as_ptr() as *const clingo_ast_t,
             body.len(),
@@ -1689,20 +1754,22 @@ pub fn ProjectAtom(location: Location, atom: Ast, body: &[Ast]) -> Result<Ast, C
         ));
     }
     match NonNull::new(ast) {
-        Some(ast) => Ok(Ast(ast)),
+        Some(ast) => Ok(ProjectAtom(Ast(ast))),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
         })?,
     }
 }
 
+#[derive(Debug, Copy, Clone)]
+pub struct ProjectSignature(Ast);
 /// Construct an AST node of type `ASTType.ProjectSignature`.
-pub fn ProjectSignature(
-    location: Location,
+pub fn project_signature(
+    location: &Location,
     name: &str,
     arity: u32,
     positive: bool,
-) -> Result<Ast, ClingoError> {
+) -> Result<ProjectSignature, ClingoError> {
     let mut ast = std::ptr::null_mut();
     let name = internalize_string(name)?;
 
@@ -1710,7 +1777,7 @@ pub fn ProjectSignature(
         clingo_ast_build(
             clingo_ast_type_e_clingo_ast_type_project_signature as i32,
             &mut ast,
-            &location,
+            location,
             name,
             arity,
             positive as i32,
@@ -1721,20 +1788,22 @@ pub fn ProjectSignature(
         ));
     }
     match NonNull::new(ast) {
-        Some(ast) => Ok(Ast(ast)),
+        Some(ast) => Ok(ProjectSignature(Ast(ast))),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
         })?,
     }
 }
 
+#[derive(Debug, Copy, Clone)]
+pub struct Defined(Ast);
 /// Construct an AST node of type `ASTType.Defined`.
-pub fn Defined(
-    location: Location,
+pub fn defined(
+    location: &Location,
     name: &str,
     arity: u32,
     positive: bool,
-) -> Result<Ast, ClingoError> {
+) -> Result<Defined, ClingoError> {
     let mut ast = std::ptr::null_mut();
     let name = internalize_string(name)?;
 
@@ -1742,7 +1811,7 @@ pub fn Defined(
         clingo_ast_build(
             clingo_ast_type_e_clingo_ast_type_defined as i32,
             &mut ast,
-            &location,
+            location,
             name,
             arity,
             positive as i32,
@@ -1753,20 +1822,22 @@ pub fn Defined(
         ));
     }
     match NonNull::new(ast) {
-        Some(ast) => Ok(Ast(ast)),
+        Some(ast) => Ok(Defined(Ast(ast))),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
         })?,
     }
 }
 
+#[derive(Debug, Copy, Clone)]
+pub struct TheoryDefinition(Ast);
 /// Construct an AST node of type `ASTType.TheoryDefinition`.
-pub fn TheoryDefinition(
-    location: Location,
+pub fn theory_definition(
+    location: &Location,
     name: &str,
-    terms: &[Ast],
-    atoms: &[Ast],
-) -> Result<Ast, ClingoError> {
+    terms: &[TheoryTermDefinition],
+    atoms: &[TheoryAtomDefinition],
+) -> Result<TheoryDefinition, ClingoError> {
     let mut ast = std::ptr::null_mut();
     let name = internalize_string(name)?;
 
@@ -1774,7 +1845,7 @@ pub fn TheoryDefinition(
         clingo_ast_build(
             clingo_ast_type_e_clingo_ast_type_theory_definition as i32,
             &mut ast,
-            &location,
+            location,
             name,
             terms.as_ptr() as *const clingo_ast_t,
             terms.len(),
@@ -1787,7 +1858,7 @@ pub fn TheoryDefinition(
         ));
     }
     match NonNull::new(ast) {
-        Some(ast) => Ok(Ast(ast)),
+        Some(ast) => Ok(TheoryDefinition(Ast(ast))),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
         })?,

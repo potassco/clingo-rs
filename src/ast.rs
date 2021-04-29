@@ -176,9 +176,9 @@ unsafe extern "C" fn unsafe_ast_callback<T: StatementHandler>(
 
     match ast2 {
         Some(x) => match Ast(x).get_type() {
-            Ok(AstType::Program) => event_handler.on_statement(&mut Statement::Program(Ast(x))),
-            Ok(AstType::Rule) => event_handler.on_statement(&mut Statement::Rule(Rule(Ast(x)))),
-            Ok(AstType::External) => event_handler.on_statement(&mut Statement::External(Ast(x))),
+            Ok(AstType::Program) => event_handler.on_statement(&mut Statement(Ast(x))),
+            Ok(AstType::Rule) => event_handler.on_statement(&mut Statement(Ast(x))),
+            Ok(AstType::External) => event_handler.on_statement(&mut Statement(Ast(x))),
             _ => unimplemented!(),
         },
         None => panic!("ast.as_mut() returned None"),
@@ -336,84 +336,80 @@ impl<'a> ProgramBuilder<'a> {
     /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) for statements of invalid form
     /// or [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     pub fn add(&mut self, stm: &Statement) -> Result<(), ClingoError> {
-        let ast = match stm {
-            Statement::Program(ast) => ast,
-            Statement::Rule(Rule(ast)) => ast,
-            Statement::External(ast) => ast,
-            // println!("add stm {:?}", stm);
-            // let bla = stm.to_string();
-            // println!("add stm.to_string {:?}", bla);
-            // let bla = stm.get_type();
-            // println!("add stm.get_type {:?}", bla);
-            // match bla {
-            // Ok(AstType::Program) => {
-            //     let attribute = AstAttribute::Parameters;
-            //     let blub = stm.get_attribute_type(&attribute);
-            //     println!("stm.get_attribute_type {:?} {:?}", attribute, blub);
-            // }
-            // Ok(AstType::Rule) => {
-            //     let attribute = AstAttribute::Head;
-            //     let blub = stm.get_attribute_type(&attribute);
-            //     println!("stm.get_attribute_type {:?} {:?}", attribute, blub);
-            //     let blub = stm.get_attribute_ast(&attribute).unwrap();
-            //     println!("stm.get_attribute_ast {:?} {:?}", attribute, blub);
-            //     let blub = blub.to_string();
-            //     println!("stm.get_attribute_ast_to_string {:?} {:?}", attribute, blub);
-            //     let attribute = AstAttribute::Body;
-            //     let blub = stm.get_attribute_type(&attribute);
-            //     println!("stm.get_attribute_type {:?} {:?}", attribute, blub);
-            // }
-            // Ok(AstType::External) => {
-            //     let attribute = AstAttribute::Atom;
-            //     let blub = stm.get_attribute_type(&attribute);
-            //     println!("stm.get_attribute_type {:?} {:?}", attribute, blub);
-            //     let ast = stm.get_attribute_ast(&attribute).unwrap();
-            //     println!("   stm.get_attribute_ast {:?} {:?}", attribute, ast);
-            //     let string = ast.to_string();
-            //     println!("   ast.to_string {:?}", string);
-            //     let bla = ast.get_type();
-            //     println!("   ast.get_type {:?}", bla);
-            //     let attribute = AstAttribute::Symbol;
-            //     let blub = ast.get_attribute_type(&attribute);
-            //     println!("   ast.get_attribute_type {:?} {:?}", attribute, blub);
+        // println!("add stm {:?}", stm);
+        // let bla = stm.to_string();
+        // println!("add stm.to_string {:?}", bla);
+        // let bla = stm.get_type();
+        // println!("add stm.get_type {:?}", bla);
+        // match bla {
+        // Ok(AstType::Program) => {
+        //     let attribute = AstAttribute::Parameters;
+        //     let blub = stm.get_attribute_type(&attribute);
+        //     println!("stm.get_attribute_type {:?} {:?}", attribute, blub);
+        // }
+        // Ok(AstType::Rule) => {
+        //     let attribute = AstAttribute::Head;
+        //     let blub = stm.get_attribute_type(&attribute);
+        //     println!("stm.get_attribute_type {:?} {:?}", attribute, blub);
+        //     let blub = stm.get_attribute_ast(&attribute).unwrap();
+        //     println!("stm.get_attribute_ast {:?} {:?}", attribute, blub);
+        //     let blub = blub.to_string();
+        //     println!("stm.get_attribute_ast_to_string {:?} {:?}", attribute, blub);
+        //     let attribute = AstAttribute::Body;
+        //     let blub = stm.get_attribute_type(&attribute);
+        //     println!("stm.get_attribute_type {:?} {:?}", attribute, blub);
+        // }
+        // Ok(AstType::External) => {
+        //     let attribute = AstAttribute::Atom;
+        //     let blub = stm.get_attribute_type(&attribute);
+        //     println!("stm.get_attribute_type {:?} {:?}", attribute, blub);
+        //     let ast = stm.get_attribute_ast(&attribute).unwrap();
+        //     println!("   stm.get_attribute_ast {:?} {:?}", attribute, ast);
+        //     let string = ast.to_string();
+        //     println!("   ast.to_string {:?}", string);
+        //     let bla = ast.get_type();
+        //     println!("   ast.get_type {:?}", bla);
+        //     let attribute = AstAttribute::Symbol;
+        //     let blub = ast.get_attribute_type(&attribute);
+        //     println!("   ast.get_attribute_type {:?} {:?}", attribute, blub);
 
-            //     let ast2 = ast.get_attribute_ast(&attribute).unwrap();
-            //     println!("        ast.get_attribute_ast {:?} {:?}", attribute, ast2);
-            //     let string = ast2.to_string();
-            //     println!("        ast2.to_string {:?}", string);
-            //     let ast_type = ast2.get_type();
-            //     println!("        ast2.get_type {:?}", ast_type);
+        //     let ast2 = ast.get_attribute_ast(&attribute).unwrap();
+        //     println!("        ast.get_attribute_ast {:?} {:?}", attribute, ast2);
+        //     let string = ast2.to_string();
+        //     println!("        ast2.to_string {:?}", string);
+        //     let ast_type = ast2.get_type();
+        //     println!("        ast2.get_type {:?}", ast_type);
 
-            //     let attribute = AstAttribute::Body;
-            //     let blub = stm.get_attribute_type(&attribute);
-            //     println!("stm.get_attribute_type {:?} {:?}", attribute, blub);
-            //     // let ast = stm.get_attribute_ast_at(&attribute,0).unwrap();
-            //     // println!("stm.get_attribute_ast_ast {:?} {:?}", attribute, ast);
-            //     // let string = ast.to_string();
-            //     // println!("ast.to_string {:?} {:?}", attribute, string);
+        //     let attribute = AstAttribute::Body;
+        //     let blub = stm.get_attribute_type(&attribute);
+        //     println!("stm.get_attribute_type {:?} {:?}", attribute, blub);
+        //     // let ast = stm.get_attribute_ast_at(&attribute,0).unwrap();
+        //     // println!("stm.get_attribute_ast_ast {:?} {:?}", attribute, ast);
+        //     // let string = ast.to_string();
+        //     // println!("ast.to_string {:?} {:?}", attribute, string);
 
-            //     let attribute = AstAttribute::ExternalType;
-            //     let blub = stm.get_attribute_type(&attribute);
-            //     println!("stm.get_attribute_type {:?} {:?}", attribute, blub);
-            //     let ast = stm.get_attribute_ast(&attribute).unwrap();
-            //     println!("    stm.get_attribute_ast {:?} {:?}", attribute, ast);
-            //     let string = ast.to_string();
-            //     println!("    ast.to_string {:?}", string);
-            //     let bla = ast.get_type();
-            //     println!("    ast.get_type {:?}", bla);
+        //     let attribute = AstAttribute::ExternalType;
+        //     let blub = stm.get_attribute_type(&attribute);
+        //     println!("stm.get_attribute_type {:?} {:?}", attribute, blub);
+        //     let ast = stm.get_attribute_ast(&attribute).unwrap();
+        //     println!("    stm.get_attribute_ast {:?} {:?}", attribute, ast);
+        //     let string = ast.to_string();
+        //     println!("    ast.to_string {:?}", string);
+        //     let bla = ast.get_type();
+        //     println!("    ast.get_type {:?}", bla);
 
-            //     let attribute = AstAttribute::Symbol;
-            //     let blub = ast.get_attribute_type(&attribute);
-            //     println!("    ast.get_attribute_type {:?} {:?}", attribute, blub);
-            //     // let sym = ast.get_symbol().unwrap();
-            //     // println!("        ast.get_symbol() {:?}", sym);
-            //     // let string = sym.to_string();
-            //     // println!("        sym.to_string {:?}", string);
-            // }
-            // x => panic!("unmatched statement/ast_type {:?}", x),
-        };
+        //     let attribute = AstAttribute::Symbol;
+        //     let blub = ast.get_attribute_type(&attribute);
+        //     println!("    ast.get_attribute_type {:?} {:?}", attribute, blub);
+        //     // let sym = ast.get_symbol().unwrap();
+        //     // println!("        ast.get_symbol() {:?}", sym);
+        //     // let string = sym.to_string();
+        //     // println!("        sym.to_string {:?}", string);
+        // }
+        // x => panic!("unmatched statement/ast_type {:?}", x),
+        // };
 
-        if !unsafe { clingo_program_builder_add(self.theref, ast.0.as_ptr()) } {
+        if !unsafe { clingo_program_builder_add(self.theref, stm.0.0.as_ptr() ) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_program_builder_add() failed",
             ));
@@ -742,7 +738,7 @@ pub struct Constructors(clingo_ast_constructors);
 
 /// This struct provides a view to nodes in the AST.
 #[derive(Debug, Copy, Clone)]
-pub struct Ast(NonNull<clingo_ast_t>);
+struct Ast(NonNull<clingo_ast_t>);
 
 impl Ast {
     // extern "C" {

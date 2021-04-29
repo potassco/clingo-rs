@@ -2448,13 +2448,13 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
             let head = ast::Head::head(lit);
 
             // create (fact) rule
-            let fact = ast::Statement::rule(&loc, &head, &[]).unwrap();
+            let fact = ast::rule(&loc, &head, &[]).unwrap();
             // get the program builder
             let mut builder = ast::ProgramBuilder::from(self).unwrap();
 
             // add the rewritten statement to the program
             builder
-                .add(&fact)
+                .add(&fact.into())
                 .expect("Failed to add statement to ProgramBuilder.");
 
             builder.end().expect("Failed to finish building a program.");
