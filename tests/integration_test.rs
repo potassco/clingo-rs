@@ -197,27 +197,27 @@ fn ast_term() {
     let sym4 = Symbol::create_supremum();
     let sym5 = Symbol::create_infimum();
 
-    let term1 = SymbolicTerm::symbolic_term(&loc, &sym1).unwrap();
-    let term1 = Term::symbolic_term(&term1);
+    let term1 = symbolic_term(&loc, &sym1).unwrap();
+    let term1 = Term::from(term1);
     assert_eq!(format!("{}", term1.to_string().unwrap()), "42");
 
-    let term2 = SymbolicTerm::symbolic_term(&loc, &sym2).unwrap();
-    let term2 = Term::symbolic_term(&term2);
+    let term2 = symbolic_term(&loc, &sym2).unwrap();
+    let term2 = Term::from(term2);
     assert_eq!(format!("{}", term2.to_string().unwrap()), "\"test\"");
 
-    let term = SymbolicTerm::symbolic_term(&loc, &sym3).unwrap();
-    let term = Term::symbolic_term(&term);
+    let term = symbolic_term(&loc, &sym3).unwrap();
+    let term = Term::from(term);
     assert_eq!(
         format!("{}", term.to_string().unwrap()),
         "fun1(42,\"test\")"
     );
 
-    let term = SymbolicTerm::symbolic_term(&loc, &sym4).unwrap();
-    let term = Term::symbolic_term(&term);
+    let term = symbolic_term(&loc, &sym4).unwrap();
+    let term = Term::from(term);
     assert_eq!(format!("{}", term.to_string().unwrap()), "#sup");
 
-    let term = SymbolicTerm::symbolic_term(&loc, &sym5).unwrap();
-    let term = Term::symbolic_term(&term);
+    let term = symbolic_term(&loc, &sym5).unwrap();
+    let term = Term::from(term);
     assert_eq!(format!("{}", term.to_string().unwrap()), "#inf");
 
     let term = Variable::variable(&loc, "Var").unwrap();
@@ -229,26 +229,26 @@ fn ast_term() {
     // assert_eq!(format!("{:?}", op), "Negation");
     // let arg = uop.argument();
     // assert_eq!(format!("{:?}", arg), "Term { symbol: 42 }");
-    let uop = Term::unary_operation(&uop);
+    let uop = Term::from(uop);
     assert_eq!(format!("{}", uop.to_string().unwrap()), "~42");
 
     let xor = BinaryOperator::Xor;
-    let bop = BinaryOperation::binary_operation(&loc, xor, &term1, &term2).unwrap();
+    let bop = BinaryOperation::binary_operation(&loc, xor, term1, term2).unwrap();
     // let op = bop.binary_operator();
     // assert_eq!(format!("{:?}", op), "Xor");
     // let arg = bop.left();
     // assert_eq!(format!("{:?}", arg), "Term { symbol: 42 }");
     // let arg = bop.right();
     // assert_eq!(format!("{:?}", arg), "Term { symbol: \"test\" }");
-    let bop = Term::binary_operation(&bop);
+    let bop = Term::from(bop);
     assert_eq!(format!("{}", bop.to_string().unwrap()), "(42^\"test\")");
 
-    let interval = Interval::interval(&loc, &term1, &term2).unwrap();
+    let interval = Interval::interval(&loc, term1, term2).unwrap();
     // let arg = interval.left();
     // assert_eq!(format!("{:?}", arg), "Term { symbol: 42 }");
     // let arg = interval.right();
     // assert_eq!(format!("{:?}", arg), "Term { symbol: \"test\" }");
-    let interval = Term::interval(&interval);
+    let interval = Term::from(interval);
     assert_eq!(
         format!("{}", interval.to_string().unwrap()),
         "(42..\"test\")"
@@ -256,19 +256,19 @@ fn ast_term() {
 
     let args = vec![term1, term2];
     let function = Function::function(&loc, "fun2", &args, false).unwrap();
-    let function = Term::function(&function);
+    let function = Term::from(function);
     assert_eq!(
         format!("{}", function.to_string().unwrap()),
         "fun2(42,\"test\")"
     );
     let external_function = Function::function(&loc, "fun2", &args, true).unwrap();
-    let external_function = Term::function(&external_function);
+    let external_function = Term::from(external_function);
     assert_eq!(
         format!("{}", external_function.to_string().unwrap()),
         "@fun2(42,\"test\")"
     );
     let pool = Pool::pool(&loc, &args).unwrap();
-    let pool = Term::pool(&pool);
+    let pool = Term::from(pool);
     assert_eq!(format!("{}", pool.to_string().unwrap()), "(42;\"test\")");
 }
 
@@ -282,14 +282,14 @@ fn ast_literal() {
     let sym3 = Symbol::create_function("fun1", &symbols, true).unwrap();
     let sym4 = Symbol::create_supremum();
 
-    let term1 = SymbolicTerm::symbolic_term(&loc, &sym1).unwrap();
-    let term1 = Term::symbolic_term(&term1);
-    let term2 = SymbolicTerm::symbolic_term(&loc, &sym2).unwrap();
-    let term2 = Term::symbolic_term(&term2);
-    let term3 = SymbolicTerm::symbolic_term(&loc, &sym3).unwrap();
-    let term3 = Term::symbolic_term(&term3);
-    let term4 = SymbolicTerm::symbolic_term(&loc, &sym4).unwrap();
-    let term4 = Term::symbolic_term(&term4);
+    let term1 = symbolic_term(&loc, &sym1).unwrap();
+    let term1 = Term::from(term1);
+    let term2 = symbolic_term(&loc, &sym2).unwrap();
+    let term2 = Term::from(term2);
+    let term3 = symbolic_term(&loc, &sym3).unwrap();
+    let term3 = Term::from(term3);
+    let term4 = symbolic_term(&loc, &sym4).unwrap();
+    let term4 = Term::from(term4);
 
     // let comp = Comparison::gt(term2, term3);
 

@@ -11,7 +11,11 @@ pub trait Theory<'a> {
     /// registers the theory with the control
     fn register(&mut self, ctl: &mut Control) -> bool;
     /// Rewrite statements before adding them via the given callback.
-    fn rewrite_statement(&mut self, stm: &ast::Ast, builder: &mut ast::ProgramBuilder) -> bool;
+    fn rewrite_statement(
+        &mut self,
+        stm: &ast::Statement,
+        builder: &mut ast::ProgramBuilder,
+    ) -> bool;
     /// prepare the theory between grounding and solving
     fn prepare(&mut self, ctl: &mut Control) -> bool;
     /// add options for your theory
