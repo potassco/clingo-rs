@@ -95,14 +95,12 @@ fn main() {
     let loc = Location::default();
     let id = ast::Function::function(&loc, "enable", &[], false).unwrap();
 
-    let term = ast::Term::function(&id);
-    let atom = ast::SymbolicAtom::symbolic_atom(term).unwrap();
+    let atom = ast::symbolic_atom(id.into()).unwrap();
 
     // add the external statement: #external enable. [false]
     let sym = Symbol::create_id("false", true).unwrap();
-    let symbolic_term = ast::SymbolicTerm::symbolic_term(&loc, &sym).unwrap();
-    let external_type = ast::Term::symbolic_term(&symbolic_term);
-    let mut ext = ast::Statement::external(&loc, &atom, &[], &external_type).unwrap();
+    let external_type = ast::symbolic_term(&loc, &sym).unwrap();
+    let mut ext = ast::Statement::external(&loc, atom, &[], external_type.into()).unwrap();
 
     builder
         .add(&mut ext)
