@@ -24,7 +24,7 @@ impl<'a, 'b> ast::StatementHandler for OnStatementData<'a, 'b> {
                 let lit =
                     ast::Literal::literal_from_symbolic_atom(&loc, ast::Sign::NoSign, &self.atom)
                         .unwrap();
-                let blit = ast::BodyLiteral::body_literal(&lit);
+                let blit = ast::BodyLiteral::from(lit);
                 extended_body.push(blit);
 
                 // initialize the rule
