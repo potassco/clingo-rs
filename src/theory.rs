@@ -2,8 +2,8 @@
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
 
-use super::ast;
 use super::{Control, Id, Model, Options, Statistics, Symbol};
+use crate::ast;
 use std::fmt;
 
 pub trait Theory<'a> {

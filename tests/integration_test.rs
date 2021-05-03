@@ -224,7 +224,7 @@ fn ast_term() {
     assert_eq!(format!("{}", term.to_string().unwrap()), "Var");
 
     let negation = UnaryOperator::Negation;
-    let uop = UnaryOperation::unary_operation(&loc, negation, term1).unwrap();
+    let uop = unary_operation(&loc, negation, term1).unwrap();
     // let op = uop.unary_operator();
     // assert_eq!(format!("{:?}", op), "Negation");
     // let arg = uop.argument();
@@ -233,7 +233,7 @@ fn ast_term() {
     assert_eq!(format!("{}", uop.to_string().unwrap()), "~42");
 
     let xor = BinaryOperator::Xor;
-    let bop = BinaryOperation::binary_operation(&loc, xor, term1, term2).unwrap();
+    let bop = binary_operation(&loc, xor, term1, term2).unwrap();
     // let op = bop.binary_operator();
     // assert_eq!(format!("{:?}", op), "Xor");
     // let arg = bop.left();
@@ -243,7 +243,7 @@ fn ast_term() {
     let bop = Term::from(bop);
     assert_eq!(format!("{}", bop.to_string().unwrap()), "(42^\"test\")");
 
-    let interval = Interval::interval(&loc, term1, term2).unwrap();
+    let interval = interval(&loc, term1, term2).unwrap();
     // let arg = interval.left();
     // assert_eq!(format!("{:?}", arg), "Term { symbol: 42 }");
     // let arg = interval.right();
@@ -255,19 +255,19 @@ fn ast_term() {
     );
 
     let args = vec![term1, term2];
-    let function = Function::function(&loc, "fun2", &args, false).unwrap();
-    let function = Term::from(function);
+    let fun = function(&loc, "fun2", &args, false).unwrap();
+    let fun = Term::from(fun);
     assert_eq!(
-        format!("{}", function.to_string().unwrap()),
+        format!("{}", fun.to_string().unwrap()),
         "fun2(42,\"test\")"
     );
-    let external_function = Function::function(&loc, "fun2", &args, true).unwrap();
+    let external_function = function(&loc, "fun2", &args, true).unwrap();
     let external_function = Term::from(external_function);
     assert_eq!(
         format!("{}", external_function.to_string().unwrap()),
         "@fun2(42,\"test\")"
     );
-    let pool = Pool::pool(&loc, &args).unwrap();
+    let pool = pool(&loc, &args).unwrap();
     let pool = Term::from(pool);
     assert_eq!(format!("{}", pool.to_string().unwrap()), "(42;\"test\")");
 }
