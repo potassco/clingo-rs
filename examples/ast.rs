@@ -93,7 +93,7 @@ fn main() {
     let mut builder = ast::ProgramBuilder::from(&mut ctl).unwrap();
 
     let loc = Location::default();
-    let id = ast::Function::function(&loc, "enable", &[], false).unwrap();
+    let id = ast::function(&loc, "enable", &[], false).unwrap();
 
     let atom = ast::symbolic_atom(id.into()).unwrap();
 
