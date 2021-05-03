@@ -220,7 +220,7 @@ fn ast_term() {
     let term = Term::from(term);
     assert_eq!(format!("{}", term.to_string().unwrap()), "#inf");
 
-    let term = Variable::variable(&loc, "Var").unwrap();
+    let term = variable(&loc, "Var").unwrap();
     assert_eq!(format!("{}", term.to_string().unwrap()), "Var");
 
     let negation = UnaryOperator::Negation;
@@ -326,56 +326,66 @@ fn ast_literal() {
 
 #[test]
 fn ast_head_literal() {
-    //     let sym = Symbol::create_id("test", true).unwrap();
-    //     let term1 = Term::from(sym);
-    //     let term2 = Term::from(sym);
-    //     let lit = ast::Literal::from_term(Sign::NoSign, &term1);
-    //     let lit2 = ast::Literal::from_term(Sign::NoSign, &term2);
-    //     let condition = vec![lit2];
-    //     let cond = ConditionalLiteral::new(&lit, &condition);
-    //     let elements = vec![cond];
-    //     let dis = Disjunction::new(&elements);
+    let loc = Location::default();
+    let sym = Symbol::create_id("test", true).unwrap();
+    let term1 = symbolic_term(&loc, &sym).unwrap();
+    let atom1 = symbolic_atom(term1.into()).unwrap();
+    let term2 = symbolic_term(&loc, &sym).unwrap();
+    let atom2 = symbolic_atom(term2.into()).unwrap();
+    let lit = basic_literal_from_symbolic_atom(&loc, Sign::NoSign, atom1).unwrap();
+    let lit2 = basic_literal_from_symbolic_atom(&loc, Sign::NoSign, atom2).unwrap();
+    let condition = vec![lit2.into()];
+    let cond = conditional_literal(&loc, lit.into(), &condition).unwrap();
+    let elements = vec![cond];
+    let dis = disjunction(&loc, &elements).unwrap();
 
-    //     let term3 = Term::from(sym);
-    //     let guard = AggregateGuard::gt(term3);
-    //     let agg = Aggregate::new(&elements, Some(&guard), Some(&guard));
+    let term3 = symbolic_term(&loc, &sym).unwrap();
+    let gt = ComparisonOperator::GreaterThan;
+    let guard = aggregate_guard(gt, term3.into()).unwrap();
+    let agg = aggregate(&loc, Some(guard), &elements, Some(guard)).unwrap();
 
-    //     let tuple = vec![term1];
-    //     let helem = HeadAggregateElement::new(&tuple, cond);
-    //     let elements = vec![helem];
-    //     let hagg = HeadAggregate::new(
-    //         ast::AggregateFunction::Count,
-    //         &elements,
-    //         Some(&guard),
-    //         Some(&guard),
-    //     );
+    let tuple = vec![term1.into()];
+    let helem = head_aggregate_element(&tuple, cond).unwrap();
+    let elements = vec![helem];
+    let hagg = head_aggregate(
+        &loc,
+        Some(guard),
+        ast::AggregateFunction::Count,
+        &elements,
+        Some(guard),
+    )
+    .unwrap();
 
-    //     let th_term = TheoryTerm::from(sym);
-    //     let tuple = vec![th_term];
-    //     let element = TheoryAtomElement::new(&tuple, &condition);
-    //     let elements = vec![element];
-    //     let operator_name = String::from("theory_operator");
-    //     let guard = TheoryGuard::new(&operator_name, th_term).unwrap();
-    //     let tatom = TheoryAtom::new(term1, &elements, Some(&guard));
+    let th_term: TheoryTerm = term1.into();
+    let tuple = vec![th_term];
+    let element = theory_atom_element(&tuple, &condition).unwrap();
+    let elements = vec![element];
+    let guard = theory_guard("theory_operator", th_term).unwrap();
+    let tatom = theory_atom(&loc, term1.into(), &elements, Some(guard)).unwrap();
 
-    //     let hlit = ast::HeadLiteral::from(&lit);
-    //     assert_eq!(
-    //         format!("{:?}", hlit),
-    //         "HeadLiteral { literal: Literal { sign: NoSign symbol: Term { symbol: test } } }"
-    //     );
+    let hlit: ast::Literal = lit.into();
+    assert_eq!(format!("{}", hlit.to_string().unwrap()), "test");
 
-    //     let hlit = ast::HeadLiteral::from(&dis);
-    //     assert_eq!(format!("{:?}",hlit), "HeadLiteral { disjunction: Disjunction { elements: [ConditionalLiteral { literal: Literal { sign: NoSign symbol: Term { symbol: test } }, condition: [Literal { sign: NoSign symbol: Term { symbol: test } }] }] } }");
+    let hlit: ast::Head = dis.into();
+    assert_eq!(format!("{}", hlit.to_string().unwrap()), "test: test");
 
-    //     let hlit = ast::HeadLiteral::from(&agg);
+    let hlit: ast::Head = agg.into();
+    assert_eq!(
+        format!("{}", hlit.to_string().unwrap()),
+        "test > { test: test } > test"
+    );
 
-    //     assert_eq!(format!("{:?}",hlit), "HeadLiteral { aggregate: Aggregate { elements: [ConditionalLiteral { literal: Literal { sign: NoSign symbol: Term { symbol: test } }, condition: [Literal { sign: NoSign symbol: Term { symbol: test } }] }], left_guard: Some(AggregateGuard { comparison: GreaterThan, term: Term { symbol: test } }), right_guard: Some(AggregateGuard { comparison: GreaterThan, term: Term { symbol: test } }) } }");
+    let hlit: Head = hagg.into();
+    assert_eq!(
+        format!("{}", hlit.to_string().unwrap()),
+        "test > #count { test: test: test } > test"
+    );
 
-    //     let hlit = ast::HeadLiteral::from(&hagg);
-    //     assert_eq!(format!("{:?}",hlit), "HeadLiteral { head_aggregate: HeadAggregate { function: Count elements: [HeadAggregateElement { tuple: [Term { symbol: test }], conditional_literal: ConditionalLiteral { literal: Literal { sign: NoSign symbol: Term { symbol: test } }, condition: [Literal { sign: NoSign symbol: Term { symbol: test } }] } }], left_guard: Some(AggregateGuard { comparison: GreaterThan, term: Term { symbol: test } }), right_guard: Some(AggregateGuard { comparison: GreaterThan, term: Term { symbol: test } }) } }");
-
-    //     let hlit = ast::HeadLiteral::from(&tatom);
-    //     assert_eq!(format!("{:?}",hlit), "HeadLiteral { theory_atom: TheoryAtom { term: Term { symbol: test } elements: [TheoryAtomElement { tuple: [TheoryTerm { symbol: test }] condition: [Literal { sign: NoSign symbol: Term { symbol: test } }] }] guard: Some(TheoryGuard { operator_name: \"theory_operator\" term: TheoryTerm { symbol: test } }) } }");
+    let hlit: Head = tatom.into();
+    assert_eq!(
+        format!("{}", hlit.to_string().unwrap()),
+        "&test { test: test } theory_operator test"
+    );
 }
 #[test]
 fn ast_body_literal() {
