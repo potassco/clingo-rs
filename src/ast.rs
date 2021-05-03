@@ -3,14 +3,13 @@ use crate::{
     GroundProgramObserver, Logger, Propagator,
 };
 
-
-use crate::{internalize_string, Location, Symbol};
+use crate::ast_internals::Body;
 use crate::ast_internals::{Ast, AstType};
-use crate::ast_internals::{Body};
+use crate::{internalize_string, Location, Symbol};
 use clingo_sys::*;
 use std::ffi::CString;
-use std::os::raw::c_void;
 use std::os::raw::c_char;
+use std::os::raw::c_void;
 use std::ptr::NonNull;
 
 /// Object to build non-ground programs.
@@ -159,7 +158,6 @@ pub(crate) unsafe extern "C" fn unsafe_program_builder_add(
     let builder = data as *mut clingo_program_builder;
     clingo_program_builder_add(builder, statement)
 }
-
 
 // #[doc = "! Callback function to intercept AST nodes."]
 // #[doc = "!"]
@@ -370,7 +368,6 @@ pub enum TheoryAtomType {
         clingo_ast_theory_atom_definition_type_e_clingo_ast_theory_atom_definition_type_directive
             as isize,
 }
-
 
 // Here start the AstTypes
 

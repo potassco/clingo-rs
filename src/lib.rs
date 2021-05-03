@@ -2444,9 +2444,7 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
             let symbolic_term = ast::symbolic_term(&loc, sym)?;
             let atom = ast::symbolic_atom(symbolic_term.into())?;
             // create literal
-            let lit =
-                ast::basic_literal_from_symbolic_atom(&loc, ast::Sign::NoSign, atom)
-                    .unwrap();
+            let lit = ast::basic_literal_from_symbolic_atom(&loc, ast::Sign::NoSign, atom).unwrap();
             let head: ast::Literal = ast::Literal::from(lit);
             // create (fact) rule
             let fact = ast::rule(&loc, &head.into(), &[]).unwrap();

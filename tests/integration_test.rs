@@ -257,10 +257,7 @@ fn ast_term() {
     let args = vec![term1, term2];
     let fun = function(&loc, "fun2", &args, false).unwrap();
     let fun = Term::from(fun);
-    assert_eq!(
-        format!("{}", fun.to_string().unwrap()),
-        "fun2(42,\"test\")"
-    );
+    assert_eq!(format!("{}", fun.to_string().unwrap()), "fun2(42,\"test\")");
     let external_function = function(&loc, "fun2", &args, true).unwrap();
     let external_function = Term::from(external_function);
     assert_eq!(

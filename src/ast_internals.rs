@@ -6,7 +6,7 @@ use std::ffi::CStr;
 use std::ptr::NonNull;
 pub struct Body<'a> {
     ast: &'a Ast,
-    attribute: AstAttribute,
+    index: usize,
 }
 impl<'a> Body<'a> {
     /// Get the size of an AstArray
@@ -22,7 +22,7 @@ impl<'a> Body<'a> {
         if !unsafe {
             clingo_ast_attribute_size_ast_array(
                 self.ast.0.as_ptr(),
-                self.attribute as i32,
+                AstAttribute::Body as i32,
                 &mut size,
             )
         } {
@@ -32,24 +32,13 @@ impl<'a> Body<'a> {
         }
         Ok(size)
     }
+}
 
-    ///  Returns an iterator over the theory atoms.
-    pub fn iter(&self) -> BodyIter {
-        BodyIter {
-            ast_array: self,
-            index: 0,
-        }
-    }
-}
-pub struct BodyIter<'a> {
-    ast_array: &'a Body<'a>,
-    index: usize,
-}
-impl<'a> Iterator for BodyIter<'a> {
+impl<'a> Iterator for Body<'a> {
     type Item = BodyLiteral;
 
     fn next(&mut self) -> Option<BodyLiteral> {
-        let size = self.ast_array.size().unwrap(); //Err->None
+        let size = self.size().unwrap(); //Err->None
 
         if size == self.index {
             return None;
@@ -58,8 +47,8 @@ impl<'a> Iterator for BodyIter<'a> {
         let mut ast = std::ptr::null_mut();
         if !unsafe {
             clingo_ast_attribute_get_ast_at(
-                self.ast_array.ast.0.as_ptr(),
-                self.ast_array.attribute as i32,
+                self.ast.0.as_ptr(),
+                AstAttribute::Body as i32,
                 self.index,
                 &mut ast,
             )
@@ -74,75 +63,75 @@ impl<'a> Iterator for BodyIter<'a> {
     }
 }
 
-struct AstArray<'a> {
-    ast: &'a Ast,
-    attribute: AstAttribute,
-}
-impl<'a> AstArray<'a> {
-    /// Get the size of an AstArray
-    ///
-    /// @param[in] ast the target AstArray
-    /// @param[in] attribute the target attribute"]
-    /// @param[out] size the resulting size"]
-    /// @return whether the call was successful; might set one of the following error codes:"]
-    /// - ::clingo_error_runtime"]
+// struct AstArray<'a> {
+//     ast: &'a Ast,
+//     attribute: AstAttribute,
+// }
+// impl<'a> AstArray<'a> {
+//     /// Get the size of an AstArray
+//     ///
+//     /// @param[in] ast the target AstArray
+//     /// @param[in] attribute the target attribute"]
+//     /// @param[out] size the resulting size"]
+//     /// @return whether the call was successful; might set one of the following error codes:"]
+//     /// - ::clingo_error_runtime"]
 
-    pub fn size(&self) -> Result<usize, ClingoError> {
-        let mut size: usize = 0;
-        if !unsafe {
-            clingo_ast_attribute_size_ast_array(
-                self.ast.0.as_ptr(),
-                self.attribute as i32,
-                &mut size,
-            )
-        } {
-            return Err(ClingoError::new_internal(
-                "Call to clingo_ast_attribute_size_ast_array() failed.",
-            ));
-        }
-        Ok(size)
-    }
+//     pub fn size(&self) -> Result<usize, ClingoError> {
+//         let mut size: usize = 0;
+//         if !unsafe {
+//             clingo_ast_attribute_size_ast_array(
+//                 self.ast.0.as_ptr(),
+//                 self.attribute as i32,
+//                 &mut size,
+//             )
+//         } {
+//             return Err(ClingoError::new_internal(
+//                 "Call to clingo_ast_attribute_size_ast_array() failed.",
+//             ));
+//         }
+//         Ok(size)
+//     }
 
-    ///  Returns an iterator over the theory atoms.
-    fn iter(&self) -> AstArrayIterator {
-        AstArrayIterator {
-            ast_array: self,
-            index: 0,
-        }
-    }
-}
-struct AstArrayIterator<'a> {
-    ast_array: &'a AstArray<'a>,
-    index: usize,
-}
-impl<'a> Iterator for AstArrayIterator<'a> {
-    type Item = Ast;
+//     ///  Returns an iterator over the theory atoms.
+//     fn iter(&self) -> AstArrayIterator {
+//         AstArrayIterator {
+//             ast_array: self,
+//             index: 0,
+//         }
+//     }
+// }
+// struct AstArrayIterator<'a> {
+//     ast_array: &'a AstArray<'a>,
+//     index: usize,
+// }
+// impl<'a> Iterator for AstArrayIterator<'a> {
+//     type Item = Ast;
 
-    fn next(&mut self) -> Option<Ast> {
-        let size = self.ast_array.size().unwrap(); //Err->None
+//     fn next(&mut self) -> Option<Ast> {
+//         let size = self.ast_array.size().unwrap(); //Err->None
 
-        if size == self.index {
-            return None;
-        }
+//         if size == self.index {
+//             return None;
+//         }
 
-        let mut ast = std::ptr::null_mut();
-        if !unsafe {
-            clingo_ast_attribute_get_ast_at(
-                self.ast_array.ast.0.as_ptr(),
-                self.ast_array.attribute as i32,
-                self.index,
-                &mut ast,
-            )
-        } {
-            return None;
-        }
-        self.index += 1;
-        match NonNull::new(ast) {
-            Some(x) => Some(Ast(x)),
-            None => None,
-        }
-    }
-}
+//         let mut ast = std::ptr::null_mut();
+//         if !unsafe {
+//             clingo_ast_attribute_get_ast_at(
+//                 self.ast_array.ast.0.as_ptr(),
+//                 self.ast_array.attribute as i32,
+//                 self.index,
+//                 &mut ast,
+//             )
+//         } {
+//             return None;
+//         }
+//         self.index += 1;
+//         match NonNull::new(ast) {
+//             Some(x) => Some(Ast(x)),
+//             None => None,
+//         }
+//     }
+// }
 
 // Here starts AST2
 
@@ -406,50 +395,31 @@ pub enum AstAttribute {
     Weight = clingo_ast_attribute_e_clingo_ast_attribute_weight as isize,
 }
 
-/// Struct to map attributes to their string representation.
-#[derive(Debug, Copy, Clone)]
-pub struct AttributeNames(clingo_ast_attribute_names);
-// pub struct clingo_ast_attribute_names {
-//     pub names: *const *const ::std::os::raw::c_char,
-//     pub size: usize,
-// }
-
-/// Struct to define an argument that consists of a name and a type.
-#[repr(C)]
-#[derive(Debug, Copy, Clone)]
-pub struct Argument(clingo_ast_argument);
-// pub struct clingo_ast_argument {
-//     pub attribute: clingo_ast_attribute_t,
-//     pub type_: clingo_ast_attribute_type_t,
-// }
-
-/// A lists of required attributes to construct an AST.
-#[repr(C)]
-#[derive(Debug, Copy, Clone)]
-pub struct Constructor(clingo_ast_constructor);
-// pub struct clingo_ast_constructor {
-//     pub name: *const ::std::os::raw::c_char,
-//     pub arguments: *const clingo_ast_argument_t,
-//     pub size: usize,
-
-/// Struct to map AST types to lists of required attributes to construct ASTs.
-#[repr(C)]
-#[derive(Debug, Copy, Clone)]
-pub struct Constructors(clingo_ast_constructors);
-// pub struct clingo_ast_constructors {
-//     pub constructors: *const clingo_ast_constructor_t,
-//     pub size: usize,
-// }
-
 /// This struct provides a view to nodes in the AST.
 #[derive(Debug, Copy, Clone)]
 pub(crate) struct Ast(pub NonNull<clingo_ast_t>);
+    // extern "C" {
+    //     #[doc = "! Decrement the reference count of an AST node."]
+    //     #[doc = "!"]
+    //     #[doc = "! @note The node is deleted if the reference count reaches zero."]
+    //     #[doc = "!"]
+    //     #[doc = "! @param[in] ast the target AST"]
+    //     pub fn clingo_ast_release(ast: *mut clingo_ast_t);
+    // }
 
+    // fn release(ast: Ast) -> () {
+    //  unsafe{clingo_ast_release(ast)}
+    // }
+// impl Drop for Ast {
+//     fn drop(&mut self) {
+//         release(self)
+//     }
+// }
 impl Ast {
     pub fn body(&self) -> Body {
         Body {
             ast: &self,
-            attribute: AstAttribute::Body,
+            index: 0,
         }
     }
     pub fn head(&self) -> Head {
@@ -466,14 +436,7 @@ impl Ast {
     //     #[doc = "! @param[in] ast the target AST"]
     //     pub fn clingo_ast_acquire(ast: *mut clingo_ast_t);
     // }
-    // extern "C" {
-    //     #[doc = "! Decrement the reference count of an AST node."]
-    //     #[doc = "!"]
-    //     #[doc = "! @note The node is deleted if the reference count reaches zero."]
-    //     #[doc = "!"]
-    //     #[doc = "! @param[in] ast the target AST"]
-    //     pub fn clingo_ast_release(ast: *mut clingo_ast_t);
-    // }
+
     // extern "C" {
     //     #[doc = "! Deep copy an AST node."]
     //     #[doc = "!"]
@@ -515,6 +478,7 @@ impl Ast {
     //     #[doc = "! @return the resulting hash code"]
     //     pub fn clingo_ast_hash(ast: *mut clingo_ast_t) -> usize;
     // }
+
     // extern "C" {
     //     #[doc = "! Get the size of the string representation of an AST node."]
     //     #[doc = "!"]
@@ -595,20 +559,7 @@ impl Ast {
     //         has_attribute: *mut bool,
     //     ) -> bool;
     // }
-    // extern "C" {
-    //     #[doc = "! Get the type of the given AST."]
-    //     #[doc = "!"]
-    //     #[doc = "! @param[in] ast the target AST"]
-    //     #[doc = "! @param[in] attribute the target attribute"]
-    //     #[doc = "! @param[out] type the resulting type"]
-    //     #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
-    //     #[doc = "! - ::clingo_error_runtime"]
-    //     pub fn clingo_ast_attribute_type(
-    //         ast: *mut clingo_ast_t,
-    //         attribute: clingo_ast_attribute_t,
-    //         type_: *mut clingo_ast_attribute_type_t,
-    //     ) -> bool;
-    // }
+
     // Get the type of the given AST node.
     //
     // #[doc = "! @param[in] ast the target AST"]
@@ -658,20 +609,7 @@ impl Ast {
     //         value: ::std::os::raw::c_int,
     //     ) -> bool;
     // }
-    // extern "C" {
-    //     #[doc = "! Get the value of an attribute of type \"clingo_ast_attribute_type_symbol\"."]
-    //     #[doc = "!"]
-    //     #[doc = "! @param[in] ast the target AST"]
-    //     #[doc = "! @param[in] attribute the target attribute"]
-    //     #[doc = "! @param[out] value the resulting value"]
-    //     #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
-    //     #[doc = "! - ::clingo_error_runtime"]
-    //     pub fn clingo_ast_attribute_get_symbol(
-    //         ast: *mut clingo_ast_t,
-    //         attribute: clingo_ast_attribute_t,
-    //         value: *mut clingo_symbol_t,
-    //     ) -> bool;
-    // }
+
     //  Get the value of an attribute of type AstAttributeType::Symbol
     //
     // #[doc = "! @param[in] ast the target AST"]
@@ -679,7 +617,7 @@ impl Ast {
     // #[doc = "! @param[out] type the resulting type"]
     // #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
     // #[doc = "! - ::clingo_error_runtime"]
-    pub fn get_symbol(&self) -> Result<Symbol, ClingoError> {
+    fn get_symbol(&self) -> Result<Symbol, ClingoError> {
         let mut sym = 0;
         let attribute = AstAttributeType::Symbol;
         if !unsafe { clingo_ast_attribute_get_symbol(self.0.as_ptr(), attribute as i32, &mut sym) }
@@ -781,7 +719,7 @@ impl Ast {
     // #[doc = "! @param[out] type the resulting type"]
     // #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
     // #[doc = "! - ::clingo_error_runtime"]
-    pub fn get_attribute_ast(&self, attribute: AstAttribute) -> Result<Ast, ClingoError> {
+    fn get_attribute_ast(&self, attribute: AstAttribute) -> Result<Ast, ClingoError> {
         let mut ast = std::ptr::null_mut();
         if !unsafe { clingo_ast_attribute_get_ast(self.0.as_ptr(), attribute as i32, &mut ast) } {
             return Err(ClingoError::new_internal(
@@ -1009,12 +947,12 @@ impl Ast {
     //         size: *mut usize,
     //     ) -> bool;
     // }
-    fn ast_array(&self, attribute: AstAttribute) -> AstArray {
-        AstArray {
-            ast: &self,
-            attribute,
-        }
-    }
+    // fn ast_array(&self, attribute: AstAttribute) -> AstArray {
+    //     AstArray {
+    //         ast: &self,
+    //         attribute,
+    //     }
+    // }
 }
 // extern "C" {
 //     #[doc = "! Insert a value into an attribute of type \"clingo_ast_attribute_type_ast_array\" at the given index."]

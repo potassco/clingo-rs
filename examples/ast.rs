@@ -16,7 +16,7 @@ impl<'a, 'b> ast::StatementHandler for OnStatementData<'a, 'b> {
             ast::TStatement::Rule(stm) => {
                 let body = stm.body();
                 let mut extended_body = std::vec::Vec::with_capacity(body.size().unwrap() + 1);
-                for e in body.iter() {
+                for e in body {
                     extended_body.push(e.clone());
                 }
                 // create literal enable
