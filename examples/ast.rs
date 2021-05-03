@@ -21,11 +21,11 @@ impl<'a, 'b> ast::StatementHandler for OnStatementData<'a, 'b> {
                 }
                 // create literal enable
                 let loc = Location::default();
-                let lit =
-                    ast::Literal::literal_from_symbolic_atom(&loc, ast::Sign::NoSign, &self.atom)
+                let basic_lit =
+                    ast::basic_literal_from_symbolic_atom(&loc, ast::Sign::NoSign, *self.atom)
                         .unwrap();
-                let blit = ast::BodyLiteral::from(lit);
-                extended_body.push(blit);
+                let lit: ast::Literal = basic_lit.into();
+                extended_body.push(lit.into());
 
                 // initialize the rule
                 let head = stm.head();

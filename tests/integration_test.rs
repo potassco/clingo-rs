@@ -282,8 +282,8 @@ fn ast_literal() {
     let sym3 = Symbol::create_function("fun1", &symbols, true).unwrap();
     let sym4 = Symbol::create_supremum();
 
-    let term1 = symbolic_term(&loc, &sym1).unwrap();
-    let term1 = Term::from(term1);
+    let sterm1 = symbolic_term(&loc, &sym1).unwrap();
+    let term1 = Term::from(sterm1);
     let term2 = symbolic_term(&loc, &sym2).unwrap();
     let term2 = Term::from(term2);
     let term3 = symbolic_term(&loc, &sym3).unwrap();
@@ -291,46 +291,37 @@ fn ast_literal() {
     let term4 = symbolic_term(&loc, &sym4).unwrap();
     let term4 = Term::from(term4);
 
+    let lit = ast::basic_literal_from_boolean_constant(&loc, Sign::NoSign, true).unwrap();
+    assert_eq!(format!("{}", lit.to_string().unwrap()), "#true");
+    let sterm1 = ast::symbolic_atom(term1).unwrap();
+    let lit = ast::basic_literal_from_symbolic_atom(&loc, Sign::NoSign, sterm1).unwrap();
+    assert_eq!(format!("{}", lit.to_string().unwrap()), "42");
+
     let gt = ComparisonOperator::GreaterThan;
     let comp = comparison(gt, term2, term3).unwrap();
+    let lit = ast::basic_literal_from_comparison(&loc, Sign::NoSign, comp).unwrap();
+    assert_eq!(
+        format!("{}", lit.to_string().unwrap()),
+        "\"test\" > fun1(42,\"test\")"
+    );
 
     let csp_prod_term1 = csp_product(&loc, term1, Some(term2)).unwrap();
     let csp_prod_term2 = csp_product(&loc, term3, Some(term4)).unwrap();
     let csp_prod_terms1 = vec![csp_prod_term1];
     let csp_prod_terms2 = vec![csp_prod_term2];
 
+    // TODO: activate these test when the bug in libclingo is fixed
     // let csp_sum_term1 = csp_sum(&loc,csp_prod_terms1);
     // let csp_sum_term2 = csp_sum(&loc,csp_prod_terms2);
 
-    //     let csp_guard = CspGuard::gt(csp_sum_term1);
-    //     let csp_guards = vec![csp_guard];
-    //     let csp_lit = CspLiteral::new(csp_sum_term2, &csp_guards);
+    // let csp_guard = CspGuard::gt(csp_sum_term1);
+    // let csp_guards = vec![csp_guard];
+    // let csp_lit = CspLiteral::new(csp_sum_term2, &csp_guards);
 
-    //     let lit = ast::Literal::from_bool(Sign::NoSign, true);
-    //     assert_eq!(
-    //         format!("{:?}", lit),
-    //         "Literal { sign: NoSign boolean: true }"
-    //     );
-    //     let lt = lit.literal_type();
-    //     assert_eq!(format!("{:?}", lt), "Boolean(true)");
-
-    //     let lit = ast::Literal::from_term(Sign::NoSign, &term1);
-    //     assert_eq!(
-    //         format!("{:?}", lit),
-    //         "Literal { sign: NoSign symbol: Term { symbol: 42 } }"
-    //     );
-    //     let lt = lit.literal_type();
-    //     assert_eq!(format!("{:?}", lt), "Symbolic(Term { symbol: 42 })");
-
-    //     let lit = ast::Literal::from_comparison(Sign::NoSign, &comp);
-    //     assert_eq!(format!("{:?}",lit), "Literal { sign: NoSign comparison: Comparison { op: GreaterThan left: Term { symbol: \"test\" } right: Term { symbol: fun1(42,\"test\") } } }");
-    //     let lt = lit.literal_type();
-    //     assert_eq!(format!("{:?}", lt), "Comparison(Comparison { op: GreaterThan left: Term { symbol: \"test\" } right: Term { symbol: fun1(42,\"test\") } })");
-
-    //     let lit = ast::Literal::from_csp_literal(Sign::NoSign, &csp_lit);
-    //     assert_eq!(format!("{:?}",lit), "Literal { sign: NoSign csp_literal: CspLiteral { term: CspSumTerm { terms: [CspProductTerm { coefficient: Term { symbol: fun1(42,\"test\") } variable: Term { symbol: #sup } }] } guards: [CspGuard { comparison: GreaterThan term: CspSumTerm { terms: [CspProductTerm { coefficient: Term { symbol: 42 } variable: Term { symbol: \"test\" } }] } }] } }");
-    //     let lt = lit.literal_type();
-    //     assert_eq!(format!("{:?}", lt), "CSP(CspLiteral { term: CspSumTerm { terms: [CspProductTerm { coefficient: Term { symbol: fun1(42,\"test\") } variable: Term { symbol: #sup } }] } guards: [CspGuard { comparison: GreaterThan term: CspSumTerm { terms: [CspProductTerm { coefficient: Term { symbol: 42 } variable: Term { symbol: \"test\" } }] } }] })");
+    // let lit = ast::Literal::from_csp_literal(Sign::NoSign, &csp_lit);
+    // assert_eq!(format!("{:?}",lit), "Literal { sign: NoSign csp_literal: CspLiteral { term: CspSumTerm { terms: [CspProductTerm { coefficient: Term { symbol: fun1(42,\"test\") } variable: Term { symbol: #sup } }] } guards: [CspGuard { comparison: GreaterThan term: CspSumTerm { terms: [CspProductTerm { coefficient: Term { symbol: 42 } variable: Term { symbol: \"test\" } }] } }] } }");
+    // let lt = lit.literal_type();
+    // assert_eq!(format!("{:?}", lt), "CSP(CspLiteral { term: CspSumTerm { terms: [CspProductTerm { coefficient: Term { symbol: fun1(42,\"test\") } variable: Term { symbol: #sup } }] } guards: [CspGuard { comparison: GreaterThan term: CspSumTerm { terms: [CspProductTerm { coefficient: Term { symbol: 42 } variable: Term { symbol: \"test\" } }] } }] })");
 }
 
 #[test]
