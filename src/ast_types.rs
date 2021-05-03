@@ -113,12 +113,24 @@ impl From<HeadAggregate> for Head {
         Head(agg.0)
     }
 }
+impl From<Disjunction> for Head {
+    fn from(agg: Disjunction) -> Self {
+        Head(agg.0)
+    }
+}
+impl From<TheoryAtom> for Head {
+    fn from(agg: TheoryAtom) -> Self {
+        Head(agg.0)
+    }
+}
 impl Head {
     pub fn get_tterm(&self) -> Result<THead, ClingoError> {
         match self.0.get_type()? {
             AstType::Literal => Ok(THead::Literal(Literal(self.0))),
             AstType::CspLiteral => Ok(THead::Aggregate(Aggregate(self.0))),
             AstType::HeadAggregate => Ok(THead::HeadAggregate(HeadAggregate(self.0))),
+            AstType::Disjunction => Ok(THead::Disjunction(Disjunction(self.0))),
+            AstType::TheoryAtom => Ok(THead::TheoryAtom(TheoryAtom(self.0))),
             x => panic!("unexpected AstType: {:?}", x),
         }
     }
@@ -131,6 +143,8 @@ pub enum THead {
     Literal(Literal),
     Aggregate(Aggregate),
     HeadAggregate(HeadAggregate),
+    Disjunction(Disjunction),
+    TheoryAtom(TheoryAtom),
 }
 #[derive(Debug, Copy, Clone)]
 pub struct BodyLiteral(Ast);
@@ -175,6 +189,31 @@ impl From<TheoryAtom> for BodyAtom {
 
 #[derive(Debug, Copy, Clone)]
 pub struct TheoryTerm(Ast);
+impl From<SymbolicTerm> for TheoryTerm {
+    fn from(term: SymbolicTerm) -> Self {
+        TheoryTerm(term.0)
+    }
+}
+impl From<Variable> for TheoryTerm {
+    fn from(term: Variable) -> Self {
+        TheoryTerm(term.0)
+    }
+}
+impl From<TheorySequence> for TheoryTerm {
+    fn from(term: TheorySequence) -> Self {
+        TheoryTerm(term.0)
+    }
+}
+impl From<TheoryFunction> for TheoryTerm {
+    fn from(term: TheoryFunction) -> Self {
+        TheoryTerm(term.0)
+    }
+}
+impl From<TheoryUnparsedTerm> for TheoryTerm {
+    fn from(term: TheoryUnparsedTerm) -> Self {
+        TheoryTerm(term.0)
+    }
+}
 
 #[derive(Debug, Copy, Clone)]
 pub struct Statement(Ast);
@@ -255,33 +294,33 @@ impl Id {
 }
 #[derive(Debug, Copy, Clone)]
 pub struct Variable(Ast);
+/// Construct an AST node of type `ASTType.Variable`.
+pub fn variable(location: &Location, name: &str) -> Result<Variable, ClingoError> {
+    let mut ast = std::ptr::null_mut();
+
+    let variable = internalize_string(name)?;
+    if !unsafe {
+        clingo_ast_build(
+            clingo_ast_type_e_clingo_ast_type_variable as i32,
+            &mut ast,
+            location,
+            variable,
+        )
+    } {
+        return Err(ClingoError::new_internal(
+            "Call to clingo_ast_build() failed.",
+        ));
+    }
+    match NonNull::new(ast) {
+        Some(ast) => Ok(Variable(Ast(ast))),
+        None => Err(ClingoError::FFIError {
+            msg: "Tried creating NonNull from a null pointer.",
+        })?,
+    }
+}
 impl Variable {
     pub fn to_string(&self) -> Result<String, ClingoError> {
         self.0.to_string()
-    }
-    /// Construct an AST node of type `ASTType.Variable`.
-    pub fn variable(location: &Location, name: &str) -> Result<Variable, ClingoError> {
-        let mut ast = std::ptr::null_mut();
-
-        let variable = internalize_string(name)?;
-        if !unsafe {
-            clingo_ast_build(
-                clingo_ast_type_e_clingo_ast_type_variable as i32,
-                &mut ast,
-                location,
-                variable,
-            )
-        } {
-            return Err(ClingoError::new_internal(
-                "Call to clingo_ast_build() failed.",
-            ));
-        }
-        match NonNull::new(ast) {
-            Some(ast) => Ok(Variable(Ast(ast))),
-            None => Err(ClingoError::FFIError {
-                msg: "Tried creating NonNull from a null pointer.",
-            })?,
-        }
     }
 }
 #[derive(Debug, Copy, Clone)]
@@ -524,7 +563,7 @@ pub fn csp_product(
                 &mut ast,
                 location,
                 coefficient.0,
-                variable.0,
+                variable.0 .0.as_ptr(),
             )
         } {
             return Err(ClingoError::new_internal(
@@ -806,13 +845,14 @@ pub fn aggregate(
 ) -> Result<Aggregate, ClingoError> {
     let mut ast = std::ptr::null_mut();
     let left_guard = match &left_guard {
-        Some(left_guard) => &left_guard.0,
+        Some(left_guard) => left_guard.0 .0.as_ptr(),
         None => std::ptr::null(),
     };
     let right_guard = match &right_guard {
-        Some(right_guard) => &right_guard.0,
+        Some(right_guard) => right_guard.0 .0.as_ptr(),
         None => std::ptr::null(),
     };
+
     if !unsafe {
         clingo_ast_build(
             clingo_ast_type_e_clingo_ast_type_aggregate as i32,
@@ -835,7 +875,11 @@ pub fn aggregate(
         })?,
     }
 }
-
+impl Aggregate {
+    pub fn to_string(&self) -> Result<String, ClingoError> {
+        self.0.to_string()
+    }
+}
 #[derive(Debug, Copy, Clone)]
 pub struct BodyAggregateElement(Ast);
 /// Construct an AST node of type `ASTType.BodyAggregateElement`.
@@ -878,15 +922,13 @@ pub fn body_aggregate(
 ) -> Result<BodyAggregate, ClingoError> {
     let mut ast = std::ptr::null_mut();
 
-    let left_guard = if let Some(left_guard) = left_guard {
-        left_guard.0 .0.as_ptr()
-    } else {
-        std::ptr::null()
+    let left_guard = match &left_guard {
+        Some(left_guard) => left_guard.0 .0.as_ptr(),
+        None => std::ptr::null(),
     };
-    let right_guard = if let Some(right_guard) = right_guard {
-        right_guard.0 .0.as_ptr()
-    } else {
-        std::ptr::null()
+    let right_guard = match &right_guard {
+        Some(right_guard) => right_guard.0 .0.as_ptr(),
+        None => std::ptr::null(),
     };
     if !unsafe {
         clingo_ast_build(
@@ -952,15 +994,13 @@ pub fn head_aggregate(
     right_guard: Option<AggregateGuard>,
 ) -> Result<HeadAggregate, ClingoError> {
     let mut ast = std::ptr::null_mut();
-    let left_guard = if let Some(left_guard) = left_guard {
-        left_guard.0 .0.as_ptr()
-    } else {
-        std::ptr::null()
+    let left_guard = match &left_guard {
+        Some(left_guard) => left_guard.0 .0.as_ptr(),
+        None => std::ptr::null(),
     };
-    let right_guard = if let Some(right_guard) = right_guard {
-        right_guard.0 .0.as_ptr()
-    } else {
-        std::ptr::null()
+    let right_guard = match &right_guard {
+        Some(right_guard) => right_guard.0 .0.as_ptr(),
+        None => std::ptr::null(),
     };
 
     if !unsafe {
@@ -1179,7 +1219,7 @@ pub struct TheoryUnparsedTerm(Ast);
 /// Construct an AST node of type `ASTType.TheoryUnparsedTerm`.
 pub fn theory_unparsed_term(
     location: &Location,
-    elements: &[TheoryUnparsedTermElement],
+    elements: &[TheoryUnparsedTermElement], //TODO NonEmptyList
 ) -> Result<TheoryUnparsedTerm, ClingoError> {
     let mut ast = std::ptr::null_mut();
 
@@ -1272,7 +1312,7 @@ pub fn theory_atom(
     let mut ast = std::ptr::null_mut();
 
     let guard = match &guard {
-        Some(guard) => &guard.0,
+        Some(guard) => guard.0 .0.as_ptr(),
         None => std::ptr::null(),
     };
     if !unsafe {
@@ -1295,6 +1335,11 @@ pub fn theory_atom(
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
         })?,
+    }
+}
+impl TheoryAtom {
+    pub fn to_string(&self) -> Result<String, ClingoError> {
+        self.0.to_string()
     }
 }
 #[derive(Debug, Copy, Clone)]
@@ -1542,7 +1587,7 @@ pub fn theory_atom_definition(
     let name = internalize_string(name)?;
     let term = internalize_string(term)?;
     let guard = match &guard {
-        Some(guard) => &guard.0,
+        Some(guard) => guard.0 .0.as_ptr(),
         None => std::ptr::null(),
     };
 
