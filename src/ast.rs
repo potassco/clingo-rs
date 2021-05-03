@@ -80,8 +80,6 @@ impl<'a> Iterator for BodyIter<'a> {
     }
 }
 
-include!("ast_types.rs");
-
 struct AstArray<'a> {
     ast: &'a Ast,
     attribute: AstAttribute,
@@ -409,7 +407,7 @@ impl<'a> ProgramBuilder<'a> {
         // x => panic!("unmatched statement/ast_type {:?}", x),
         // };
 
-        if !unsafe { clingo_program_builder_add(self.theref, stm.0.0.as_ptr() ) } {
+        if !unsafe { clingo_program_builder_add(self.theref, stm.0 .0.as_ptr()) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_program_builder_add() failed",
             ));
@@ -1438,3 +1436,5 @@ pub enum Unpooling {
 //         callback_data: *mut ::std::os::raw::c_void,
 //     ) -> bool;
 // }
+
+include!("ast_types.rs");
