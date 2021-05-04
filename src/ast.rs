@@ -374,15 +374,15 @@ pub enum TheoryAtomType {
 #[derive(Debug, Clone)]
 pub struct Term(Ast);
 impl Term {
-    pub fn get_tterm(self) -> Result<TTerm, ClingoError> {
+    pub fn is_a(self) -> Result<TermIsA, ClingoError> {
         match self.0.get_type()? {
-            AstType::Variable => Ok(TTerm::Variable(Variable(self.0))),
-            AstType::SymbolicTerm => Ok(TTerm::SymbolicTerm(SymbolicTerm(self.0))),
-            AstType::UnaryOperation => Ok(TTerm::UnaryOperation(UnaryOperation(self.0))),
-            AstType::BinaryOperation => Ok(TTerm::BinaryOperation(BinaryOperation(self.0))),
-            AstType::Interval => Ok(TTerm::Interval(Interval(self.0))),
-            AstType::Function => Ok(TTerm::Function(Function(self.0))),
-            AstType::Pool => Ok(TTerm::Pool(Pool(self.0))),
+            AstType::Variable => Ok(TermIsA::Variable(Variable(self.0))),
+            AstType::SymbolicTerm => Ok(TermIsA::SymbolicTerm(SymbolicTerm(self.0))),
+            AstType::UnaryOperation => Ok(TermIsA::UnaryOperation(UnaryOperation(self.0))),
+            AstType::BinaryOperation => Ok(TermIsA::BinaryOperation(BinaryOperation(self.0))),
+            AstType::Interval => Ok(TermIsA::Interval(Interval(self.0))),
+            AstType::Function => Ok(TermIsA::Function(Function(self.0))),
+            AstType::Pool => Ok(TermIsA::Pool(Pool(self.0))),
             x => panic!("unexpected AstType: {:?}", x),
         }
     }
@@ -426,7 +426,7 @@ impl From<Pool> for Term {
     }
 }
 #[derive(Debug, Clone)]
-pub enum TTerm {
+pub enum TermIsA {
     Variable(Variable),
     SymbolicTerm(SymbolicTerm),
     UnaryOperation(UnaryOperation),
@@ -438,7 +438,7 @@ pub enum TTerm {
 #[derive(Debug, Clone)]
 pub struct Literal(Ast);
 impl Literal {
-    pub fn get_tterm(self) -> Result<TLiteral, ClingoError> {
+    pub fn is_a(self) -> Result<TLiteral, ClingoError> {
         match self.0.get_type()? {
             AstType::Literal => Ok(TLiteral::BasicLiteral(BasicLiteral(self.0))),
             AstType::CspLiteral => Ok(TLiteral::CspLiteral(CspLiteral(self.0))),
@@ -449,8 +449,64 @@ impl Literal {
         self.0.to_string()
     }
 }
+use std::fmt;
+impl fmt::Display for Term {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.0.fmt(f)
+    }
+}
+impl fmt::Display for Variable {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.0.fmt(f)
+    }
+}
+impl fmt::Display for Literal {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.0.fmt(f)
+    }
+}
+impl fmt::Display for BasicLiteral {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.0.fmt(f)
+    }
+}
+impl fmt::Display for CspLiteral {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.0.fmt(f)
+    }
+}
+impl fmt::Display for TheoryTerm {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.0.fmt(f)
+    }
+}
+impl fmt::Display for Head {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.0.fmt(f)
+    }
+}
+impl fmt::Display for BodyLiteral {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.0.fmt(f)
+    }
+}
+impl fmt::Display for TheorySequence {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.0.fmt(f)
+    }
+}
+impl fmt::Display for Statement {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.0.fmt(f)
+    }
+}
 impl From<BasicLiteral> for Literal {
     fn from(lit: BasicLiteral) -> Self {
+        Literal(lit.0)
+    }
+}
+impl From<AtomicLiteral> for Literal {
+    fn from(lit: AtomicLiteral) -> Self {
         Literal(lit.0)
     }
 }
@@ -492,7 +548,7 @@ impl From<TheoryAtom> for Head {
     }
 }
 impl Head {
-    pub fn get_tterm(self) -> Result<THead, ClingoError> {
+    pub fn is_a(self) -> Result<THead, ClingoError> {
         match self.0.get_type()? {
             AstType::Literal => Ok(THead::Literal(Literal(self.0))),
             AstType::CspLiteral => Ok(THead::Aggregate(Aggregate(self.0))),
@@ -531,12 +587,12 @@ impl From<AtomicLiteral> for BodyLiteral {
         BodyLiteral(lit.0)
     }
 }
-use std::fmt;
-impl fmt::Display for BodyLiteral {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        self.0.fmt(f)
+impl From<TheoryAtom> for BodyLiteral {
+    fn from(lit: TheoryAtom) -> Self {
+        BodyLiteral(lit.0)
     }
 }
+
 #[derive(Debug, Clone)]
 pub struct BodyAtom(Ast);
 impl From<Aggregate> for BodyAtom {
@@ -591,11 +647,11 @@ impl From<TheoryUnparsedTerm> for TheoryTerm {
 #[derive(Debug, Clone)]
 pub struct Statement(pub(crate) Ast);
 impl Statement {
-    pub fn get_tterm(self) -> Result<TStatement, ClingoError> {
+    pub fn is_a(self) -> Result<StatementIsA, ClingoError> {
         match self.0.get_type()? {
-            AstType::Program => Ok(TStatement::Program(Program(self.0))),
-            AstType::Rule => Ok(TStatement::Rule(Rule(self.0))),
-            AstType::External => Ok(TStatement::External(External(self.0))),
+            AstType::Program => Ok(StatementIsA::Program(Program(self.0))),
+            AstType::Rule => Ok(StatementIsA::Rule(Rule(self.0))),
+            AstType::External => Ok(StatementIsA::External(External(self.0))),
             x => panic!("unexpected AstType: {:?}", x),
         }
     }
@@ -604,23 +660,89 @@ impl Statement {
     }
 }
 #[derive(Debug, Clone)]
-pub enum TStatement {
-    Program(Program),
+pub enum StatementIsA {
     Rule(Rule),
+    Definition(Definition),
+    ShowSignature(ShowSignature),
+    Defined(Defined),
+    ShowTerm(ShowTerm),
+    Minimize(Minimize),
+    Script(Script),
+    Program(Program),
     External(External),
-}
-impl From<Program> for Statement {
-    fn from(prg: Program) -> Self {
-        Statement(prg.0)
-    }
+    Edge(Edge),
+    Heuristic(Heuristic),
+    ProjectAtom(ProjectAtom),
+    ProjectSignature(ProjectSignature),
+    TheoryDefinition(TheoryDefinition),
 }
 impl From<Rule> for Statement {
     fn from(rule: Rule) -> Self {
         Statement(rule.0)
     }
 }
+impl From<Definition> for Statement {
+    fn from(rule: Definition) -> Self {
+        Statement(rule.0)
+    }
+}
+impl From<ShowSignature> for Statement {
+    fn from(rule: ShowSignature) -> Self {
+        Statement(rule.0)
+    }
+}
+impl From<Defined> for Statement {
+    fn from(rule: Defined) -> Self {
+        Statement(rule.0)
+    }
+}
+impl From<ShowTerm> for Statement {
+    fn from(rule: ShowTerm) -> Self {
+        Statement(rule.0)
+    }
+}
+impl From<Minimize> for Statement {
+    fn from(rule: Minimize) -> Self {
+        Statement(rule.0)
+    }
+}
+impl From<Script> for Statement {
+    fn from(rule: Script) -> Self {
+        Statement(rule.0)
+    }
+}
+impl From<Program> for Statement {
+    fn from(prg: Program) -> Self {
+        Statement(prg.0)
+    }
+}
 impl From<External> for Statement {
     fn from(ext: External) -> Self {
+        Statement(ext.0)
+    }
+}
+impl From<Edge> for Statement {
+    fn from(ext: Edge) -> Self {
+        Statement(ext.0)
+    }
+}
+impl From<Heuristic> for Statement {
+    fn from(ext: Heuristic) -> Self {
+        Statement(ext.0)
+    }
+}
+impl From<ProjectAtom> for Statement {
+    fn from(ext: ProjectAtom) -> Self {
+        Statement(ext.0)
+    }
+}
+impl From<ProjectSignature> for Statement {
+    fn from(ext: ProjectSignature) -> Self {
+        Statement(ext.0)
+    }
+}
+impl From<TheoryDefinition> for Statement {
+    fn from(ext: TheoryDefinition) -> Self {
         Statement(ext.0)
     }
 }
