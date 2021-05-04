@@ -1962,7 +1962,7 @@ pub fn theory_atom(
     }
 }
 /// Construct an AST node of type `ASTType.Literal`.
-pub fn atomic_literal_from_symbolic_atom(
+pub fn atomic_literal_from_body_atom(
     location: &Location,
     sign: Sign,
     atom: BodyAtom,
