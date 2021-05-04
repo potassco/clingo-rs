@@ -13,8 +13,8 @@ impl<'a, 'b> ast::StatementHandler for OnStatementData<'a, 'b> {
     fn on_statement(&mut self, stm: &mut ast::Statement) -> bool {
         let stm_clone = stm.clone();
         // pass through all statements that are not rules
-        match stm_clone.get_tterm().unwrap() {
-            ast::TStatement::Rule(stm) => {
+        match stm_clone.is_a().unwrap() {
+            ast::StatementIsA::Rule(stm) => {
                 let body = stm.body();
                 let mut extended_body = std::vec::Vec::with_capacity(body.size().unwrap() + 1);
                 for e in body {
