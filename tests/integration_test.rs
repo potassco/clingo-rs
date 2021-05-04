@@ -337,14 +337,13 @@ fn ast_head_literal() {
     )
     .unwrap();
 
-    let th_term: TheoryTerm = term1.clone().into();
-    let tuple = vec![th_term.clone()];
+    let tuple = vec![term1.clone().into()];
     let element = theory_atom_element(&tuple, &condition).unwrap();
     let elements = vec![element];
-    let guard = theory_guard("theory_operator", th_term).unwrap();
+    let guard = theory_guard("theory_operator", term1.clone().into()).unwrap();
     let tatom = theory_atom(&loc, term1.into(), &elements, Some(guard)).unwrap();
 
-    let hlit: ast::Literal = lit.into();
+    let hlit: ast::Head = lit.into();
     assert_eq!(format!("{}", hlit), "test");
 
     let hlit: ast::Head = dis.into();
@@ -419,20 +418,18 @@ fn ast_body_literal() {
     //     "BodyLiteral { sign: NoSign disjoint: Disjoint { elements: [DisjointElement { tuple: [Term { symbol: test }] term: CspSumTerm { terms: [CspProductTerm { coefficient: Term { symbol: test } variable: Term { symbol: test } }] } condition: [Literal { sign: NoSign symbol: Term { symbol: test } }] }] } }"
     // );
 
-    let blit: ast::Literal = lit.into();
-    let blit: BodyLiteral = blit.into();
+    let blit: BodyLiteral = lit.into();
     assert_eq!(format!("{}", blit), "test");
 
     let blit: BodyLiteral = cond.into();
     assert_eq!(format!("{}", blit), "test: test");
 
-    let blit: BodyAtom = agg.into();
-    let blit: AtomicLiteral = atomic_literal_from_symbolic_atom(&loc, Sign::NoSign, blit).unwrap();
+    let blit = atomic_literal_from_symbolic_atom(&loc, Sign::NoSign, agg.into()).unwrap();
     let blit: BodyLiteral = blit.into();
     assert_eq!(format!("{}", blit), "test > { test: test } > test");
 
-    let blit: BodyAtom = bagg.into();
-    let blit: AtomicLiteral = atomic_literal_from_symbolic_atom(&loc, Sign::NoSign, blit).unwrap();
+    // let blit: BodyAtom = bagg.into();
+    let blit = atomic_literal_from_symbolic_atom(&loc, Sign::NoSign, bagg.into()).unwrap();
     let blit: BodyLiteral = blit.into();
     assert_eq!(format!("{}", blit), "test > #count { test: test } > test");
 
@@ -478,9 +475,7 @@ fn ast_edge() {
     let term2 = symbolic_term(&loc, &sym2).unwrap();
     let atom2 = symbolic_atom(term2.clone().into()).unwrap();
     let lit = ast::basic_literal_from_symbolic_atom(&loc, Sign::NoSign, atom2).unwrap();
-    let lit: ast::Literal = lit.into();
-    let blit1: BodyLiteral = lit.into();
-    let body = vec![blit1];
+    let body = vec![lit.into()];
     let edge = edge(&loc, term1.into(), term2.into(), &body).unwrap();
     let stm: Statement = edge.into();
     test_statement(&stm, "#edge (test1,test2) : test2.");
@@ -488,125 +483,112 @@ fn ast_edge() {
 #[test]
 fn ast_minimize() {
     let loc = Location::default();
-    //     let sym1 = Symbol::create_id("test1", true).unwrap();
-    //     let weight = symbolic_term(&loc,&sym1);
-    //     let sym2 = Symbol::create_id("test2", true).unwrap();
-    //     let priority = symbolic_term(&loc,&sym2);
-    //     let tuple = vec![weight, priority];
-    //     let lit = ast::Literal::from_term(Sign::NoSign, &weight);
-    //     let blit1 = BodyLiteral::from_literal(Sign::NoSign, &lit);
-    //     let body = vec![blit1];
-    //     let mini = Minimize::new(weight, priority, &tuple, &body);
-    //     let stm = Statement::from(&mini);
-    //     test_statement(
-    //         &stm,
-    //         "Statement { minimize: Minimize { weight: Term { symbol: test1 } priority: Term { symbol: test2 } tuple: [Term { symbol: test1 }, Term { symbol: test2 }] body: [BodyLiteral { sign: NoSign literal: Literal { sign: NoSign symbol: Term { symbol: test1 } } }] } }",
-    //     );
+    let sym1 = Symbol::create_id("test1", true).unwrap();
+    let weight = symbolic_term(&loc, &sym1).unwrap();
+    let weight_atom = symbolic_atom(weight.clone().into()).unwrap();
+    let sym2 = Symbol::create_id("test2", true).unwrap();
+    let priority = symbolic_term(&loc, &sym2).unwrap();
+    let tuple = vec![weight.clone().into(), priority.clone().into()];
+    let lit = basic_literal_from_symbolic_atom(&loc, Sign::NoSign, weight_atom).unwrap();
+    let body = vec![lit.into()];
+    let mini = minimize(&loc, weight.into(), priority.into(), &tuple, &body).unwrap();
+    let stm: Statement = mini.into();
+    test_statement(&stm, ":~ test1. [test1@test2,test1,test2]");
 }
 #[test]
 fn ast_show_term() {
     let loc = Location::default();
-    //     let sym1 = Symbol::create_id("test1", true).unwrap();
-    //     let term1 = symbolic_term(&loc,&sym1);
-    //     let sym2 = Symbol::create_id("test2", true).unwrap();
-    //     let term2 = symbolic_term(&loc,&sym2);
-    //     let lit = ast::Literal::from_term(Sign::NoSign, &term2);
-    //     let blit1 = BodyLiteral::from_literal(Sign::NoSign, &lit);
-    //     let body = vec![blit1];
-    //     let term = ShowTerm::new(term1, &body, true);
-    //     let stm = Statement::from(&term);
-    //     test_statement(
-    //         &stm,
-    //         "Statement { show_term: ShowTerm { term: Term { symbol: test1 } body: [BodyLiteral { sign: NoSign literal: Literal { sign: NoSign symbol: Term { symbol: test2 } } }] csp: true } }",
-    //     );
+    let sym1 = Symbol::create_id("test1", true).unwrap();
+    let term1 = symbolic_term(&loc, &sym1).unwrap();
+    let sym2 = Symbol::create_id("test2", true).unwrap();
+    let term2 = symbolic_term(&loc, &sym2).unwrap();
+    let atom2 = symbolic_atom(term2.into()).unwrap();
+    let lit = basic_literal_from_symbolic_atom(&loc, Sign::NoSign, atom2).unwrap();
+    let body = vec![lit.into()];
+    let term = show_term(&loc, term1.into(), &body, true).unwrap();
+    let stm: Statement = term.into();
+    test_statement(&stm, "#show $test1 : test2.");
 }
 #[test]
 fn ast_show_signature() {
     let loc = Location::default();
-    //     let sig = Signature::new("signame",3, false).unwrap();
-    //     let ssig = ShowSignature::new(sig, true);
-    //     let stm = Statement::from(&ssig);
-    //     test_statement(
-    //         &stm,
-    //         "Statement { show_signature: ShowSignature { data: clingo_ast_show_signature { signature: 984814660390081, csp: true } } }",
-    //     );
+    let ssig = show_signature(&loc, "signame", 3, true, false).unwrap();
+    let stm: Statement = ssig.into();
+    test_statement(&stm, "#show signame/3.");
 }
 #[test]
 fn ast_project_signature() {
     let loc = Location::default();
-    //     let sig = Signature::new("signame",3, false).unwrap();
-    //     let stm = Statement::from(sig);
-    //     test_statement(
-    //         &stm,
-    //         "Statement { project_atom_signature: Signature(985118797729569) }",
-    //     );
+    let sig = project_signature(&loc, "signame", 3, false).unwrap();
+    let stm: Statement = sig.into();
+    test_statement(&stm, "#project -signame/3.");
 }
 #[test]
 fn ast_defined() {
     let loc = Location::default();
-    //     let sig = Signature::new("signame",3, false).unwrap();
-    //     let def = Defined::new(sig);
-    //     let stm = Statement::from(&def);
-    //     test_statement(
-    //         &stm,
-    //         "Statement { defined: Defined { signature: Signature(984058746113217) } }",
-    //     );
+    let def = defined(&loc, "signame", 3, false).unwrap();
+    let stm: Statement = def.into();
+    test_statement(&stm, "#defined -signame/3.");
 }
 #[test]
 fn ast_const_definition() {
     let loc = Location::default();
-    //     let sym1 = Symbol::create_id("test1", true).unwrap();
-    //     let value = symbolic_term(&loc,&sym1);
-    //     let def = Definition::new("constname", value, true).unwrap();
-    //     let stm = Statement::from(&def);
-    //     test_statement(
-    //         &stm,
-    //         "Statement { const: Definition { head: \"constname\", value: Term { symbol: test1 } is_default: true } }",
-    //     );
+    let sym1 = Symbol::create_id("test1", true).unwrap();
+    let value = symbolic_term(&loc, &sym1).unwrap();
+    let def = definition(&loc, "constname", value.into(), true).unwrap();
+    let stm: Statement = def.into();
+    test_statement(&stm, "#const constname = test1.");
 }
 #[test]
 fn ast_theory_definition() {
     let loc = Location::default();
-    //     let op_def = TheoryOperatorDefinition::new("operator_name", 2, TheoryOperatorType::Unary);
-    //     let operators = vec![op_def];
-    //     let termdef = TheoryTermDefinition::new("term_Def_name", &operators).unwrap();
-    //     let terms = vec![termdef];
-    //     // let op1 = "operator1";
-    //     // let op2 = "operator2";
-    //     // let operators = vec![internalize_string(op1), op2];
-    //     // let guard = TheoryGuardDefinition::new("guard_term", &operators).unwrap();
-    //     // let atom_def = TheoryAtomDefinition::new("atom_def_name",TheoryAtomType::Head, 2, "bla", &guard).unwrap();
-    //     // let atoms = vec![atom_def];
-    //     let atoms = vec![];
-    //     let def = TheoryDefinition::new("theory_name", &terms, &atoms).unwrap();
-    //     let stm = Statement::from(&def);
-    //     test_statement(
-    //         &stm,
-    //         "Statement { theory_definition: TheoryDefinition { name: \"theory_name\" terms: [TheoryTermDefinition { name: \"term_Def_name\" operators: [TheoryOperatorDefinition { name: \"operator_name\" priority: 2 type: Unary }] }] atoms: [] } }",
-    //     );
+    let op_def =
+        theory_operator_definition(&loc, "operator_name", 2, TheoryOperatorType::Unary).unwrap();
+    let operators = vec![op_def];
+    let termdef = theory_term_definition(&loc, "def_name", &operators).unwrap();
+    let terms = vec![termdef];
+    let op1 = "operator1";
+    let op2 = "operator2";
+    let operators = vec![op1, op2];
+    let guard = theory_guard_definition(&operators, "guard_term").unwrap();
+    let atom_def = theory_atom_definition(
+        &loc,
+        TheoryAtomType::Head,
+        "atom_def_name",
+        2,
+        "bla",
+        Some(guard),
+    )
+    .unwrap();
+    let atoms = vec![atom_def];
+    // let atoms = vec![];
+    let def = theory_definition(&loc, "theory_name", &terms, &atoms).unwrap();
+    let stm: Statement = def.into();
+    test_statement(
+            &stm,
+            "#theory theory_name {\n  def_name {\n    operator_name : 2, unary\n  };\n  &atom_def_name/2: bla, { operator1, operator2 }, guard_term, head\n}.",
+        );
 }
 #[test]
 fn ast_external() {
     let loc = Location::default();
-    //     let sym = Symbol::create_id("test", true).unwrap();
-    //     let atom = symbolic_term(&loc,&sym);
-    //     let ext = External::new(atom, &[]);
-    //     let stm = ext.ast_statement();
-    //     test_statement(
-    //         &stm,
-    //         "Statement { external: External { atom: Term { symbol: test }, body: [] } }",
-    //     );
+    let sym = Symbol::create_id("test", true).unwrap();
+    let term = symbolic_term(&loc, &sym).unwrap();
+    let atom = symbolic_atom(term.into()).unwrap();
+    let ext = external(&loc, atom.into(), &[], ExternalType::False).unwrap();
+    let stm = ext.into();
+    test_statement(&stm, "#external test. [false]");
 }
 #[test]
 fn ast_rule_head_literal() {
     let loc = Location::default();
-    //     let sym = Symbol::create_id("test", true).unwrap();
-    //     let term = symbolic_term(&loc,&sym);
-    //     let lit = ast::Literal::from_term(Sign::NoSign, &term);
-    //     let hlit = HeadLiteral::from(&lit);
-    //     let rule = Rule::new(hlit, &[]);
-    //     let stm = rule.ast_statement();
-    //     test_statement(&stm, "Statement { rule: Rule { head: HeadLiteral { literal: Literal { sign: NoSign symbol: Term { symbol: test } } }, body: [] } }");
+    let sym = Symbol::create_id("test", true).unwrap();
+    let term = symbolic_term(&loc, &sym).unwrap();
+    let atom = symbolic_atom(term.into()).unwrap();
+    let lit = basic_literal_from_symbolic_atom(&loc, Sign::NoSign, atom).unwrap();
+    let rule = rule(&loc, lit.into(), &[]).unwrap();
+    let stm = rule.into();
+    test_statement(&stm, "test.");
 }
 #[test]
 fn ast_rule_head_aggregate() {
@@ -621,7 +603,7 @@ fn ast_rule_head_aggregate() {
     //     let right_guard = AggregateGuard::lt(term);
     //     let agg = Aggregate::new(&elements, Some(&left_guard), Some(&right_guard));
     //     let hlit = HeadLiteral::from(&agg);
-    //     let rule = Rule::new(hlit, &[]);
+    //     let rule = rule(&loc,hlit, &[]);
     //     let stm = rule.ast_statement();
     //     test_statement(&stm, "Statement { rule: Rule { head: HeadLiteral { aggregate: Aggregate { elements: [ConditionalLiteral { literal: Literal { sign: NoSign symbol: Term { symbol: test } }, condition: [Literal { sign: NoSign symbol: Term { symbol: test } }] }], left_guard: Some(AggregateGuard { comparison: GreaterThan, term: Term { symbol: test } }), right_guard: Some(AggregateGuard { comparison: LessThan, term: Term { symbol: test } }) } }, body: [] } }");
 }
@@ -644,7 +626,7 @@ fn ast_rule_head_head_aggregate() {
     //         Some(&guard),
     //     );
     //     let hlit = HeadLiteral::from(&hagg);
-    //     let rule = Rule::new(hlit, &[]);
+    //     let rule = rule(&loc,hlit, &[]);
     //     let stm = rule.ast_statement();
     //     test_statement(&stm, "Statement { rule: Rule { head: HeadLiteral { head_aggregate: HeadAggregate { function: Count elements: [HeadAggregateElement { tuple: [Term { symbol: test }], conditional_literal: ConditionalLiteral { literal: Literal { sign: NoSign symbol: Term { symbol: test } }, condition: [Literal { sign: NoSign symbol: Term { symbol: test } }] } }], left_guard: Some(AggregateGuard { comparison: GreaterThan, term: Term { symbol: test } }), right_guard: Some(AggregateGuard { comparison: GreaterThan, term: Term { symbol: test } }) } }, body: [] } }");
 }
@@ -724,12 +706,12 @@ fn ast_rule() {
     //     let hlit5 = HeadLiteral::from(&lit5);
     //     let hlit6 = HeadLiteral::from(&lit6);
 
-    //     let rule1 = Rule::new(hlit1, &[]);
-    //     let rule2 = Rule::new(hlit2, &[]);
-    //     let rule3 = Rule::new(hlit3, &[]);
-    //     let rule4 = Rule::new(hlit4, &[]);
-    //     let rule5 = Rule::new(hlit5, &[]);
-    //     let rule6 = Rule::new(hlit6, &[]);
+    //     let rule1 = rule(&loc,hlit1, &[]);
+    //     let rule2 = rule(&loc,hlit2, &[]);
+    //     let rule3 = rule(&loc,hlit3, &[]);
+    //     let rule4 = rule(&loc,hlit4, &[]);
+    //     let rule5 = rule(&loc,hlit5, &[]);
+    //     let rule6 = rule(&loc,hlit6, &[]);
 
     //     let stm = rule1.ast_statement();
     //     test_statement(&stm, "Statement { rule: Rule { head: HeadLiteral { literal: Literal { sign: NoSign boolean: true } }, body: [] } }");
@@ -756,10 +738,10 @@ fn ast_rule_body() {
     let sym = Symbol::create_id("test", true).unwrap();
     //     let term = symbolic_term(&loc,&sym);
     //     let lit = ast::Literal::from_term(Sign::NoSign, &term);
-    //     let hlit = HeadLiteral::from(&lit);
-    //     let blit1 = BodyLiteral::from_literal(Sign::NoSign, &lit);
+    //     let hlit: Head = lit.into()
+    //     let blit1 : BodyLiteral = lit.into();
     //     let body = vec![blit1];
-    //     let rule = Rule::new(hlit, &body);
+    //     let rule = rule(&loc,hlit, &body);
     //     let stm = rule.ast_statement();
     //     test_statement(&stm, "Statement { rule: Rule { head: HeadLiteral { literal: Literal { sign: NoSign symbol: Term { symbol: test } } }, body: [BodyLiteral { sign: NoSign literal: Literal { sign: NoSign symbol: Term { symbol: test } } }] } }");
 }
