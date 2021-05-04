@@ -396,25 +396,47 @@ pub enum AstAttribute {
 }
 
 /// This struct provides a view to nodes in the AST.
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug)]
 pub(crate) struct Ast(pub NonNull<clingo_ast_t>);
-    // extern "C" {
-    //     #[doc = "! Decrement the reference count of an AST node."]
-    //     #[doc = "!"]
-    //     #[doc = "! @note The node is deleted if the reference count reaches zero."]
-    //     #[doc = "!"]
-    //     #[doc = "! @param[in] ast the target AST"]
-    //     pub fn clingo_ast_release(ast: *mut clingo_ast_t);
-    // }
 
-    // fn release(ast: Ast) -> () {
-    //  unsafe{clingo_ast_release(ast)}
+impl Clone for Ast {
+    fn clone(&self) -> Ast {
+        self.acquire();
+        Ast(self.0.clone())
+    }
+}
+
+impl Ast {
+    // extern "C" {
+    // #[doc = "! Deep copy an AST node."]
+    // #[doc = "!"]
+    // #[doc = "! @param[in] ast the AST to copy"]
+    // #[doc = "! @param[out] copy the resulting AST"]
+    // #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    // #[doc = "! - ::clingo_error_bad_alloc"]
+    // pub fn clingo_ast_copy(ast: *mut clingo_ast_t, copy: *mut *mut clingo_ast_t) -> bool;
     // }
-// impl Drop for Ast {
-//     fn drop(&mut self) {
-//         release(self)
-//     }
-// }
+    // pub fn copy(&self) -> Result<Ast, ClingoError> {
+    //     let mut cpy = std::ptr::null_mut();
+    //     if !unsafe { clingo_ast_copy(self.0.as_ptr(), &mut cpy) } {
+    //         eprintln!("Call to clingo_ast_to_string_size() failed");
+    //         return Err(ClingoError::new_internal(
+    //             "Call to clingo_ast_copy() failed.",
+    //         ));
+    //     }
+    //     match NonNull::new(cpy) {
+    //         Some(cpy) => Ok(Ast(cpy)),
+    //         None => Err(ClingoError::FFIError {
+    //             msg: "Tried creating NonNull from a null pointer.",
+    //         })?,
+    //     }
+    // }
+}
+impl Drop for Ast {
+    fn drop(&mut self) {
+        self.release()
+    }
+}
 impl Ast {
     pub fn body(&self) -> Body {
         Body {
@@ -436,16 +458,27 @@ impl Ast {
     //     #[doc = "! @param[in] ast the target AST"]
     //     pub fn clingo_ast_acquire(ast: *mut clingo_ast_t);
     // }
-
+    pub(crate) fn acquire(&self) -> () {
+        // println!("acquire");
+        // println!("ast: {:?}", self);
+        // println!("ast: {}", self.to_string().unwrap());
+        unsafe { clingo_ast_acquire(self.0.as_ptr()) }
+    }
     // extern "C" {
-    //     #[doc = "! Deep copy an AST node."]
+    //     #[doc = "! Decrement the reference count of an AST node."]
     //     #[doc = "!"]
-    //     #[doc = "! @param[in] ast the AST to copy"]
-    //     #[doc = "! @param[out] copy the resulting AST"]
-    //     #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
-    //     #[doc = "! - ::clingo_error_bad_alloc"]
-    //     pub fn clingo_ast_copy(ast: *mut clingo_ast_t, copy: *mut *mut clingo_ast_t) -> bool;
+    //     #[doc = "! @note The node is deleted if the reference count reaches zero."]
+    //     #[doc = "!"]
+    //     #[doc = "! @param[in] ast the target AST"]
+    //     pub fn clingo_ast_release(ast: *mut clingo_ast_t);
     // }
+    fn release(&self) -> () {
+        // println!("release");
+        // println!("ast: {:?}", self);
+        // println!("ast: {}", self.to_string().unwrap());
+        unsafe { clingo_ast_release(self.0.as_ptr()) }
+    }
+
     // extern "C" {
     //     #[doc = "! Create a shallow copy of an AST node."]
     //     #[doc = "!"]

@@ -224,7 +224,7 @@ fn ast_term() {
     assert_eq!(format!("{}", term.to_string().unwrap()), "Var");
 
     let negation = UnaryOperator::Negation;
-    let uop = unary_operation(&loc, negation, term1).unwrap();
+    let uop = unary_operation(&loc, negation, term1.clone()).unwrap();
     // let op = uop.unary_operator();
     // assert_eq!(format!("{:?}", op), "Negation");
     // let arg = uop.argument();
@@ -233,7 +233,7 @@ fn ast_term() {
     assert_eq!(format!("{}", uop.to_string().unwrap()), "~42");
 
     let xor = BinaryOperator::Xor;
-    let bop = binary_operation(&loc, xor, term1, term2).unwrap();
+    let bop = binary_operation(&loc, xor, term1.clone(), term2.clone()).unwrap();
     // let op = bop.binary_operator();
     // assert_eq!(format!("{:?}", op), "Xor");
     // let arg = bop.left();
@@ -243,7 +243,7 @@ fn ast_term() {
     let bop = Term::from(bop);
     assert_eq!(format!("{}", bop.to_string().unwrap()), "(42^\"test\")");
 
-    let interval = interval(&loc, term1, term2).unwrap();
+    let interval = interval(&loc, term1.clone(), term2.clone()).unwrap();
     // let arg = interval.left();
     // assert_eq!(format!("{:?}", arg), "Term { symbol: 42 }");
     // let arg = interval.right();
@@ -290,12 +290,12 @@ fn ast_literal() {
 
     let lit = ast::basic_literal_from_boolean_constant(&loc, Sign::NoSign, true).unwrap();
     assert_eq!(format!("{}", lit.to_string().unwrap()), "#true");
-    let sterm1 = ast::symbolic_atom(term1).unwrap();
+    let sterm1 = ast::symbolic_atom(term1.clone()).unwrap();
     let lit = ast::basic_literal_from_symbolic_atom(&loc, Sign::NoSign, sterm1).unwrap();
     assert_eq!(format!("{}", lit.to_string().unwrap()), "42");
 
     let gt = ComparisonOperator::GreaterThan;
-    let comp = comparison(gt, term2, term3).unwrap();
+    let comp = comparison(gt, term2.clone(), term3.clone()).unwrap();
     let lit = ast::basic_literal_from_comparison(&loc, Sign::NoSign, comp).unwrap();
     assert_eq!(
         format!("{}", lit.to_string().unwrap()),
@@ -326,35 +326,35 @@ fn ast_head_literal() {
     let loc = Location::default();
     let sym = Symbol::create_id("test", true).unwrap();
     let term1 = symbolic_term(&loc, &sym).unwrap();
-    let atom1 = symbolic_atom(term1.into()).unwrap();
+    let atom1 = symbolic_atom(term1.clone().into()).unwrap();
     let term2 = symbolic_term(&loc, &sym).unwrap();
     let atom2 = symbolic_atom(term2.into()).unwrap();
     let lit = basic_literal_from_symbolic_atom(&loc, Sign::NoSign, atom1).unwrap();
     let lit2 = basic_literal_from_symbolic_atom(&loc, Sign::NoSign, atom2).unwrap();
-    let condition = vec![lit2.into()];
-    let cond = conditional_literal(&loc, lit.into(), &condition).unwrap();
-    let elements = vec![cond];
+    let condition: Vec<ast::Literal> = vec![lit2.into()];
+    let cond = conditional_literal(&loc, lit.clone().into(), &condition).unwrap();
+    let elements = vec![cond.clone()];
     let dis = disjunction(&loc, &elements).unwrap();
 
     let term3 = symbolic_term(&loc, &sym).unwrap();
     let gt = ComparisonOperator::GreaterThan;
     let guard = aggregate_guard(gt, term3.into()).unwrap();
-    let agg = aggregate(&loc, Some(guard), &elements, Some(guard)).unwrap();
+    let agg = aggregate(&loc, Some(guard.clone()), &elements, Some(guard.clone())).unwrap();
 
-    let tuple = vec![term1.into()];
+    let tuple = vec![term1.clone().into()];
     let helem = head_aggregate_element(&tuple, cond).unwrap();
     let elements = vec![helem];
     let hagg = head_aggregate(
         &loc,
-        Some(guard),
+        Some(guard.clone()),
         ast::AggregateFunction::Count,
         &elements,
         Some(guard),
     )
     .unwrap();
 
-    let th_term: TheoryTerm = term1.into();
-    let tuple = vec![th_term];
+    let th_term: TheoryTerm = term1.clone().into();
+    let tuple = vec![th_term.clone()];
     let element = theory_atom_element(&tuple, &condition).unwrap();
     let elements = vec![element];
     let guard = theory_guard("theory_operator", th_term).unwrap();

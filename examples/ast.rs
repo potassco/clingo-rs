@@ -11,8 +11,9 @@ pub struct OnStatementData<'a, 'b> {
 impl<'a, 'b> ast::StatementHandler for OnStatementData<'a, 'b> {
     // adds atom enable to all rule bodies
     fn on_statement(&mut self, stm: &mut ast::Statement) -> bool {
+        let stm_clone = stm.clone();
         // pass through all statements that are not rules
-        match stm.get_tterm().unwrap() {
+        match stm_clone.get_tterm().unwrap() {
             ast::TStatement::Rule(stm) => {
                 let body = stm.body();
                 let mut extended_body = std::vec::Vec::with_capacity(body.size().unwrap() + 1);
@@ -21,15 +22,16 @@ impl<'a, 'b> ast::StatementHandler for OnStatementData<'a, 'b> {
                 }
                 // create literal enable
                 let loc = Location::default();
+                let atom_copy = self.atom.clone();
                 let basic_lit =
-                    ast::basic_literal_from_symbolic_atom(&loc, ast::Sign::NoSign, *self.atom)
+                    ast::basic_literal_from_symbolic_atom(&loc, ast::Sign::NoSign, atom_copy)
                         .unwrap();
                 let lit: ast::Literal = basic_lit.into();
                 extended_body.push(lit.into());
 
                 // initialize the rule
                 let head = stm.head();
-                let rule = ast::rule(&loc, &head, &extended_body).unwrap();
+                let rule = ast::rule(&loc, head, &extended_body).unwrap();
 
                 // add the rewritten rule to the program builder
                 self.builder
@@ -100,7 +102,7 @@ fn main() {
     // add the external statement: #external enable. [false]
     let sym = Symbol::create_id("false", true).unwrap();
     let external_type = ast::symbolic_term(&loc, &sym).unwrap();
-    let ext = ast::external(&loc, atom, &[], external_type.into()).unwrap();
+    let ext = ast::external(&loc, atom.clone(), &[], external_type.into()).unwrap();
 
     builder
         .add(&mut ext.into())
