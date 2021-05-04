@@ -2447,7 +2447,7 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
             let lit = ast::basic_literal_from_symbolic_atom(&loc, ast::Sign::NoSign, atom).unwrap();
             let head: ast::Literal = ast::Literal::from(lit);
             // create (fact) rule
-            let fact = ast::rule(&loc, &head.into(), &[]).unwrap();
+            let fact = ast::rule(&loc, head.into(), &[]).unwrap();
             // get the program builder
             let mut builder = ast::ProgramBuilder::from(self).unwrap();
 

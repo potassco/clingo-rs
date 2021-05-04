@@ -246,21 +246,21 @@ unsafe extern "C" fn unsafe_ast_callback<T: StatementHandler>(
         );
         return false;
     }
-    let ast2 = NonNull::new(ast);
 
     let event_handler = &mut *(event_handler as *mut T);
 
-    match ast2 {
-        Some(x) => match Ast(x).get_type() {
-            Ok(AstType::Program) => event_handler.on_statement(&mut Statement(Ast(x))),
-            Ok(AstType::Rule) => event_handler.on_statement(&mut Statement(Ast(x))),
-            Ok(AstType::External) => event_handler.on_statement(&mut Statement(Ast(x))),
-            _ => unimplemented!(),
-        },
-        None => panic!("ast.as_mut() returned None"),
-    }
-
-    // event_handler.on_statement()
+    let ast = match NonNull::new(ast) {
+        Some(x) => Ast(x),
+        None => panic!("NonNull::new(ast) returned None"),
+    };
+    ast.acquire();
+    let mut stm = match ast.get_type() {
+        Ok(AstType::Program) => Statement(ast),
+        Ok(AstType::Rule) => Statement(ast),
+        Ok(AstType::External) => Statement(ast),
+        _ => unimplemented!(),
+    };
+    event_handler.on_statement(&mut stm)
 }
 
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -371,10 +371,10 @@ pub enum TheoryAtomType {
 
 // Here start the AstTypes
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct Term(Ast);
 impl Term {
-    pub fn get_tterm(&self) -> Result<TTerm, ClingoError> {
+    pub fn get_tterm(self) -> Result<TTerm, ClingoError> {
         match self.0.get_type()? {
             AstType::Variable => Ok(TTerm::Variable(Variable(self.0))),
             AstType::SymbolicTerm => Ok(TTerm::SymbolicTerm(SymbolicTerm(self.0))),
@@ -392,11 +392,6 @@ impl Term {
 }
 impl From<Variable> for Term {
     fn from(var: Variable) -> Self {
-        Term(var.0)
-    }
-}
-impl From<&Variable> for Term {
-    fn from(var: &Variable) -> Self {
         Term(var.0)
     }
 }
@@ -430,7 +425,7 @@ impl From<Pool> for Term {
         Term(pool.0)
     }
 }
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub enum TTerm {
     Variable(Variable),
     SymbolicTerm(SymbolicTerm),
@@ -440,10 +435,10 @@ pub enum TTerm {
     Function(Function),
     Pool(Pool),
 }
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct Literal(Ast);
 impl Literal {
-    pub fn get_tterm(&self) -> Result<TLiteral, ClingoError> {
+    pub fn get_tterm(self) -> Result<TLiteral, ClingoError> {
         match self.0.get_type()? {
             AstType::Literal => Ok(TLiteral::BasicLiteral(BasicLiteral(self.0))),
             AstType::CspLiteral => Ok(TLiteral::CspLiteral(CspLiteral(self.0))),
@@ -464,12 +459,12 @@ impl From<CspLiteral> for Literal {
         Literal(csp_lit.0)
     }
 }
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub enum TLiteral {
     BasicLiteral(BasicLiteral),
     CspLiteral(CspLiteral),
 }
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct Head(pub(crate) Ast);
 impl From<Literal> for Head {
     fn from(lit: Literal) -> Self {
@@ -497,7 +492,7 @@ impl From<TheoryAtom> for Head {
     }
 }
 impl Head {
-    pub fn get_tterm(&self) -> Result<THead, ClingoError> {
+    pub fn get_tterm(self) -> Result<THead, ClingoError> {
         match self.0.get_type()? {
             AstType::Literal => Ok(THead::Literal(Literal(self.0))),
             AstType::CspLiteral => Ok(THead::Aggregate(Aggregate(self.0))),
@@ -511,7 +506,7 @@ impl Head {
         self.0.to_string()
     }
 }
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub enum THead {
     Literal(Literal),
     Aggregate(Aggregate),
@@ -519,7 +514,7 @@ pub enum THead {
     Disjunction(Disjunction),
     TheoryAtom(TheoryAtom),
 }
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct BodyLiteral(pub(crate) Ast);
 impl From<Literal> for BodyLiteral {
     fn from(lit: Literal) -> Self {
@@ -537,7 +532,7 @@ impl From<AtomicLiteral> for BodyLiteral {
     }
 }
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct BodyAtom(Ast);
 impl From<Aggregate> for BodyAtom {
     fn from(lit: Aggregate) -> Self {
@@ -560,7 +555,7 @@ impl From<TheoryAtom> for BodyAtom {
     }
 }
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct TheoryTerm(Ast);
 impl From<SymbolicTerm> for TheoryTerm {
     fn from(term: SymbolicTerm) -> Self {
@@ -588,10 +583,10 @@ impl From<TheoryUnparsedTerm> for TheoryTerm {
     }
 }
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct Statement(pub(crate) Ast);
 impl Statement {
-    pub fn get_tterm(&self) -> Result<TStatement, ClingoError> {
+    pub fn get_tterm(self) -> Result<TStatement, ClingoError> {
         match self.0.get_type()? {
             AstType::Program => Ok(TStatement::Program(Program(self.0))),
             AstType::Rule => Ok(TStatement::Rule(Rule(self.0))),
@@ -603,7 +598,7 @@ impl Statement {
         self.0.to_string()
     }
 }
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub enum TStatement {
     Program(Program),
     Rule(Rule),
@@ -624,10 +619,10 @@ impl From<External> for Statement {
         Statement(ext.0)
     }
 }
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct Id(Ast);
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct Variable(Ast);
 
 impl Variable {
@@ -635,7 +630,7 @@ impl Variable {
         self.0.to_string()
     }
 }
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct SymbolicTerm(Ast);
 
 impl SymbolicTerm {
@@ -644,17 +639,17 @@ impl SymbolicTerm {
     }
 }
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct Function(Ast);
 impl Function {
     pub fn to_string(&self) -> Result<String, ClingoError> {
         self.0.to_string()
     }
 }
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct UnaryOperation(Ast);
 impl UnaryOperation {}
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct BinaryOperation(Ast);
 impl BinaryOperation {
     pub fn operator_type(&self) -> BinaryOperator {
@@ -667,7 +662,7 @@ impl BinaryOperation {
         unimplemented!()
     }
 }
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct Interval(Ast);
 impl Interval {
     pub fn left(&self) -> Term {
@@ -677,13 +672,13 @@ impl Interval {
         unimplemented!()
     }
 }
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct Pool(Ast);
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct CspProduct(Ast);
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct CspSum(Ast);
 
 pub struct CspTerm(Ast);
@@ -692,33 +687,32 @@ impl From<CspSum> for CspTerm {
         CspTerm(csp_sum.0)
     }
 }
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct CspGuard(Ast);
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 struct BooleanConstant(Ast);
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct SymbolicAtom(Ast);
-
 impl SymbolicAtom {
     pub fn to_string(&self) -> Result<String, ClingoError> {
         self.0.to_string()
     }
 }
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct Comparison(Ast);
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct CspLiteral(Ast);
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct AggregateGuard(Ast);
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct ConditionalLiteral(Ast);
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct Aggregate(Ast);
 
 impl Aggregate {
@@ -726,56 +720,56 @@ impl Aggregate {
         self.0.to_string()
     }
 }
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct BodyAggregateElement(Ast);
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct BodyAggregate(Ast);
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct HeadAggregateElement(Ast);
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct HeadAggregate(Ast);
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct Disjunction(Ast);
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct DisjointElement(Ast);
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct Disjoint(Ast);
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct TheorySequence(Ast);
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct TheoryFunction(Ast);
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct TheoryUnparsedTermElement(Ast);
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct TheoryUnparsedTerm(Ast);
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct TheoryGuard(Ast);
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct TheoryAtomElement(Ast);
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct TheoryAtom(Ast);
 impl TheoryAtom {
     pub fn to_string(&self) -> Result<String, ClingoError> {
         self.0.to_string()
     }
 }
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct AtomicLiteral(Ast);
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct BasicLiteral(Ast);
 
 impl BasicLiteral {
@@ -784,19 +778,19 @@ impl BasicLiteral {
     }
 }
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct TheoryOperatorDefinition(Ast);
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct TheoryTermDefinition(Ast);
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct TheoryGuardDefinition(Ast);
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct TheoryAtomDefinition(Ast);
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct Rule(pub(crate) Ast);
 
 impl Rule {
@@ -808,40 +802,40 @@ impl Rule {
     }
 }
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct Definition(Ast);
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct ShowSignature(Ast);
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct ShowTerm(Ast);
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct Minimize(Ast);
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct Script(Ast);
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct Program(pub(crate) Ast);
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct External(pub(crate) Ast);
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct Edge(Ast);
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct Heuristic(Ast);
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct ProjectAtom(Ast);
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct ProjectSignature(Ast);
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct Defined(Ast);
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct TheoryDefinition(Ast);
 
 // extern "C" {
@@ -1153,7 +1147,7 @@ pub fn csp_sum(
 pub fn csp_guard(
     location: &Location,
     comparison: ComparisonOperator,
-    term: &CspTerm,
+    term: CspTerm,
 ) -> Result<CspGuard, ClingoError> {
     let mut ast = std::ptr::null_mut();
 
@@ -2061,7 +2055,7 @@ pub fn theory_atom_definition(
 }
 
 /// Construct an AST node of type `ASTType.Rule`.
-pub fn rule(location: &Location, head: &Head, body: &[BodyLiteral]) -> Result<Rule, ClingoError> {
+pub fn rule(location: &Location, head: Head, body: &[BodyLiteral]) -> Result<Rule, ClingoError> {
     let mut ast = std::ptr::null_mut();
 
     if !unsafe {
