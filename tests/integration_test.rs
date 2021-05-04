@@ -386,50 +386,54 @@ fn ast_head_literal() {
 }
 #[test]
 fn ast_body_literal() {
-    //     let sym = Symbol::create_id("test", true).unwrap();
-    //     let term1 = Term::from(sym);
-    //     let term2 = Term::from(sym);
-    //     let lit = ast::Literal::from_term(Sign::NoSign, &term1);
-    //     let lit2 = ast::Literal::from_term(Sign::NoSign, &term2);
-    //     let condition = vec![lit2];
-    //     let cond = ConditionalLiteral::new(&lit, &condition);
-    //     let elements = vec![cond];
+    let loc = Location::default();
+    let sym = Symbol::create_id("test", true).unwrap();
+    let term1 = symbolic_term(&loc, &sym).unwrap();
+    let atom1 = symbolic_atom(term1.clone().into()).unwrap();
+    let term2 = symbolic_term(&loc, &sym).unwrap();
+    let atom2 = symbolic_atom(term2.clone().into()).unwrap();
+    let lit = basic_literal_from_symbolic_atom(&loc, Sign::NoSign, atom1).unwrap();
+    let lit2 = basic_literal_from_symbolic_atom(&loc, Sign::NoSign, atom2).unwrap();
+    let condition = vec![lit2.into()];
+    let cond = conditional_literal(&loc, lit.clone().into(), &condition).unwrap();
+    let elements = vec![cond];
 
-    //     let term3 = Term::from(sym);
-    //     let guard = AggregateGuard::gt(term3);
-    //     let agg = Aggregate::new(&elements, Some(&guard), Some(&guard));
+    let term3 = symbolic_term(&loc, &sym).unwrap();
+    let gt = ComparisonOperator::GreaterThan;
+    let guard = aggregate_guard(gt, term3.into()).unwrap();
+    let agg = aggregate(&loc, Some(guard.clone()), &elements, Some(guard.clone()));
 
-    //     let tuple = vec![term1];
-    //     let element = BodyAggregateElement::new(&tuple, &condition);
-    //     let elements = vec![element];
-    //     let bagg = BodyAggregate::new(
-    //         AggregateFunction::Count,
-    //         &elements,
-    //         Some(&guard),
-    //         Some(&guard),
-    //     );
+    let tuple = vec![term1.clone().into()];
+    let element = body_aggregate_element(&tuple, &condition).unwrap();
+    let elements = vec![element];
+    let bagg = body_aggregate(
+        &loc,
+        Some(guard.clone()),
+        AggregateFunction::Count,
+        &elements,
+        Some(guard),
+    );
 
-    //     let th_term = TheoryTerm::from(sym);
-    //     let tuple = vec![th_term];
-    //     let element = TheoryAtomElement::new(&tuple, &condition);
-    //     let elements = vec![element];
-    //     let operator_name = String::from("theory_operator");
-    //     let guard = TheoryGuard::new(&operator_name, th_term).unwrap();
-    //     let tatom = TheoryAtom::new(term1, &elements, Some(&guard));
+    let th_term = symbolic_term(&loc, &sym).unwrap();
+    let tuple = vec![th_term.clone().into()];
+    let element = theory_atom_element(&tuple, &condition).unwrap();
+    let elements = vec![element.into()];
+    let guard = theory_guard("theory_operator", th_term.into()).unwrap();
+    let tatom = theory_atom(&loc, term1.clone().into(), &elements, Some(guard));
 
-    //     let tuple = vec![term1];
-    //     let csp_prod_term1 = CspProductTerm::new(term1, &term2);
-    //     let csp_prod_terms1 = vec![csp_prod_term1];
-    //     let csp_sum_term1 = CspSumTerm::new(&csp_prod_terms1);
-    //     let element = DisjointElement::new(&tuple, csp_sum_term1, &condition);
-    //     let elements = vec![element];
-    //     let dis = Disjoint::new(&elements);
+    let tuple = vec![term1.clone()];
+    let csp_prod_term1 = csp_product(&loc, term1.into(), Some(term2.into()));
+    let csp_prod_terms1 = vec![csp_prod_term1];
 
-    //     let blit = ast::BodyLiteral::from_literal(Sign::NoSign, &lit);
-    //     assert_eq!(
-    //         format!("{:?}", blit),
-    //         "BodyLiteral { sign: NoSign literal: Literal { sign: NoSign symbol: Term { symbol: test } } }"
-    //     );
+    // TODO activate test when clingo bug fixed
+    // let csp_sum_term1 = csp_sum(&loc, &csp_prod_terms1);
+    // let element = DisjointElement::new(&tuple, csp_sum_term1, &condition);
+    // let elements = vec![element];
+    // let dis = disjoint(&loc,&elements);
+
+    let blit: ast::Literal = lit.into();
+    let blit: BodyLiteral = blit.into();
+    assert_eq!(format!("{}", blit), "test");
 
     //     let blit = ast::BodyLiteral::from_conditional(Sign::NoSign, &cond);
     //     assert_eq!(
