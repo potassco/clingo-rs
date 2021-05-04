@@ -405,6 +405,19 @@ impl Clone for Ast {
         Ast(self.0.clone())
     }
 }
+use std::fmt;
+impl fmt::Display for Ast {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let x = self.to_string();
+        match x {
+            Ok(string) => write!(f, "{}", string),
+            Err(e) => {
+                eprintln!("{}", e);
+                Err(fmt::Error)
+            }
+        }
+    }
+}
 
 impl Ast {
     // extern "C" {
