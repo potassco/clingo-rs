@@ -1,5 +1,6 @@
 use clingo::{
-    ast, control, Control, Location, Model, Part, ShowType, SolveMode, Symbol, TruthValue,
+    ast, control, Control, ExternalType, Location, Model, Part, ShowType, SolveMode, Symbol,
+    TruthValue,
 };
 use std::env;
 
@@ -101,8 +102,7 @@ fn main() {
 
     // add the external statement: #external enable. [false]
     let sym = Symbol::create_id("false", true).unwrap();
-    let external_type = ast::symbolic_term(&loc, &sym).unwrap();
-    let ext = ast::external(&loc, atom.clone(), &[], external_type.into()).unwrap();
+    let ext = ast::external(&loc, atom.clone(), &[], ExternalType::True).unwrap();
 
     builder
         .add(&mut ext.into())

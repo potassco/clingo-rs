@@ -1,5 +1,5 @@
 use crate::{
-    set_internal_error, ClingoError, ControlLPOF, ErrorType, FunctionHandler,
+    set_internal_error, ClingoError, ControlLPOF, ErrorType, ExternalType, FunctionHandler,
     GroundProgramObserver, Logger, Propagator,
 };
 
@@ -350,6 +350,17 @@ pub enum TheoryTermSequenceType {
     /// for theory sets `{t1,...,tn}`.
     Set = clingo_ast_theory_sequence_type_e_clingo_ast_theory_sequence_type_set as isize,
 }
+#[derive(Debug, Copy, Clone)]
+pub enum TheoryOperatorType {
+    /// TODO
+    BinaryLeft =
+        clingo_ast_theory_operator_type_e_clingo_ast_theory_operator_type_binary_left as isize,
+    /// TODO
+    BinaryRight =
+        clingo_ast_theory_operator_type_e_clingo_ast_theory_operator_type_binary_right as isize,
+    /// TODO
+    Unary = clingo_ast_theory_operator_type_e_clingo_ast_theory_operator_type_unary as isize,
+}
 
 #[derive(Debug, Copy, Clone)]
 /// Enumeration of the theory atom types.
@@ -522,6 +533,21 @@ pub enum TLiteral {
 }
 #[derive(Debug, Clone)]
 pub struct Head(pub(crate) Ast);
+impl From<BasicLiteral> for Head {
+    fn from(lit: BasicLiteral) -> Self {
+        Head(lit.0)
+    }
+}
+impl From<AtomicLiteral> for Head {
+    fn from(lit: AtomicLiteral) -> Self {
+        Head(lit.0)
+    }
+}
+impl From<CspLiteral> for Head {
+    fn from(csp_lit: CspLiteral) -> Self {
+        Head(csp_lit.0)
+    }
+}
 impl From<Literal> for Head {
     fn from(lit: Literal) -> Self {
         Head(lit.0)
@@ -572,6 +598,16 @@ pub enum THead {
 }
 #[derive(Debug, Clone)]
 pub struct BodyLiteral(pub(crate) Ast);
+impl From<BasicLiteral> for BodyLiteral {
+    fn from(lit: BasicLiteral) -> Self {
+        BodyLiteral(lit.0)
+    }
+}
+impl From<CspLiteral> for BodyLiteral {
+    fn from(lit: CspLiteral) -> Self {
+        BodyLiteral(lit.0)
+    }
+}
 impl From<Literal> for BodyLiteral {
     fn from(lit: Literal) -> Self {
         BodyLiteral(lit.0)
@@ -2045,7 +2081,7 @@ pub fn theory_operator_definition(
     location: &Location,
     name: &str,
     priority: u32,
-    operator_type: u32,
+    operator_type: TheoryOperatorType,
 ) -> Result<TheoryOperatorDefinition, ClingoError> {
     let mut ast = std::ptr::null_mut();
 
@@ -2401,9 +2437,28 @@ pub fn external(
     location: &Location,
     atom: SymbolicAtom,
     body: &[BodyLiteral],
-    external_type: Term,
+    external_type: ExternalType,
 ) -> Result<External, ClingoError> {
     let mut ast = std::ptr::null_mut();
+    let external_type = match external_type {
+        ExternalType::False => {
+            let symbol = Symbol::create_id("false", true)?;
+            symbolic_term(&Location::default(), &symbol)
+        }
+        ExternalType::True => {
+            let symbol = Symbol::create_id("true", true)?;
+            symbolic_term(&Location::default(), &symbol)
+        }
+        ExternalType::Free => {
+            let symbol = Symbol::create_id("free", true)?;
+            symbolic_term(&Location::default(), &symbol)
+        }
+        ExternalType::Release => {
+            let symbol = Symbol::create_id("release", true)?;
+            symbolic_term(&Location::default(), &symbol)
+        }
+    }
+    .unwrap();
     if !unsafe {
         clingo_ast_build(
             clingo_ast_type_e_clingo_ast_type_external as i32,
