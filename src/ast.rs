@@ -531,7 +531,12 @@ impl From<AtomicLiteral> for BodyLiteral {
         BodyLiteral(lit.0)
     }
 }
-
+use std::fmt;
+impl fmt::Display for BodyLiteral {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.0.fmt(f)
+    }
+}
 #[derive(Debug, Clone)]
 pub struct BodyAtom(Ast);
 impl From<Aggregate> for BodyAtom {
@@ -1401,7 +1406,7 @@ pub fn body_aggregate_element(
 pub fn body_aggregate(
     location: &Location,
     left_guard: Option<AggregateGuard>,
-    function: i32,
+    function: AggregateFunction,
     elements: &[BodyAggregateElement],
     right_guard: Option<AggregateGuard>,
 ) -> Result<BodyAggregate, ClingoError> {
