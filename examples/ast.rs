@@ -98,10 +98,9 @@ fn main() {
     let loc = Location::default();
     let id = ast::function(&loc, "enable", &[], false).unwrap();
 
-    let atom = ast::symbolic_atom(id.into()).unwrap();
+    let atom = ast::symbolic_atom(id).unwrap();
 
     // add the external statement: #external enable. [false]
-    let sym = Symbol::create_id("false", true).unwrap();
     let ext = ast::external(&loc, atom.clone(), &[], ExternalType::True).unwrap();
 
     builder
