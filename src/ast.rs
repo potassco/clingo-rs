@@ -1125,11 +1125,15 @@ pub fn function(
 }
 
 /// Construct an AST node of type `ASTType.UnaryOperation`.
-pub fn unary_operation(
+pub fn unary_operation<T>(
     location: &Location,
     operator_type: UnaryOperator,
-    argument: Term,
-) -> Result<UnaryOperation, ClingoError> {
+    argument: T,
+) -> Result<UnaryOperation, ClingoError>
+where
+    T: Into<Term>,
+{
+    let argument: Term = argument.into();
     let mut ast = std::ptr::null_mut();
 
     if !unsafe {
@@ -1154,12 +1158,18 @@ pub fn unary_operation(
 }
 
 /// Construct an AST node of type `ASTType.BinaryOperation`.
-pub fn binary_operation(
+pub fn binary_operation<T1, T2>(
     location: &Location,
     operator_type: BinaryOperator,
-    left: Term,
-    right: Term,
-) -> Result<BinaryOperation, ClingoError> {
+    left: T1,
+    right: T2,
+) -> Result<BinaryOperation, ClingoError>
+where
+    T1: Into<Term>,
+    T2: Into<Term>,
+{
+    let left: Term = left.into();
+    let right: Term = right.into();
     let mut ast = std::ptr::null_mut();
     if !unsafe {
         clingo_ast_build(
@@ -1184,7 +1194,13 @@ pub fn binary_operation(
 }
 
 /// Construct an AST node of type `ASTType.Interval`.
-pub fn interval(location: &Location, left: Term, right: Term) -> Result<Interval, ClingoError> {
+pub fn interval<T1, T2>(location: &Location, left: T1, right: T2) -> Result<Interval, ClingoError>
+where
+    T1: Into<Term>,
+    T2: Into<Term>,
+{
+    let left: Term = left.into();
+    let right: Term = right.into();
     let mut ast = std::ptr::null_mut();
     if !unsafe {
         clingo_ast_build(
@@ -1233,14 +1249,20 @@ pub fn pool(location: &Location, arguments: &[Term]) -> Result<Pool, ClingoError
 }
 
 /// Construct an AST node of type `ASTType.CspProduct`.
-pub fn csp_product(
+pub fn csp_product<T1, T2>(
     location: &Location,
-    coefficient: Term,
-    variable: Option<Term>,
-) -> Result<CspProduct, ClingoError> {
+    coefficient: T1,
+    variable: Option<T2>,
+) -> Result<CspProduct, ClingoError>
+where
+    T1: Into<Term>,
+    T2: Into<Term>,
+{
+    let coefficient: Term = coefficient.into();
     let mut ast = std::ptr::null_mut();
 
     if let Some(variable) = variable {
+        let variable: Term = variable.into();
         if !unsafe {
             clingo_ast_build(
                 clingo_ast_type_e_clingo_ast_type_csp_product as i32,
@@ -1307,11 +1329,15 @@ pub fn csp_sum(
 }
 
 /// Construct an AST node of type `ASTType.CspGuard`.
-pub fn csp_guard(
+pub fn csp_guard<T>(
     location: &Location,
     comparison: ComparisonOperator,
-    term: CspTerm,
-) -> Result<CspGuard, ClingoError> {
+    term: T,
+) -> Result<CspGuard, ClingoError>
+where
+    T: Into<CspTerm>,
+{
+    let term: CspTerm = term.into();
     let mut ast = std::ptr::null_mut();
 
     if !unsafe {
@@ -1358,7 +1384,11 @@ fn boolean_constant(value: bool) -> Result<BooleanConstant, ClingoError> {
 }
 
 /// Construct an AST node of type `ASTType.SymbolicAtom`.
-pub fn symbolic_atom(symbol: Term) -> Result<SymbolicAtom, ClingoError> {
+pub fn symbolic_atom<T>(symbol: T) -> Result<SymbolicAtom, ClingoError>
+where
+    T: Into<Term>,
+{
+    let symbol: Term = symbol.into();
     let mut ast = std::ptr::null_mut();
     if !unsafe {
         clingo_ast_build(
@@ -1380,11 +1410,17 @@ pub fn symbolic_atom(symbol: Term) -> Result<SymbolicAtom, ClingoError> {
 }
 
 /// Construct an AST node of type `ASTType.Comparison`.
-pub fn comparison(
+pub fn comparison<T1, T2>(
     comparison: ComparisonOperator,
-    left: Term,
-    right: Term,
-) -> Result<Comparison, ClingoError> {
+    left: T1,
+    right: T2,
+) -> Result<Comparison, ClingoError>
+where
+    T1: Into<Term>,
+    T2: Into<Term>,
+{
+    let left: Term = left.into();
+    let right: Term = right.into();
     let mut ast = std::ptr::null_mut();
     if !unsafe {
         clingo_ast_build(
@@ -1438,10 +1474,14 @@ pub fn csp_literal(
 }
 
 /// Construct an AST node of type `ASTType.AggregateGuard`.
-pub fn aggregate_guard(
+pub fn aggregate_guard<T>(
     comparison: ComparisonOperator,
-    term: Term,
-) -> Result<AggregateGuard, ClingoError> {
+    term: T,
+) -> Result<AggregateGuard, ClingoError>
+where
+    T: Into<Term>,
+{
+    let term: Term = term.into();
     let mut ast = std::ptr::null_mut();
     if !unsafe {
         clingo_ast_build(
@@ -1464,11 +1504,15 @@ pub fn aggregate_guard(
 }
 
 /// Construct an AST node of type `ASTType.ConditionalLiteral`.
-pub fn conditional_literal(
+pub fn conditional_literal<L>(
     location: &Location,
-    literal: Literal,
+    literal: L,
     condition: &[Literal],
-) -> Result<ConditionalLiteral, ClingoError> {
+) -> Result<ConditionalLiteral, ClingoError>
+where
+    L: Into<Literal>,
+{
+    let literal: Literal = literal.into();
     let mut ast = std::ptr::null_mut();
 
     if !unsafe {
@@ -1700,12 +1744,16 @@ pub fn disjunction(
 }
 
 /// Construct an AST node of type `ASTType.DisjointElement`.
-pub fn disjoint_element(
+pub fn disjoint_element<T>(
     location: &Location,
     terms: &[Term],
-    term: CspTerm,
+    term: T,
     condition: &[Literal],
-) -> Result<DisjointElement, ClingoError> {
+) -> Result<DisjointElement, ClingoError>
+where
+    T: Into<Term>,
+{
+    let term: Term = term.into();
     let mut ast = std::ptr::null_mut();
 
     if !unsafe {
@@ -1875,7 +1923,11 @@ pub fn theory_unparsed_term(
 }
 
 /// Construct an AST node of type `ASTType.TheoryGuard`.
-pub fn theory_guard(operator_name: &str, term: TheoryTerm) -> Result<TheoryGuard, ClingoError> {
+pub fn theory_guard<T>(operator_name: &str, term: T) -> Result<TheoryGuard, ClingoError>
+where
+    T: Into<TheoryTerm>,
+{
+    let term: TheoryTerm = term.into();
     let mut ast = std::ptr::null_mut();
     let operator_name = internalize_string(operator_name)?;
     if !unsafe {
@@ -1927,12 +1979,16 @@ pub fn theory_atom_element(
 }
 
 /// Construct an AST node of type `ASTType.TheoryAtom`.
-pub fn theory_atom(
+pub fn theory_atom<T>(
     location: &Location,
-    term: Term,
+    term: T,
     elements: &[TheoryAtomElement],
     guard: Option<TheoryGuard>,
-) -> Result<TheoryAtom, ClingoError> {
+) -> Result<TheoryAtom, ClingoError>
+where
+    T: Into<Term>,
+{
+    let term: Term = term.into();
     let mut ast = std::ptr::null_mut();
 
     let guard = match &guard {
@@ -2218,9 +2274,12 @@ pub fn theory_atom_definition(
 }
 
 /// Construct an AST node of type `ASTType.Rule`.
-pub fn rule(location: &Location, head: Head, body: &[BodyLiteral]) -> Result<Rule, ClingoError> {
+pub fn rule<H>(location: &Location, head: H, body: &[BodyLiteral]) -> Result<Rule, ClingoError>
+where
+    H: Into<Head>,
+{
+    let head: Head = head.into();
     let mut ast = std::ptr::null_mut();
-
     if !unsafe {
         clingo_ast_build(
             clingo_ast_type_e_clingo_ast_type_rule as i32,
@@ -2245,12 +2304,16 @@ pub fn rule(location: &Location, head: Head, body: &[BodyLiteral]) -> Result<Rul
 }
 
 /// Construct an AST node of type `ASTType.Definition`.
-pub fn definition(
+pub fn definition<T>(
     location: &Location,
     name: &str,
-    value: Term,
+    value: T,
     is_default: bool,
-) -> Result<Definition, ClingoError> {
+) -> Result<Definition, ClingoError>
+where
+    T: Into<Term>,
+{
+    let value: Term = value.into();
     let mut ast = std::ptr::null_mut();
     let name = internalize_string(name)?;
 
@@ -2311,12 +2374,16 @@ pub fn show_signature(
 }
 
 /// Construct an AST node of type `ASTType.ShowTerm`.
-pub fn show_term(
+pub fn show_term<T>(
     location: &Location,
-    term: Term,
+    term: T,
     body: &[BodyLiteral],
     csp: bool,
-) -> Result<ShowTerm, ClingoError> {
+) -> Result<ShowTerm, ClingoError>
+where
+    T: Into<Term>,
+{
+    let term: Term = term.into();
     let mut ast = std::ptr::null_mut();
     if !unsafe {
         clingo_ast_build(
@@ -2342,13 +2409,19 @@ pub fn show_term(
 }
 
 /// Construct an AST node of type `ASTType.Minimize`.
-pub fn minimize(
+pub fn minimize<T1, T2>(
     location: &Location,
-    weight: Term,
-    priority: Term,
+    weight: T1,
+    priority: T2,
     terms: &[Term],
     body: &[BodyLiteral],
-) -> Result<Minimize, ClingoError> {
+) -> Result<Minimize, ClingoError>
+where
+    T1: Into<Term>,
+    T2: Into<Term>,
+{
+    let weight: Term = weight.into();
+    let priority: Term = priority.into();
     let mut ast = std::ptr::null_mut();
 
     if !unsafe {
@@ -2483,12 +2556,18 @@ pub fn external(
 }
 
 /// Construct an AST node of type `ASTType.Edge`.
-pub fn edge(
+pub fn edge<T1, T2>(
     location: &Location,
-    node_u: Term,
-    node_v: Term,
+    node_u: T1,
+    node_v: T2,
     body: &[BodyLiteral],
-) -> Result<Edge, ClingoError> {
+) -> Result<Edge, ClingoError>
+where
+    T1: Into<Term>,
+    T2: Into<Term>,
+{
+    let node_u: Term = node_u.into();
+    let node_v: Term = node_v.into();
     let mut ast = std::ptr::null_mut();
 
     if !unsafe {
@@ -2515,14 +2594,22 @@ pub fn edge(
 }
 
 /// Construct an AST node of type `ASTType.Heuristic`.
-pub fn heuristic(
+pub fn heuristic<T1, T2, T3>(
     location: &Location,
     atom: SymbolicAtom,
     body: &[BodyLiteral],
-    bias: Term,
-    priority: Term,
-    modifier: Term,
-) -> Result<Heuristic, ClingoError> {
+    bias: T1,
+    priority: T2,
+    modifier: T3,
+) -> Result<Heuristic, ClingoError>
+where
+    T1: Into<Term>,
+    T2: Into<Term>,
+    T3: Into<Term>,
+{
+    let bias: Term = bias.into();
+    let priority: Term = priority.into();
+    let modifier: Term = modifier.into();
     let mut ast = std::ptr::null_mut();
 
     if !unsafe {
