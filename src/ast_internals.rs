@@ -401,8 +401,8 @@ pub(crate) struct Ast(pub NonNull<clingo_ast_t>);
 
 impl Clone for Ast {
     fn clone(&self) -> Ast {
-        self.acquire();
-        Ast(self.0.clone())
+        let cpy = self.deep_copy().unwrap();
+        cpy
     }
 }
 use std::fmt;
@@ -419,32 +419,6 @@ impl fmt::Display for Ast {
     }
 }
 
-impl Ast {
-    // extern "C" {
-    // #[doc = "! Deep copy an AST node."]
-    // #[doc = "!"]
-    // #[doc = "! @param[in] ast the AST to copy"]
-    // #[doc = "! @param[out] copy the resulting AST"]
-    // #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
-    // #[doc = "! - ::clingo_error_bad_alloc"]
-    // pub fn clingo_ast_copy(ast: *mut clingo_ast_t, copy: *mut *mut clingo_ast_t) -> bool;
-    // }
-    // pub fn copy(&self) -> Result<Ast, ClingoError> {
-    //     let mut cpy = std::ptr::null_mut();
-    //     if !unsafe { clingo_ast_copy(self.0.as_ptr(), &mut cpy) } {
-    //         eprintln!("Call to clingo_ast_to_string_size() failed");
-    //         return Err(ClingoError::new_internal(
-    //             "Call to clingo_ast_copy() failed.",
-    //         ));
-    //     }
-    //     match NonNull::new(cpy) {
-    //         Some(cpy) => Ok(Ast(cpy)),
-    //         None => Err(ClingoError::FFIError {
-    //             msg: "Tried creating NonNull from a null pointer.",
-    //         })?,
-    //     }
-    // }
-}
 impl Drop for Ast {
     fn drop(&mut self) {
         self.release()
@@ -491,9 +465,32 @@ impl Ast {
         // println!("ast: {}", self.to_string().unwrap());
         unsafe { clingo_ast_release(self.0.as_ptr()) }
     }
-
     // extern "C" {
-    //     #[doc = "! Create a shallow copy of an AST node."]
+    // #[doc = "! Create a shallow copy of an AST node."]
+    // #[doc = "!"]
+    // #[doc = "! @param[in] ast the AST to copy"]
+    // #[doc = "! @param[out] copy the resulting AST"]
+    // #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
+    // #[doc = "! - ::clingo_error_bad_alloc"]
+    // pub fn clingo_ast_copy(ast: *mut clingo_ast_t, copy: *mut *mut clingo_ast_t) -> bool;
+    // }
+    pub(crate) fn copy(&self) -> Result<Ast, ClingoError> {
+        let mut cpy = std::ptr::null_mut();
+        if !unsafe { clingo_ast_copy(self.0.as_ptr(), &mut cpy) } {
+            eprintln!("Call to clingo_ast_copy() failed");
+            return Err(ClingoError::new_internal(
+                "Call to clingo_ast_copy() failed.",
+            ));
+        }
+        match NonNull::new(cpy) {
+            Some(cpy) => Ok(Ast(cpy)),
+            None => Err(ClingoError::FFIError {
+                msg: "Tried creating NonNull from a null pointer.",
+            })?,
+        }
+    }
+    // extern "C" {
+    //     #[doc = "! Create a deep copy of an AST node."]
     //     #[doc = "!"]
     //     #[doc = "! @param[in] ast the AST to copy"]
     //     #[doc = "! @param[out] copy the resulting AST"]
@@ -501,6 +498,21 @@ impl Ast {
     //     #[doc = "! - ::clingo_error_bad_alloc"]
     //     pub fn clingo_ast_deep_copy(ast: *mut clingo_ast_t, copy: *mut *mut clingo_ast_t) -> bool;
     // }
+    pub(crate) fn deep_copy(&self) -> Result<Ast, ClingoError> {
+        let mut cpy = std::ptr::null_mut();
+        if !unsafe { clingo_ast_deep_copy(self.0.as_ptr(), &mut cpy) } {
+            eprintln!("Call to clingo_ast_deep_copy() failed");
+            return Err(ClingoError::new_internal(
+                "Call to clingo_ast_deep_copy() failed.",
+            ));
+        }
+        match NonNull::new(cpy) {
+            Some(cpy) => Ok(Ast(cpy)),
+            None => Err(ClingoError::FFIError {
+                msg: "Tried creating NonNull from a null pointer.",
+            })?,
+        }
+    }
     // extern "C" {
     //     #[doc = "! Less than compare two AST nodes."]
     //     #[doc = "!"]
@@ -581,7 +593,7 @@ impl Ast {
     /// @param[out] type the resulting type
     /// @return whether the call was successful; might set one of the following error codes:
     /// - ::clingo_error_runtime
-    pub fn get_type(&self) -> Result<AstType, ClingoError> {
+    pub(crate) fn get_type(&self) -> Result<AstType, ClingoError> {
         let mut ast_type = 0;
         if !unsafe { clingo_ast_get_type(self.0.as_ptr(), &mut ast_type) } {
             return Err(ClingoError::new_internal(
@@ -613,7 +625,7 @@ impl Ast {
     // #[doc = "! @param[out] type the resulting type"]
     // #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
     // #[doc = "! - ::clingo_error_runtime"]
-    pub fn get_attribute_type(
+    pub(crate) fn get_attribute_type(
         &self,
         attribute: AstAttribute,
     ) -> Result<AstAttributeType, ClingoError> {
