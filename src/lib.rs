@@ -6292,32 +6292,31 @@ impl<A: ToSymbol, B: ToSymbol> ToSymbol for (A, B) {
 }
 impl<A: ToSymbol, B: ToSymbol, C: ToSymbol> ToSymbol for (A, B, C) {
     fn symbol(&self) -> Result<Symbol, ClingoError> {
-        let mut tempvec = vec![];
-        tempvec.push(self.0.symbol()?);
-        tempvec.push(self.1.symbol()?);
-        tempvec.push(self.2.symbol()?);
+        let tempvec = vec![self.0.symbol()?, self.1.symbol()?, self.2.symbol()?];
         Symbol::create_function("", &tempvec, true)
     }
 }
 impl<A: ToSymbol, B: ToSymbol, C: ToSymbol, D: ToSymbol> ToSymbol for (A, B, C, D) {
     fn symbol(&self) -> Result<Symbol, ClingoError> {
-        let mut tempvec = vec![];
-        tempvec.push(self.0.symbol()?);
-        tempvec.push(self.1.symbol()?);
-        tempvec.push(self.2.symbol()?);
-        tempvec.push(self.3.symbol()?);
+        let tempvec = vec![
+            self.0.symbol()?,
+            self.1.symbol()?,
+            self.2.symbol()?,
+            self.3.symbol()?,
+        ];
         Symbol::create_function("", &tempvec, true)
     }
 }
 
 impl<A: ToSymbol, B: ToSymbol, C: ToSymbol, D: ToSymbol, E: ToSymbol> ToSymbol for (A, B, C, D, E) {
     fn symbol(&self) -> Result<Symbol, ClingoError> {
-        let mut tempvec = vec![];
-        tempvec.push(self.0.symbol()?);
-        tempvec.push(self.1.symbol()?);
-        tempvec.push(self.2.symbol()?);
-        tempvec.push(self.3.symbol()?);
-        tempvec.push(self.4.symbol()?);
+        let tempvec = vec![
+            self.0.symbol()?,
+            self.1.symbol()?,
+            self.2.symbol()?,
+            self.3.symbol()?,
+            self.4.symbol()?,
+        ];
         Symbol::create_function("", &tempvec, true)
     }
 }
@@ -6325,13 +6324,14 @@ impl<A: ToSymbol, B: ToSymbol, C: ToSymbol, D: ToSymbol, E: ToSymbol, F: ToSymbo
     for (A, B, C, D, E, F)
 {
     fn symbol(&self) -> Result<Symbol, ClingoError> {
-        let mut tempvec = vec![];
-        tempvec.push(self.0.symbol()?);
-        tempvec.push(self.1.symbol()?);
-        tempvec.push(self.2.symbol()?);
-        tempvec.push(self.3.symbol()?);
-        tempvec.push(self.4.symbol()?);
-        tempvec.push(self.5.symbol()?);
+        let tempvec = vec![
+            self.0.symbol()?,
+            self.1.symbol()?,
+            self.2.symbol()?,
+            self.3.symbol()?,
+            self.4.symbol()?,
+            self.5.symbol()?,
+        ];
         Symbol::create_function("", &tempvec, true)
     }
 }
@@ -6339,14 +6339,15 @@ impl<A: ToSymbol, B: ToSymbol, C: ToSymbol, D: ToSymbol, E: ToSymbol, F: ToSymbo
     ToSymbol for (A, B, C, D, E, F, G)
 {
     fn symbol(&self) -> Result<Symbol, ClingoError> {
-        let mut tempvec = vec![];
-        tempvec.push(self.0.symbol()?);
-        tempvec.push(self.1.symbol()?);
-        tempvec.push(self.2.symbol()?);
-        tempvec.push(self.3.symbol()?);
-        tempvec.push(self.4.symbol()?);
-        tempvec.push(self.5.symbol()?);
-        tempvec.push(self.6.symbol()?);
+        let tempvec = vec![
+            self.0.symbol()?,
+            self.1.symbol()?,
+            self.2.symbol()?,
+            self.3.symbol()?,
+            self.4.symbol()?,
+            self.5.symbol()?,
+            self.6.symbol()?,
+        ];
         Symbol::create_function("", &tempvec, true)
     }
 }
@@ -6362,15 +6363,16 @@ impl<
     > ToSymbol for (A, B, C, D, E, F, G, H)
 {
     fn symbol(&self) -> Result<Symbol, ClingoError> {
-        let mut tempvec = vec![];
-        tempvec.push(self.0.symbol()?);
-        tempvec.push(self.1.symbol()?);
-        tempvec.push(self.2.symbol()?);
-        tempvec.push(self.3.symbol()?);
-        tempvec.push(self.4.symbol()?);
-        tempvec.push(self.5.symbol()?);
-        tempvec.push(self.6.symbol()?);
-        tempvec.push(self.7.symbol()?);
+        let tempvec = vec![
+            self.0.symbol()?,
+            self.1.symbol()?,
+            self.2.symbol()?,
+            self.3.symbol()?,
+            self.4.symbol()?,
+            self.5.symbol()?,
+            self.6.symbol()?,
+            self.7.symbol()?,
+        ];
         Symbol::create_function("", &tempvec, true)
     }
 }
@@ -6388,16 +6390,17 @@ impl<
     > ToSymbol for (A, B, C, D, E, F, G, H, I)
 {
     fn symbol(&self) -> Result<Symbol, ClingoError> {
-        let mut tempvec = vec![];
-        tempvec.push(self.0.symbol()?);
-        tempvec.push(self.1.symbol()?);
-        tempvec.push(self.2.symbol()?);
-        tempvec.push(self.3.symbol()?);
-        tempvec.push(self.4.symbol()?);
-        tempvec.push(self.5.symbol()?);
-        tempvec.push(self.6.symbol()?);
-        tempvec.push(self.7.symbol()?);
-        tempvec.push(self.8.symbol()?);
+        let tempvec = vec![
+            self.0.symbol()?,
+            self.1.symbol()?,
+            self.2.symbol()?,
+            self.3.symbol()?,
+            self.4.symbol()?,
+            self.5.symbol()?,
+            self.6.symbol()?,
+            self.7.symbol()?,
+            self.8.symbol()?,
+        ];
         Symbol::create_function("", &tempvec, true)
     }
 }
@@ -6415,17 +6418,18 @@ impl<
     > ToSymbol for (A, B, C, D, E, F, G, H, I, J)
 {
     fn symbol(&self) -> Result<Symbol, ClingoError> {
-        let mut tempvec = vec![];
-        tempvec.push(self.0.symbol()?);
-        tempvec.push(self.1.symbol()?);
-        tempvec.push(self.2.symbol()?);
-        tempvec.push(self.3.symbol()?);
-        tempvec.push(self.4.symbol()?);
-        tempvec.push(self.5.symbol()?);
-        tempvec.push(self.6.symbol()?);
-        tempvec.push(self.7.symbol()?);
-        tempvec.push(self.8.symbol()?);
-        tempvec.push(self.9.symbol()?);
+        let tempvec = vec![
+            self.0.symbol()?,
+            self.1.symbol()?,
+            self.2.symbol()?,
+            self.3.symbol()?,
+            self.4.symbol()?,
+            self.5.symbol()?,
+            self.6.symbol()?,
+            self.7.symbol()?,
+            self.8.symbol()?,
+            self.9.symbol()?,
+        ];
         Symbol::create_function("", &tempvec, true)
     }
 }
@@ -6444,18 +6448,19 @@ impl<
     > ToSymbol for (A, B, C, D, E, F, G, H, I, J, K)
 {
     fn symbol(&self) -> Result<Symbol, ClingoError> {
-        let mut tempvec = vec![];
-        tempvec.push(self.0.symbol()?);
-        tempvec.push(self.1.symbol()?);
-        tempvec.push(self.2.symbol()?);
-        tempvec.push(self.3.symbol()?);
-        tempvec.push(self.4.symbol()?);
-        tempvec.push(self.5.symbol()?);
-        tempvec.push(self.6.symbol()?);
-        tempvec.push(self.7.symbol()?);
-        tempvec.push(self.8.symbol()?);
-        tempvec.push(self.9.symbol()?);
-        tempvec.push(self.10.symbol()?);
+        let tempvec = vec![
+            self.0.symbol()?,
+            self.1.symbol()?,
+            self.2.symbol()?,
+            self.3.symbol()?,
+            self.4.symbol()?,
+            self.5.symbol()?,
+            self.6.symbol()?,
+            self.7.symbol()?,
+            self.8.symbol()?,
+            self.9.symbol()?,
+            self.10.symbol()?,
+        ];
         Symbol::create_function("", &tempvec, true)
     }
 }
@@ -6475,19 +6480,20 @@ impl<
     > ToSymbol for (A, B, C, D, E, F, G, H, I, J, K, L)
 {
     fn symbol(&self) -> Result<Symbol, ClingoError> {
-        let mut tempvec = vec![];
-        tempvec.push(self.0.symbol()?);
-        tempvec.push(self.1.symbol()?);
-        tempvec.push(self.2.symbol()?);
-        tempvec.push(self.3.symbol()?);
-        tempvec.push(self.4.symbol()?);
-        tempvec.push(self.5.symbol()?);
-        tempvec.push(self.6.symbol()?);
-        tempvec.push(self.7.symbol()?);
-        tempvec.push(self.8.symbol()?);
-        tempvec.push(self.9.symbol()?);
-        tempvec.push(self.10.symbol()?);
-        tempvec.push(self.11.symbol()?);
+        let tempvec = vec![
+            self.0.symbol()?,
+            self.1.symbol()?,
+            self.2.symbol()?,
+            self.3.symbol()?,
+            self.4.symbol()?,
+            self.5.symbol()?,
+            self.6.symbol()?,
+            self.7.symbol()?,
+            self.8.symbol()?,
+            self.9.symbol()?,
+            self.10.symbol()?,
+            self.11.symbol()?,
+        ];
         Symbol::create_function("", &tempvec, true)
     }
 }
