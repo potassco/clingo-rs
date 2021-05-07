@@ -401,8 +401,7 @@ pub(crate) struct Ast(pub NonNull<clingo_ast_t>);
 
 impl Clone for Ast {
     fn clone(&self) -> Ast {
-        let cpy = self.deep_copy().unwrap();
-        cpy
+        self.deep_copy().unwrap()
     }
 }
 use std::fmt;
@@ -445,7 +444,7 @@ impl Ast {
     //     #[doc = "! @param[in] ast the target AST"]
     //     pub fn clingo_ast_acquire(ast: *mut clingo_ast_t);
     // }
-    pub(crate) fn acquire(&self) -> () {
+    pub(crate) fn acquire(&self) {
         // println!("acquire");
         // println!("ast: {:?}", self);
         // println!("ast: {}", self.to_string().unwrap());
@@ -459,7 +458,7 @@ impl Ast {
     //     #[doc = "! @param[in] ast the target AST"]
     //     pub fn clingo_ast_release(ast: *mut clingo_ast_t);
     // }
-    fn release(&self) -> () {
+    fn release(&self) {
         // println!("release");
         // println!("ast: {:?}", self);
         // println!("ast: {}", self.to_string().unwrap());
