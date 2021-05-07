@@ -441,7 +441,7 @@ impl Ast {
     //     #[doc = "! @param[in] ast the target AST"]
     //     pub fn clingo_ast_acquire(ast: *mut clingo_ast_t);
     // }
-    pub(crate) fn acquire(&self) {
+    pub fn acquire(&self) {
         // println!("acquire");
         // println!("ast: {:?}", self);
         // println!("ast: {}", self.to_string().unwrap());
@@ -470,7 +470,7 @@ impl Ast {
     // #[doc = "! - ::clingo_error_bad_alloc"]
     // pub fn clingo_ast_copy(ast: *mut clingo_ast_t, copy: *mut *mut clingo_ast_t) -> bool;
     // }
-    pub(crate) fn copy(&self) -> Result<Ast, ClingoError> {
+    fn copy(&self) -> Result<Ast, ClingoError> {
         let mut cpy = std::ptr::null_mut();
         if !unsafe { clingo_ast_copy(self.0.as_ptr(), &mut cpy) } {
             eprintln!("Call to clingo_ast_copy() failed");
@@ -494,7 +494,7 @@ impl Ast {
     //     #[doc = "! - ::clingo_error_bad_alloc"]
     //     pub fn clingo_ast_deep_copy(ast: *mut clingo_ast_t, copy: *mut *mut clingo_ast_t) -> bool;
     // }
-    pub(crate) fn deep_copy(&self) -> Result<Ast, ClingoError> {
+    fn deep_copy(&self) -> Result<Ast, ClingoError> {
         let mut cpy = std::ptr::null_mut();
         if !unsafe { clingo_ast_deep_copy(self.0.as_ptr(), &mut cpy) } {
             eprintln!("Call to clingo_ast_deep_copy() failed");
@@ -621,10 +621,7 @@ impl Ast {
     // #[doc = "! @param[out] type the resulting type"]
     // #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
     // #[doc = "! - ::clingo_error_runtime"]
-    pub(crate) fn get_attribute_type(
-        &self,
-        attribute: AstAttribute,
-    ) -> Result<AstAttributeType, ClingoError> {
+    fn get_attribute_type(&self, attribute: AstAttribute) -> Result<AstAttributeType, ClingoError> {
         let mut attribute_type = 0;
         if !unsafe {
             clingo_ast_attribute_type(self.0.as_ptr(), attribute as i32, &mut attribute_type)
