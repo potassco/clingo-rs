@@ -56,10 +56,7 @@ impl<'a> Iterator for Body<'a> {
             return None;
         }
         self.index += 1;
-        match NonNull::new(ast) {
-            Some(x) => Some(BodyLiteral(Ast(x))),
-            None => None,
-        }
+        NonNull::new(ast).map(|x| BodyLiteral(Ast(x)))
     }
 }
 
