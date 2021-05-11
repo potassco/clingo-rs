@@ -76,9 +76,9 @@ jobs:
       - name: Install re2c
         run: sudo apt-get install re2c
       - name: Build
-        run: cargo build --features=static_linking --verbose
+        run: cargo build --features=static-linking --verbose
       - name: Run tests
-        run: cargo test --features=static_linking --verbose
+        run: cargo test --features=static-linking --verbose
   build-macos-static:
     runs-on: "macos-latest"
     steps:
@@ -91,11 +91,11 @@ jobs:
       - name: Build
         run: |
           export PATH="/usr/local/opt/bison@2.7/bin:$PATH"
-          cargo build --features=static_linking --verbose
+          cargo build --features=static-linking --verbose
       - name: Run tests
         run: |
           export PATH="/usr/local/opt/bison@2.7/bin:$PATH"
-          cargo test --features=static_linking --verbose
+          cargo test --features=static-linking --verbose
   build-windows-static:
     runs-on: "windows-latest"
     steps:
@@ -105,6 +105,6 @@ jobs:
       - name: Install re2c
         run: choco install re2c
       - name: Build
-        run: cargo build --features static_linking -vv
+        run: cargo build --features static-linking -vv
       - name: Run tests
-        run: cargo test --features static_linking --verbose
+        run: cargo test --features static-linking --verbose
