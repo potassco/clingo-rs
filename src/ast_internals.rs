@@ -1,8 +1,8 @@
-#![allow(clippy::needless_lifetimes)]
 use crate::ast::{BodyLiteral, Head};
 use crate::{ClingoError, Symbol};
 use clingo_sys::*;
 use std::ffi::CStr;
+use std::marker::PhantomData;
 use std::ptr::NonNull;
 pub struct Body<'a> {
     ast: &'a Ast,
@@ -35,9 +35,9 @@ impl<'a> Body<'a> {
 }
 
 impl<'a> Iterator for Body<'a> {
-    type Item = BodyLiteral;
+    type Item = BodyLiteral<'a>;
 
-    fn next(&mut self) -> Option<BodyLiteral> {
+    fn next(&mut self) -> Option<BodyLiteral<'a>> {
         let size = self.size().unwrap(); //Err->None
 
         if size == self.index {
@@ -56,7 +56,10 @@ impl<'a> Iterator for Body<'a> {
             return None;
         }
         self.index += 1;
-        NonNull::new(ast).map(|x| BodyLiteral(Ast(x)))
+        NonNull::new(ast).map(|x| BodyLiteral {
+            ast: Ast(x),
+            _lifetime: PhantomData,
+        })
     }
 }
 
@@ -427,9 +430,12 @@ impl Ast {
             index: 0,
         }
     }
-    pub fn head(&self) -> Head {
+    pub fn head<'a>(&self) -> Head<'a> {
         let ast = self.get_attribute_ast(AstAttribute::Head).unwrap();
-        Head(ast)
+        Head {
+            ast,
+            _lifetime: PhantomData,
+        }
     }
 
     // extern "C" {

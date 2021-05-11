@@ -745,6 +745,9 @@ fn ast_rule_body() {
     let lit = basic_literal_from_symbolic_atom(&loc, Sign::NoSign, atom).unwrap();
     let body = vec![lit.clone().into()];
     let rule = rule(&loc, lit, &body).unwrap();
+    drop(body);
+    drop(sym);
+    // on windows the body disappears
     let stm = rule.into();
     test_statement(&stm, "test :- test.");
 }
@@ -758,9 +761,9 @@ fn ast_program() {
 }
 #[test]
 fn ui() {
-    //     let t = trybuild::TestCases::new();
+    let t = trybuild::TestCases::new();
     //     // t.compile_fail("tests/ui/ast_term_from_symbol.rs");
-    //     t.compile_fail("tests/ui/ast_term_from_unary_operation.rs");
+    // t.compile_fail("tests/ui/ast_term_from_unary_operation.rs");
     //     t.compile_fail("tests/ui/ast_term_from_binary_operation.rs");
     //     t.compile_fail("tests/ui/ast_term_from_function.rs");
     //     t.compile_fail("tests/ui/ast_term_from_pool.rs");

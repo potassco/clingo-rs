@@ -5,7 +5,7 @@ use clingo::{
 use std::env;
 
 pub struct OnStatementData<'a, 'b> {
-    atom: &'b ast::SymbolicAtom,
+    atom: &'b ast::SymbolicAtom<'b>,
     builder: &'a mut ast::ProgramBuilder<'a>,
 }
 
