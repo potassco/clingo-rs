@@ -2720,7 +2720,7 @@ pub fn theory_atom_definition<'a>(
 pub fn rule<'a, H>(
     location: &Location,
     head: H,
-    body: &'a [BodyLiteral],
+    body: &'a [BodyLiteral<'a>],
 ) -> Result<Rule<'a>, ClingoError>
 where
     H: Into<Head<'a>>,
