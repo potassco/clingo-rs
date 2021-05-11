@@ -786,7 +786,7 @@ fn ui() {
     //     t.compile_fail("tests/ui/ast_disjunction.rs");
     //     t.compile_fail("tests/ui/ast_head_literal.rs");
     //     t.compile_fail("tests/ui/ast_body_literal_from_term.rs");
-    //     t.compile_fail("tests/ui/ast_rule.rs");
+    t.compile_fail("tests/ui/ast_rule.rs");
     //     // t.compile_fail("tests/ui/ast_external.rs");// terms are copied
     //     t.compile_fail("tests/ui/ast_statement_from_external.rs");
     //     t.compile_fail("tests/ui/ast_statement_from_rule.rs");
