@@ -1420,7 +1420,7 @@ pub fn symbolic_term<'a>(
 pub fn function<'a>(
     location: &Location,
     name: &str,
-    arguments: &[Term],
+    arguments: &'a [Term],
     external: bool,
 ) -> Result<Function<'a>, ClingoError> {
     let mut ast = std::ptr::null_mut();
@@ -1569,7 +1569,7 @@ where
     }
 }
 /// Construct an AST node of type `ASTType.Pool`.
-pub fn pool<'a>(location: &Location, arguments: &[Term]) -> Result<Pool<'a>, ClingoError> {
+pub fn pool<'a>(location: &Location, arguments: &'a [Term]) -> Result<Pool<'a>, ClingoError> {
     let mut ast = std::ptr::null_mut();
 
     if !unsafe {
@@ -1811,8 +1811,8 @@ where
 /// Construct an AST node of type `ASTType.CspLiteral`.
 pub fn csp_literal<'a>(
     location: &Location,
-    term: CspTerm,
-    guards: &[CspGuard],
+    term: CspTerm<'a>,
+    guards: &'a [CspGuard],
 ) -> Result<CspLiteral<'a>, ClingoError> {
     let mut ast = std::ptr::null_mut();
 
@@ -1878,7 +1878,7 @@ where
 pub fn conditional_literal<'a, L>(
     location: &Location,
     literal: L,
-    condition: &[Literal],
+    condition: &'a [Literal],
 ) -> Result<ConditionalLiteral<'a>, ClingoError>
 where
     L: Into<Literal<'a>>,
@@ -1914,8 +1914,8 @@ where
 /// Construct an AST node of type `ASTType.Aggregate`.
 pub fn aggregate<'a>(
     location: &Location,
-    left_guard: Option<AggregateGuard>,
-    elements: &[ConditionalLiteral],
+    left_guard: Option<AggregateGuard<'a>>,
+    elements: &'a [ConditionalLiteral],
     right_guard: Option<AggregateGuard>,
 ) -> Result<Aggregate<'a>, ClingoError> {
     let mut ast = std::ptr::null_mut();
@@ -1955,8 +1955,8 @@ pub fn aggregate<'a>(
 }
 /// Construct an AST node of type `ASTType.BodyAggregateElement`.
 pub fn body_aggregate_element<'a>(
-    terms: &[Term],
-    condition: &[Literal],
+    terms: &'a [Term],
+    condition: &'a [Literal],
 ) -> Result<BodyAggregateElement<'a>, ClingoError> {
     let mut ast = std::ptr::null_mut();
     if !unsafe {
@@ -1989,7 +1989,7 @@ pub fn body_aggregate<'a>(
     location: &Location,
     left_guard: Option<AggregateGuard<'a>>,
     function: AggregateFunction,
-    elements: &[BodyAggregateElement<'a>],
+    elements: &'a [BodyAggregateElement],
     right_guard: Option<AggregateGuard<'a>>,
 ) -> Result<BodyAggregate<'a>, ClingoError> {
     let mut ast = std::ptr::null_mut();
@@ -2064,7 +2064,7 @@ pub fn head_aggregate<'a>(
     location: &Location,
     left_guard: Option<AggregateGuard<'a>>,
     function: AggregateFunction,
-    elements: &[HeadAggregateElement<'a>],
+    elements: &'a [HeadAggregateElement],
     right_guard: Option<AggregateGuard<'a>>,
 ) -> Result<HeadAggregate<'a>, ClingoError> {
     let mut ast = std::ptr::null_mut();
@@ -2107,7 +2107,7 @@ pub fn head_aggregate<'a>(
 /// Construct an AST node of type `ASTType.Disjunction`.
 pub fn disjunction<'a>(
     location: &Location,
-    elements: &[ConditionalLiteral<'a>],
+    elements: &'a [ConditionalLiteral],
 ) -> Result<Disjunction<'a>, ClingoError> {
     let mut ast = std::ptr::null_mut();
 
@@ -2138,9 +2138,9 @@ pub fn disjunction<'a>(
 /// Construct an AST node of type `ASTType.DisjointElement`.
 pub fn disjoint_element<'a, T>(
     location: &Location,
-    terms: &[Term<'a>],
+    terms: &'a [Term],
     term: T,
-    condition: &[Literal<'a>],
+    condition: &'a [Literal],
 ) -> Result<DisjointElement<'a>, ClingoError>
 where
     T: Into<Term<'a>>,
@@ -2177,7 +2177,7 @@ where
 /// Construct an AST node of type `ASTType.Disjoint`.
 pub fn disjoint<'a>(
     location: &Location,
-    elements: &[DisjointElement<'a>],
+    elements: &'a [DisjointElement],
 ) -> Result<Disjoint<'a>, ClingoError> {
     let mut ast = std::ptr::null_mut();
 
@@ -2209,7 +2209,7 @@ pub fn disjoint<'a>(
 pub fn theory_sequence<'a>(
     location: &Location,
     sequence_type: TheoryTermSequenceType,
-    terms: &[TheoryTerm<'a>],
+    terms: &'a [TheoryTerm],
 ) -> Result<TheorySequence<'a>, ClingoError> {
     let mut ast = std::ptr::null_mut();
 
@@ -2242,7 +2242,7 @@ pub fn theory_sequence<'a>(
 pub fn theory_function<'a>(
     location: &Location,
     name: &str,
-    arguments: &[TheoryTerm],
+    arguments: &'a [TheoryTerm],
 ) -> Result<TheoryFunction<'a>, ClingoError> {
     let mut ast = std::ptr::null_mut();
     let name = internalize_string(name)?;
@@ -2304,7 +2304,7 @@ pub fn theory_unparsed_term_element<'a>(
 /// Construct an AST node of type `ASTType.TheoryUnparsedTerm`.
 pub fn theory_unparsed_term<'a>(
     location: &Location,
-    elements: &[TheoryUnparsedTermElement<'a>], //TODO NonEmptyList
+    elements: &'a [TheoryUnparsedTermElement], //TODO NonEmptyList
 ) -> Result<TheoryUnparsedTerm<'a>, ClingoError> {
     let mut ast = std::ptr::null_mut();
 
@@ -2365,8 +2365,8 @@ where
 
 /// Construct an AST node of type `ASTType.TheoryAtomElement`.
 pub fn theory_atom_element<'a>(
-    terms: &[TheoryTerm<'a>],
-    condition: &[Literal<'a>],
+    terms: &'a [TheoryTerm],
+    condition: &'a [Literal],
 ) -> Result<TheoryAtomElement<'a>, ClingoError> {
     let mut ast = std::ptr::null_mut();
     if !unsafe {
@@ -2398,7 +2398,7 @@ pub fn theory_atom_element<'a>(
 pub fn theory_atom<'a, T>(
     location: &Location,
     term: T,
-    elements: &[TheoryAtomElement<'a>],
+    elements: &'a [TheoryAtomElement],
     guard: Option<TheoryGuard<'a>>,
 ) -> Result<TheoryAtom<'a>, ClingoError>
 where
@@ -2602,7 +2602,7 @@ pub fn theory_operator_definition<'a>(
 pub fn theory_term_definition<'a>(
     location: &Location,
     name: &str,
-    operators: &[TheoryOperatorDefinition<'a>],
+    operators: &'a [TheoryOperatorDefinition],
 ) -> Result<TheoryTermDefinition<'a>, ClingoError> {
     let mut ast = std::ptr::null_mut();
     let name = internalize_string(name)?;
@@ -2720,7 +2720,7 @@ pub fn theory_atom_definition<'a>(
 pub fn rule<'a, H>(
     location: &Location,
     head: H,
-    body: &[BodyLiteral<'a>],
+    body: &'a [BodyLiteral],
 ) -> Result<Rule<'a>, ClingoError>
 where
     H: Into<Head<'a>>,
@@ -2833,7 +2833,7 @@ pub fn show_signature<'a>(
 pub fn show_term<'a, T>(
     location: &Location,
     term: T,
-    body: &[BodyLiteral<'a>],
+    body: &'a [BodyLiteral],
     csp: bool,
 ) -> Result<ShowTerm<'a>, ClingoError>
 where
@@ -2872,8 +2872,8 @@ pub fn minimize<'a, T1, T2>(
     location: &Location,
     weight: T1,
     priority: T2,
-    terms: &[Term],
-    body: &[BodyLiteral<'a>],
+    terms: &'a [Term],
+    body: &'a [BodyLiteral],
 ) -> Result<Minimize<'a>, ClingoError>
 where
     T1: Into<Term<'a>>,
@@ -2948,7 +2948,7 @@ pub fn script<'a>(
 pub fn program<'a>(
     location: &Location,
     name: &str,
-    parameters: &[Id],
+    parameters: &'a [Id],
 ) -> Result<Program<'a>, ClingoError> {
     let mut ast = std::ptr::null_mut();
     let name = internalize_string(name)?;
@@ -2981,7 +2981,7 @@ pub fn program<'a>(
 pub fn external<'a>(
     location: &Location,
     atom: SymbolicAtom<'a>,
-    body: &[BodyLiteral<'a>],
+    body: &'a [BodyLiteral],
     external_type: ExternalType,
 ) -> Result<External<'a>, ClingoError> {
     let mut ast = std::ptr::null_mut();
@@ -3035,7 +3035,7 @@ pub fn edge<'a, T1, T2>(
     location: &Location,
     node_u: T1,
     node_v: T2,
-    body: &[BodyLiteral<'a>],
+    body: &'a [BodyLiteral],
 ) -> Result<Edge<'a>, ClingoError>
 where
     T1: Into<Term<'a>>,
@@ -3075,7 +3075,7 @@ where
 pub fn heuristic<'a, T1, T2, T3>(
     location: &Location,
     atom: SymbolicAtom<'a>,
-    body: &[BodyLiteral<'a>],
+    body: &'a [BodyLiteral],
     bias: T1,
     priority: T2,
     modifier: T3,
@@ -3122,7 +3122,7 @@ where
 pub fn project_atom<'a>(
     location: &Location,
     atom: SymbolicAtom<'a>,
-    body: &[BodyLiteral<'a>],
+    body: &'a [BodyLiteral],
 ) -> Result<ProjectAtom<'a>, ClingoError> {
     let mut ast = std::ptr::null_mut();
 
@@ -3225,8 +3225,8 @@ pub fn defined<'a>(
 pub fn theory_definition<'a>(
     location: &Location,
     name: &str,
-    terms: &[TheoryTermDefinition],
-    atoms: &[TheoryAtomDefinition],
+    terms: &'a [TheoryTermDefinition],
+    atoms: &'a [TheoryAtomDefinition],
 ) -> Result<TheoryDefinition<'a>, ClingoError> {
     let mut ast = std::ptr::null_mut();
     let name = internalize_string(name)?;
