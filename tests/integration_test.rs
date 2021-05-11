@@ -745,9 +745,11 @@ fn ast_rule_body() {
     let lit = basic_literal_from_symbolic_atom(&loc, Sign::NoSign, atom).unwrap();
     let body = vec![lit.clone().into()];
     let rule = rule(&loc, lit, &body).unwrap();
-    drop(body);
+    // drop(body);
     drop(sym);
     // on windows the body disappears
+    let h = rule.head();
+    drop(h);
     let stm = rule.into();
     test_statement(&stm, "test :- test.");
 }
