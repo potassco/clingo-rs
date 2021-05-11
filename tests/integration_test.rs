@@ -286,12 +286,12 @@ fn ast_literal() {
     let lit = ast::basic_literal_from_comparison(&loc, Sign::NoSign, comp).unwrap();
     assert_eq!(format!("{}", lit), "\"test\" > fun1(42,\"test\")");
 
-    let csp_prod_term1 = csp_product(&loc, term1, Some(term2)).unwrap();
-    let csp_prod_term2 = csp_product(&loc, term3, Some(term4)).unwrap();
-    let csp_prod_terms1 = vec![csp_prod_term1];
-    let csp_prod_terms2 = vec![csp_prod_term2];
-
     // TODO: activate these test when the bug in libclingo is fixed
+    // let csp_prod_term1 = csp_product(&loc, term1, Some(term2)).unwrap();
+    // let csp_prod_term2 = csp_product(&loc, term3, Some(term4)).unwrap();
+    // let csp_prod_terms1 = vec![csp_prod_term1];
+    // let csp_prod_terms2 = vec![csp_prod_term2];
+
     // let csp_sum_term1 = csp_sum(&loc,csp_prod_terms1);
     // let csp_sum_term2 = csp_sum(&loc,csp_prod_terms2);
 
@@ -403,10 +403,11 @@ fn ast_body_literal() {
     let tatom = theory_atom(&loc, term1.clone(), &elements, Some(guard)).unwrap();
 
     let tuple = vec![term1.clone()];
-    let csp_prod_term1 = csp_product(&loc, term1, Some(term2));
-    let csp_prod_terms1 = vec![csp_prod_term1];
 
     // TODO activate test when clingo bug fixed
+    // let csp_prod_term1 = csp_product(&loc, term1, Some(term2));
+    // let csp_prod_terms1 = vec![csp_prod_term1];
+
     // let csp_sum_term1 = csp_sum(&loc, &csp_prod_terms1);
     // let element = DisjointElement::new(&tuple, csp_sum_term1, &condition);
     // let elements = vec![element];
@@ -684,12 +685,12 @@ fn ast_rule() {
     let gt = ComparisonOperator::GreaterThan;
     let comp = comparison(gt, term2, term3).unwrap();
 
-    let csp_prod_term1 = csp_product(&loc, term4, Some(term5)).unwrap();
-    let csp_prod_term2 = csp_product(&loc, term6, Some(term7)).unwrap();
-    let csp_prod_terms1 = vec![csp_prod_term1];
-    let csp_prod_terms2 = vec![csp_prod_term2];
-
     // TODO activate one the bug in clingo is fixed
+    // let csp_prod_term1 = csp_product(&loc, term4, Some(term5)).unwrap();
+    // let csp_prod_term2 = csp_product(&loc, term6, Some(term7)).unwrap();
+    // let csp_prod_terms1 = vec![csp_prod_term1];
+    // let csp_prod_terms2 = vec![csp_prod_term2];
+
     // let csp_sum_term1 = csp_sum(&loc, &csp_prod_terms1);
     // let csp_sum_term2 = csp_sum(&loc, &csp_prod_terms2);
     //
@@ -749,6 +750,7 @@ fn ast_rule_body() {
     drop(sym);
     // on windows the body disappears
     let h = rule.head();
+    assert_eq!(format!("{}", h), "test");
     drop(h);
     let stm = rule.into();
     test_statement(&stm, "test :- test.");
