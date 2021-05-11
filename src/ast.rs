@@ -1803,7 +1803,7 @@ pub fn theory_unparsed_term_element(
         clingo_ast_build(
             clingo_ast_type_e_clingo_ast_type_theory_unparsed_term_element as i32,
             &mut ast,
-            operators,
+            operators.as_ptr(),
             operators.len(),
             term.0,
         )
@@ -2211,7 +2211,7 @@ where
             &mut ast,
             location,
             head.0,
-            body,
+            body.as_ptr(),
             body.len(),
         )
     } {
