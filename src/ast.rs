@@ -269,14 +269,6 @@ pub enum AggregateFunction {
     Min = clingo_ast_aggregate_function_e_clingo_ast_aggregate_function_min as isize,
     Max = clingo_ast_aggregate_function_e_clingo_ast_aggregate_function_max as isize,
 }
-#[derive(Debug, Copy, Clone)]
-/// Enumeration of script types.
-pub enum ScriptType {
-    /// For Lua scripts.
-    Lua = clingo_ast_script_type_e_clingo_ast_script_type_lua as isize,
-    /// For Python scripts.
-    Python = clingo_ast_script_type_e_clingo_ast_script_type_python as isize,
-}
 
 #[derive(Debug, Copy, Clone)]
 pub enum TheoryTermSequenceType {
@@ -2923,11 +2915,7 @@ where
 }
 
 /// Construct an AST node of type `ASTType.Script`.
-pub fn script<'a>(
-    location: &Location,
-    script_type: ScriptType,
-    code: &str,
-) -> Result<Script<'a>, ClingoError> {
+pub fn script<'a>(location: &Location, name: &str, code: &str) -> Result<Script<'a>, ClingoError> {
     let mut ast = std::ptr::null_mut();
     let code = internalize_string(code);
 
@@ -2936,7 +2924,7 @@ pub fn script<'a>(
             clingo_ast_type_e_clingo_ast_type_script as i32,
             &mut ast,
             location,
-            script_type as i32,
+            name,
             code,
         )
     } {

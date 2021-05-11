@@ -384,7 +384,6 @@ pub enum AstAttribute {
     Priority = clingo_ast_attribute_e_clingo_ast_attribute_priority as isize,
     Right = clingo_ast_attribute_e_clingo_ast_attribute_right as isize,
     RightGuard = clingo_ast_attribute_e_clingo_ast_attribute_right_guard as isize,
-    ScriptType = clingo_ast_attribute_e_clingo_ast_attribute_script_type as isize,
     SequenceType = clingo_ast_attribute_e_clingo_ast_attribute_sequence_type as isize,
     Sign = clingo_ast_attribute_e_clingo_ast_attribute_sign as isize,
     Symbol = clingo_ast_attribute_e_clingo_ast_attribute_symbol as isize,
