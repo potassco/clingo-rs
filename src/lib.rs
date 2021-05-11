@@ -5034,6 +5034,55 @@ impl PropagateInit {
         }
         Ok(result)
     }
+
+    /// Remove the watch for the solver literal in the given phase.
+    ///
+    /// # Arguments
+    ///
+    /// * `literal` - the solver literal
+    pub fn remove_watch(&mut self, literal: &Literal) -> Result<(), ClingoError> {
+        if !unsafe { clingo_propagate_init_remove_watch(&mut self.0, literal.0) } {
+            return Err(ClingoError::new_internal(
+                "Call to clingo_propagate_init_remove_watch() failed",
+            ));
+        }
+        Ok(())
+    }
+
+    /// Remove the watch for the solver literal in the given phase from the given solver thread.
+    ///
+    /// * `literal` - the solver literal
+    /// * `thread_id`- the id of the solver thread
+    pub fn remove_watch_from_thread(
+        &mut self,
+        literal: &Literal,
+        thread_id: u32,
+    ) -> Result<(), ClingoError> {
+        if !unsafe {
+            clingo_propagate_init_remove_watch_from_thread(&mut self.0, literal.0, thread_id)
+        } {
+            return Err(ClingoError::new_internal(
+                "Call to clingo_propagate_init_remove_watch_from_thread() failed",
+            ));
+        }
+        Ok(())
+    }
+
+    /// Freeze the given solver literal.
+    ///
+    /// Any solver literal that is not frozen is subject to simplification and might be removed in a preprocessing step after propagator initialization.
+    /// A propagator should freeze all literals over which it might add clauses during propagation.
+    /// Note that any watched literal is automatically frozen and that it does not matter which phase of the literal is frozen.
+    ///
+    /// * `literal` - the solver literal
+    pub fn freeze_literal(&mut self, literal: &Literal) -> Result<(), ClingoError> {
+        if !unsafe { clingo_propagate_init_freeze_literal(&mut self.0, literal.0) } {
+            return Err(ClingoError::new_internal(
+                "Call to clingo_propagate_init_freeze_literal() failed",
+            ));
+        }
+        Ok(())
+    }
 }
 
 /// Search handle to a solve call.
