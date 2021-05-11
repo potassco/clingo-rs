@@ -485,7 +485,17 @@ impl<'a> fmt::Display for CspLiteral<'a> {
         self.ast.fmt(f)
     }
 }
+impl<'a> fmt::Display for CspProduct<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.ast.fmt(f)
+    }
+}
 impl<'a> fmt::Display for TheoryTerm<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.ast.fmt(f)
+    }
+}
+impl<'a> fmt::Display for Rule<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.ast.fmt(f)
     }
@@ -1597,8 +1607,9 @@ pub fn pool<'a>(location: &Location, arguments: &'a [Term]) -> Result<Pool<'a>, 
     }
 }
 
+// TODO make pub once the clingo bug is fixed
 /// Construct an AST node of type `ASTType.CspProduct`.
-pub fn csp_product<'a, T1, T2>(
+fn csp_product<'a, T1, T2>(
     location: &Location,
     coefficient: T1,
     variable: Option<T2>,
