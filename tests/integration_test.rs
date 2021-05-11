@@ -268,12 +268,10 @@ fn ast_literal() {
 
     let symbols = [sym1, sym2];
     let sym3 = Symbol::create_function("fun1", &symbols, true).unwrap();
-    let sym4 = Symbol::create_supremum();
 
     let term1 = symbolic_term(&loc, &sym1).unwrap();
     let term2 = symbolic_term(&loc, &sym2).unwrap();
     let term3 = symbolic_term(&loc, &sym3).unwrap();
-    let term4 = symbolic_term(&loc, &sym4).unwrap();
 
     let lit = ast::basic_literal_from_boolean_constant(&loc, Sign::NoSign, true).unwrap();
     assert_eq!(format!("{}", lit), "#true");
@@ -287,6 +285,8 @@ fn ast_literal() {
     assert_eq!(format!("{}", lit), "\"test\" > fun1(42,\"test\")");
 
     // TODO: activate these test when the bug in libclingo is fixed
+    // let sym4 = Symbol::create_supremum();
+    // let term4 = symbolic_term(&loc, &sym4).unwrap();
     // let csp_prod_term1 = csp_product(&loc, term1, Some(term2)).unwrap();
     // let csp_prod_term2 = csp_product(&loc, term3, Some(term4)).unwrap();
     // let csp_prod_terms1 = vec![csp_prod_term1];
@@ -401,24 +401,6 @@ fn ast_body_literal() {
     let elements = vec![element.into()];
     let guard = theory_guard("theory_operator", th_term).unwrap();
     let tatom = theory_atom(&loc, term1.clone(), &elements, Some(guard)).unwrap();
-
-    let tuple = vec![term1.clone()];
-
-    // TODO activate test when clingo bug fixed
-    // let csp_prod_term1 = csp_product(&loc, term1, Some(term2));
-    // let csp_prod_terms1 = vec![csp_prod_term1];
-
-    // let csp_sum_term1 = csp_sum(&loc, &csp_prod_terms1);
-    // let element = DisjointElement::new(&tuple, csp_sum_term1, &condition);
-    // let elements = vec![element];
-    // let dis = disjoint(&loc,&elements);
-
-    // let blit : BodyLiteral= dis.into();
-    // assert_eq!(
-    //     format!("{}", blit),
-    //     "BodyLiteral { sign: NoSign disjoint: Disjoint { elements: [DisjointElement { tuple: [Term { symbol: test }] term: CspSumTerm { terms: [CspProductTerm { coefficient: Term { symbol: test } variable: Term { symbol: test } }] } condition: [Literal { sign: NoSign symbol: Term { symbol: test } }] }] } }"
-    // );
-
     let blit: BodyLiteral = lit.into();
     assert_eq!(format!("{}", blit), "test");
 
@@ -438,6 +420,21 @@ fn ast_body_literal() {
         format!("{}", blit),
         "&test { test: test } theory_operator test"
     );
+    // TODO activate test when clingo bug fixed
+    // let tuple = vec![term1.clone()];
+    // let csp_prod_term1 = csp_product(&loc, term1, Some(term2));
+    // let csp_prod_terms1 = vec![csp_prod_term1];
+
+    // let csp_sum_term1 = csp_sum(&loc, &csp_prod_terms1);
+    // let element = DisjointElement::new(&tuple, csp_sum_term1, &condition);
+    // let elements = vec![element];
+    // let dis = disjoint(&loc,&elements);
+
+    // let blit : BodyLiteral= dis.into();
+    // assert_eq!(
+    //     format!("{}", blit),
+    //     "BodyLiteral { sign: NoSign disjoint: Disjoint { elements: [DisjointElement { tuple: [Term { symbol: test }] term: CspSumTerm { terms: [CspProductTerm { coefficient: Term { symbol: test } variable: Term { symbol: test } }] } condition: [Literal { sign: NoSign symbol: Term { symbol: test } }] }] } }"
+    // );
 }
 #[test]
 fn ast_theory_term() {
@@ -642,10 +639,6 @@ fn ast_rule() {
     let id1 = String::from("test1");
     let id2 = String::from("test2");
     let id3 = String::from("test3");
-    let id4 = String::from("test4");
-    let id5 = String::from("test5");
-    let id6 = String::from("test6");
-    let id7 = String::from("test7");
     let id8 = String::from("test8");
     let id9 = String::from("test9");
     let id10 = String::from("test10");
@@ -653,10 +646,6 @@ fn ast_rule() {
     let sym1 = Symbol::create_id(&id1, true).unwrap();
     let sym2 = Symbol::create_id(&id2, true).unwrap();
     let sym3 = Symbol::create_id(&id3, true).unwrap();
-    let sym4 = Symbol::create_id(&id4, true).unwrap();
-    let sym5 = Symbol::create_id(&id5, true).unwrap();
-    let sym6 = Symbol::create_id(&id6, true).unwrap();
-    let sym7 = Symbol::create_id(&id7, true).unwrap();
     let sym8 = Symbol::create_id(&id8, true).unwrap();
     let sym9 = Symbol::create_id(&id9, true).unwrap();
     let sym10 = Symbol::create_id(&id10, true).unwrap();
@@ -665,10 +654,6 @@ fn ast_rule() {
     let atom1 = symbolic_atom(term1).unwrap();
     let term2 = symbolic_term(&loc, &sym2).unwrap();
     let term3 = symbolic_term(&loc, &sym3).unwrap();
-    let term4 = symbolic_term(&loc, &sym4).unwrap();
-    let term5 = symbolic_term(&loc, &sym5).unwrap();
-    let term6 = symbolic_term(&loc, &sym6).unwrap();
-    let term7 = symbolic_term(&loc, &sym7).unwrap();
     let term8 = symbolic_term(&loc, &sym8).unwrap();
     let term9 = symbolic_term(&loc, &sym9).unwrap();
     let term10 = symbolic_term(&loc, &sym10).unwrap();
@@ -686,6 +671,18 @@ fn ast_rule() {
     let comp = comparison(gt, term2, term3).unwrap();
 
     // TODO activate one the bug in clingo is fixed
+    // let id4 = String::from("test4");
+    // let id5 = String::from("test5");
+    // let id6 = String::from("test6");
+    // let id7 = String::from("test7");
+    // let sym4 = Symbol::create_id(&id4, true).unwrap();
+    // let sym5 = Symbol::create_id(&id5, true).unwrap();
+    // let sym6 = Symbol::create_id(&id6, true).unwrap();
+    // let sym7 = Symbol::create_id(&id7, true).unwrap();
+    // let term4 = symbolic_term(&loc, &sym4).unwrap();
+    // let term5 = symbolic_term(&loc, &sym5).unwrap();
+    // let term6 = symbolic_term(&loc, &sym6).unwrap();
+    // let term7 = symbolic_term(&loc, &sym7).unwrap();
     // let csp_prod_term1 = csp_product(&loc, term4, Some(term5)).unwrap();
     // let csp_prod_term2 = csp_product(&loc, term6, Some(term7)).unwrap();
     // let csp_prod_terms1 = vec![csp_prod_term1];
