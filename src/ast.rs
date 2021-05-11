@@ -289,13 +289,13 @@ pub enum TheoryTermSequenceType {
 }
 #[derive(Debug, Copy, Clone)]
 pub enum TheoryOperatorType {
-    /// TODO
+    /// A left associative binary operator.
     BinaryLeft =
         clingo_ast_theory_operator_type_e_clingo_ast_theory_operator_type_binary_left as isize,
-    /// TODO
+    /// A right associative binary operator.
     BinaryRight =
         clingo_ast_theory_operator_type_e_clingo_ast_theory_operator_type_binary_right as isize,
-    /// TODO
+    /// An unary theory operator.
     Unary = clingo_ast_theory_operator_type_e_clingo_ast_theory_operator_type_unary as isize,
 }
 
@@ -1607,7 +1607,7 @@ pub fn pool<'a>(location: &Location, arguments: &'a [Term]) -> Result<Pool<'a>, 
     }
 }
 
-// TODO make pub once the clingo bug is fixed
+// TODO: make pub once the clingo bug is fixed
 /// Construct an AST node of type `ASTType.CspProduct`.
 fn csp_product<'a, T1, T2>(
     location: &Location,
