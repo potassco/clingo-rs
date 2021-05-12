@@ -160,7 +160,7 @@ pub trait StatementHandler {
     /// Callback function called on an ast statement while traversing the ast.
     ///
     /// **Returns** whether the call was successful
-    fn on_statement(&mut self, ast: &mut Statement) -> bool;
+    fn on_statement(&mut self, ast: &Statement) -> bool;
 }
 unsafe extern "C" fn unsafe_ast_callback<T: StatementHandler>(
     ast: *mut clingo_ast_t,

@@ -11,7 +11,7 @@ pub struct OnStatementData<'a, 'b> {
 
 impl<'a, 'b> ast::StatementHandler for OnStatementData<'a, 'b> {
     // adds atom enable to all rule bodies
-    fn on_statement(&mut self, stm: &mut ast::Statement) -> bool {
+    fn on_statement(&mut self, stm: &ast::Statement) -> bool {
         let stm_clone = stm.clone();
         // pass through all statements that are not rules
         match stm_clone.is_a().unwrap() {
