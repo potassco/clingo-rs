@@ -15,13 +15,16 @@ jobs:
         shell: bash -l {0}
         run: |
           conda install -c potassco clingo=5.5.0
+          conda install -c potassco clingo-dl=1.2.0
       - name: Build
         run: |
           export CLINGO_LIBRARY_PATH=/usr/share/miniconda/envs/test/lib
+          export CLINGO_DL_LIBRARY_PATH=/usr/share/miniconda/envs/test/lib
           cargo build --features=derive,dl-theory --verbose
       - name: Run tests
         run: |
           export CLINGO_LIBRARY_PATH=/usr/share/miniconda/envs/test/lib
+          export CLINGO_DL_LIBRARY_PATH=/usr/share/miniconda/envs/test/lib
           export LD_LIBRARY_PATH=/usr/share/miniconda/envs/test/lib
           cargo test --features=derive,dl-theory --verbose
   build-macos:
@@ -36,13 +39,16 @@ jobs:
         shell: bash -l {0}
         run: |
           conda install -c potassco clingo=5.5.0
+          conda install -c potassco clingo-dl=1.2.0
       - name: Build
         run: |
           export CLINGO_LIBRARY_PATH=/usr/local/miniconda/envs/test/lib
+          export CLINGO_DL_LIBRARY_PATH=/usr/local/miniconda/envs/test/lib
           cargo build --features=derive,dl-theory --verbose
       - name: Run tests
         run: |
           export CLINGO_LIBRARY_PATH=/usr/local/miniconda/envs/test/lib
+          export CLINGO_DL_LIBRARY_PATH=/usr/local/miniconda/envs/test/lib
           export DYLD_LIBRARY_PATH=/usr/local/miniconda/envs/test/lib
           cargo test --features=derive,dl-theory --verbose
   build-windows:
@@ -56,14 +62,17 @@ jobs:
       - name: Conda install clingo
         run: |
           conda install -c potassco clingo=5.5.0
+          conda install -c potassco clingo-dl=1.2.0
       - name: Build
         env:
           CLINGO_LIBRARY_PATH: C:\Miniconda\envs\test\Library\lib
+          CLINGO_DL_LIBRARY_PATH: C:\Miniconda\envs\test\Library\lib
         run: |
           cargo build --features=derive,dl-theory --verbose
       - name: Run tests
         env:
           CLINGO_LIBRARY_PATH: C:\Miniconda\envs\test\Library\lib
+          CLINGO_DL_LIBRARY_PATH: C:\Miniconda\envs\test\Library\lib
           LD_LIBRARY_PATH: C:\Miniconda\envs\test\Library\lib
         run: |
           cargo test --features=derive,dl-theory --verbose
@@ -76,9 +85,9 @@ jobs:
       - name: Install re2c
         run: sudo apt-get install re2c
       - name: Build
-        run: cargo build --features=static-linking,derive,dl-theory --verbose
+        run: cargo build --features=static-linking,derive --verbose
       - name: Run tests
-        run: cargo test --features=static-linking,derive,dl-theory --verbose
+        run: cargo test --features=static-linking,derive --verbose
   build-macos-static:
     runs-on: "macos-latest"
     steps:
@@ -91,11 +100,11 @@ jobs:
       - name: Build
         run: |
           export PATH="/usr/local/opt/bison@2.7/bin:$PATH"
-          cargo build --features=static-linking,derive,dl-theory --verbose
+          cargo build --features=static-linking,derive --verbose
       - name: Run tests
         run: |
           export PATH="/usr/local/opt/bison@2.7/bin:$PATH"
-          cargo test --features=static-linking,derive,dl-theory --verbose
+          cargo test --features=static-linking,derive --verbose
   build-windows-static:
     runs-on: "windows-latest"
     steps:
@@ -105,6 +114,6 @@ jobs:
       - name: Install re2c
         run: choco install re2c
       - name: Build
-        run: cargo build --features static-linking,derive,dl-theory -vv
+        run: cargo build --features static-linking,derive -vv
       - name: Run tests
-        run: cargo test --features static-linking,derive,dl-theory --verbose
+        run: cargo test --features static-linking,derive --verbose
