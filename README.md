@@ -10,6 +10,14 @@ Clingo version 5.5.0.
   - [clang](http://clang.llvm.org/) version 3.1 (using either libstdc++
     provided by gcc 4.9 or libc++)
 
+Per default the crate uses the clingo library via dynamic linking.
+It is assumed that a clingo dynamic library is installed on the system.
+You have to set the environment variable `CLINGO_LIBRARY_PATH`. For example:
+
+```sh
+export CLINGO_LIBRARY_PATH=/scratch/miniconda3/envs/test/lib
+```
+
 ## Examples
 
 ```sh
@@ -28,7 +36,9 @@ cargo run --example=inject-terms 0
 cargo run --example=version
 ```
 
-## Using `derive` macro
+## Features
+
+### Using `derive` macro
 
 The crate provides a derive macro to help easing the use of rust data types as facts.
 
@@ -59,29 +69,7 @@ fb.insert(p);
 
 The macro performs a conversion to snake case. This means the corresponing fact for `MyPoint{x:4,y:2}` is `my_point(4,2)`.
 
-## Using `dynamic_linking`
-
-The crate defines a [Cargo feature] that allows to use the clingo library via dynamic linking.
-
-[Cargo feature]: https://doc.rust-lang.org/cargo/reference/manifest.html#the-features-section
-
-With dynamic linking enabled the clingo library is not build for static linking but it is assumed that a
-clingo dynamic library is installed on the system.
-You have to set the environment variable `CLINGO_LIBRARY_PATH`. For example:
-
-```sh
-export CLINGO_LIBRARY_PATH=/scratch/miniconda3/envs/test/lib
-```
-
-The recommended way to use the optional dynamic linking support is as
-follows.
-
-```toml
-[dependencies]
-clingo = { version = "0.7.0-beta.1", features = ["dynamic_linking"] }
-```
-
-## Using `dl-theory`
+### Using `dl-theory`
 
 You have to set the environment variable `CLINGO_DL_LIBRARY_PATH`. For example:
 
@@ -95,6 +83,26 @@ follows.
 ```toml
 [dependencies]
 clingo = { version = "0.7.0-beta.1", features = ["derive", "dl-theory"] }
+```
+
+### Using `static-linking`
+
+The crate defines a [Cargo feature] that allows to use the clingo library via static linking.
+
+[Cargo feature]: https://doc.rust-lang.org/cargo/reference/manifest.html#the-features-section
+
+*Attention: currently `static-linking` does not work with `dl-theory`.*
+
+```sh
+export CLINGO_LIBRARY_PATH=/scratch/miniconda3/envs/test/lib
+```
+
+The recommended way to use the optional static linking support is as
+follows.
+
+```toml
+[dependencies]
+clingo = { version = "0.7.0-beta.1", features = ["static-linking"] }
 ```
 
 ## Contribution
