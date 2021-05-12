@@ -111,9 +111,9 @@ impl<'a> Theory<'a> for DLTheory {
     ) -> bool {
         let add = super::ast::unsafe_program_builder_add;
         unsafe {
-            clingodl_rewrite_statement(
+            clingodl_rewrite_ast(
                 self.theory.as_ptr(),
-                &stm.data,
+                stm.ast.0.as_ptr(),
                 Some(add),
                 (builder.theref as *mut clingo_program_builder) as *mut ::std::os::raw::c_void,
             )

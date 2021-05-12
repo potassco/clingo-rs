@@ -82,7 +82,7 @@ use thiserror::Error;
 pub mod ast;
 mod ast_internals;
 
-#[cfg(feature = "dl_theory")]
+#[cfg(feature = "dl-theory")]
 pub mod dl_theory;
 pub mod theory;
 
