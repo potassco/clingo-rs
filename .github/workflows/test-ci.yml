@@ -66,14 +66,14 @@ jobs:
       - name: Build
         env:
           CLINGO_LIBRARY_PATH: C:\Miniconda\envs\test\Library\lib
-          CLINGO_DL_LIBRARY_PATH: C:\Miniconda\envs\test\Library\lib
+          CLINGO_DL_LIBRARY_PATH: C:\Miniconda\envs\test\Lib
         run: |
           cargo build --features=derive,dl-theory --verbose
       - name: Run tests
         env:
           CLINGO_LIBRARY_PATH: C:\Miniconda\envs\test\Library\lib
-          CLINGO_DL_LIBRARY_PATH: C:\Miniconda\envs\test\Library\lib
-          LD_LIBRARY_PATH: C:\Miniconda\envs\test\Library\lib
+          CLINGO_DL_LIBRARY_PATH: C:\Miniconda\envs\test\Lib
+          LD_LIBRARY_PATH: C:\Miniconda\envs\test\Library\lib;C:\Miniconda\envs\test\Lib
         run: |
           cargo test --features=derive,dl-theory --verbose
   build-linux-static:
