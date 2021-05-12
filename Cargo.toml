@@ -21,7 +21,7 @@ path = "src/lib.rs"
 
 [features]
 static-linking = ["clingo-sys/static-linking"]
-dl_theory = ["clingo-dl-sys"]
+dl-theory = ["clingo-dl-sys"]
 # Provide derive(ToSymbol) macro.
 derive = ["clingo-derive"]
 

@@ -78,9 +78,9 @@ impl<'a> ProgramBuilder<'a> {
 }
 
 #[doc(hidden)]
-#[cfg(feature = "dl_theory")]
+#[cfg(feature = "dl-theory")]
 pub(crate) unsafe extern "C" fn unsafe_program_builder_add(
-    statement: *const clingo_ast_statement_t,
+    statement: *const clingo_ast_t,
     data: *mut ::std::os::raw::c_void,
 ) -> bool {
     let builder = data as *mut clingo_program_builder;
