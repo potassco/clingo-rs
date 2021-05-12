@@ -81,7 +81,7 @@ follows.
 clingo = { version = "0.7.0-beta.1", features = ["dynamic_linking"] }
 ```
 
-## Using `dl_theory`
+## Using `dl-theory`
 
 You have to set the environment variable `CLINGO_DL_LIBRARY_PATH`. For example:
 
@@ -89,12 +89,12 @@ You have to set the environment variable `CLINGO_DL_LIBRARY_PATH`. For example:
 export CLINGO_DL_LIBRARY_PATH=/scratch/miniconda3/envs/test/lib
 ```
 
-The recommended way to use the optional dl_theory feature is as
+The recommended way to use the optional dl-theory feature is as
 follows.
 
 ```toml
 [dependencies]
-clingo = { version = "0.7.0-beta.1", features = ["dynamic_linking", "dl_theory"] }
+clingo = { version = "0.7.0-beta.1", features = ["derive", "dl-theory"] }
 ```
 
 ## Contribution
