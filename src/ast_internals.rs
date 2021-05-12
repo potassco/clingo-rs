@@ -188,7 +188,7 @@ pub(crate) enum AstType {
     Edge = clingo_ast_type_e_clingo_ast_type_edge as isize,
     Heuristic = clingo_ast_type_e_clingo_ast_type_heuristic as isize,
     ProjectAtom = clingo_ast_type_e_clingo_ast_type_project_atom as isize,
-    ProjectAtomSignature = clingo_ast_type_e_clingo_ast_type_project_signature as isize,
+    ProjectSignature = clingo_ast_type_e_clingo_ast_type_project_signature as isize,
     Defined = clingo_ast_type_e_clingo_ast_type_defined as isize,
     TheoryDefinition = clingo_ast_type_e_clingo_ast_type_theory_definition as isize,
 }
@@ -262,9 +262,7 @@ impl AstType {
             clingo_ast_type_e_clingo_ast_type_edge => Ok(AstType::Edge),
             clingo_ast_type_e_clingo_ast_type_heuristic => Ok(AstType::Heuristic),
             clingo_ast_type_e_clingo_ast_type_project_atom => Ok(AstType::ProjectAtom),
-            clingo_ast_type_e_clingo_ast_type_project_signature => {
-                Ok(AstType::ProjectAtomSignature)
-            }
+            clingo_ast_type_e_clingo_ast_type_project_signature => Ok(AstType::ProjectSignature),
             clingo_ast_type_e_clingo_ast_type_defined => Ok(AstType::Defined),
             clingo_ast_type_e_clingo_ast_type_theory_definition => Ok(AstType::TheoryDefinition),
             x => {

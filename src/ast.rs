@@ -183,11 +183,35 @@ unsafe extern "C" fn unsafe_ast_callback<T: StatementHandler>(
     };
     ast.acquire();
     let mut stm = match ast.get_type() {
-        Ok(AstType::Program) => Statement {
+        Ok(AstType::Rule) => Statement {
             ast,
             _lifetime: PhantomData,
         },
-        Ok(AstType::Rule) => Statement {
+        Ok(AstType::Definition) => Statement {
+            ast,
+            _lifetime: PhantomData,
+        },
+        Ok(AstType::ShowSignature) => Statement {
+            ast,
+            _lifetime: PhantomData,
+        },
+        Ok(AstType::Defined) => Statement {
+            ast,
+            _lifetime: PhantomData,
+        },
+        Ok(AstType::ShowTerm) => Statement {
+            ast,
+            _lifetime: PhantomData,
+        },
+        Ok(AstType::Minimize) => Statement {
+            ast,
+            _lifetime: PhantomData,
+        },
+        Ok(AstType::Script) => Statement {
+            ast,
+            _lifetime: PhantomData,
+        },
+        Ok(AstType::Program) => Statement {
             ast,
             _lifetime: PhantomData,
         },
@@ -195,7 +219,23 @@ unsafe extern "C" fn unsafe_ast_callback<T: StatementHandler>(
             ast,
             _lifetime: PhantomData,
         },
-        _ => unimplemented!(),
+        Ok(AstType::Edge) => Statement {
+            ast,
+            _lifetime: PhantomData,
+        },
+        Ok(AstType::Heuristic) => Statement {
+            ast,
+            _lifetime: PhantomData,
+        },
+        Ok(AstType::ProjectAtom) => Statement {
+            ast,
+            _lifetime: PhantomData,
+        },
+        Ok(AstType::ProjectSignature) => Statement {
+            ast,
+            _lifetime: PhantomData,
+        },
+        x => panic!("unexpected AstType: {:?}", x),
     };
     event_handler.on_statement(&mut stm)
 }
@@ -794,15 +834,55 @@ pub struct Statement<'a> {
 impl<'a> Statement<'a> {
     pub fn is_a(self) -> Result<StatementIsA<'a>, ClingoError> {
         match self.ast.get_type()? {
-            AstType::Program => Ok(StatementIsA::Program(Program {
-                ast: self.ast,
-                _lifetime: self._lifetime,
-            })),
             AstType::Rule => Ok(StatementIsA::Rule(Rule {
                 ast: self.ast,
                 _lifetime: self._lifetime,
             })),
+            AstType::Definition => Ok(StatementIsA::Definition(Definition {
+                ast: self.ast,
+                _lifetime: self._lifetime,
+            })),
+            AstType::ShowSignature => Ok(StatementIsA::ShowSignature(ShowSignature {
+                ast: self.ast,
+                _lifetime: self._lifetime,
+            })),
+            AstType::Defined => Ok(StatementIsA::Defined(Defined {
+                ast: self.ast,
+                _lifetime: self._lifetime,
+            })),
+            AstType::ShowTerm => Ok(StatementIsA::ShowTerm(ShowTerm {
+                ast: self.ast,
+                _lifetime: self._lifetime,
+            })),
+            AstType::Minimize => Ok(StatementIsA::Minimize(Minimize {
+                ast: self.ast,
+                _lifetime: self._lifetime,
+            })),
+            AstType::Script => Ok(StatementIsA::Script(Script {
+                ast: self.ast,
+                _lifetime: self._lifetime,
+            })),
+            AstType::Program => Ok(StatementIsA::Program(Program {
+                ast: self.ast,
+                _lifetime: self._lifetime,
+            })),
             AstType::External => Ok(StatementIsA::External(External {
+                ast: self.ast,
+                _lifetime: self._lifetime,
+            })),
+            AstType::Edge => Ok(StatementIsA::Edge(Edge {
+                ast: self.ast,
+                _lifetime: self._lifetime,
+            })),
+            AstType::Heuristic => Ok(StatementIsA::Heuristic(Heuristic {
+                ast: self.ast,
+                _lifetime: self._lifetime,
+            })),
+            AstType::ProjectAtom => Ok(StatementIsA::ProjectAtom(ProjectAtom {
+                ast: self.ast,
+                _lifetime: self._lifetime,
+            })),
+            AstType::ProjectSignature => Ok(StatementIsA::ProjectSignature(ProjectSignature {
                 ast: self.ast,
                 _lifetime: self._lifetime,
             })),
