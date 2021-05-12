@@ -1,9 +1,9 @@
-name: CI tests - clingo-rs
+name: CI tests
 
 on: [push]
 
 jobs:
-  build-linux:
+  linux:
     runs-on: "ubuntu-latest"
     steps:
       - uses: actions/checkout@v2
@@ -27,7 +27,7 @@ jobs:
           export CLINGO_DL_LIBRARY_PATH=/usr/share/miniconda/envs/test/lib
           export LD_LIBRARY_PATH=/usr/share/miniconda/envs/test/lib
           cargo test --features=derive,dl-theory --verbose
-  build-macos:
+  macos:
     runs-on: "macos-latest"
     steps:
       - uses: actions/checkout@v2
@@ -51,7 +51,7 @@ jobs:
           export CLINGO_DL_LIBRARY_PATH=/usr/local/miniconda/envs/test/lib
           export DYLD_LIBRARY_PATH=/usr/local/miniconda/envs/test/lib
           cargo test --features=derive,dl-theory --verbose
-  build-windows:
+  windows:
     runs-on: "windows-latest"
     steps:
       - uses: actions/checkout@v2
@@ -76,7 +76,7 @@ jobs:
           LD_LIBRARY_PATH: C:\Miniconda\envs\test\Library\lib;C:\Miniconda\envs\test\Lib
         run: |
           cargo test --features=derive,dl-theory --verbose
-  build-linux-static:
+  linux-static:
     runs-on: "ubuntu-latest"
     steps:
       - uses: actions/checkout@v1
@@ -88,7 +88,7 @@ jobs:
         run: cargo build --features=static-linking,derive --verbose
       - name: Run tests
         run: cargo test --features=static-linking,derive --verbose
-  build-macos-static:
+  macos-static:
     runs-on: "macos-latest"
     steps:
       - uses: actions/checkout@v1
@@ -105,7 +105,7 @@ jobs:
         run: |
           export PATH="/usr/local/opt/bison@2.7/bin:$PATH"
           cargo test --features=static-linking,derive --verbose
-  build-windows-static:
+  windows-static:
     runs-on: "windows-latest"
     steps:
       - uses: actions/checkout@v1
