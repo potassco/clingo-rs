@@ -37,12 +37,12 @@ impl<'a, 'b> ast::StatementHandler for OnStatementData<'a, 'b> {
                 // add the rewritten rule to the program builder
                 self.builder
                     .add(&rule.into())
-                    .expect("Failed to add Ast to ProgramBuilder.");
+                    .expect("Failed to add Rule to ProgramBuilder.");
             }
             _ => {
                 self.builder
                     .add(stm)
-                    .expect("Failed to add Ast to ProgramBuilder.");
+                    .expect("Failed to add Statement to ProgramBuilder.");
             }
         }
         true
