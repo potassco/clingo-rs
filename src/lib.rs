@@ -30,7 +30,7 @@
 //!
 //! In your source write:
 //!
-//! ```rust
+//! ```ignore
 //! use clingo::ToSymbol;
 //! use clingo::ClingoError;
 //! use clingo::FactBase;
