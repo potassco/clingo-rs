@@ -1,5 +1,5 @@
 use crate::{
-    set_internal_error, ClingoError, ControlLPOF, ErrorType, ExternalType, FunctionHandler,
+    set_internal_error, ClingoError, ErrorType, ExternalType, FunctionHandler, GenericControl,
     GroundProgramObserver, Logger, Propagator,
 };
 
@@ -20,7 +20,7 @@ pub struct ProgramBuilder<'a> {
 impl<'a> ProgramBuilder<'a> {
     /// Get an object to add non-ground directives to the program.
     pub fn from<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>(
-        ctl: &'a mut ControlLPOF<L, P, O, F>,
+        ctl: &'a mut GenericControl<L, P, O, F>,
     ) -> Result<ProgramBuilder<'a>, ClingoError> {
         let mut builder = std::ptr::null_mut();
         if !unsafe { clingo_control_program_builder(ctl.ctl.as_mut(), &mut builder) } {

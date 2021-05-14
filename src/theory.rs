@@ -2,14 +2,19 @@
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
 
-use super::{Control, Id, Model, Options, Statistics, Symbol};
-use crate::ast;
+use super::{GenericControl, Id, Model, Options, Statistics, Symbol};
+use crate::{ast, FunctionHandler, GroundProgramObserver, Logger, Propagator};
 use std::fmt;
 
 pub trait Theory<'a> {
     type AssignmentIterator: Iterator<Item = (Symbol, TheoryValue)>;
     /// registers the theory with the control
-    fn register(&mut self, ctl: &mut Control) -> bool;
+    fn register<L, P, O, F>(&mut self, ctl: &mut GenericControl<L, P, O, F>) -> bool
+    where
+        L: Logger,
+        P: Propagator,
+        O: GroundProgramObserver,
+        F: FunctionHandler;
     /// Rewrite statements before adding them via the given callback.
     fn rewrite_statement(
         &mut self,
@@ -17,7 +22,12 @@ pub trait Theory<'a> {
         builder: &mut ast::ProgramBuilder,
     ) -> bool;
     /// prepare the theory between grounding and solving
-    fn prepare(&mut self, ctl: &mut Control) -> bool;
+    fn prepare<L, P, O, F>(&mut self, ctl: &mut GenericControl<L, P, O, F>) -> bool
+    where
+        L: Logger,
+        P: Propagator,
+        O: GroundProgramObserver,
+        F: FunctionHandler;
     /// add options for your theory
     fn register_options(&mut self, options: &mut Options) -> bool;
     /// validate options for your theory

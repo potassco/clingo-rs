@@ -1763,28 +1763,31 @@ unsafe extern "C" fn unsafe_decide<T: Propagator>(
 
     propagator.decide(Id(thread_id), assignment, fallback, decision)
 }
-
-pub struct NoLogger;
-impl Logger for NoLogger {}
-pub struct NoPropagator;
-impl Propagator for NoPropagator {}
-pub struct NoObserver;
-impl GroundProgramObserver for NoObserver {}
-pub struct NoFunctionHandler;
-impl FunctionHandler for NoFunctionHandler {
-    fn on_external_function(
-        &mut self,
-        _location: &Location,
-        _name: &str,
-        _arguments: &[Symbol],
-    ) -> Result<Vec<Symbol>, ExternalError> {
-        Ok(vec![])
+pub mod defaults {
+    use crate::{
+        ExternalError, FunctionHandler, GroundProgramObserver, Location, Logger, Propagator,
+        SolveEventHandler, Symbol,
+    };
+    /// Default implementation for Logger, Propagator, GroundProgramObserver, FunctionHandler and SolveEventHandler
+    pub struct Default;
+    impl Logger for Default {}
+    impl Propagator for Default {}
+    impl GroundProgramObserver for Default {}
+    impl FunctionHandler for Default {
+        fn on_external_function(
+            &mut self,
+            _location: &Location,
+            _name: &str,
+            _arguments: &[Symbol],
+        ) -> Result<Vec<Symbol>, ExternalError> {
+            Ok(vec![])
+        }
     }
+    impl SolveEventHandler for Default {}
 }
-
 /// Control object holding grounding and solving state.
 #[derive(Debug)]
-pub struct ControlLPOF<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler> {
+pub struct GenericControl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler> {
     ctl: NonNull<clingo_control_t>,
     copied: bool,
     logger: Option<Box<L>>,
@@ -1793,7 +1796,7 @@ pub struct ControlLPOF<L: Logger, P: Propagator, O: GroundProgramObserver, F: Fu
     function_handler: Option<Box<F>>,
 }
 impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler> Drop
-    for ControlLPOF<L, P, O, F>
+    for GenericControl<L, P, O, F>
 {
     fn drop(&mut self) {
         if !self.copied {
@@ -1801,12 +1804,15 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler> Dro
         }
     }
 }
-pub type ControlWithLogger<L> = ControlLPOF<L, NoPropagator, NoObserver, NoFunctionHandler>;
-pub type ControlWithPropagator<P> = ControlLPOF<NoLogger, P, NoObserver, NoFunctionHandler>;
-pub type Control = ControlLPOF<NoLogger, NoPropagator, NoObserver, NoFunctionHandler>;
+pub type ControlWithLogger<L> =
+    GenericControl<L, defaults::Default, defaults::Default, defaults::Default>;
+pub type ControlWithPropagator<P> =
+    GenericControl<defaults::Default, P, defaults::Default, defaults::Default>;
+pub type Control =
+    GenericControl<defaults::Default, defaults::Default, defaults::Default, defaults::Default>;
 
 impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
-    ControlLPOF<L, P, O, F>
+    GenericControl<L, P, O, F>
 {
     /// Ground the selected [parts](struct.Part.html) of the current (non-ground) logic
     /// program.
@@ -1858,14 +1864,14 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
     pub fn register_function_handler<T: FunctionHandler>(
         mut self,
         function_handler: T,
-    ) -> ControlLPOF<L, P, O, T> {
+    ) -> GenericControl<L, P, O, T> {
         let function_handler = Some(Box::new(function_handler));
         let logger = self.logger.take();
         let propagator = self.propagator.take();
         let observer = self.observer.take();
 
         self.copied = true;
-        ControlLPOF {
+        GenericControl {
             ctl: self.ctl,
             copied: false,
             logger,
@@ -1891,7 +1897,7 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
         self,
         mode: SolveMode,
         assumptions: &[Literal],
-    ) -> Result<SolveHandleLPOFE<L, P, O, F, NoEventHandler>, ClingoError> {
+    ) -> Result<SolveHandle<L, P, O, F, defaults::Default>, ClingoError> {
         let mut handle = std::ptr::null_mut();
         let event_handler = std::ptr::null_mut();
         if !unsafe {
@@ -1910,10 +1916,10 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
             ));
         }
         match NonNull::new(handle) {
-            Some(handle) => Ok(SolveHandleLPOFE {
+            Some(handle) => Ok(SolveHandle {
                 handle,
                 ctl: self,
-                _event_handler: Box::new(NoEventHandler),
+                _event_handler: Box::new(defaults::Default),
             }),
             None => Err(ClingoError::FFIError {
                 msg: "Tried creating NonNull from a null pointer.",
@@ -1938,7 +1944,7 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
         mode: SolveMode,
         assumptions: &[Literal],
         event_handler: T,
-    ) -> Result<SolveHandleLPOFE<L, P, O, F, T>, ClingoError> {
+    ) -> Result<SolveHandle<L, P, O, F, T>, ClingoError> {
         let mut handle = std::ptr::null_mut();
         let mut event_handler = Box::new(event_handler);
         if !unsafe {
@@ -1957,7 +1963,7 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
             ));
         }
         match NonNull::new(handle) {
-            Some(handle) => Ok(SolveHandleLPOFE {
+            Some(handle) => Ok(SolveHandle {
                 handle,
                 ctl: self,
                 _event_handler: event_handler,
@@ -2114,7 +2120,7 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
         mut self,
         propagator: T,
         sequential: bool,
-    ) -> Result<ControlLPOF<L, T, O, F>, ClingoError> {
+    ) -> Result<GenericControl<L, T, O, F>, ClingoError> {
         let mut propagator = Box::new(propagator);
         let logger = self.logger.take();
         let observer = self.observer.take();
@@ -2139,7 +2145,7 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
             ));
         }
         self.copied = true;
-        Ok(ControlLPOF {
+        Ok(GenericControl {
             ctl: self.ctl,
             copied: false,
             logger,
@@ -2361,7 +2367,7 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
         mut self,
         observer: T,
         replace: bool,
-    ) -> Result<ControlLPOF<L, P, T, F>, ClingoError> {
+    ) -> Result<GenericControl<L, P, T, F>, ClingoError> {
         let mut observer = Box::new(observer);
         let logger = self.logger.take();
         let propagator = self.propagator.take();
@@ -2401,7 +2407,7 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
             ));
         }
         self.copied = true;
-        Ok(ControlLPOF {
+        Ok(GenericControl {
             ctl: self.ctl,
             copied: false,
             logger,
@@ -2468,7 +2474,7 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
     ///
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if solving could not be started
-    pub fn all_models(self) -> Result<AllModelsLPOF<L, P, O, F, NoEventHandler>, ClingoError> {
+    pub fn all_models(self) -> Result<AllModels<L, P, O, F, defaults::Default>, ClingoError> {
         let mut handle = std::ptr::null_mut();
         let event_handler = std::ptr::null_mut();
         if !unsafe {
@@ -2487,10 +2493,10 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
             ));
         }
         match NonNull::new(handle) {
-            Some(handle) => Ok(AllModelsLPOF(SolveHandleLPOFE {
+            Some(handle) => Ok(AllModels(SolveHandle {
                 handle,
                 ctl: self,
-                _event_handler: Box::new(NoEventHandler),
+                _event_handler: Box::new(defaults::Default),
             })),
             None => Err(ClingoError::FFIError {
                 msg: "Tried creating NonNull from a null pointer.",
@@ -2507,7 +2513,7 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
     /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if solving could not be started
     pub fn optimal_models(
         self,
-    ) -> Result<OptimalModelsLPOF<L, P, O, F, NoEventHandler>, ClingoError> {
+    ) -> Result<OptimalModels<L, P, O, F, defaults::Default>, ClingoError> {
         let mut handle = std::ptr::null_mut();
         let event_handler = std::ptr::null_mut();
         if !unsafe {
@@ -2526,10 +2532,10 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
             ));
         }
         match NonNull::new(handle) {
-            Some(handle) => Ok(OptimalModelsLPOF(SolveHandleLPOFE {
+            Some(handle) => Ok(OptimalModels(SolveHandle {
                 handle,
                 ctl: self,
-                _event_handler: Box::new(NoEventHandler),
+                _event_handler: Box::new(defaults::Default),
             })),
             None => Err(ClingoError::FFIError {
                 msg: "Tried creating NonNull from a null pointer.",
@@ -2588,13 +2594,13 @@ pub fn control(arguments: std::vec::Vec<String>) -> Result<Control, ClingoError>
         ));
     }
     match NonNull::new(ctl_ptr) {
-        Some(ctl) => Ok(ControlLPOF {
+        Some(ctl) => Ok(GenericControl {
             ctl,
             copied: false,
-            logger: Some(Box::new(NoLogger)),
-            propagator: Some(Box::new(NoPropagator)),
-            observer: Some(Box::new(NoObserver)),
-            function_handler: Some(Box::new(NoFunctionHandler)),
+            logger: Some(Box::new(defaults::Default)),
+            propagator: Some(Box::new(defaults::Default)),
+            observer: Some(Box::new(defaults::Default)),
+            function_handler: Some(Box::new(defaults::Default)),
         }),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
@@ -2654,13 +2660,13 @@ pub fn control_with_logger<L: Logger>(
         ));
     }
     match NonNull::new(ctl_ptr) {
-        Some(ctl) => Ok(ControlLPOF {
+        Some(ctl) => Ok(GenericControl {
             ctl,
             copied: false,
             logger: Some(logger),
-            propagator: Some(Box::new(NoPropagator)),
-            observer: Some(Box::new(NoObserver)),
-            function_handler: Some(Box::new(NoFunctionHandler)),
+            propagator: Some(Box::new(defaults::Default)),
+            observer: Some(Box::new(defaults::Default)),
+            function_handler: Some(Box::new(defaults::Default)),
         }),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
@@ -5086,8 +5092,8 @@ impl PropagateInit {
 }
 
 /// Search handle to a solve call.
-// #[derive(Debug)]
-pub struct SolveHandleLPOFE<
+#[derive(Debug)]
+pub struct SolveHandle<
     L: Logger,
     P: Propagator,
     O: GroundProgramObserver,
@@ -5095,21 +5101,16 @@ pub struct SolveHandleLPOFE<
     E: SolveEventHandler,
 > {
     handle: NonNull<clingo_solve_handle_t>,
-    ctl: ControlLPOF<L, P, O, F>,
+    ctl: GenericControl<L, P, O, F>,
     _event_handler: Box<E>,
 }
-pub struct NoEventHandler;
-impl SolveEventHandler for NoEventHandler {}
-
-pub type SolveHandle =
-    SolveHandleLPOFE<NoLogger, NoPropagator, NoObserver, NoFunctionHandler, NoEventHandler>;
 impl<
         L: Logger,
         P: Propagator,
         O: GroundProgramObserver,
         F: FunctionHandler,
         E: SolveEventHandler,
-    > SolveHandleLPOFE<L, P, O, F, E>
+    > SolveHandle<L, P, O, F, E>
 {
     /// Get the next solve result.
     ///
@@ -5254,7 +5255,7 @@ impl<
     ///
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if solving fails
-    pub fn close(self) -> Result<ControlLPOF<L, P, O, F>, ClingoError> {
+    pub fn close(self) -> Result<GenericControl<L, P, O, F>, ClingoError> {
         if !unsafe { clingo_solve_handle_close(self.handle.as_ptr()) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_solve_handle_close() failed",
@@ -5263,20 +5264,20 @@ impl<
         Ok(self.ctl)
     }
 }
-pub struct OptimalModelsLPOF<
+pub struct OptimalModels<
     L: Logger,
     P: Propagator,
     O: GroundProgramObserver,
     F: FunctionHandler,
     E: SolveEventHandler,
->(SolveHandleLPOFE<L, P, O, F, E>);
+>(SolveHandle<L, P, O, F, E>);
 impl<
         L: Logger,
         P: Propagator,
         O: GroundProgramObserver,
         F: FunctionHandler,
         E: SolveEventHandler,
-    > Iterator for OptimalModelsLPOF<L, P, O, F, E>
+    > Iterator for OptimalModels<L, P, O, F, E>
 {
     type Item = MModel;
 
@@ -5304,20 +5305,20 @@ impl<
         }
     }
 }
-pub struct AllModelsLPOF<
+pub struct AllModels<
     L: Logger,
     P: Propagator,
     O: GroundProgramObserver,
     F: FunctionHandler,
     E: SolveEventHandler,
->(SolveHandleLPOFE<L, P, O, F, E>);
+>(SolveHandle<L, P, O, F, E>);
 impl<
         L: Logger,
         P: Propagator,
         O: GroundProgramObserver,
         F: FunctionHandler,
         E: SolveEventHandler,
-    > Iterator for AllModelsLPOF<L, P, O, F, E>
+    > Iterator for AllModels<L, P, O, F, E>
 {
     type Item = MModel;
 
