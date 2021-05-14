@@ -1,6 +1,9 @@
 use super::ast;
 use super::theory::*;
-use super::{Control, Id, Model, Options, Statistics, Symbol};
+use super::{
+    FunctionHandler, GenericControl, GroundProgramObserver, Id, Logger, Model, Options, Propagator,
+    Statistics, Symbol,
+};
 use clingo_dl_sys::*;
 use clingo_sys::*;
 use std::ptr::NonNull;
@@ -100,7 +103,13 @@ impl<'a> Theory<'a> for DLTheory {
         }
     }
     /// registers the theory with the control
-    fn register(&mut self, ctl: &mut Control) -> bool {
+    fn register<L, P, O, F>(&mut self, ctl: &mut GenericControl<L, P, O, F>) -> bool
+    where
+        L: Logger,
+        P: Propagator,
+        O: GroundProgramObserver,
+        F: FunctionHandler,
+    {
         unsafe { clingodl_register(self.theory.as_ptr(), ctl.ctl.as_ptr()) }
     }
     /// Rewrite statements before adding them via the given callback.
@@ -120,7 +129,13 @@ impl<'a> Theory<'a> for DLTheory {
         }
     }
     /// prepare the theory between grounding and solving
-    fn prepare(&mut self, ctl: &mut Control) -> bool {
+    fn prepare<L, P, O, F>(&mut self, ctl: &mut GenericControl<L, P, O, F>) -> bool
+    where
+        L: Logger,
+        P: Propagator,
+        O: GroundProgramObserver,
+        F: FunctionHandler,
+    {
         unsafe { clingodl_prepare(self.theory.as_ptr(), ctl.ctl.as_ptr()) }
     }
     /// add options for your theory
