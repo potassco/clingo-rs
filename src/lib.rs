@@ -1,4 +1,4 @@
-#![doc(html_root_url = "https://docs.rs/clingo/0.6.0")]
+#![doc(html_root_url = "https://docs.rs/clingo/0.7.0")]
 //! This crate provides bindings to the [clingo](https://github.com/potassco/clingo) library version 5.5.0.
 //!
 //! ## Requirements
@@ -8,22 +8,29 @@
 //!   - [clang](http://clang.llvm.org/) version 3.1 (using either libstdc++
 //!     provided by gcc 4.9 or libc++)
 //!
+//! Per default the crate uses the clingo library via dynamic linking.
+//! It is assumed that a clingo dynamic library is installed on the system.
+//! You have to set the environment variable `CLINGO_LIBRARY_PATH`. For example:
 //!
-//! ## Using `derive` macro
+//! ```sh
+//! export CLINGO_LIBRARY_PATH=/scratch/miniconda3/envs/test/lib
+//! ```
+//! ## Features
+//!
+//! ### Using `derive` macro
 //!
 //! The crate provides a derive macro to help easing the use of rust data types as facts.
 //!
-//!
 //! In your `Cargo.toml` add:
-//!   
+//!
 //! ```toml
 //! [dependencies]
-//! clingo = { version = "0.6", features = ["derive"] }
+//! clingo = { version = "0.7.0-beta.1", features = ["derive"] }
 //! ```
-//!      
+//!
 //! In your source write:
-//!   
-//! ```ignore
+//!
+//! ```rust
 //! use clingo::ToSymbol;
 //! use clingo::ClingoError;
 //! use clingo::FactBase;
@@ -41,22 +48,40 @@
 //!
 //! The macro performs a conversion to snake case. This means the corresponing fact for `MyPoint{x:4,y:2}` is `my_point(4,2)`.
 //!
+//! ### Using `dl-theory`
 //!
-//! ## Using `dynamic_linking`
+//! You have to set the environment variable `CLINGO_DL_LIBRARY_PATH`. For example:
 //!
-//! The crate defines a [Cargo feature] that allows to use the clingo library via dynamic linking.
+//! ```sh
+//! export CLINGO_DL_LIBRARY_PATH=/scratch/miniconda3/envs/test/lib
+//! ```
 //!
-//! [Cargo feature]: https://doc.rust-lang.org/cargo/reference/manifest.html#the-features-section
-//!
-//! With dynamic linking enabled the clingo library is not build for static linking but it is assumed that a
-//! clingo dynamic library is installed on the system.
-//!
-//! The recommended way to use the optional dynamic linking support is as
+//! The recommended way to use the optional dl-theory feature is as
 //! follows.
 //!
 //! ```toml
 //! [dependencies]
-//! clingo = { version = "0.6.0", features = ["derive", "dynamic_linking"] }
+//! clingo = { version = "0.7.0-beta.1", features = ["derive", "dl-theory"] }
+//! ```
+//!
+//! ### Using `static-linking`
+//!
+//! The crate defines a [Cargo feature] that allows to use the clingo library via static linking.
+//!
+//! [Cargo feature]: https://doc.rust-lang.org/cargo/reference/manifest.html#the-features-section
+//!
+//! *Attention: currently `static-linking` does not work with `dl-theory`.*
+//!
+//! ```sh
+//! export CLINGO_LIBRARY_PATH=/scratch/miniconda3/envs/test/lib
+//! ```
+//!
+//! The recommended way to use the optional static linking support is as
+//! follows.
+//!
+//! ```toml
+//! [dependencies]
+//! clingo = { version = "0.7.0-beta.1", features = ["static-linking"] }
 //! ```
 //!
 #![allow(non_upper_case_globals)]
@@ -1769,11 +1794,11 @@ pub mod defaults {
         SolveEventHandler, Symbol,
     };
     /// Default implementation for Logger, Propagator, GroundProgramObserver, FunctionHandler and SolveEventHandler
-    pub struct Default;
-    impl Logger for Default {}
-    impl Propagator for Default {}
-    impl GroundProgramObserver for Default {}
-    impl FunctionHandler for Default {
+    pub struct Non;
+    impl Logger for Non {}
+    impl Propagator for Non {}
+    impl GroundProgramObserver for Non {}
+    impl FunctionHandler for Non {
         fn on_external_function(
             &mut self,
             _location: &Location,
@@ -1783,7 +1808,7 @@ pub mod defaults {
             Ok(vec![])
         }
     }
-    impl SolveEventHandler for Default {}
+    impl SolveEventHandler for Non {}
 }
 /// Control object holding grounding and solving state.
 #[derive(Debug)]
@@ -1804,12 +1829,9 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler> Dro
         }
     }
 }
-pub type ControlWithLogger<L> =
-    GenericControl<L, defaults::Default, defaults::Default, defaults::Default>;
-pub type ControlWithPropagator<P> =
-    GenericControl<defaults::Default, P, defaults::Default, defaults::Default>;
-pub type Control =
-    GenericControl<defaults::Default, defaults::Default, defaults::Default, defaults::Default>;
+pub type ControlWithLogger<L> = GenericControl<L, defaults::Non, defaults::Non, defaults::Non>;
+pub type ControlWithPropagator<P> = GenericControl<defaults::Non, P, defaults::Non, defaults::Non>;
+pub type Control = GenericControl<defaults::Non, defaults::Non, defaults::Non, defaults::Non>;
 
 impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
     GenericControl<L, P, O, F>
@@ -1897,7 +1919,7 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
         self,
         mode: SolveMode,
         assumptions: &[Literal],
-    ) -> Result<SolveHandle<L, P, O, F, defaults::Default>, ClingoError> {
+    ) -> Result<GenericSolveHandle<L, P, O, F, defaults::Non>, ClingoError> {
         let mut handle = std::ptr::null_mut();
         let event_handler = std::ptr::null_mut();
         if !unsafe {
@@ -1916,10 +1938,10 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
             ));
         }
         match NonNull::new(handle) {
-            Some(handle) => Ok(SolveHandle {
+            Some(handle) => Ok(GenericSolveHandle {
                 handle,
                 ctl: self,
-                _event_handler: Box::new(defaults::Default),
+                _event_handler: Box::new(defaults::Non),
             }),
             None => Err(ClingoError::FFIError {
                 msg: "Tried creating NonNull from a null pointer.",
@@ -1944,7 +1966,7 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
         mode: SolveMode,
         assumptions: &[Literal],
         event_handler: T,
-    ) -> Result<SolveHandle<L, P, O, F, T>, ClingoError> {
+    ) -> Result<GenericSolveHandle<L, P, O, F, T>, ClingoError> {
         let mut handle = std::ptr::null_mut();
         let mut event_handler = Box::new(event_handler);
         if !unsafe {
@@ -1963,7 +1985,7 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
             ));
         }
         match NonNull::new(handle) {
-            Some(handle) => Ok(SolveHandle {
+            Some(handle) => Ok(GenericSolveHandle {
                 handle,
                 ctl: self,
                 _event_handler: event_handler,
@@ -2474,7 +2496,7 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
     ///
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if solving could not be started
-    pub fn all_models(self) -> Result<AllModels<L, P, O, F, defaults::Default>, ClingoError> {
+    pub fn all_models(self) -> Result<AllModels<L, P, O, F, defaults::Non>, ClingoError> {
         let mut handle = std::ptr::null_mut();
         let event_handler = std::ptr::null_mut();
         if !unsafe {
@@ -2493,10 +2515,10 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
             ));
         }
         match NonNull::new(handle) {
-            Some(handle) => Ok(AllModels(SolveHandle {
+            Some(handle) => Ok(AllModels(GenericSolveHandle {
                 handle,
                 ctl: self,
-                _event_handler: Box::new(defaults::Default),
+                _event_handler: Box::new(defaults::Non),
             })),
             None => Err(ClingoError::FFIError {
                 msg: "Tried creating NonNull from a null pointer.",
@@ -2511,9 +2533,7 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
     ///
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if solving could not be started
-    pub fn optimal_models(
-        self,
-    ) -> Result<OptimalModels<L, P, O, F, defaults::Default>, ClingoError> {
+    pub fn optimal_models(self) -> Result<OptimalModels<L, P, O, F, defaults::Non>, ClingoError> {
         let mut handle = std::ptr::null_mut();
         let event_handler = std::ptr::null_mut();
         if !unsafe {
@@ -2532,10 +2552,10 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
             ));
         }
         match NonNull::new(handle) {
-            Some(handle) => Ok(OptimalModels(SolveHandle {
+            Some(handle) => Ok(OptimalModels(GenericSolveHandle {
                 handle,
                 ctl: self,
-                _event_handler: Box::new(defaults::Default),
+                _event_handler: Box::new(defaults::Non),
             })),
             None => Err(ClingoError::FFIError {
                 msg: "Tried creating NonNull from a null pointer.",
@@ -2597,10 +2617,10 @@ pub fn control(arguments: std::vec::Vec<String>) -> Result<Control, ClingoError>
         Some(ctl) => Ok(GenericControl {
             ctl,
             copied: false,
-            logger: Some(Box::new(defaults::Default)),
-            propagator: Some(Box::new(defaults::Default)),
-            observer: Some(Box::new(defaults::Default)),
-            function_handler: Some(Box::new(defaults::Default)),
+            logger: Some(Box::new(defaults::Non)),
+            propagator: Some(Box::new(defaults::Non)),
+            observer: Some(Box::new(defaults::Non)),
+            function_handler: Some(Box::new(defaults::Non)),
         }),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
@@ -2664,9 +2684,9 @@ pub fn control_with_logger<L: Logger>(
             ctl,
             copied: false,
             logger: Some(logger),
-            propagator: Some(Box::new(defaults::Default)),
-            observer: Some(Box::new(defaults::Default)),
-            function_handler: Some(Box::new(defaults::Default)),
+            propagator: Some(Box::new(defaults::Non)),
+            observer: Some(Box::new(defaults::Non)),
+            function_handler: Some(Box::new(defaults::Non)),
         }),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
@@ -5093,7 +5113,7 @@ impl PropagateInit {
 
 /// Search handle to a solve call.
 #[derive(Debug)]
-pub struct SolveHandle<
+pub struct GenericSolveHandle<
     L: Logger,
     P: Propagator,
     O: GroundProgramObserver,
@@ -5104,13 +5124,21 @@ pub struct SolveHandle<
     ctl: GenericControl<L, P, O, F>,
     _event_handler: Box<E>,
 }
+pub type SolveHandleWithLogger<L> =
+    GenericSolveHandle<L, defaults::Non, defaults::Non, defaults::Non, defaults::Non>;
+pub type SolveHandleWithPropagator<P> =
+    GenericSolveHandle<defaults::Non, P, defaults::Non, defaults::Non, defaults::Non>;
+pub type SolveHandleWithEventHandler<E> =
+    GenericSolveHandle<defaults::Non, defaults::Non, defaults::Non, defaults::Non, E>;
+pub type SolveHandle =
+    GenericSolveHandle<defaults::Non, defaults::Non, defaults::Non, defaults::Non, defaults::Non>;
 impl<
         L: Logger,
         P: Propagator,
         O: GroundProgramObserver,
         F: FunctionHandler,
         E: SolveEventHandler,
-    > SolveHandle<L, P, O, F, E>
+    > GenericSolveHandle<L, P, O, F, E>
 {
     /// Get the next solve result.
     ///
@@ -5270,7 +5298,7 @@ pub struct OptimalModels<
     O: GroundProgramObserver,
     F: FunctionHandler,
     E: SolveEventHandler,
->(SolveHandle<L, P, O, F, E>);
+>(GenericSolveHandle<L, P, O, F, E>);
 impl<
         L: Logger,
         P: Propagator,
@@ -5311,7 +5339,7 @@ pub struct AllModels<
     O: GroundProgramObserver,
     F: FunctionHandler,
     E: SolveEventHandler,
->(SolveHandle<L, P, O, F, E>);
+>(GenericSolveHandle<L, P, O, F, E>);
 impl<
         L: Logger,
         P: Propagator,
