@@ -1,18 +1,18 @@
 use crate::{
-    set_internal_error, ClingoError, ErrorType, ExternalType, FunctionHandler, GenericControl,
-    GroundProgramObserver, Logger, Propagator,
+    internalize_string, set_internal_error, ClingoError, ErrorType, ExternalType, FunctionHandler,
+    GenericControl, GroundProgramObserver, Location, Logger, Propagator, Symbol,
 };
 
 use crate::ast_internals::Body;
 use crate::ast_internals::{ASTType, AST};
-use crate::{internalize_string, Location, Symbol};
 use clingo_sys::*;
-use std::ffi::CString;
-use std::marker::PhantomData;
-use std::os::raw::c_char;
-use std::os::raw::c_void;
-use std::ptr::NonNull;
-
+use std::{
+    ffi::CString,
+    marker::PhantomData,
+    os::raw::{c_char, c_void},
+    ptr::NonNull,
+};
+use vec1::Vec1;
 /// Object to build non-ground programs.
 pub struct ProgramBuilder<'a> {
     pub(crate) theref: &'a mut clingo_program_builder_t,
@@ -2384,10 +2384,11 @@ pub fn theory_unparsed_term_element<'a>(
         }),
     }
 }
+
 /// Construct an AST node of type `ASTType.TheoryUnparsedTerm`.
 pub fn theory_unparsed_term<'a>(
     location: &Location,
-    elements: &'a [TheoryUnparsedTermElement], //TODO NonEmptyList
+    elements: Vec1<TheoryUnparsedTermElement>, //TODO NonEmptyList
 ) -> Result<TheoryUnparsedTerm<'a>, ClingoError> {
     let mut ast = std::ptr::null_mut();
 
