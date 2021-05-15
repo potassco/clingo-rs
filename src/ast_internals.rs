@@ -4,14 +4,33 @@ use clingo_sys::*;
 use std::ffi::CStr;
 use std::marker::PhantomData;
 use std::ptr::NonNull;
-pub struct Body<'a> {
-    ast: &'a Ast,
-    index: usize,
+#[derive(Debug, Clone)]
+pub struct Body<'a>(ASTArray<'a>);
+impl<'a> Iterator for Body<'a> {
+    type Item = BodyLiteral<'a>;
+
+    fn next(&mut self) -> Option<BodyLiteral<'a>> {
+        let ast = self.0.next()?;
+        Some(BodyLiteral {
+            ast,
+            _lifetime: PhantomData,
+        })
+    }
 }
 impl<'a> Body<'a> {
-    /// Get the size of an AstArray
+    pub fn size(&self) -> Result<usize, ClingoError> {
+        self.0.size()
+    }
+}
+#[derive(Debug, Clone)]
+struct ASTArray<'a> {
+    ast: &'a AST,
+    index: usize,
+}
+impl<'a> ASTArray<'a> {
+    /// Get the size of an ASTArray
     ///
-    /// @param[in] ast the target AstArray
+    /// @param[in] ast the target ASTArray
     /// @param[in] attribute the target attribute"]
     /// @param[out] size the resulting size"]
     /// @return whether the call was successful; might set one of the following error codes:"]
@@ -22,7 +41,7 @@ impl<'a> Body<'a> {
         if !unsafe {
             clingo_ast_attribute_size_ast_array(
                 self.ast.0.as_ptr(),
-                AstAttribute::Body as i32,
+                ASTAttribute::Body as i32,
                 &mut size,
             )
         } {
@@ -33,11 +52,10 @@ impl<'a> Body<'a> {
         Ok(size)
     }
 }
+impl<'a> Iterator for ASTArray<'a> {
+    type Item = AST;
 
-impl<'a> Iterator for Body<'a> {
-    type Item = BodyLiteral<'a>;
-
-    fn next(&mut self) -> Option<BodyLiteral<'a>> {
+    fn next(&mut self) -> Option<AST> {
         let size = self.size().unwrap(); //Err->None
 
         if size == self.index {
@@ -48,7 +66,7 @@ impl<'a> Iterator for Body<'a> {
         if !unsafe {
             clingo_ast_attribute_get_ast_at(
                 self.ast.0.as_ptr(),
-                AstAttribute::Body as i32,
+                ASTAttribute::Body as i32,
                 self.index,
                 &mut ast,
             )
@@ -56,88 +74,13 @@ impl<'a> Iterator for Body<'a> {
             return None;
         }
         self.index += 1;
-        NonNull::new(ast).map(|x| BodyLiteral {
-            ast: Ast(x),
-            _lifetime: PhantomData,
-        })
+        NonNull::new(ast).map(|x| AST(x))
     }
 }
 
-// struct AstArray<'a> {
-//     ast: &'a Ast,
-//     attribute: AstAttribute,
-// }
-// impl<'a> AstArray<'a> {
-//     /// Get the size of an AstArray
-//     ///
-//     /// @param[in] ast the target AstArray
-//     /// @param[in] attribute the target attribute"]
-//     /// @param[out] size the resulting size"]
-//     /// @return whether the call was successful; might set one of the following error codes:"]
-//     /// - ::clingo_error_runtime"]
-
-//     pub fn size(&self) -> Result<usize, ClingoError> {
-//         let mut size: usize = 0;
-//         if !unsafe {
-//             clingo_ast_attribute_size_ast_array(
-//                 self.ast.0.as_ptr(),
-//                 self.attribute as i32,
-//                 &mut size,
-//             )
-//         } {
-//             return Err(ClingoError::new_internal(
-//                 "Call to clingo_ast_attribute_size_ast_array() failed.",
-//             ));
-//         }
-//         Ok(size)
-//     }
-
-//     ///  Returns an iterator over the theory atoms.
-//     fn iter(&self) -> AstArrayIterator {
-//         AstArrayIterator {
-//             ast_array: self,
-//             index: 0,
-//         }
-//     }
-// }
-// struct AstArrayIterator<'a> {
-//     ast_array: &'a AstArray<'a>,
-//     index: usize,
-// }
-// impl<'a> Iterator for AstArrayIterator<'a> {
-//     type Item = Ast;
-
-//     fn next(&mut self) -> Option<Ast> {
-//         let size = self.ast_array.size().unwrap(); //Err->None
-
-//         if size == self.index {
-//             return None;
-//         }
-
-//         let mut ast = std::ptr::null_mut();
-//         if !unsafe {
-//             clingo_ast_attribute_get_ast_at(
-//                 self.ast_array.ast.0.as_ptr(),
-//                 self.ast_array.attribute as i32,
-//                 self.index,
-//                 &mut ast,
-//             )
-//         } {
-//             return None;
-//         }
-//         self.index += 1;
-//         match NonNull::new(ast) {
-//             Some(x) => Some(Ast(x)),
-//             None => None,
-//         }
-//     }
-// }
-
-// Here starts AST2
-
 #[derive(Debug, Copy, Clone)]
 /// Enumeration of AST types.
-pub(crate) enum AstType {
+pub(crate) enum ASTType {
     Id = clingo_ast_type_e_clingo_ast_type_id as isize,
     Variable = clingo_ast_type_e_clingo_ast_type_variable as isize,
     SymbolicTerm = clingo_ast_type_e_clingo_ast_type_symbolic_term as isize,
@@ -192,79 +135,79 @@ pub(crate) enum AstType {
     Defined = clingo_ast_type_e_clingo_ast_type_defined as isize,
     TheoryDefinition = clingo_ast_type_e_clingo_ast_type_theory_definition as isize,
 }
-impl AstType {
-    fn try_from(code: u32) -> Result<AstType, ClingoError> {
+impl ASTType {
+    fn try_from(code: u32) -> Result<ASTType, ClingoError> {
         // println!("in try_from");
         match code {
-            clingo_ast_type_e_clingo_ast_type_id => Ok(AstType::Id),
-            clingo_ast_type_e_clingo_ast_type_variable => Ok(AstType::Variable),
-            clingo_ast_type_e_clingo_ast_type_symbolic_term => Ok(AstType::SymbolicTerm),
-            clingo_ast_type_e_clingo_ast_type_unary_operation => Ok(AstType::UnaryOperation),
-            clingo_ast_type_e_clingo_ast_type_binary_operation => Ok(AstType::BinaryOperation),
-            clingo_ast_type_e_clingo_ast_type_interval => Ok(AstType::Interval),
-            clingo_ast_type_e_clingo_ast_type_function => Ok(AstType::Function),
-            clingo_ast_type_e_clingo_ast_type_pool => Ok(AstType::Pool),
-            clingo_ast_type_e_clingo_ast_type_csp_product => Ok(AstType::CspProduct),
-            clingo_ast_type_e_clingo_ast_type_csp_sum => Ok(AstType::CspSum),
-            clingo_ast_type_e_clingo_ast_type_csp_guard => Ok(AstType::CspGuard),
-            clingo_ast_type_e_clingo_ast_type_boolean_constant => Ok(AstType::BooleanConstant),
-            clingo_ast_type_e_clingo_ast_type_symbolic_atom => Ok(AstType::SymbolicAtom),
-            clingo_ast_type_e_clingo_ast_type_comparison => Ok(AstType::Comparison),
-            clingo_ast_type_e_clingo_ast_type_csp_literal => Ok(AstType::CspLiteral),
-            clingo_ast_type_e_clingo_ast_type_aggregate_guard => Ok(AstType::AggregateGuard),
+            clingo_ast_type_e_clingo_ast_type_id => Ok(ASTType::Id),
+            clingo_ast_type_e_clingo_ast_type_variable => Ok(ASTType::Variable),
+            clingo_ast_type_e_clingo_ast_type_symbolic_term => Ok(ASTType::SymbolicTerm),
+            clingo_ast_type_e_clingo_ast_type_unary_operation => Ok(ASTType::UnaryOperation),
+            clingo_ast_type_e_clingo_ast_type_binary_operation => Ok(ASTType::BinaryOperation),
+            clingo_ast_type_e_clingo_ast_type_interval => Ok(ASTType::Interval),
+            clingo_ast_type_e_clingo_ast_type_function => Ok(ASTType::Function),
+            clingo_ast_type_e_clingo_ast_type_pool => Ok(ASTType::Pool),
+            clingo_ast_type_e_clingo_ast_type_csp_product => Ok(ASTType::CspProduct),
+            clingo_ast_type_e_clingo_ast_type_csp_sum => Ok(ASTType::CspSum),
+            clingo_ast_type_e_clingo_ast_type_csp_guard => Ok(ASTType::CspGuard),
+            clingo_ast_type_e_clingo_ast_type_boolean_constant => Ok(ASTType::BooleanConstant),
+            clingo_ast_type_e_clingo_ast_type_symbolic_atom => Ok(ASTType::SymbolicAtom),
+            clingo_ast_type_e_clingo_ast_type_comparison => Ok(ASTType::Comparison),
+            clingo_ast_type_e_clingo_ast_type_csp_literal => Ok(ASTType::CspLiteral),
+            clingo_ast_type_e_clingo_ast_type_aggregate_guard => Ok(ASTType::AggregateGuard),
             clingo_ast_type_e_clingo_ast_type_conditional_literal => {
-                Ok(AstType::ConditionalLiteral)
+                Ok(ASTType::ConditionalLiteral)
             }
-            clingo_ast_type_e_clingo_ast_type_aggregate => Ok(AstType::Aggregate),
+            clingo_ast_type_e_clingo_ast_type_aggregate => Ok(ASTType::Aggregate),
             clingo_ast_type_e_clingo_ast_type_body_aggregate_element => {
-                Ok(AstType::BodyAggregateElement)
+                Ok(ASTType::BodyAggregateElement)
             }
-            clingo_ast_type_e_clingo_ast_type_body_aggregate => Ok(AstType::BodyAggregate),
+            clingo_ast_type_e_clingo_ast_type_body_aggregate => Ok(ASTType::BodyAggregate),
             clingo_ast_type_e_clingo_ast_type_head_aggregate_element => {
-                Ok(AstType::HeadAggregateElement)
+                Ok(ASTType::HeadAggregateElement)
             }
-            clingo_ast_type_e_clingo_ast_type_head_aggregate => Ok(AstType::HeadAggregate),
-            clingo_ast_type_e_clingo_ast_type_disjunction => Ok(AstType::Disjunction),
-            clingo_ast_type_e_clingo_ast_type_disjoint_element => Ok(AstType::DisjointElement),
-            clingo_ast_type_e_clingo_ast_type_disjoint => Ok(AstType::Disjoint),
-            clingo_ast_type_e_clingo_ast_type_theory_sequence => Ok(AstType::TheorySequence),
-            clingo_ast_type_e_clingo_ast_type_theory_function => Ok(AstType::TheoryFunction),
+            clingo_ast_type_e_clingo_ast_type_head_aggregate => Ok(ASTType::HeadAggregate),
+            clingo_ast_type_e_clingo_ast_type_disjunction => Ok(ASTType::Disjunction),
+            clingo_ast_type_e_clingo_ast_type_disjoint_element => Ok(ASTType::DisjointElement),
+            clingo_ast_type_e_clingo_ast_type_disjoint => Ok(ASTType::Disjoint),
+            clingo_ast_type_e_clingo_ast_type_theory_sequence => Ok(ASTType::TheorySequence),
+            clingo_ast_type_e_clingo_ast_type_theory_function => Ok(ASTType::TheoryFunction),
             clingo_ast_type_e_clingo_ast_type_theory_unparsed_term_element => {
-                Ok(AstType::TheoryUnparsedTermElement)
+                Ok(ASTType::TheoryUnparsedTermElement)
             }
             clingo_ast_type_e_clingo_ast_type_theory_unparsed_term => {
-                Ok(AstType::TheoryUnparsedTerm)
+                Ok(ASTType::TheoryUnparsedTerm)
             }
-            clingo_ast_type_e_clingo_ast_type_theory_guard => Ok(AstType::TheoryGuard),
-            clingo_ast_type_e_clingo_ast_type_theory_atom_element => Ok(AstType::TheoryAtomElement),
-            clingo_ast_type_e_clingo_ast_type_theory_atom => Ok(AstType::TheoryAtom),
-            clingo_ast_type_e_clingo_ast_type_literal => Ok(AstType::Literal),
+            clingo_ast_type_e_clingo_ast_type_theory_guard => Ok(ASTType::TheoryGuard),
+            clingo_ast_type_e_clingo_ast_type_theory_atom_element => Ok(ASTType::TheoryAtomElement),
+            clingo_ast_type_e_clingo_ast_type_theory_atom => Ok(ASTType::TheoryAtom),
+            clingo_ast_type_e_clingo_ast_type_literal => Ok(ASTType::Literal),
             clingo_ast_type_e_clingo_ast_type_theory_operator_definition => {
-                Ok(AstType::TheoryOperatorDefinition)
+                Ok(ASTType::TheoryOperatorDefinition)
             }
             clingo_ast_type_e_clingo_ast_type_theory_term_definition => {
-                Ok(AstType::TheoryTermDefinition)
+                Ok(ASTType::TheoryTermDefinition)
             }
             clingo_ast_type_e_clingo_ast_type_theory_guard_definition => {
-                Ok(AstType::TheoryGuardDefinition)
+                Ok(ASTType::TheoryGuardDefinition)
             }
             clingo_ast_type_e_clingo_ast_type_theory_atom_definition => {
-                Ok(AstType::TheoryAtomDefinition)
+                Ok(ASTType::TheoryAtomDefinition)
             }
-            clingo_ast_type_e_clingo_ast_type_rule => Ok(AstType::Rule),
-            clingo_ast_type_e_clingo_ast_type_definition => Ok(AstType::Definition),
-            clingo_ast_type_e_clingo_ast_type_show_signature => Ok(AstType::ShowSignature),
-            clingo_ast_type_e_clingo_ast_type_show_term => Ok(AstType::ShowTerm),
-            clingo_ast_type_e_clingo_ast_type_minimize => Ok(AstType::Minimize),
-            clingo_ast_type_e_clingo_ast_type_script => Ok(AstType::Script),
-            clingo_ast_type_e_clingo_ast_type_program => Ok(AstType::Program),
-            clingo_ast_type_e_clingo_ast_type_external => Ok(AstType::External),
-            clingo_ast_type_e_clingo_ast_type_edge => Ok(AstType::Edge),
-            clingo_ast_type_e_clingo_ast_type_heuristic => Ok(AstType::Heuristic),
-            clingo_ast_type_e_clingo_ast_type_project_atom => Ok(AstType::ProjectAtom),
-            clingo_ast_type_e_clingo_ast_type_project_signature => Ok(AstType::ProjectSignature),
-            clingo_ast_type_e_clingo_ast_type_defined => Ok(AstType::Defined),
-            clingo_ast_type_e_clingo_ast_type_theory_definition => Ok(AstType::TheoryDefinition),
+            clingo_ast_type_e_clingo_ast_type_rule => Ok(ASTType::Rule),
+            clingo_ast_type_e_clingo_ast_type_definition => Ok(ASTType::Definition),
+            clingo_ast_type_e_clingo_ast_type_show_signature => Ok(ASTType::ShowSignature),
+            clingo_ast_type_e_clingo_ast_type_show_term => Ok(ASTType::ShowTerm),
+            clingo_ast_type_e_clingo_ast_type_minimize => Ok(ASTType::Minimize),
+            clingo_ast_type_e_clingo_ast_type_script => Ok(ASTType::Script),
+            clingo_ast_type_e_clingo_ast_type_program => Ok(ASTType::Program),
+            clingo_ast_type_e_clingo_ast_type_external => Ok(ASTType::External),
+            clingo_ast_type_e_clingo_ast_type_edge => Ok(ASTType::Edge),
+            clingo_ast_type_e_clingo_ast_type_heuristic => Ok(ASTType::Heuristic),
+            clingo_ast_type_e_clingo_ast_type_project_atom => Ok(ASTType::ProjectAtom),
+            clingo_ast_type_e_clingo_ast_type_project_signature => Ok(ASTType::ProjectSignature),
+            clingo_ast_type_e_clingo_ast_type_defined => Ok(ASTType::Defined),
+            clingo_ast_type_e_clingo_ast_type_theory_definition => Ok(ASTType::TheoryDefinition),
             x => {
                 eprintln!(
                     "FFIError in {} {}, {} : Failed to match clingo_ast_type {}",
@@ -283,7 +226,7 @@ impl AstType {
 
 #[derive(Debug, Copy, Clone)]
 /// Enumeration of attributes types used by the AST.
-pub enum AstAttributeType {
+pub enum ASTAttributeType {
     /// For an attribute of type `int`.
     Number = clingo_ast_attribute_type_e_clingo_ast_attribute_type_number as isize,
     /// For an attribute of type `clingo_ast_symbol_t`.
@@ -293,39 +236,39 @@ pub enum AstAttributeType {
     /// For an attribute of type `char const *`.
     String = clingo_ast_attribute_type_e_clingo_ast_attribute_type_string as isize,
     /// For an attribute of type `clingo_ast_t *`.
-    Ast = clingo_ast_attribute_type_e_clingo_ast_attribute_type_ast as isize,
+    AST = clingo_ast_attribute_type_e_clingo_ast_attribute_type_ast as isize,
     /// For an attribute of type `clingo_ast_t *` that can be NULL.
-    OptionalAst = clingo_ast_attribute_type_e_clingo_ast_attribute_type_optional_ast as isize,
+    OptionalAST = clingo_ast_attribute_type_e_clingo_ast_attribute_type_optional_ast as isize,
     /// For an attribute of type `char const **`.
     StringArray = clingo_ast_attribute_type_e_clingo_ast_attribute_type_string_array as isize,
     /// For an attribute of type `clingo_ast_t **`.
-    AstArray = clingo_ast_attribute_type_e_clingo_ast_attribute_type_ast_array as isize,
+    ASTArray = clingo_ast_attribute_type_e_clingo_ast_attribute_type_ast_array as isize,
 }
-// impl AstAttributeType {
-//     fn try_from(code: u32) -> Result<AstAttributeType, ClingoError> {
+// impl ASTAttributeType {
+//     fn try_from(code: u32) -> Result<ASTAttributeType, ClingoError> {
 //         // println!("in try_from");
 //         match code {
 //             clingo_ast_attribute_type_e_clingo_ast_attribute_type_number => {
-//                 Ok(AstAttributeType::Number)
+//                 Ok(ASTAttributeType::Number)
 //             }
 //             clingo_ast_attribute_type_e_clingo_ast_attribute_type_symbol => {
-//                 Ok(AstAttributeType::Symbol)
+//                 Ok(ASTAttributeType::Symbol)
 //             }
 //             clingo_ast_attribute_type_e_clingo_ast_attribute_type_location => {
-//                 Ok(AstAttributeType::Location)
+//                 Ok(ASTAttributeType::Location)
 //             }
 //             clingo_ast_attribute_type_e_clingo_ast_attribute_type_string => {
-//                 Ok(AstAttributeType::String)
+//                 Ok(ASTAttributeType::String)
 //             }
-//             clingo_ast_attribute_type_e_clingo_ast_attribute_type_ast => Ok(AstAttributeType::Ast),
+//             clingo_ast_attribute_type_e_clingo_ast_attribute_type_ast => Ok(ASTAttributeType::AST),
 //             clingo_ast_attribute_type_e_clingo_ast_attribute_type_optional_ast => {
-//                 Ok(AstAttributeType::OptionalAst)
+//                 Ok(ASTAttributeType::OptionalAST)
 //             }
 //             clingo_ast_attribute_type_e_clingo_ast_attribute_type_string_array => {
-//                 Ok(AstAttributeType::StringArray)
+//                 Ok(ASTAttributeType::StringArray)
 //             }
 //             clingo_ast_attribute_type_e_clingo_ast_attribute_type_ast_array => {
-//                 Ok(AstAttributeType::AstArray)
+//                 Ok(ASTAttributeType::ASTArray)
 //             }
 //             x => {
 //                 eprintln!(
@@ -344,7 +287,7 @@ pub enum AstAttributeType {
 // }
 #[derive(Debug, Copy, Clone)]
 /// Enumeration of attributes used by the AST.
-pub enum AstAttribute {
+pub enum ASTAttribute {
     Argument = clingo_ast_attribute_e_clingo_ast_attribute_argument as isize,
     Arguments = clingo_ast_attribute_e_clingo_ast_attribute_arguments as isize,
     Arity = clingo_ast_attribute_e_clingo_ast_attribute_arity as isize,
@@ -394,15 +337,15 @@ pub enum AstAttribute {
 
 /// This struct provides a view to nodes in the AST.
 #[derive(Debug)]
-pub(crate) struct Ast(pub NonNull<clingo_ast_t>);
+pub(crate) struct AST(pub NonNull<clingo_ast_t>);
 
-impl Clone for Ast {
-    fn clone(&self) -> Ast {
+impl Clone for AST {
+    fn clone(&self) -> AST {
         self.deep_copy().unwrap()
     }
 }
 use std::fmt;
-impl fmt::Display for Ast {
+impl fmt::Display for AST {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let x = self.to_string();
         match x {
@@ -415,20 +358,20 @@ impl fmt::Display for Ast {
     }
 }
 
-impl Drop for Ast {
+impl Drop for AST {
     fn drop(&mut self) {
         self.release()
     }
 }
-impl Ast {
+impl AST {
     pub fn body(&self) -> Body {
-        Body {
+        Body(ASTArray {
             ast: &self,
             index: 0,
-        }
+        })
     }
     pub fn head<'a>(&self) -> Head<'a> {
-        let ast = self.get_attribute_ast(AstAttribute::Head).unwrap();
+        let ast = self.get_attribute_ast(ASTAttribute::Head).unwrap();
         Head {
             ast,
             _lifetime: PhantomData,
@@ -473,7 +416,7 @@ impl Ast {
     // #[doc = "! - ::clingo_error_bad_alloc"]
     // pub fn clingo_ast_copy(ast: *mut clingo_ast_t, copy: *mut *mut clingo_ast_t) -> bool;
     // }
-    fn copy(&self) -> Result<Ast, ClingoError> {
+    fn copy(&self) -> Result<AST, ClingoError> {
         let mut cpy = std::ptr::null_mut();
         if !unsafe { clingo_ast_copy(self.0.as_ptr(), &mut cpy) } {
             eprintln!("Call to clingo_ast_copy() failed");
@@ -482,7 +425,7 @@ impl Ast {
             ));
         }
         match NonNull::new(cpy) {
-            Some(cpy) => Ok(Ast(cpy)),
+            Some(cpy) => Ok(AST(cpy)),
             None => Err(ClingoError::FFIError {
                 msg: "Tried creating NonNull from a null pointer.",
             })?,
@@ -497,7 +440,7 @@ impl Ast {
     //     #[doc = "! - ::clingo_error_bad_alloc"]
     //     pub fn clingo_ast_deep_copy(ast: *mut clingo_ast_t, copy: *mut *mut clingo_ast_t) -> bool;
     // }
-    fn deep_copy(&self) -> Result<Ast, ClingoError> {
+    fn deep_copy(&self) -> Result<AST, ClingoError> {
         let mut cpy = std::ptr::null_mut();
         if !unsafe { clingo_ast_deep_copy(self.0.as_ptr(), &mut cpy) } {
             eprintln!("Call to clingo_ast_deep_copy() failed");
@@ -506,7 +449,7 @@ impl Ast {
             ));
         }
         match NonNull::new(cpy) {
-            Some(cpy) => Ok(Ast(cpy)),
+            Some(cpy) => Ok(AST(cpy)),
             None => Err(ClingoError::FFIError {
                 msg: "Tried creating NonNull from a null pointer.",
             })?,
@@ -592,14 +535,14 @@ impl Ast {
     /// @param[out] type the resulting type
     /// @return whether the call was successful; might set one of the following error codes:
     /// - ::clingo_error_runtime
-    pub(crate) fn get_type(&self) -> Result<AstType, ClingoError> {
+    pub(crate) fn get_type(&self) -> Result<ASTType, ClingoError> {
         let mut ast_type = 0;
         if !unsafe { clingo_ast_get_type(self.0.as_ptr(), &mut ast_type) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_ast_get_type() failed.",
             ));
         }
-        AstType::try_from(ast_type as u32)
+        ASTType::try_from(ast_type as u32)
     }
 
     // extern "C" {
@@ -624,7 +567,7 @@ impl Ast {
     // #[doc = "! @param[out] type the resulting type"]
     // #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
     // #[doc = "! - ::clingo_error_runtime"]
-    // fn get_attribute_type(&self, attribute: AstAttribute) -> Result<AstAttributeType, ClingoError> {
+    // fn get_attribute_type(&self, attribute: ASTAttribute) -> Result<ASTAttributeType, ClingoError> {
     //     let mut attribute_type = 0;
     //     if !unsafe {
     //         clingo_ast_attribute_type(self.0.as_ptr(), attribute as i32, &mut attribute_type)
@@ -633,7 +576,7 @@ impl Ast {
     //             "Call to clingo_ast_attribute_type() failed.",
     //         ));
     //     }
-    //     AstAttributeType::try_from(attribute_type as u32)
+    //     ASTAttributeType::try_from(attribute_type as u32)
     // }
     // extern "C" {
     //     #[doc = "! Get the value of an attribute of type \"clingo_ast_attribute_type_number\"."]
@@ -664,7 +607,7 @@ impl Ast {
     //     ) -> bool;
     // }
 
-    //  Get the value of an attribute of type AstAttributeType::Symbol
+    //  Get the value of an attribute of type ASTAttributeType::Symbol
     //
     // #[doc = "! @param[in] ast the target AST"]
     // #[doc = "! @param[in] attribute the target attribute"]
@@ -673,7 +616,7 @@ impl Ast {
     // #[doc = "! - ::clingo_error_runtime"]
     fn get_symbol(&self) -> Result<Symbol, ClingoError> {
         let mut sym = 0;
-        let attribute = AstAttributeType::Symbol;
+        let attribute = ASTAttributeType::Symbol;
         if !unsafe { clingo_ast_attribute_get_symbol(self.0.as_ptr(), attribute as i32, &mut sym) }
         {
             return Err(ClingoError::new_internal(
@@ -766,14 +709,14 @@ impl Ast {
     //         value: *mut *mut clingo_ast_t,
     //     ) -> bool;
     // }
-    // Get the value of an attribute of type AstAttributeType
+    // Get the value of an attribute of type ASTAttributeType
     //
     // #[doc = "! @param[in] ast the target AST"]
     // #[doc = "! @param[in] attribute the target attribute"]
     // #[doc = "! @param[out] type the resulting type"]
     // #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
     // #[doc = "! - ::clingo_error_runtime"]
-    fn get_attribute_ast(&self, attribute: AstAttribute) -> Result<Ast, ClingoError> {
+    fn get_attribute_ast(&self, attribute: ASTAttribute) -> Result<AST, ClingoError> {
         let mut ast = std::ptr::null_mut();
         if !unsafe { clingo_ast_attribute_get_ast(self.0.as_ptr(), attribute as i32, &mut ast) } {
             return Err(ClingoError::new_internal(
@@ -781,7 +724,7 @@ impl Ast {
             ));
         }
         match NonNull::new(ast) {
-            Some(x) => Ok(Ast(x)),
+            Some(x) => Ok(AST(x)),
             None => Err(ClingoError::FFIError {
                 msg: "Tried creating NonNull from a null pointer.",
             })?,
@@ -928,7 +871,7 @@ impl Ast {
     //         value: *mut *mut clingo_ast_t,
     //     ) -> bool;
     // }
-    // Get the value of an attribute of type AstAttributeType::AstArray at the given index."]
+    // Get the value of an attribute of type ASTAttributeType::ASTArray at the given index."]
     //
     // #[doc = "! @param[in] ast the target AST"]
     // #[doc = "! @param[in] attribute the target attribute"]
@@ -937,9 +880,9 @@ impl Ast {
     // #[doc = "! - ::clingo_error_runtime"]
     pub fn get_attribute_ast_at(
         &self,
-        attribute: AstAttribute,
+        attribute: ASTAttribute,
         index: usize,
-    ) -> Result<Ast, ClingoError> {
+    ) -> Result<AST, ClingoError> {
         let mut ast = std::ptr::null_mut();
         if !unsafe {
             clingo_ast_attribute_get_ast_at(self.0.as_ptr(), attribute as i32, index, &mut ast)
@@ -949,7 +892,7 @@ impl Ast {
             ));
         }
         match NonNull::new(ast) {
-            Some(x) => Ok(Ast(x)),
+            Some(x) => Ok(AST(x)),
             None => Err(ClingoError::FFIError {
                 msg: "Tried creating NonNull from a null pointer.",
             })?,
@@ -1001,8 +944,8 @@ impl Ast {
     //         size: *mut usize,
     //     ) -> bool;
     // }
-    // fn ast_array(&self, attribute: AstAttribute) -> AstArray {
-    //     AstArray {
+    // fn ast_array(&self, attribute: ASTAttribute) -> ASTArray {
+    //     ASTArray {
     //         ast: &self,
     //         attribute,
     //     }

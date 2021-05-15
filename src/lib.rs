@@ -6771,6 +6771,95 @@ impl FactBase {
     }
 }
 
+// #[doc = "! Custom scripting language to run functions during grounding."]
+// #[repr(C)]
+// #[derive(Debug, Copy, Clone)]
+// pub struct clingo_script {
+//     #[doc = "! Evaluate the given source code."]
+//     #[doc = "! @param[in] location the location in the logic program of the source code"]
+//     #[doc = "! @param[in] code the code to evaluate"]
+//     #[doc = "! @param[in] data user data as given when registering the script"]
+//     #[doc = "! @return whether the function call was successful"]
+//     pub execute: ::std::option::Option<
+//         unsafe extern "C" fn(
+//             location: *const clingo_location_t,
+//             code: *const ::std::os::raw::c_char,
+//             data: *mut ::std::os::raw::c_void,
+//         ) -> bool,
+//     >,
+//     #[doc = "! Call the function with the given name and arguments."]
+//     #[doc = "! @param[in] location the location in the logic program of the function call"]
+//     #[doc = "! @param[in] name the name of the function"]
+//     #[doc = "! @param[in] arguments the arguments to the function"]
+//     #[doc = "! @param[in] arguments_size the number of arguments"]
+//     #[doc = "! @param[in] symbol_callback callback to return a pool of symbols"]
+//     #[doc = "! @param[in] symbol_callback_data user data for the symbol callback"]
+//     #[doc = "! @param[in] data user data as given when registering the script"]
+//     #[doc = "! @return whether the function call was successful"]
+//     pub call: ::std::option::Option<
+//         unsafe extern "C" fn(
+//             location: *const clingo_location_t,
+//             name: *const ::std::os::raw::c_char,
+//             arguments: *const clingo_symbol_t,
+//             arguments_size: usize,
+//             symbol_callback: clingo_symbol_callback_t,
+//             symbol_callback_data: *mut ::std::os::raw::c_void,
+//             data: *mut ::std::os::raw::c_void,
+//         ) -> bool,
+//     >,
+//     #[doc = "! Check if the given function is callable."]
+//     #[doc = "! @param[in] name the name of the function"]
+//     #[doc = "! @param[out] result whether the function is callable"]
+//     #[doc = "! @param[in] data user data as given when registering the script"]
+//     #[doc = "! @return whether the function call was successful"]
+//     pub callable: ::std::option::Option<
+//         unsafe extern "C" fn(
+//             name: *const ::std::os::raw::c_char,
+//             result: *mut bool,
+//             data: *mut ::std::os::raw::c_void,
+//         ) -> bool,
+//     >,
+//     #[doc = "! Run the main function."]
+//     #[doc = "! @param[in] control the control object to pass to the main function"]
+//     #[doc = "! @param[in] data user data as given when registering the script"]
+//     #[doc = "! @return whether the function call was successful"]
+//     pub main: ::std::option::Option<
+//         unsafe extern "C" fn(
+//             control: *mut clingo_control_t,
+//             data: *mut ::std::os::raw::c_void,
+//         ) -> bool,
+//     >,
+//     #[doc = "! This function is called once when the script is deleted."]
+//     #[doc = "! @param[in] data user data as given when registering the script"]
+//     pub free: ::std::option::Option<unsafe extern "C" fn(data: *mut ::std::os::raw::c_void)>,
+//     pub version: *const ::std::os::raw::c_char,
+// }
+
+// #[doc = "! Custom scripting language to run functions during grounding."]
+// pub type clingo_script_t = clingo_script;
+// extern "C" {
+//     #[doc = "! Add a custom scripting language to clingo."]
+//     #[doc = "!"]
+//     #[doc = "! @param[in] name the name of the scripting language"]
+//     #[doc = "! @param[in] script struct with functions implementing the language"]
+//     #[doc = "! @param[in] data user data to pass to callbacks in the script"]
+//     #[doc = "! @return whether the call was successful"]
+//     pub fn clingo_register_script(
+//         name: *const ::std::os::raw::c_char,
+//         script: *const clingo_script_t,
+//         data: *mut ::std::os::raw::c_void,
+//     ) -> bool;
+// }
+// extern "C" {
+//     #[doc = "! Get the version of the registered scripting language."]
+//     #[doc = "!"]
+//     #[doc = "! @param[in] name the name of the scripting language"]
+//     #[doc = "! @return the version"]
+//     pub fn clingo_script_version(
+//         name: *const ::std::os::raw::c_char,
+//     ) -> *const ::std::os::raw::c_char;
+// }
+
 // Re-export #[derive(ToSymbol)].
 #[cfg(feature = "derive")]
 #[allow(unused_imports)]

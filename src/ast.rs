@@ -4,7 +4,7 @@ use crate::{
 };
 
 use crate::ast_internals::Body;
-use crate::ast_internals::{Ast, AstType};
+use crate::ast_internals::{ASTType, AST};
 use crate::{internalize_string, Location, Symbol};
 use clingo_sys::*;
 use std::ffi::CString;
@@ -96,7 +96,7 @@ pub(crate) unsafe extern "C" fn unsafe_program_builder_add(
 //     unsafe extern "C" fn(ast: *mut clingo_ast_t, data: *mut ::std::os::raw::c_void) -> bool,
 // >;
 
-type AstCallback = unsafe extern "C" fn(ast: *mut clingo_ast_t, data: *mut c_void) -> bool;
+type ASTCallback = unsafe extern "C" fn(ast: *mut clingo_ast_t, data: *mut c_void) -> bool;
 
 /// Parse the given program and return an abstract syntax tree for each statement via a callback.
 ///
@@ -143,7 +143,7 @@ pub fn parse_string_with_statement_handler<T: StatementHandler>(
     if !unsafe {
         clingo_ast_parse_string(
             program.as_ptr(),
-            Some(unsafe_ast_callback::<T> as AstCallback),
+            Some(unsafe_ast_callback::<T> as ASTCallback),
             handler as *mut c_void,
             logger,
             logger_data,
@@ -178,64 +178,64 @@ unsafe extern "C" fn unsafe_ast_callback<T: StatementHandler>(
     let event_handler = &mut *(event_handler as *mut T);
 
     let ast = match NonNull::new(ast) {
-        Some(x) => Ast(x),
+        Some(x) => AST(x),
         None => panic!("NonNull::new(ast) returned None"),
     };
     ast.acquire();
     let mut stm = match ast.get_type() {
-        Ok(AstType::Rule) => Statement {
+        Ok(ASTType::Rule) => Statement {
             ast,
             _lifetime: PhantomData,
         },
-        Ok(AstType::Definition) => Statement {
+        Ok(ASTType::Definition) => Statement {
             ast,
             _lifetime: PhantomData,
         },
-        Ok(AstType::ShowSignature) => Statement {
+        Ok(ASTType::ShowSignature) => Statement {
             ast,
             _lifetime: PhantomData,
         },
-        Ok(AstType::Defined) => Statement {
+        Ok(ASTType::Defined) => Statement {
             ast,
             _lifetime: PhantomData,
         },
-        Ok(AstType::ShowTerm) => Statement {
+        Ok(ASTType::ShowTerm) => Statement {
             ast,
             _lifetime: PhantomData,
         },
-        Ok(AstType::Minimize) => Statement {
+        Ok(ASTType::Minimize) => Statement {
             ast,
             _lifetime: PhantomData,
         },
-        Ok(AstType::Script) => Statement {
+        Ok(ASTType::Script) => Statement {
             ast,
             _lifetime: PhantomData,
         },
-        Ok(AstType::Program) => Statement {
+        Ok(ASTType::Program) => Statement {
             ast,
             _lifetime: PhantomData,
         },
-        Ok(AstType::External) => Statement {
+        Ok(ASTType::External) => Statement {
             ast,
             _lifetime: PhantomData,
         },
-        Ok(AstType::Edge) => Statement {
+        Ok(ASTType::Edge) => Statement {
             ast,
             _lifetime: PhantomData,
         },
-        Ok(AstType::Heuristic) => Statement {
+        Ok(ASTType::Heuristic) => Statement {
             ast,
             _lifetime: PhantomData,
         },
-        Ok(AstType::ProjectAtom) => Statement {
+        Ok(ASTType::ProjectAtom) => Statement {
             ast,
             _lifetime: PhantomData,
         },
-        Ok(AstType::ProjectSignature) => Statement {
+        Ok(ASTType::ProjectSignature) => Statement {
             ast,
             _lifetime: PhantomData,
         },
-        x => panic!("unexpected AstType: {:?}", x),
+        x => panic!("unexpected ASTType: {:?}", x),
     };
     event_handler.on_statement(&mut stm)
 }
@@ -349,45 +349,45 @@ pub enum TheoryAtomType {
             as isize,
 }
 
-// Here start the AstTypes
+// Here start the ASTTypes
 
 #[derive(Debug, Clone)]
 pub struct Term<'a> {
-    ast: Ast,
+    ast: AST,
     _lifetime: PhantomData<&'a ()>,
 }
 impl<'a> Term<'a> {
     pub fn is_a(self) -> Result<TermIsA<'a>, ClingoError> {
         match self.ast.get_type()? {
-            AstType::Variable => Ok(TermIsA::Variable(Variable {
+            ASTType::Variable => Ok(TermIsA::Variable(Variable {
                 ast: self.ast,
                 _lifetime: self._lifetime,
             })),
-            AstType::SymbolicTerm => Ok(TermIsA::SymbolicTerm(SymbolicTerm {
+            ASTType::SymbolicTerm => Ok(TermIsA::SymbolicTerm(SymbolicTerm {
                 ast: self.ast,
                 _lifetime: self._lifetime,
             })),
-            AstType::UnaryOperation => Ok(TermIsA::UnaryOperation(UnaryOperation {
+            ASTType::UnaryOperation => Ok(TermIsA::UnaryOperation(UnaryOperation {
                 ast: self.ast,
                 _lifetime: self._lifetime,
             })),
-            AstType::BinaryOperation => Ok(TermIsA::BinaryOperation(BinaryOperation {
+            ASTType::BinaryOperation => Ok(TermIsA::BinaryOperation(BinaryOperation {
                 ast: self.ast,
                 _lifetime: self._lifetime,
             })),
-            AstType::Interval => Ok(TermIsA::Interval(Interval {
+            ASTType::Interval => Ok(TermIsA::Interval(Interval {
                 ast: self.ast,
                 _lifetime: self._lifetime,
             })),
-            AstType::Function => Ok(TermIsA::Function(Function {
+            ASTType::Function => Ok(TermIsA::Function(Function {
                 ast: self.ast,
                 _lifetime: self._lifetime,
             })),
-            AstType::Pool => Ok(TermIsA::Pool(Pool {
+            ASTType::Pool => Ok(TermIsA::Pool(Pool {
                 ast: self.ast,
                 _lifetime: self._lifetime,
             })),
-            x => panic!("unexpected AstType: {:?}", x),
+            x => panic!("unexpected ASTType: {:?}", x),
         }
     }
     pub fn to_string(&self) -> Result<String, ClingoError> {
@@ -470,21 +470,21 @@ pub enum TermIsA<'a> {
 }
 #[derive(Debug, Clone)]
 pub struct Literal<'a> {
-    ast: Ast,
+    ast: AST,
     _lifetime: PhantomData<&'a ()>,
 }
 impl<'a> Literal<'a> {
     pub fn is_a(self) -> Result<TLiteral<'a>, ClingoError> {
         match self.ast.get_type()? {
-            AstType::Literal => Ok(TLiteral::BasicLiteral(BasicLiteral {
+            ASTType::Literal => Ok(TLiteral::BasicLiteral(BasicLiteral {
                 ast: self.ast,
                 _lifetime: self._lifetime,
             })),
-            AstType::CspLiteral => Ok(TLiteral::CspLiteral(CspLiteral {
+            ASTType::CspLiteral => Ok(TLiteral::CspLiteral(CspLiteral {
                 ast: self.ast,
                 _lifetime: self._lifetime,
             })),
-            x => panic!("unexpected AstType: {:?}", x),
+            x => panic!("unexpected ASTType: {:?}", x),
         }
     }
     pub fn to_string(&self) -> Result<String, ClingoError> {
@@ -583,7 +583,7 @@ pub enum TLiteral<'a> {
 }
 #[derive(Debug, Clone)]
 pub struct Head<'a> {
-    pub(crate) ast: Ast,
+    pub(crate) ast: AST,
     pub(crate) _lifetime: PhantomData<&'a ()>,
 }
 impl<'a> From<BasicLiteral<'a>> for Head<'a> {
@@ -653,27 +653,27 @@ impl<'a> From<TheoryAtom<'a>> for Head<'a> {
 impl<'a> Head<'a> {
     pub fn is_a(self) -> Result<THead<'a>, ClingoError> {
         match self.ast.get_type()? {
-            AstType::Literal => Ok(THead::Literal(Literal {
+            ASTType::Literal => Ok(THead::Literal(Literal {
                 ast: self.ast,
                 _lifetime: self._lifetime,
             })),
-            AstType::CspLiteral => Ok(THead::Aggregate(Aggregate {
+            ASTType::CspLiteral => Ok(THead::Aggregate(Aggregate {
                 ast: self.ast,
                 _lifetime: self._lifetime,
             })),
-            AstType::HeadAggregate => Ok(THead::HeadAggregate(HeadAggregate {
+            ASTType::HeadAggregate => Ok(THead::HeadAggregate(HeadAggregate {
                 ast: self.ast,
                 _lifetime: self._lifetime,
             })),
-            AstType::Disjunction => Ok(THead::Disjunction(Disjunction {
+            ASTType::Disjunction => Ok(THead::Disjunction(Disjunction {
                 ast: self.ast,
                 _lifetime: self._lifetime,
             })),
-            AstType::TheoryAtom => Ok(THead::TheoryAtom(TheoryAtom {
+            ASTType::TheoryAtom => Ok(THead::TheoryAtom(TheoryAtom {
                 ast: self.ast,
                 _lifetime: self._lifetime,
             })),
-            x => panic!("unexpected AstType: {:?}", x),
+            x => panic!("unexpected ASTType: {:?}", x),
         }
     }
     pub fn to_string(&self) -> Result<String, ClingoError> {
@@ -690,7 +690,7 @@ pub enum THead<'a> {
 }
 #[derive(Debug, Clone)]
 pub struct BodyLiteral<'a> {
-    pub(crate) ast: Ast,
+    pub(crate) ast: AST,
     pub(crate) _lifetime: PhantomData<&'a ()>,
 }
 impl<'a> From<BasicLiteral<'a>> for BodyLiteral<'a> {
@@ -744,7 +744,7 @@ impl<'a> From<TheoryAtom<'a>> for BodyLiteral<'a> {
 
 #[derive(Debug, Clone)]
 pub struct BodyAtom<'a> {
-    ast: Ast,
+    ast: AST,
     _lifetime: PhantomData<&'a ()>,
 }
 impl<'a> From<Aggregate<'a>> for BodyAtom<'a> {
@@ -782,7 +782,7 @@ impl<'a> From<TheoryAtom<'a>> for BodyAtom<'a> {
 
 #[derive(Debug, Clone)]
 pub struct TheoryTerm<'a> {
-    ast: Ast,
+    ast: AST,
     _lifetime: PhantomData<&'a ()>,
 }
 impl<'a> From<SymbolicTerm<'a>> for TheoryTerm<'a> {
@@ -828,65 +828,65 @@ impl<'a> From<TheoryUnparsedTerm<'a>> for TheoryTerm<'a> {
 
 #[derive(Debug, Clone)]
 pub struct Statement<'a> {
-    pub(crate) ast: Ast,
+    pub(crate) ast: AST,
     _lifetime: PhantomData<&'a ()>,
 }
 impl<'a> Statement<'a> {
     pub fn is_a(self) -> Result<StatementIsA<'a>, ClingoError> {
         match self.ast.get_type()? {
-            AstType::Rule => Ok(StatementIsA::Rule(Rule {
+            ASTType::Rule => Ok(StatementIsA::Rule(Rule {
                 ast: self.ast,
                 _lifetime: self._lifetime,
             })),
-            AstType::Definition => Ok(StatementIsA::Definition(Definition {
+            ASTType::Definition => Ok(StatementIsA::Definition(Definition {
                 ast: self.ast,
                 _lifetime: self._lifetime,
             })),
-            AstType::ShowSignature => Ok(StatementIsA::ShowSignature(ShowSignature {
+            ASTType::ShowSignature => Ok(StatementIsA::ShowSignature(ShowSignature {
                 ast: self.ast,
                 _lifetime: self._lifetime,
             })),
-            AstType::Defined => Ok(StatementIsA::Defined(Defined {
+            ASTType::Defined => Ok(StatementIsA::Defined(Defined {
                 ast: self.ast,
                 _lifetime: self._lifetime,
             })),
-            AstType::ShowTerm => Ok(StatementIsA::ShowTerm(ShowTerm {
+            ASTType::ShowTerm => Ok(StatementIsA::ShowTerm(ShowTerm {
                 ast: self.ast,
                 _lifetime: self._lifetime,
             })),
-            AstType::Minimize => Ok(StatementIsA::Minimize(Minimize {
+            ASTType::Minimize => Ok(StatementIsA::Minimize(Minimize {
                 ast: self.ast,
                 _lifetime: self._lifetime,
             })),
-            AstType::Script => Ok(StatementIsA::Script(Script {
+            ASTType::Script => Ok(StatementIsA::Script(Script {
                 ast: self.ast,
                 _lifetime: self._lifetime,
             })),
-            AstType::Program => Ok(StatementIsA::Program(Program {
+            ASTType::Program => Ok(StatementIsA::Program(Program {
                 ast: self.ast,
                 _lifetime: self._lifetime,
             })),
-            AstType::External => Ok(StatementIsA::External(External {
+            ASTType::External => Ok(StatementIsA::External(External {
                 ast: self.ast,
                 _lifetime: self._lifetime,
             })),
-            AstType::Edge => Ok(StatementIsA::Edge(Edge {
+            ASTType::Edge => Ok(StatementIsA::Edge(Edge {
                 ast: self.ast,
                 _lifetime: self._lifetime,
             })),
-            AstType::Heuristic => Ok(StatementIsA::Heuristic(Heuristic {
+            ASTType::Heuristic => Ok(StatementIsA::Heuristic(Heuristic {
                 ast: self.ast,
                 _lifetime: self._lifetime,
             })),
-            AstType::ProjectAtom => Ok(StatementIsA::ProjectAtom(ProjectAtom {
+            ASTType::ProjectAtom => Ok(StatementIsA::ProjectAtom(ProjectAtom {
                 ast: self.ast,
                 _lifetime: self._lifetime,
             })),
-            AstType::ProjectSignature => Ok(StatementIsA::ProjectSignature(ProjectSignature {
+            ASTType::ProjectSignature => Ok(StatementIsA::ProjectSignature(ProjectSignature {
                 ast: self.ast,
                 _lifetime: self._lifetime,
             })),
-            x => panic!("unexpected AstType: {:?}", x),
+            x => panic!("unexpected ASTType: {:?}", x),
         }
     }
     pub fn to_string(&self) -> Result<String, ClingoError> {
@@ -1024,13 +1024,13 @@ impl<'a> From<TheoryDefinition<'a>> for Statement<'a> {
 }
 #[derive(Debug, Clone)]
 pub struct Id<'a> {
-    ast: Ast,
+    ast: AST,
     _lifetime: PhantomData<&'a ()>,
 }
 
 #[derive(Debug, Clone)]
 pub struct Variable<'a> {
-    ast: Ast,
+    ast: AST,
     _lifetime: PhantomData<&'a ()>,
 }
 
@@ -1041,7 +1041,7 @@ impl<'a> Variable<'a> {
 }
 #[derive(Debug, Clone)]
 pub struct SymbolicTerm<'a> {
-    ast: Ast,
+    ast: AST,
     _lifetime: PhantomData<&'a ()>,
 }
 
@@ -1053,7 +1053,7 @@ impl<'a> SymbolicTerm<'a> {
 
 #[derive(Debug, Clone)]
 pub struct Function<'a> {
-    ast: Ast,
+    ast: AST,
     _lifetime: PhantomData<&'a ()>,
 }
 impl<'a> Function<'a> {
@@ -1063,13 +1063,13 @@ impl<'a> Function<'a> {
 }
 #[derive(Debug, Clone)]
 pub struct UnaryOperation<'a> {
-    ast: Ast,
+    ast: AST,
     _lifetime: PhantomData<&'a ()>,
 }
 impl<'a> UnaryOperation<'a> {}
 #[derive(Debug, Clone)]
 pub struct BinaryOperation<'a> {
-    ast: Ast,
+    ast: AST,
     _lifetime: PhantomData<&'a ()>,
 }
 impl<'a> BinaryOperation<'a> {
@@ -1085,7 +1085,7 @@ impl<'a> BinaryOperation<'a> {
 }
 #[derive(Debug, Clone)]
 pub struct Interval<'a> {
-    ast: Ast,
+    ast: AST,
     _lifetime: PhantomData<&'a ()>,
 }
 impl<'a> Interval<'a> {
@@ -1098,24 +1098,24 @@ impl<'a> Interval<'a> {
 }
 #[derive(Debug, Clone)]
 pub struct Pool<'a> {
-    ast: Ast,
+    ast: AST,
     _lifetime: PhantomData<&'a ()>,
 }
 
 #[derive(Debug, Clone)]
 pub struct CspProduct<'a> {
-    ast: Ast,
+    ast: AST,
     _lifetime: PhantomData<&'a ()>,
 }
 
 #[derive(Debug, Clone)]
 pub struct CspSum<'a> {
-    ast: Ast,
+    ast: AST,
     _lifetime: PhantomData<&'a ()>,
 }
 
 pub struct CspTerm<'a> {
-    ast: Ast,
+    ast: AST,
     _lifetime: PhantomData<&'a ()>,
 }
 impl<'a> From<CspSum<'a>> for CspTerm<'a> {
@@ -1128,19 +1128,19 @@ impl<'a> From<CspSum<'a>> for CspTerm<'a> {
 }
 #[derive(Debug, Clone)]
 pub struct CspGuard<'a> {
-    ast: Ast,
+    ast: AST,
     _lifetime: PhantomData<&'a ()>,
 }
 
 #[derive(Debug, Clone)]
 struct BooleanConstant<'a> {
-    ast: Ast,
+    ast: AST,
     _lifetime: PhantomData<&'a ()>,
 }
 
 #[derive(Debug, Clone)]
 pub struct SymbolicAtom<'a> {
-    ast: Ast,
+    ast: AST,
     _lifetime: PhantomData<&'a ()>,
 }
 impl<'a> SymbolicAtom<'a> {
@@ -1150,31 +1150,31 @@ impl<'a> SymbolicAtom<'a> {
 }
 #[derive(Debug, Clone)]
 pub struct Comparison<'a> {
-    ast: Ast,
+    ast: AST,
     _lifetime: PhantomData<&'a ()>,
 }
 
 #[derive(Debug, Clone)]
 pub struct CspLiteral<'a> {
-    ast: Ast,
+    ast: AST,
     _lifetime: PhantomData<&'a ()>,
 }
 
 #[derive(Debug, Clone)]
 pub struct AggregateGuard<'a> {
-    ast: Ast,
+    ast: AST,
     _lifetime: PhantomData<&'a ()>,
 }
 
 #[derive(Debug, Clone)]
 pub struct ConditionalLiteral<'a> {
-    ast: Ast,
+    ast: AST,
     _lifetime: PhantomData<&'a ()>,
 }
 
 #[derive(Debug, Clone)]
 pub struct Aggregate<'a> {
-    ast: Ast,
+    ast: AST,
     _lifetime: PhantomData<&'a ()>,
 }
 
@@ -1185,85 +1185,85 @@ impl<'a> Aggregate<'a> {
 }
 #[derive(Debug, Clone)]
 pub struct BodyAggregateElement<'a> {
-    ast: Ast,
+    ast: AST,
     _lifetime: PhantomData<&'a ()>,
 }
 
 #[derive(Debug, Clone)]
 pub struct BodyAggregate<'a> {
-    ast: Ast,
+    ast: AST,
     _lifetime: PhantomData<&'a ()>,
 }
 
 #[derive(Debug, Clone)]
 pub struct HeadAggregateElement<'a> {
-    ast: Ast,
+    ast: AST,
     _lifetime: PhantomData<&'a ()>,
 }
 
 #[derive(Debug, Clone)]
 pub struct HeadAggregate<'a> {
-    ast: Ast,
+    ast: AST,
     _lifetime: PhantomData<&'a ()>,
 }
 
 #[derive(Debug, Clone)]
 pub struct Disjunction<'a> {
-    ast: Ast,
+    ast: AST,
     _lifetime: PhantomData<&'a ()>,
 }
 
 #[derive(Debug, Clone)]
 pub struct DisjointElement<'a> {
-    ast: Ast,
+    ast: AST,
     _lifetime: PhantomData<&'a ()>,
 }
 
 #[derive(Debug, Clone)]
 pub struct Disjoint<'a> {
-    ast: Ast,
+    ast: AST,
     _lifetime: PhantomData<&'a ()>,
 }
 
 #[derive(Debug, Clone)]
 pub struct TheorySequence<'a> {
-    ast: Ast,
+    ast: AST,
     _lifetime: PhantomData<&'a ()>,
 }
 
 #[derive(Debug, Clone)]
 pub struct TheoryFunction<'a> {
-    ast: Ast,
+    ast: AST,
     _lifetime: PhantomData<&'a ()>,
 }
 
 #[derive(Debug, Clone)]
 pub struct TheoryUnparsedTermElement<'a> {
-    ast: Ast,
+    ast: AST,
     _lifetime: PhantomData<&'a ()>,
 }
 
 #[derive(Debug, Clone)]
 pub struct TheoryUnparsedTerm<'a> {
-    ast: Ast,
+    ast: AST,
     _lifetime: PhantomData<&'a ()>,
 }
 
 #[derive(Debug, Clone)]
 pub struct TheoryGuard<'a> {
-    ast: Ast,
+    ast: AST,
     _lifetime: PhantomData<&'a ()>,
 }
 
 #[derive(Debug, Clone)]
 pub struct TheoryAtomElement<'a> {
-    ast: Ast,
+    ast: AST,
     _lifetime: PhantomData<&'a ()>,
 }
 
 #[derive(Debug, Clone)]
 pub struct TheoryAtom<'a> {
-    ast: Ast,
+    ast: AST,
     _lifetime: PhantomData<&'a ()>,
 }
 impl<'a> TheoryAtom<'a> {
@@ -1273,13 +1273,13 @@ impl<'a> TheoryAtom<'a> {
 }
 #[derive(Debug, Clone)]
 pub struct AtomicLiteral<'a> {
-    ast: Ast,
+    ast: AST,
     _lifetime: PhantomData<&'a ()>,
 }
 
 #[derive(Debug, Clone)]
 pub struct BasicLiteral<'a> {
-    ast: Ast,
+    ast: AST,
     _lifetime: PhantomData<&'a ()>,
 }
 
@@ -1291,31 +1291,31 @@ impl<'a> BasicLiteral<'a> {
 
 #[derive(Debug, Clone)]
 pub struct TheoryOperatorDefinition<'a> {
-    ast: Ast,
+    ast: AST,
     _lifetime: PhantomData<&'a ()>,
 }
 
 #[derive(Debug, Clone)]
 pub struct TheoryTermDefinition<'a> {
-    ast: Ast,
+    ast: AST,
     _lifetime: PhantomData<&'a ()>,
 }
 
 #[derive(Debug, Clone)]
 pub struct TheoryGuardDefinition<'a> {
-    ast: Ast,
+    ast: AST,
     _lifetime: PhantomData<&'a ()>,
 }
 
 #[derive(Debug, Clone)]
 pub struct TheoryAtomDefinition<'a> {
-    ast: Ast,
+    ast: AST,
     _lifetime: PhantomData<&'a ()>,
 }
 
 #[derive(Debug, Clone)]
 pub struct Rule<'a> {
-    ast: Ast,
+    ast: AST,
     _lifetime: PhantomData<&'a ()>,
 }
 
@@ -1330,74 +1330,74 @@ impl<'a> Rule<'a> {
 
 #[derive(Debug, Clone)]
 pub struct Definition<'a> {
-    ast: Ast,
+    ast: AST,
     _lifetime: PhantomData<&'a ()>,
 }
 
 #[derive(Debug, Clone)]
 pub struct ShowSignature<'a> {
-    ast: Ast,
+    ast: AST,
     _lifetime: PhantomData<&'a ()>,
 }
 
 #[derive(Debug, Clone)]
 pub struct ShowTerm<'a> {
-    ast: Ast,
+    ast: AST,
     _lifetime: PhantomData<&'a ()>,
 }
 
 #[derive(Debug, Clone)]
 pub struct Minimize<'a> {
-    ast: Ast,
+    ast: AST,
     _lifetime: PhantomData<&'a ()>,
 }
 
 #[derive(Debug, Clone)]
 pub struct Script<'a> {
-    ast: Ast,
+    ast: AST,
     _lifetime: PhantomData<&'a ()>,
 }
 #[derive(Debug, Clone)]
 pub struct Program<'a> {
-    pub(crate) ast: Ast,
+    pub(crate) ast: AST,
     _lifetime: PhantomData<&'a ()>,
 }
 
 #[derive(Debug, Clone)]
 pub struct External<'a> {
-    pub(crate) ast: Ast,
+    pub(crate) ast: AST,
     _lifetime: PhantomData<&'a ()>,
 }
 
 #[derive(Debug, Clone)]
 pub struct Edge<'a> {
-    ast: Ast,
+    ast: AST,
     _lifetime: PhantomData<&'a ()>,
 }
 #[derive(Debug, Clone)]
 pub struct Heuristic<'a> {
-    ast: Ast,
+    ast: AST,
     _lifetime: PhantomData<&'a ()>,
 }
 #[derive(Debug, Clone)]
 pub struct ProjectAtom<'a> {
-    ast: Ast,
+    ast: AST,
     _lifetime: PhantomData<&'a ()>,
 }
 
 #[derive(Debug, Clone)]
 pub struct ProjectSignature<'a> {
-    ast: Ast,
+    ast: AST,
     _lifetime: PhantomData<&'a ()>,
 }
 #[derive(Debug, Clone)]
 pub struct Defined<'a> {
-    ast: Ast,
+    ast: AST,
     _lifetime: PhantomData<&'a ()>,
 }
 #[derive(Debug, Clone)]
 pub struct TheoryDefinition<'a> {
-    ast: Ast,
+    ast: AST,
     _lifetime: PhantomData<&'a ()>,
 }
 
@@ -1432,7 +1432,7 @@ pub fn id<'a>(location: &Location, name: &str) -> Result<Id<'a>, ClingoError> {
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(Id {
-            ast: Ast(ast),
+            ast: AST(ast),
             _lifetime: PhantomData,
         }),
         None => Err(ClingoError::FFIError {
@@ -1459,7 +1459,7 @@ pub fn variable<'a>(location: &Location, name: &str) -> Result<Variable<'a>, Cli
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(Variable {
-            ast: Ast(ast),
+            ast: AST(ast),
             _lifetime: PhantomData,
         }),
         None => Err(ClingoError::FFIError {
@@ -1488,7 +1488,7 @@ pub fn symbolic_term<'a>(
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(SymbolicTerm {
-            ast: Ast(ast),
+            ast: AST(ast),
             _lifetime: PhantomData,
         }),
 
@@ -1530,7 +1530,7 @@ pub fn function<'a>(
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(Function {
-            ast: Ast(ast),
+            ast: AST(ast),
             _lifetime: PhantomData,
         }),
         None => Err(ClingoError::FFIError {
@@ -1566,7 +1566,7 @@ where
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(UnaryOperation {
-            ast: Ast(ast),
+            ast: AST(ast),
             _lifetime: PhantomData,
         }),
         None => Err(ClingoError::FFIError {
@@ -1605,7 +1605,7 @@ where
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(BinaryOperation {
-            ast: Ast(ast),
+            ast: AST(ast),
             _lifetime: PhantomData,
         }),
         None => Err(ClingoError::FFIError {
@@ -1642,7 +1642,7 @@ where
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(Interval {
-            ast: Ast(ast),
+            ast: AST(ast),
             _lifetime: PhantomData,
         }),
         None => Err(ClingoError::FFIError {
@@ -1670,7 +1670,7 @@ pub fn pool<'a>(location: &Location, arguments: &'a [Term]) -> Result<Pool<'a>, 
     eprintln!("yeah");
     match NonNull::new(ast) {
         Some(ast) => Ok(Pool {
-            ast: Ast(ast),
+            ast: AST(ast),
             _lifetime: PhantomData,
         }),
         None => Err(ClingoError::FFIError {
@@ -1723,7 +1723,7 @@ where
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(CspProduct {
-            ast: Ast(ast),
+            ast: AST(ast),
             _lifetime: PhantomData,
         }),
         None => Err(ClingoError::FFIError {
@@ -1755,7 +1755,7 @@ pub fn csp_sum<'a>(
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(CspSum {
-            ast: Ast(ast),
+            ast: AST(ast),
             _lifetime: PhantomData,
         }),
         None => Err(ClingoError::FFIError {
@@ -1791,7 +1791,7 @@ where
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(CspGuard {
-            ast: Ast(ast),
+            ast: AST(ast),
             _lifetime: PhantomData,
         }),
         None => Err(ClingoError::FFIError {
@@ -1816,7 +1816,7 @@ fn boolean_constant<'a>(value: bool) -> Result<BooleanConstant<'a>, ClingoError>
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(BooleanConstant {
-            ast: Ast(ast),
+            ast: AST(ast),
             _lifetime: PhantomData,
         }),
         None => Err(ClingoError::FFIError {
@@ -1845,7 +1845,7 @@ where
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(SymbolicAtom {
-            ast: Ast(ast),
+            ast: AST(ast),
             _lifetime: PhantomData,
         }),
         None => Err(ClingoError::FFIError {
@@ -1882,7 +1882,7 @@ where
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(Comparison {
-            ast: Ast(ast),
+            ast: AST(ast),
             _lifetime: PhantomData,
         }),
         None => Err(ClingoError::FFIError {
@@ -1915,7 +1915,7 @@ pub fn csp_literal<'a>(
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(CspLiteral {
-            ast: Ast(ast),
+            ast: AST(ast),
             _lifetime: PhantomData,
         }),
         None => Err(ClingoError::FFIError {
@@ -1948,7 +1948,7 @@ where
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(AggregateGuard {
-            ast: Ast(ast),
+            ast: AST(ast),
             _lifetime: PhantomData,
         }),
         None => Err(ClingoError::FFIError {
@@ -1985,7 +1985,7 @@ where
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(ConditionalLiteral {
-            ast: Ast(ast),
+            ast: AST(ast),
             _lifetime: PhantomData,
         }),
         None => Err(ClingoError::FFIError {
@@ -2028,7 +2028,7 @@ pub fn aggregate<'a>(
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(Aggregate {
-            ast: Ast(ast),
+            ast: AST(ast),
             _lifetime: PhantomData,
         }),
         None => Err(ClingoError::FFIError {
@@ -2058,7 +2058,7 @@ pub fn body_aggregate_element<'a>(
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(BodyAggregateElement {
-            ast: Ast(ast),
+            ast: AST(ast),
             _lifetime: PhantomData,
         }),
         None => Err(ClingoError::FFIError {
@@ -2103,7 +2103,7 @@ pub fn body_aggregate<'a>(
     }
     match NonNull::new(ast) {
         Some(ast_ref) => Ok(BodyAggregate {
-            ast: Ast(ast_ref),
+            ast: AST(ast_ref),
             _lifetime: PhantomData,
         }),
         None => Err(ClingoError::FFIError {
@@ -2133,7 +2133,7 @@ pub fn head_aggregate_element<'a>(
     }
     match NonNull::new(ast) {
         Some(ast_ref) => Ok(HeadAggregateElement {
-            ast: Ast(ast_ref),
+            ast: AST(ast_ref),
             _lifetime: PhantomData,
         }),
         None => Err(ClingoError::FFIError {
@@ -2178,7 +2178,7 @@ pub fn head_aggregate<'a>(
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(HeadAggregate {
-            ast: Ast(ast),
+            ast: AST(ast),
             _lifetime: PhantomData,
         }),
         None => Err(ClingoError::FFIError {
@@ -2209,7 +2209,7 @@ pub fn disjunction<'a>(
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(Disjunction {
-            ast: Ast(ast),
+            ast: AST(ast),
             _lifetime: PhantomData,
         }),
         None => Err(ClingoError::FFIError {
@@ -2249,7 +2249,7 @@ where
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(DisjointElement {
-            ast: Ast(ast),
+            ast: AST(ast),
             _lifetime: PhantomData,
         }),
         None => Err(ClingoError::FFIError {
@@ -2279,7 +2279,7 @@ pub fn disjoint<'a>(
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(Disjoint {
-            ast: Ast(ast),
+            ast: AST(ast),
             _lifetime: PhantomData,
         }),
         None => Err(ClingoError::FFIError {
@@ -2312,7 +2312,7 @@ pub fn theory_sequence<'a>(
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(TheorySequence {
-            ast: Ast(ast),
+            ast: AST(ast),
             _lifetime: PhantomData,
         }),
         None => Err(ClingoError::FFIError {
@@ -2345,7 +2345,7 @@ pub fn theory_function<'a>(
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(TheoryFunction {
-            ast: Ast(ast),
+            ast: AST(ast),
             _lifetime: PhantomData,
         }),
         None => Err(ClingoError::FFIError {
@@ -2376,7 +2376,7 @@ pub fn theory_unparsed_term_element<'a>(
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(TheoryUnparsedTermElement {
-            ast: Ast(ast),
+            ast: AST(ast),
             _lifetime: PhantomData,
         }),
         None => Err(ClingoError::FFIError {
@@ -2406,7 +2406,7 @@ pub fn theory_unparsed_term<'a>(
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(TheoryUnparsedTerm {
-            ast: Ast(ast),
+            ast: AST(ast),
             _lifetime: PhantomData,
         }),
         None => Err(ClingoError::FFIError {
@@ -2437,7 +2437,7 @@ where
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(TheoryGuard {
-            ast: Ast(ast),
+            ast: AST(ast),
             _lifetime: PhantomData,
         }),
         None => Err(ClingoError::FFIError {
@@ -2468,7 +2468,7 @@ pub fn theory_atom_element<'a>(
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(TheoryAtomElement {
-            ast: Ast(ast),
+            ast: AST(ast),
             _lifetime: PhantomData,
         }),
         None => Err(ClingoError::FFIError {
@@ -2511,7 +2511,7 @@ where
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(TheoryAtom {
-            ast: Ast(ast),
+            ast: AST(ast),
             _lifetime: PhantomData,
         }),
         None => Err(ClingoError::FFIError {
@@ -2542,7 +2542,7 @@ pub fn atomic_literal_from_body_atom<'a>(
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(AtomicLiteral {
-            ast: Ast(ast),
+            ast: AST(ast),
             _lifetime: PhantomData,
         }),
         None => Err(ClingoError::FFIError {
@@ -2573,7 +2573,7 @@ pub fn basic_literal_from_symbolic_atom<'a>(
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(BasicLiteral {
-            ast: Ast(ast),
+            ast: AST(ast),
             _lifetime: PhantomData,
         }),
         None => Err(ClingoError::FFIError {
@@ -2606,7 +2606,7 @@ pub fn basic_literal_from_boolean_constant(
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(BasicLiteral {
-            ast: Ast(ast),
+            ast: AST(ast),
             _lifetime: PhantomData,
         }),
         None => Err(ClingoError::FFIError {
@@ -2637,7 +2637,7 @@ pub fn basic_literal_from_comparison<'a>(
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(BasicLiteral {
-            ast: Ast(ast),
+            ast: AST(ast),
             _lifetime: PhantomData,
         }),
         None => Err(ClingoError::FFIError {
@@ -2672,7 +2672,7 @@ pub fn theory_operator_definition<'a>(
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(TheoryOperatorDefinition {
-            ast: Ast(ast),
+            ast: AST(ast),
             _lifetime: PhantomData,
         }),
         None => Err(ClingoError::FFIError {
@@ -2706,7 +2706,7 @@ pub fn theory_term_definition<'a>(
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(TheoryTermDefinition {
-            ast: Ast(ast),
+            ast: AST(ast),
             _lifetime: PhantomData,
         }),
         None => Err(ClingoError::FFIError {
@@ -2746,7 +2746,7 @@ pub fn theory_guard_definition<'a>(
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(TheoryGuardDefinition {
-            ast: Ast(ast),
+            ast: AST(ast),
             _lifetime: PhantomData,
         }),
         None => Err(ClingoError::FFIError {
@@ -2790,7 +2790,7 @@ pub fn theory_atom_definition<'a>(
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(TheoryAtomDefinition {
-            ast: Ast(ast),
+            ast: AST(ast),
             _lifetime: PhantomData,
         }),
         None => Err(ClingoError::FFIError {
@@ -2827,7 +2827,7 @@ where
 
     match NonNull::new(ast) {
         Some(ast) => Ok(Rule {
-            ast: Ast(ast),
+            ast: AST(ast),
             _lifetime: PhantomData,
         }),
         None => Err(ClingoError::FFIError {
@@ -2866,7 +2866,7 @@ where
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(Definition {
-            ast: Ast(ast),
+            ast: AST(ast),
             _lifetime: PhantomData,
         }),
         None => Err(ClingoError::FFIError {
@@ -2903,7 +2903,7 @@ pub fn show_signature<'a>(
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(ShowSignature {
-            ast: Ast(ast),
+            ast: AST(ast),
             _lifetime: PhantomData,
         }),
         None => Err(ClingoError::FFIError {
@@ -2941,7 +2941,7 @@ where
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(ShowTerm {
-            ast: Ast(ast),
+            ast: AST(ast),
             _lifetime: PhantomData,
         }),
         None => Err(ClingoError::FFIError {
@@ -2985,7 +2985,7 @@ where
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(Minimize {
-            ast: Ast(ast),
+            ast: AST(ast),
             _lifetime: PhantomData,
         }),
         None => Err(ClingoError::FFIError {
@@ -3014,7 +3014,7 @@ pub fn script<'a>(location: &Location, name: &str, code: &str) -> Result<Script<
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(Script {
-            ast: Ast(ast),
+            ast: AST(ast),
             _lifetime: PhantomData,
         }),
         None => Err(ClingoError::FFIError {
@@ -3048,7 +3048,7 @@ pub fn program<'a>(
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(Program {
-            ast: Ast(ast),
+            ast: AST(ast),
             _lifetime: PhantomData,
         }),
         None => Err(ClingoError::FFIError {
@@ -3100,7 +3100,7 @@ pub fn external<'a>(
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(External {
-            ast: Ast(ast),
+            ast: AST(ast),
             _lifetime: PhantomData,
         }),
         None => Err(ClingoError::FFIError {
@@ -3141,7 +3141,7 @@ where
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(Edge {
-            ast: Ast(ast),
+            ast: AST(ast),
             _lifetime: PhantomData,
         }),
         None => Err(ClingoError::FFIError {
@@ -3188,7 +3188,7 @@ where
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(Heuristic {
-            ast: Ast(ast),
+            ast: AST(ast),
             _lifetime: PhantomData,
         }),
         None => Err(ClingoError::FFIError {
@@ -3221,7 +3221,7 @@ pub fn project_atom<'a>(
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(ProjectAtom {
-            ast: Ast(ast),
+            ast: AST(ast),
             _lifetime: PhantomData,
         }),
         None => Err(ClingoError::FFIError {
@@ -3256,7 +3256,7 @@ pub fn project_signature<'a>(
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(ProjectSignature {
-            ast: Ast(ast),
+            ast: AST(ast),
             _lifetime: PhantomData,
         }),
         None => Err(ClingoError::FFIError {
@@ -3291,7 +3291,7 @@ pub fn defined<'a>(
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(Defined {
-            ast: Ast(ast),
+            ast: AST(ast),
             _lifetime: PhantomData,
         }),
         None => Err(ClingoError::FFIError {
@@ -3328,7 +3328,7 @@ pub fn theory_definition<'a>(
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(TheoryDefinition {
-            ast: Ast(ast),
+            ast: AST(ast),
             _lifetime: PhantomData,
         }),
         None => Err(ClingoError::FFIError {
