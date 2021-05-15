@@ -353,8 +353,8 @@ pub enum TheoryAtomType {
 
 #[derive(Debug, Clone)]
 pub struct Term<'a> {
-    ast: AST,
-    _lifetime: PhantomData<&'a ()>,
+    pub(crate) ast: AST,
+    pub(crate) _lifetime: PhantomData<&'a ()>,
 }
 impl<'a> Term<'a> {
     pub fn is_a(self) -> Result<TermIsA<'a>, ClingoError> {
@@ -1073,14 +1073,14 @@ pub struct BinaryOperation<'a> {
     _lifetime: PhantomData<&'a ()>,
 }
 impl<'a> BinaryOperation<'a> {
-    pub fn operator_type(&self) -> BinaryOperator {
-        unimplemented!()
-    }
+    // pub fn operator_type(&self) -> BinaryOperator {
+    //     self.ast.operator_type()
+    // }
     pub fn left(&self) -> Term {
-        unimplemented!()
+        self.ast.left()
     }
     pub fn right(&self) -> Term {
-        unimplemented!()
+        self.ast.right()
     }
 }
 #[derive(Debug, Clone)]
@@ -1090,10 +1090,10 @@ pub struct Interval<'a> {
 }
 impl<'a> Interval<'a> {
     pub fn left(&self) -> Term {
-        unimplemented!()
+        self.ast.left()
     }
     pub fn right(&self) -> Term {
-        unimplemented!()
+        self.ast.right()
     }
 }
 #[derive(Debug, Clone)]

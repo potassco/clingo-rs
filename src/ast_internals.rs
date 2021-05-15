@@ -1,9 +1,10 @@
 use crate::ast::{BodyLiteral, Head};
 use crate::{ClingoError, Symbol};
 use clingo_sys::*;
-use std::ffi::CStr;
 use std::marker::PhantomData;
 use std::ptr::NonNull;
+use std::{ffi::CStr, u32};
+
 #[derive(Debug, Clone)]
 pub struct Body<'a>(ASTArray<'a>);
 impl<'a> Iterator for Body<'a> {
@@ -244,47 +245,50 @@ pub enum ASTAttributeType {
     /// For an attribute of type `clingo_ast_t **`.
     ASTArray = clingo_ast_attribute_type_e_clingo_ast_attribute_type_ast_array as isize,
 }
-// impl ASTAttributeType {
-//     fn try_from(code: u32) -> Result<ASTAttributeType, ClingoError> {
-//         // println!("in try_from");
-//         match code {
-//             clingo_ast_attribute_type_e_clingo_ast_attribute_type_number => {
-//                 Ok(ASTAttributeType::Number)
-//             }
-//             clingo_ast_attribute_type_e_clingo_ast_attribute_type_symbol => {
-//                 Ok(ASTAttributeType::Symbol)
-//             }
-//             clingo_ast_attribute_type_e_clingo_ast_attribute_type_location => {
-//                 Ok(ASTAttributeType::Location)
-//             }
-//             clingo_ast_attribute_type_e_clingo_ast_attribute_type_string => {
-//                 Ok(ASTAttributeType::String)
-//             }
-//             clingo_ast_attribute_type_e_clingo_ast_attribute_type_ast => Ok(ASTAttributeType::AST),
-//             clingo_ast_attribute_type_e_clingo_ast_attribute_type_optional_ast => {
-//                 Ok(ASTAttributeType::OptionalAST)
-//             }
-//             clingo_ast_attribute_type_e_clingo_ast_attribute_type_string_array => {
-//                 Ok(ASTAttributeType::StringArray)
-//             }
-//             clingo_ast_attribute_type_e_clingo_ast_attribute_type_ast_array => {
-//                 Ok(ASTAttributeType::ASTArray)
-//             }
-//             x => {
-//                 eprintln!(
-//                     "FFIError in {} {}, {} : Failed to match clingo_ast_type {}",
-//                     file!(),
-//                     line!(),
-//                     column!(),
-//                     x
-//                 );
-//                 Err(ClingoError::FFIError {
-//                     msg: "Failed to match clingo_ast_type.",
-//                 })
-//             }
-//         }
-//     }
-// }
+
+use std::convert::TryFrom;
+impl TryFrom<u32> for ASTAttributeType {
+    type Error = ClingoError;
+
+    fn try_from(value: u32) -> Result<Self, Self::Error> {
+        match value {
+            clingo_ast_attribute_type_e_clingo_ast_attribute_type_number => {
+                Ok(ASTAttributeType::Number)
+            }
+            clingo_ast_attribute_type_e_clingo_ast_attribute_type_symbol => {
+                Ok(ASTAttributeType::Symbol)
+            }
+            clingo_ast_attribute_type_e_clingo_ast_attribute_type_location => {
+                Ok(ASTAttributeType::Location)
+            }
+            clingo_ast_attribute_type_e_clingo_ast_attribute_type_string => {
+                Ok(ASTAttributeType::String)
+            }
+            clingo_ast_attribute_type_e_clingo_ast_attribute_type_ast => Ok(ASTAttributeType::AST),
+            clingo_ast_attribute_type_e_clingo_ast_attribute_type_optional_ast => {
+                Ok(ASTAttributeType::OptionalAST)
+            }
+            clingo_ast_attribute_type_e_clingo_ast_attribute_type_string_array => {
+                Ok(ASTAttributeType::StringArray)
+            }
+            clingo_ast_attribute_type_e_clingo_ast_attribute_type_ast_array => {
+                Ok(ASTAttributeType::ASTArray)
+            }
+            x => {
+                eprintln!(
+                    "FFIError in {} {}, {} : Failed to match clingo_ast_type {}",
+                    file!(),
+                    line!(),
+                    column!(),
+                    x
+                );
+                Err(ClingoError::FFIError {
+                    msg: "Failed to match clingo_ast_type.",
+                })
+            }
+        }
+    }
+}
 #[derive(Debug, Copy, Clone)]
 /// Enumeration of attributes used by the AST.
 pub enum ASTAttribute {
@@ -373,6 +377,20 @@ impl AST {
     pub fn head<'a>(&self) -> Head<'a> {
         let ast = self.get_attribute_ast(ASTAttribute::Head).unwrap();
         Head {
+            ast,
+            _lifetime: PhantomData,
+        }
+    }
+    pub fn left<'a>(&self) -> crate::ast::Term<'a> {
+        let ast = self.get_attribute_ast(ASTAttribute::Left).unwrap();
+        crate::ast::Term {
+            ast,
+            _lifetime: PhantomData,
+        }
+    }
+    pub fn right<'a>(&self) -> crate::ast::Term<'a> {
+        let ast = self.get_attribute_ast(ASTAttribute::Right).unwrap();
+        crate::ast::Term {
             ast,
             _lifetime: PhantomData,
         }
@@ -567,17 +585,18 @@ impl AST {
     // #[doc = "! @param[out] type the resulting type"]
     // #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
     // #[doc = "! - ::clingo_error_runtime"]
-    // fn get_attribute_type(&self, attribute: ASTAttribute) -> Result<ASTAttributeType, ClingoError> {
-    //     let mut attribute_type = 0;
-    //     if !unsafe {
-    //         clingo_ast_attribute_type(self.0.as_ptr(), attribute as i32, &mut attribute_type)
-    //     } {
-    //         return Err(ClingoError::new_internal(
-    //             "Call to clingo_ast_attribute_type() failed.",
-    //         ));
-    //     }
-    //     ASTAttributeType::try_from(attribute_type as u32)
-    // }
+    fn get_attribute_type(&self, attribute: ASTAttribute) -> Result<ASTAttributeType, ClingoError> {
+        let mut attribute_type = 0;
+        if !unsafe {
+            clingo_ast_attribute_type(self.0.as_ptr(), attribute as i32, &mut attribute_type)
+        } {
+            return Err(ClingoError::new_internal(
+                "Call to clingo_ast_attribute_type() failed.",
+            ));
+        }
+        ASTAttributeType::try_from(attribute_type as u32)
+    }
+
     // extern "C" {
     //     #[doc = "! Get the value of an attribute of type \"clingo_ast_attribute_type_number\"."]
     //     #[doc = "!"]
