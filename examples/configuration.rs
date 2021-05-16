@@ -12,57 +12,46 @@ fn print_prefix(depth: u8) {
 fn print_configuration(conf: &Configuration, key: Id, depth: u8) {
     // get the type of an entry and switch over its various values
     let configuration_type = conf.configuration_type(key).unwrap();
-    match configuration_type {
+    if configuration_type.contains(ConfigurationType::VALUE) {
         // print values
-        ConfigurationType::VALUE => {
-            let value = conf
-                .value_get(key)
-                .expect("Failed to retrieve statistics value.");
 
-            println!("{}", value);
+        let value = conf
+            .value_get(key)
+            .expect("Failed to retrieve statistics value.");
+
+        print!("{}", value);
+    } else if configuration_type.contains(ConfigurationType::ARRAY) {
+        // loop over array elements
+        let size = conf
+            .array_size(key)
+            .expect("Failed to retrieve statistics array size.");
+        for i in 0..size {
+            // print array offset (with prefix for readability)
+            let subkey = conf
+                .array_at(key, i)
+                .expect("Failed to retrieve statistics array.");
+            print_prefix(depth);
+            print!("{}: ", i);
+
+            // recursively print subentry
+            print_configuration(conf, subkey, depth + 1);
         }
+    } else if configuration_type.contains(ConfigurationType::MAP) {
+        // loop over map elements
+        let size = conf.map_size(key).unwrap();
+        for i in 0..size {
+            // get and print map name (with prefix for readability)
+            let name = conf.map_subkey_name(key, i).unwrap();
+            let subkey = conf.map_at(key, name).unwrap();
+            print_prefix(depth);
+            print!("{}: ", name);
 
-        // print arrays
-        ConfigurationType::ARRAY => {
-            // loop over array elements
-            let size = conf
-                .array_size(key)
-                .expect("Failed to retrieve statistics array size.");
-            for i in 0..size {
-                // print array offset (with prefix for readability)
-                let subkey = conf
-                    .array_at(key, i)
-                    .expect("Failed to retrieve statistics array.");
-                print_prefix(depth);
-                print!("{}:", i);
-
-                // recursively print subentry
-                print_configuration(conf, subkey, depth + 1);
-            }
+            // recursively print subentry
+            print_configuration(conf, subkey, depth + 1);
         }
-
-        // print maps
-        ConfigurationType::MAP => {
-            // loop over map elements
-            let size = conf.map_size(key).unwrap();
-            for i in 0..size {
-                // get and print map name (with prefix for readability)
-                let name = conf.map_subkey_name(key, i).unwrap();
-                let subkey = conf.map_at(key, name).unwrap();
-                print_prefix(depth);
-                print!("{}:", name);
-
-                // recursively print subentry
-                print_configuration(conf, subkey, depth + 1);
-            }
-        }
-
-        // this case won't occur if the configuration are traversed like this
-        _ => {
-            let bla = conf.value_get(key).unwrap();
-            print!(" {}", bla);
-            // println!("Unknown ConfigurationType");
-        }
+    } else {
+        eprintln!("Unknown ConfigurationType");
+        unreachable!()
     }
 }
 
@@ -118,6 +107,7 @@ fn main() {
         let root_key = conf.root().unwrap();
 
         print_configuration(conf, root_key, 0);
+        println!("\n");
         let mut sub_key;
 
         // configure to enumerate all models
