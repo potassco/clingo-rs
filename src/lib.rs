@@ -1025,7 +1025,11 @@ impl Id {
         self.0
     }
 }
-
+impl fmt::Display for Id {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        std::fmt::Display::fmt(&self.0, f)
+    }
+}
 /// A Literal with an associated weight.
 #[derive(Debug, Copy, Clone)]
 pub struct WeightedLiteral(clingo_weighted_literal);
