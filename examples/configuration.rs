@@ -1,4 +1,6 @@
-use clingo::*;
+use clingo::{
+    control, Configuration, ConfigurationType, Control, Id, Model, Part, ShowType, SolveMode,
+};
 use std::env;
 
 fn print_prefix(depth: u8) {
@@ -14,7 +16,6 @@ fn print_configuration(conf: &Configuration, key: Id, depth: u8) {
     let configuration_type = conf.configuration_type(key).unwrap();
     if configuration_type.contains(ConfigurationType::VALUE) {
         // print values
-
         let value = conf
             .value_get(key)
             .expect("Failed to retrieve statistics value.");
