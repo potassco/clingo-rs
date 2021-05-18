@@ -92,15 +92,14 @@ impl<'a> Iterator for DLTheoryAssignment<'a> {
     }
 }
 impl<'a> Theory<'a> for DLTheory {
-    type AssignmentIterator = DLTheoryAssignment<'a>;
-    fn assignment(&'a self, thread_id: Id) -> Self::AssignmentIterator {
+    fn assignment(&'a self, thread_id: Id) -> Box<dyn Iterator<Item = (Symbol, TheoryValue)> + 'a> {
         let mut index = 0;
         unsafe { clingodl_assignment_begin(self.theory.as_ptr(), thread_id.0, &mut index) }
-        DLTheoryAssignment {
+        Box::new(DLTheoryAssignment {
             dl_theory: self,
             thread_id,
             index,
-        }
+        })
     }
     /// registers the theory with the control
     fn register<L, P, O, F>(&mut self, ctl: &mut GenericControl<L, P, O, F>) -> bool

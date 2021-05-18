@@ -7,7 +7,6 @@ use crate::{ast, FunctionHandler, GroundProgramObserver, Logger, Propagator};
 use std::fmt;
 
 pub trait Theory<'a> {
-    type AssignmentIterator: Iterator<Item = (Symbol, TheoryValue)>;
     /// registers the theory with the control
     fn register<L, P, O, F>(&mut self, ctl: &mut GenericControl<L, P, O, F>) -> bool
     where
@@ -45,7 +44,7 @@ pub trait Theory<'a> {
     /// does not throw
     fn get_symbol(&mut self, index: usize) -> Symbol;
     /// an iterator over the assigned theory values
-    fn assignment(&'a self, thread_id: Id) -> Self::AssignmentIterator;
+    fn assignment(&'a self, thread_id: Id) -> Box<dyn Iterator<Item = (Symbol, TheoryValue)> + 'a>;
     /// configure theory manually (without using clingo's options facility)
     /// Note that the theory has to be configured before registering it and cannot be reconfigured.
     fn configure(&mut self, key: &str, value: &str) -> bool;
