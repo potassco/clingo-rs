@@ -101,7 +101,7 @@ fn main() {
     let atom = ast::symbolic_atom(id).unwrap();
 
     // add the external statement: #external enable. [false]
-    let ext = ast::external(&loc, atom.clone(), &[], ExternalType::True).unwrap();
+    let ext = ast::external(&loc, atom.clone(), &[], ExternalType::False).unwrap();
 
     builder
         .add(&mut ext.into())
