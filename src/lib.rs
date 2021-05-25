@@ -1542,11 +1542,8 @@ pub fn version() -> (i32, i32, i32) {
 /// arguments.
 ///
 /// **See:** [`Control::ground()`](struct.Control.html#method.ground)
-pub struct Part<'a> {
-    name: CString,
-    params: &'a [Symbol],
-}
-impl<'a> Part<'a> {
+pub struct Part(clingo_part);
+impl Part {
     /// Create a new program part object.
     ///
     /// # Arguments
@@ -1559,19 +1556,14 @@ impl<'a> Part<'a> {
     /// - [`ClingoError::NulError`](enum.ClingoError.html#variant.NulError) - if `name` contains a nul byte
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if argument parsing fails
-    pub fn new(name: &str, params: &'a [Symbol]) -> Result<Part<'a>, NulError> {
-        Ok(Part {
-            name: CString::new(name)?,
-            params,
-        })
-    }
+    pub fn new(name: &str, params: &[Symbol]) -> Result<Part, ClingoError> {
+        let name = internalize_string(name)?;
 
-    fn from(&self) -> clingo_part {
-        clingo_part {
-            name: self.name.as_ptr() as *const c_char,
-            params: self.params.as_ptr() as *const clingo_symbol_t,
-            size: self.params.len(),
-        }
+        Ok(Part(clingo_part {
+            name: name as *const c_char,
+            params: params.as_ptr() as *const clingo_symbol_t,
+            size: params.len(),
+        }))
     }
 }
 
@@ -1858,10 +1850,7 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     pub fn ground(&mut self, parts: &[Part]) -> Result<(), ClingoError> {
         let parts_size = parts.len();
-        let parts = parts
-            .iter()
-            .map(|arg| arg.from())
-            .collect::<Vec<clingo_part>>();
+        let parts = parts.iter().map(|arg| arg.0).collect::<Vec<clingo_part>>();
         match &mut self.function_handler {
             Some(function_handler) => {
                 if !unsafe {
@@ -6867,4 +6856,5 @@ impl FactBase {
 // Re-export #[derive(ToSymbol)].
 #[cfg(feature = "derive")]
 #[allow(unused_imports)]
+#[cfg_attr(docsrs, doc(cfg(feature = "derive")))]
 pub use clingo_derive::*;
