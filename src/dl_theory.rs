@@ -152,7 +152,6 @@ impl<'a> Theory<'a> for DLTheory {
     /// callback on statistic updates
     /// please add a subkey with the name of your theory
     fn on_statistics(&mut self, step: &mut Statistics, accu: &mut Statistics) -> bool {
-        eprintln!("dl_theory::on_statistics");
         unsafe { clingodl_on_statistics(self.theory.as_ptr(), &mut step.0, &mut accu.0) }
     }
     /// obtain a symbol index which can be used to get the value of a symbol

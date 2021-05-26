@@ -97,6 +97,7 @@ use std::ffi::CString;
 use std::ffi::NulError;
 use std::fmt;
 use std::hash::{Hash, Hasher};
+use std::marker::PhantomData;
 use std::os::raw::c_char;
 use std::os::raw::c_void;
 use std::ptr::NonNull;
@@ -1542,8 +1543,12 @@ pub fn version() -> (i32, i32, i32) {
 /// arguments.
 ///
 /// **See:** [`Control::ground()`](struct.Control.html#method.ground)
-pub struct Part(clingo_part);
-impl Part {
+#[derive(Debug, Copy, Clone)]
+pub struct Part<'a> {
+    part: clingo_part,
+    _lifetime: PhantomData<&'a ()>,
+}
+impl<'a> Part<'a> {
     /// Create a new program part object.
     ///
     /// # Arguments
@@ -1556,14 +1561,17 @@ impl Part {
     /// - [`ClingoError::NulError`](enum.ClingoError.html#variant.NulError) - if `name` contains a nul byte
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if argument parsing fails
-    pub fn new(name: &str, params: &[Symbol]) -> Result<Part, ClingoError> {
+    pub fn new(name: &str, params: &'a [Symbol]) -> Result<Part<'a>, ClingoError> {
         let name = internalize_string(name)?;
 
-        Ok(Part(clingo_part {
-            name: name as *const c_char,
-            params: params.as_ptr() as *const clingo_symbol_t,
-            size: params.len(),
-        }))
+        Ok(Part {
+            part: clingo_part {
+                name: name as *const c_char,
+                params: params.as_ptr() as *const clingo_symbol_t,
+                size: params.len(),
+            },
+            _lifetime: PhantomData,
+        })
     }
 }
 
@@ -1850,7 +1858,10 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     pub fn ground(&mut self, parts: &[Part]) -> Result<(), ClingoError> {
         let parts_size = parts.len();
-        let parts = parts.iter().map(|arg| arg.0).collect::<Vec<clingo_part>>();
+        let parts = parts
+            .iter()
+            .map(|arg| arg.part)
+            .collect::<Vec<clingo_part>>();
         match &mut self.function_handler {
             Some(function_handler) => {
                 if !unsafe {
