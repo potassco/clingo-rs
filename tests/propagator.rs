@@ -236,7 +236,7 @@ fn pigeon_propagator(holes: i32, pigeons: i32, number_of_models: usize) {
     let arg0 = Symbol::create_number(holes);
     let arg1 = Symbol::create_number(pigeons);
     let args = vec![arg0, arg1];
-    let part = Part::new("pigeon", &args).unwrap();
+    let part = Part::new("pigeon", args).unwrap();
     let parts = vec![part];
 
     // let place = |p, h| {
@@ -343,7 +343,7 @@ fn assignment_propagator() {
     ctl.add("base", &[], "{a; b}. c.")
         .expect("Failed to add a logic program.");
 
-    let part = Part::new("base", &[]).unwrap();
+    let part = Part::new("base", vec![]).unwrap();
     let parts = vec![part];
     ctl.ground(&parts)
         .expect("Failed to ground a logic program.");
@@ -387,7 +387,7 @@ fn mode_propagator() {
     ctl.add("base", &[], "{p(1..9)}.")
         .expect("Failed to add a logic program.");
 
-    let part = Part::new("base", &[]).unwrap();
+    let part = Part::new("base", vec![]).unwrap();
     let parts = vec![part];
     ctl.ground(&parts)
         .expect("Failed to ground a logic program.");
@@ -519,7 +519,7 @@ fn add_watch_propagator() {
     ctl.add("base", &[], "{a;b;c;d}. c. :- d.")
         .expect("Failed to add a logic program.");
 
-    let part = Part::new("base", &[]).unwrap();
+    let part = Part::new("base", vec![]).unwrap();
     let parts = vec![part];
     ctl.ground(&parts)
         .expect("Failed to ground a logic program.");
@@ -623,7 +623,7 @@ fn add_clause(clause_type: ClauseType, m1: usize, m2: usize) {
     ctl.add("base", &[], "{a; b}.")
         .expect("Failed to add a logic program.");
 
-    let part = Part::new("base", &[]).unwrap();
+    let part = Part::new("base", vec![]).unwrap();
     let parts = vec![part];
     ctl.ground(&parts)
         .expect("Failed to ground a logic program.");

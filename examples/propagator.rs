@@ -254,7 +254,7 @@ fn main() {
             let args = vec![arg0, arg1];
 
             // the pigeon program part having the number of holes and pigeons as parameters
-            let part = Part::new("pigeon", &args).unwrap();
+            let part = Part::new("pigeon", args).unwrap();
             let parts = vec![part];
             ctl.ground(&parts)
                 .expect("Failed to ground a logic program.");

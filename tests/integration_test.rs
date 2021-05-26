@@ -102,7 +102,7 @@ fn backend() {
     let mut ctl = control(vec![]).unwrap();
     ctl.add("base", &[], "{a; b; c}.").unwrap();
 
-    let part = Part::new("base", &[]).unwrap();
+    let part = Part::new("base", vec![]).unwrap();
     let parts = vec![part];
     ctl.ground(&parts).unwrap();
 
@@ -139,7 +139,7 @@ fn theory_atoms() {
     )
     .unwrap();
 
-    let part = Part::new("base", &[]).unwrap();
+    let part = Part::new("base", vec![]).unwrap();
     let parts = vec![part];
     ctl.ground(&parts).unwrap();
 
@@ -172,7 +172,7 @@ fn test_statement(stmt: &Statement, string: &str) {
     assert_eq!(string2, string);
 
     // ground the base part
-    let part = Part::new("base", &[]).unwrap();
+    let part = Part::new("base", vec![]).unwrap();
     let parts = vec![part];
     ctl.ground(&parts)
         .expect("Failed to ground a logic program.");

@@ -97,7 +97,6 @@ use std::ffi::CString;
 use std::ffi::NulError;
 use std::fmt;
 use std::hash::{Hash, Hasher};
-use std::marker::PhantomData;
 use std::os::raw::c_char;
 use std::os::raw::c_void;
 use std::ptr::NonNull;
@@ -1543,12 +1542,12 @@ pub fn version() -> (i32, i32, i32) {
 /// arguments.
 ///
 /// **See:** [`Control::ground()`](struct.Control.html#method.ground)
-#[derive(Debug, Copy, Clone)]
-pub struct Part<'a> {
+#[derive(Debug, Clone)]
+pub struct Part {
     part: clingo_part,
-    _lifetime: PhantomData<&'a ()>,
+    _params: Vec<Symbol>,
 }
-impl<'a> Part<'a> {
+impl Part {
     /// Create a new program part object.
     ///
     /// # Arguments
@@ -1561,7 +1560,7 @@ impl<'a> Part<'a> {
     /// - [`ClingoError::NulError`](enum.ClingoError.html#variant.NulError) - if `name` contains a nul byte
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if argument parsing fails
-    pub fn new(name: &str, params: &'a [Symbol]) -> Result<Part<'a>, ClingoError> {
+    pub fn new(name: &str, params: Vec<Symbol>) -> Result<Part, ClingoError> {
         let name = internalize_string(name)?;
 
         Ok(Part {
@@ -1570,7 +1569,7 @@ impl<'a> Part<'a> {
                 params: params.as_ptr() as *const clingo_symbol_t,
                 size: params.len(),
             },
-            _lifetime: PhantomData,
+            _params: params,
         })
     }
 }
