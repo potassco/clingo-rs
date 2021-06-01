@@ -51,7 +51,7 @@ clingo = { version = "0.7.0-beta.1", features = ["derive"] }
 
 In your source write:
 
-```rust
+```ignore
 use clingo::ToSymbol;
 use clingo::ClingoError;
 use clingo::FactBase;
@@ -87,15 +87,7 @@ clingo = { version = "0.7.0-beta.1", features = ["derive", "dl-theory"] }
 
 ### Using `static-linking`
 
-The crate defines a [Cargo feature] that allows to use the clingo library via static linking.
-
-[Cargo feature]: https://doc.rust-lang.org/cargo/reference/manifest.html#the-features-section
-
-*Attention: currently `static-linking` does not work with `dl-theory`.*
-
-```sh
-export CLINGO_LIBRARY_PATH=/scratch/miniconda3/envs/test/lib
-```
+You can use the clingo library via static linking.
 
 The recommended way to use the optional static linking support is as
 follows.
@@ -104,6 +96,8 @@ follows.
 [dependencies]
 clingo = { version = "0.7.0-beta.1", features = ["static-linking"] }
 ```
+
+*Attention: currently `static-linking` does not work with `dl-theory`.*
 
 ## Contribution
 

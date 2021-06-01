@@ -1667,7 +1667,6 @@ pub fn pool<'a>(location: &Location, arguments: &'a [Term]) -> Result<Pool<'a>, 
             "Call to clingo_ast_build() failed.",
         ));
     }
-    eprintln!("yeah");
     match NonNull::new(ast) {
         Some(ast) => Ok(Pool {
             ast: AST(ast),
