@@ -1213,11 +1213,6 @@ impl PartialEq for Symbol {
         unsafe { clingo_symbol_is_equal_to(self.0, other.0) }
     }
 }
-impl From<Symbol> for clingo_symbol_t {
-    fn from(symbol: Symbol) -> Self {
-        symbol.0
-    }
-}
 impl Eq for Symbol {}
 impl PartialOrd for Symbol {
     /// Compare two symbols.
@@ -6855,3 +6850,63 @@ impl FactBase {
 #[allow(unused_imports)]
 #[cfg_attr(docsrs, doc(cfg(feature = "derive")))]
 pub use clingo_derive::*;
+
+impl From<Symbol> for clingo_symbol_t {
+    fn from(symbol: Symbol) -> Self {
+        symbol.0
+    }
+}
+impl From<clingo_symbol_t> for Symbol {
+    fn from(symbol: clingo_symbol_t) -> Self {
+        Symbol(symbol)
+    }
+}
+impl From<Id> for clingo_id_t {
+    fn from(id: Id) -> Self {
+        id.0
+    }
+}
+impl From<Options> for clingo_options_t {
+    fn from(options: Options) -> Self {
+        options.0
+    }
+}
+impl From<&mut Options> for *mut clingo_options_t {
+    fn from(options: &mut Options) -> Self {
+        &mut options.0
+    }
+}
+impl From<Statistics> for clingo_statistic {
+    fn from(stats: Statistics) -> Self {
+        stats.0
+    }
+}
+impl From<&mut Statistics> for *mut clingo_statistic {
+    fn from(stats: &mut Statistics) -> Self {
+        &mut stats.0
+    }
+}
+impl From<Model> for clingo_model {
+    fn from(model: Model) -> Self {
+        model.0
+    }
+}
+impl From<&mut Model> for *mut clingo_model {
+    fn from(model: &mut Model) -> Self {
+        &mut model.0
+    }
+}
+impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
+    From<GenericControl<L, P, O, F>> for NonNull<clingo_control>
+{
+    fn from(control: GenericControl<L, P, O, F>) -> Self {
+        control.ctl
+    }
+}
+impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
+    From<&mut GenericControl<L, P, O, F>> for NonNull<clingo_control>
+{
+    fn from(control: &mut GenericControl<L, P, O, F>) -> Self {
+        control.ctl
+    }
+}
