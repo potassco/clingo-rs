@@ -1213,6 +1213,11 @@ impl PartialEq for Symbol {
         unsafe { clingo_symbol_is_equal_to(self.0, other.0) }
     }
 }
+impl From<Symbol> for clingo_symbol_t {
+    fn from(symbol: Symbol) -> Self {
+        symbol.0
+    }
+}
 impl Eq for Symbol {}
 impl PartialOrd for Symbol {
     /// Compare two symbols.
