@@ -48,22 +48,6 @@
 //!
 //! The macro performs a conversion to snake case. This means the corresponing fact for `MyPoint{x:4,y:2}` is `my_point(4,2)`.
 //!
-//! ### Using `dl-theory`
-//!
-//! You have to set the environment variable `CLINGO_DL_LIBRARY_PATH`. For example:
-//!
-//! ```sh
-//! export CLINGO_DL_LIBRARY_PATH=/scratch/miniconda3/envs/test/lib
-//! ```
-//!
-//! The recommended way to use the optional dl-theory feature is as
-//! follows.
-//!
-//! ```toml
-//! [dependencies]
-//! clingo = { version = "0.7.0-beta.1", features = ["derive", "dl-theory"] }
-//! ```
-//!
 //! ### Using `static-linking`
 //!
 //! The crate defines a [Cargo feature] that allows to use the clingo library via static linking.
@@ -107,8 +91,6 @@ use thiserror::Error;
 pub mod ast;
 mod ast_internals;
 
-#[cfg(feature = "dl-theory")]
-pub mod dl_theory;
 pub mod theory;
 
 /// ClingoError in the rust wrapper, like null pointers or failed matches of C enums.

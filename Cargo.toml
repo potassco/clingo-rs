@@ -21,14 +21,12 @@ path = "src/lib.rs"
 
 [features]
 static-linking = ["clingo-sys/static-linking"]
-dl-theory = ["clingo-dl-sys"]
 # Provide derive(ToSymbol) macro.
 derive = ["clingo-derive"]
 
 [dependencies]
 vec1 = "1.8.0"
 clingo-sys = { git = "https://github.com/potassco/clingo-sys", branch="st/wip" }
-clingo-dl-sys = { git = "https://github.com/potassco/clingo-dl-sys", branch="main", optional = true}
 clingo-derive = { version = "0.2.0", optional = true }
 thiserror = "1.0"
 bitflags = "1.2"
@@ -41,5 +39,5 @@ test-case = "1.1"
 
 [package.metadata.docs.rs]
 all-features = false
-features = ["dl-theory","static-linking","derive"]
+features = ["static-linking","derive"]
 rustdoc-args = ["--cfg", "docsrs"]
