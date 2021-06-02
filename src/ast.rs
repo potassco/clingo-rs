@@ -17,6 +17,11 @@ use vec1::Vec1;
 pub struct ProgramBuilder<'a> {
     pub(crate) theref: &'a mut clingo_program_builder_t,
 }
+impl<'a> From<ProgramBuilder<'a>> for &'a mut clingo_program_builder_t {
+    fn from(pb: ProgramBuilder<'a>) -> Self {
+        pb.theref
+    }
+}
 impl<'a> ProgramBuilder<'a> {
     /// Get an object to add non-ground directives to the program.
     pub fn from<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>(
