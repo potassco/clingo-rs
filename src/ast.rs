@@ -651,25 +651,25 @@ impl<'a> From<TheoryAtom<'a>> for Head<'a> {
     }
 }
 impl<'a> Head<'a> {
-    pub fn is_a(self) -> Result<THead<'a>, ClingoError> {
+    pub fn is_a(self) -> Result<HeadIsA<'a>, ClingoError> {
         match self.ast.get_type()? {
-            ASTType::Literal => Ok(THead::Literal(Literal {
+            ASTType::Literal => Ok(HeadIsA::Literal(Literal {
                 ast: self.ast,
                 _lifetime: self._lifetime,
             })),
-            ASTType::CspLiteral => Ok(THead::Aggregate(Aggregate {
+            ASTType::CspLiteral => Ok(HeadIsA::Aggregate(Aggregate {
                 ast: self.ast,
                 _lifetime: self._lifetime,
             })),
-            ASTType::HeadAggregate => Ok(THead::HeadAggregate(HeadAggregate {
+            ASTType::HeadAggregate => Ok(HeadIsA::HeadAggregate(HeadAggregate {
                 ast: self.ast,
                 _lifetime: self._lifetime,
             })),
-            ASTType::Disjunction => Ok(THead::Disjunction(Disjunction {
+            ASTType::Disjunction => Ok(HeadIsA::Disjunction(Disjunction {
                 ast: self.ast,
                 _lifetime: self._lifetime,
             })),
-            ASTType::TheoryAtom => Ok(THead::TheoryAtom(TheoryAtom {
+            ASTType::TheoryAtom => Ok(HeadIsA::TheoryAtom(TheoryAtom {
                 ast: self.ast,
                 _lifetime: self._lifetime,
             })),
@@ -681,7 +681,7 @@ impl<'a> Head<'a> {
     }
 }
 #[derive(Debug, Clone)]
-pub enum THead<'a> {
+pub enum HeadIsA<'a> {
     Literal(Literal<'a>),
     Aggregate(Aggregate<'a>),
     HeadAggregate(HeadAggregate<'a>),
