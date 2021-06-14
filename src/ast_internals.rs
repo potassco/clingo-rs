@@ -374,7 +374,7 @@ impl AST {
             index: 0,
         })
     }
-    pub fn head<'a>(&self) -> Head<'a> {
+    pub fn head<'a>(&'a self) -> Head<'a> {
         let ast = self.get_attribute_ast(ASTAttribute::Head).unwrap();
         Head {
             ast,
