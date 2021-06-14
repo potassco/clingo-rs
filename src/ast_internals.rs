@@ -1,4 +1,4 @@
-use crate::ast::{BodyLiteral, Head};
+use crate::ast::{BodyLiteral, Head, Term};
 use crate::{ClingoError, Symbol};
 use clingo_sys::*;
 use std::marker::PhantomData;
@@ -377,6 +377,13 @@ impl AST {
     pub fn head<'a>(&'a self) -> Head<'a> {
         let ast = self.get_attribute_ast(ASTAttribute::Head).unwrap();
         Head {
+            ast,
+            _lifetime: PhantomData,
+        }
+    }
+    pub fn term<'a>(&self) -> Term<'a> {
+        let ast = self.get_attribute_ast(ASTAttribute::Term).unwrap();
+        Term {
             ast,
             _lifetime: PhantomData,
         }

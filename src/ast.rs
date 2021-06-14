@@ -1270,6 +1270,9 @@ impl<'a> TheoryAtom<'a> {
     pub fn to_string(&self) -> Result<String, ClingoError> {
         self.ast.to_string()
     }
+    pub fn term(&'a self) -> Term<'a> {
+        self.ast.term()
+    }
 }
 #[derive(Debug, Clone)]
 pub struct AtomicLiteral<'a> {
