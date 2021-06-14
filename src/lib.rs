@@ -980,7 +980,7 @@ unsafe fn try_symbol_callback<T: FunctionHandler>(
         Ok(true)
     }
 }
-/// Signed integer type used for aspif and solver literals.
+/// Signed integer type used for aspif.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub struct Literal(clingo_literal_t);
 impl Literal {
@@ -990,6 +990,20 @@ impl Literal {
     pub fn from(Atom(atom): Atom) -> Literal {
         Literal(atom as clingo_literal_t)
     }
+    pub fn get_integer(self) -> i32 {
+        self.0
+    }
+}
+/// Signed integer type used for solver literals.
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+pub struct SolverLiteral(clingo_literal_t);
+impl SolverLiteral {
+    pub fn negate(self) -> SolverLiteral {
+        SolverLiteral(-(self.0))
+    }
+    // pub fn from(Atom(atom): Atom) -> Literal {
+    //     Literal(atom as clingo_literal_t)
+    // }
     pub fn get_integer(self) -> i32 {
         self.0
     }
@@ -1631,7 +1645,7 @@ pub trait Propagator {
     /// * `changes` - the change set
     ///
     /// **Returns** whether the call was successful
-    fn propagate(&mut self, _control: &mut PropagateControl, _changes: &[Literal]) -> bool {
+    fn propagate(&mut self, _control: &mut PropagateControl, _changes: &[SolverLiteral]) -> bool {
         true
     }
     /// Called whenever a solver undoes assignments to watched solver literals.
@@ -1646,7 +1660,7 @@ pub trait Propagator {
     /// * `changes` - the change set
     ///
     /// **Returns** whether the call was successful
-    fn undo(&mut self, _control: &mut PropagateControl, _changes: &[Literal]) {}
+    fn undo(&mut self, _control: &mut PropagateControl, _changes: &[SolverLiteral]) {}
 
     /// This function is similar to
     /// [`PropagateControl::propagate()`](struct.PropagateControl.html#method.propagate) but is only
@@ -1686,8 +1700,8 @@ pub trait Propagator {
         &mut self,
         _thread_id: Id,
         _assignment: &Assignment,
-        _fallback: Literal,
-        _decision: &mut Literal,
+        _fallback: SolverLiteral,
+        _decision: &mut SolverLiteral,
     ) -> bool {
         true
     }
@@ -1718,7 +1732,7 @@ unsafe extern "C" fn unsafe_propagate<T: Propagator>(
         return false;
     }
     let control = &mut *(control as *mut PropagateControl);
-    let changes = std::slice::from_raw_parts(changes as *const Literal, size);
+    let changes = std::slice::from_raw_parts(changes as *const SolverLiteral, size);
     let propagator = &mut *(propagator as *mut T);
 
     propagator.propagate(control, changes)
@@ -1735,7 +1749,7 @@ unsafe extern "C" fn unsafe_undo<T: Propagator>(
         return;
     }
     let control = &mut *(control as *mut PropagateControl);
-    let changes = std::slice::from_raw_parts(changes as *const Literal, size);
+    let changes = std::slice::from_raw_parts(changes as *const SolverLiteral, size);
     let propagator = &mut *(propagator as *mut T);
 
     propagator.undo(control, changes)
@@ -1767,9 +1781,9 @@ unsafe extern "C" fn unsafe_decide<T: Propagator>(
         return false;
     }
     let assignment = &*(assignment as *const Assignment);
-    let fallback = Literal(fallback);
+    let fallback = SolverLiteral(fallback);
     let propagator = &mut *(propagator as *mut T);
-    let decision = &mut *(decision as *mut Literal);
+    let decision = &mut *(decision as *mut SolverLiteral);
 
     propagator.decide(Id(thread_id), assignment, fallback, decision)
 }
@@ -4320,7 +4334,7 @@ impl SolveControl {
     ///
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if adding the clause fails
-    pub fn add_clause(&mut self, clause: &[Literal]) -> Result<(), ClingoError> {
+    pub fn add_clause(&mut self, clause: &[SolverLiteral]) -> Result<(), ClingoError> {
         if !unsafe {
             clingo_solve_control_add_clause(
                 &mut self.0,
@@ -4384,7 +4398,7 @@ impl Assignment {
     /// # Arguments
     ///
     /// * `literal` - the literal
-    pub fn has_literal(&self, literal: Literal) -> bool {
+    pub fn has_literal(&self, literal: SolverLiteral) -> bool {
         unsafe { clingo_assignment_has_literal(&self.0, literal.0) }
     }
 
@@ -4395,7 +4409,7 @@ impl Assignment {
     /// * `literal` - the literal
     ///
     /// **Returns** the decision level of the given literal
-    pub fn level(&self, literal: Literal) -> Result<u32, ClingoError> {
+    pub fn level(&self, literal: SolverLiteral) -> Result<u32, ClingoError> {
         let mut level = 0;
         if !unsafe { clingo_assignment_level(&self.0, literal.0, &mut level) } {
             return Err(ClingoError::new_internal(
@@ -4412,14 +4426,14 @@ impl Assignment {
     /// * `level` - the level
     ///
     /// **Returns** the decision literal for the given decision level
-    pub fn decision(&self, level: u32) -> Result<Literal, ClingoError> {
+    pub fn decision(&self, level: u32) -> Result<SolverLiteral, ClingoError> {
         let mut lit = 0;
         if !unsafe { clingo_assignment_decision(&self.0, level, &mut lit) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_assignment_decision() failed",
             ));
         }
-        Ok(Literal(lit))
+        Ok(SolverLiteral(lit))
     }
 
     /// Check if a literal has a fixed truth value.
@@ -4429,7 +4443,7 @@ impl Assignment {
     /// * `literal` - the literal
     ///
     /// **Returns** whether the literal is fixed
-    pub fn is_fixed(&self, literal: Literal) -> Result<bool, ClingoError> {
+    pub fn is_fixed(&self, literal: SolverLiteral) -> Result<bool, ClingoError> {
         let mut is_fixed = false;
         if !unsafe { clingo_assignment_is_fixed(&self.0, literal.0, &mut is_fixed) } {
             return Err(ClingoError::new_internal(
@@ -4445,7 +4459,7 @@ impl Assignment {
     ///
     /// * `literal` - the literal
     /// **Returns** whether the literal is true (see [`Assignment::truth_value()`](struct.Assignment.html#method.truth_value))
-    pub fn is_true(&self, literal: Literal) -> Result<bool, ClingoError> {
+    pub fn is_true(&self, literal: SolverLiteral) -> Result<bool, ClingoError> {
         let mut is_true = false;
         if !unsafe { clingo_assignment_is_true(&self.0, literal.0, &mut is_true) } {
             return Err(ClingoError::new_internal(
@@ -4461,7 +4475,7 @@ impl Assignment {
     /// * `literal` - the literal
     ///
     /// **Returns** whether the literal is false (see [`Assignment::truth_value()`](struct.Assignment.html#method.truth_value))
-    pub fn is_false(&self, literal: Literal) -> Result<bool, ClingoError> {
+    pub fn is_false(&self, literal: SolverLiteral) -> Result<bool, ClingoError> {
         let mut is_false = false;
         if !unsafe { clingo_assignment_is_false(&self.0, literal.0, &mut is_false) } {
             return Err(ClingoError::new_internal(
@@ -4479,7 +4493,7 @@ impl Assignment {
     /// * `value` - the resulting truth value
     ///
     /// **Returns** whether the call was successful
-    pub fn truth_value(&self, literal: Literal) -> Result<TruthValue, ClingoError> {
+    pub fn truth_value(&self, literal: SolverLiteral) -> Result<TruthValue, ClingoError> {
         let mut value = 0;
         if !unsafe { clingo_assignment_truth_value(&self.0, literal.0, &mut value) } {
             return Err(ClingoError::new_internal(
@@ -4501,14 +4515,14 @@ impl Assignment {
     /// * `offset` - the offset of the literal
     ///
     /// **Returns** the literal
-    pub fn at(&self, offset: usize) -> Result<Literal, ClingoError> {
+    pub fn at(&self, offset: usize) -> Result<SolverLiteral, ClingoError> {
         let mut lit = 0;
         if !unsafe { clingo_assignment_at(&self.0, offset, &mut lit) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_assignment_at() failed",
             ));
         }
-        Ok(Literal(lit))
+        Ok(SolverLiteral(lit))
     }
 
     /// Check if the assignmen is total, i.e. there are no free literal.
@@ -4577,14 +4591,14 @@ impl Assignment {
     /// * `offset` - the offset of the literal
     ///
     /// **Returns** the literal
-    pub fn trail_at(&self, offset: u32) -> Result<Literal, ClingoError> {
+    pub fn trail_at(&self, offset: u32) -> Result<SolverLiteral, ClingoError> {
         let mut lit = 0;
         if !unsafe { clingo_assignment_trail_at(&self.0, offset, &mut lit) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_assignment_trail_at() failed",
             ));
         }
-        Ok(Literal(lit))
+        Ok(SolverLiteral(lit))
     }
 }
 
@@ -4635,7 +4649,7 @@ impl PropagateControl {
     ///
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     /// or [`ErrorCode::Logic`](enum.ErrorCode.html#variant.Logic) if the assignment is conflicting
-    pub fn add_literal(&mut self, result: &mut Literal) -> Result<(), ClingoError> {
+    pub fn add_literal(&mut self, result: &mut SolverLiteral) -> Result<(), ClingoError> {
         if !unsafe { clingo_propagate_control_add_literal(&mut self.0, &mut result.0) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_propagate_control_add_literal() failed",
@@ -4658,7 +4672,7 @@ impl PropagateControl {
     /// or [`ErrorCode::Logic`](enum.ErrorCode.html#variant.Logic) if the literal is invalid
     ///
     /// **See:** [`PropagateControl::remove_watch()`](struct.PropagateControl.html#method.remove_watch)
-    pub fn add_watch(&mut self, literal: Literal) -> Result<(), ClingoError> {
+    pub fn add_watch(&mut self, literal: SolverLiteral) -> Result<(), ClingoError> {
         if !unsafe { clingo_propagate_control_add_watch(&mut self.0, literal.0) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_propagate_control_add_watch() failed",
@@ -4672,7 +4686,7 @@ impl PropagateControl {
     /// # Arguments
     ///
     /// * `literal` - the literal to check
-    pub fn has_watch(&self, literal: Literal) -> bool {
+    pub fn has_watch(&self, literal: SolverLiteral) -> bool {
         unsafe { clingo_propagate_control_has_watch(&self.0, literal.0) }
     }
 
@@ -4683,7 +4697,7 @@ impl PropagateControl {
     /// # Arguments
     ///
     /// * `literal` - the literal to remove
-    pub fn remove_watch(&mut self, literal: Literal) {
+    pub fn remove_watch(&mut self, literal: SolverLiteral) {
         unsafe { clingo_propagate_control_remove_watch(&mut self.0, literal.0) }
     }
 
@@ -4705,7 +4719,7 @@ impl PropagateControl {
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     pub fn add_clause(
         &mut self,
-        clause: &[Literal],
+        clause: &[SolverLiteral],
         ctype: ClauseType,
     ) -> Result<bool, ClingoError> {
         let mut result = false;
@@ -4768,7 +4782,10 @@ impl PropagateInit {
     /// * `aspif_literal` - the aspif literal to map
     ///
     /// **Returns** the corresponding solver literal
-    pub fn solver_literal(&self, Literal(aspif_literal): Literal) -> Result<Literal, ClingoError> {
+    pub fn solver_literal(
+        &self,
+        Literal(aspif_literal): Literal,
+    ) -> Result<SolverLiteral, ClingoError> {
         let mut solver_literal = 0;
         if !unsafe {
             clingo_propagate_init_solver_literal(&self.0, aspif_literal, &mut solver_literal)
@@ -4777,7 +4794,7 @@ impl PropagateInit {
                 "Call to clingo_propagate_init_solver_literal() failed",
             ));
         }
-        Ok(Literal(solver_literal))
+        Ok(SolverLiteral(solver_literal))
     }
 
     /// Add a watch for the solver literal in the given phase.
@@ -4785,7 +4802,10 @@ impl PropagateInit {
     /// # Arguments
     ///
     /// * `solver_literal` - the solver literal
-    pub fn add_watch(&mut self, Literal(solver_literal): Literal) -> Result<(), ClingoError> {
+    pub fn add_watch(
+        &mut self,
+        SolverLiteral(solver_literal): SolverLiteral,
+    ) -> Result<(), ClingoError> {
         if !unsafe { clingo_propagate_init_add_watch(&mut self.0, solver_literal) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_propagate_init_add_watch() failed",
@@ -4802,7 +4822,7 @@ impl PropagateInit {
     /// * `thread_id` - the id of the solver thread
     pub fn add_watch_to_thread(
         &mut self,
-        Literal(solver_literal): Literal,
+        SolverLiteral(solver_literal): SolverLiteral,
         thread_id: u32,
     ) -> Result<(), ClingoError> {
         if !unsafe {
@@ -4909,14 +4929,14 @@ impl PropagateInit {
     /// # Errors
     ///
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
-    pub fn add_literal(&mut self, freeze: bool) -> Result<&mut Literal, ClingoError> {
+    pub fn add_literal(&mut self, freeze: bool) -> Result<&mut SolverLiteral, ClingoError> {
         let literal_ptr = std::ptr::null_mut() as *mut clingo_literal_t;
         if !unsafe { clingo_propagate_init_add_literal(&mut self.0, freeze, literal_ptr) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_propagate_init_add_literal() failed",
             ));
         }
-        match unsafe { (literal_ptr as *mut Literal).as_mut() } {
+        match unsafe { (literal_ptr as *mut SolverLiteral).as_mut() } {
             Some(x) => Ok(x),
             None => Err(ClingoError::FFIError {
                 msg: "Tried casting a null pointer to &mut Literal.",
@@ -4937,7 +4957,7 @@ impl PropagateInit {
     /// # Errors
     ///
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
-    pub fn add_clause(&mut self, clause: &[Literal]) -> Result<bool, ClingoError> {
+    pub fn add_clause(&mut self, clause: &[SolverLiteral]) -> Result<bool, ClingoError> {
         let mut result = false;
         if !unsafe {
             clingo_propagate_init_add_clause(
@@ -4974,7 +4994,7 @@ impl PropagateInit {
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     pub fn add_weight_constraint(
         &mut self,
-        literal: Literal,
+        literal: SolverLiteral,
         literals: &[WeightedLiteral],
         bound: i32,
         wctype: WeigthConstraintType,
@@ -5012,7 +5032,7 @@ impl PropagateInit {
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     pub fn add_minimize(
         &mut self,
-        literal: Literal,
+        literal: SolverLiteral,
         weight: i32,
         priority: i32,
     ) -> Result<(), ClingoError> {
@@ -5051,7 +5071,7 @@ impl PropagateInit {
     /// # Arguments
     ///
     /// * `literal` - the solver literal
-    pub fn remove_watch(&mut self, literal: &Literal) -> Result<(), ClingoError> {
+    pub fn remove_watch(&mut self, literal: &SolverLiteral) -> Result<(), ClingoError> {
         if !unsafe { clingo_propagate_init_remove_watch(&mut self.0, literal.0) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_propagate_init_remove_watch() failed",
@@ -5066,7 +5086,7 @@ impl PropagateInit {
     /// * `thread_id`- the id of the solver thread
     pub fn remove_watch_from_thread(
         &mut self,
-        literal: &Literal,
+        literal: &SolverLiteral,
         thread_id: u32,
     ) -> Result<(), ClingoError> {
         if !unsafe {
@@ -5086,7 +5106,7 @@ impl PropagateInit {
     /// Note that any watched literal is automatically frozen and that it does not matter which phase of the literal is frozen.
     ///
     /// * `literal` - the solver literal
-    pub fn freeze_literal(&mut self, literal: &Literal) -> Result<(), ClingoError> {
+    pub fn freeze_literal(&mut self, literal: &SolverLiteral) -> Result<(), ClingoError> {
         if !unsafe { clingo_propagate_init_freeze_literal(&mut self.0, literal.0) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_propagate_init_freeze_literal() failed",
@@ -5203,7 +5223,7 @@ impl<
     /// # Errors
     ///
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
-    pub fn core(&mut self) -> Result<Vec<Literal>, ClingoError> {
+    pub fn core(&mut self) -> Result<Vec<SolverLiteral>, ClingoError> {
         let mut literal_ptr = std::ptr::null();
         let mut size: usize = 0;
         if !unsafe { clingo_solve_handle_core(self.handle.as_ptr(), &mut literal_ptr, &mut size) } {
@@ -5213,7 +5233,7 @@ impl<
         }
         // let literals = unsafe {std::slice::from_raw_parts(literal_ptr, size)};
 
-        let mut literals = Vec::<Literal>::with_capacity(size);
+        let mut literals = Vec::<SolverLiteral>::with_capacity(size);
         for _ in 0..size {
             if literal_ptr.is_null() {
                 return Err(ClingoError::FFIError {
@@ -5221,7 +5241,7 @@ impl<
                 });
             }
             let nliteral = unsafe { *literal_ptr };
-            literals.push(Literal(nliteral));
+            literals.push(SolverLiteral(nliteral));
             literal_ptr = unsafe { literal_ptr.offset(1) };
         }
         Ok(literals)

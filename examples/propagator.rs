@@ -44,7 +44,7 @@ fn solve<P: Propagator>(ctl: ControlWithPropagator<P>) {
 struct StateT {
     // assignment of pigeons to holes
     // (hole number -> pigeon placement literal or zero)
-    holes: Vec<Option<Literal>>,
+    holes: Vec<Option<SolverLiteral>>,
 }
 
 // state information for the propagator
@@ -88,7 +88,7 @@ impl Propagator for PropagatorT {
             return true;
         }
 
-        let s1_holes: Vec<Option<Literal>> = vec![];
+        let s1_holes: Vec<Option<SolverLiteral>> = vec![];
         let state1 = Rc::new(RefCell::new(StateT { holes: s1_holes }));
         self.states = vec![state1];
 
@@ -158,7 +158,7 @@ impl Propagator for PropagatorT {
         true
     }
 
-    fn propagate(&mut self, control: &mut PropagateControl, changes: &[Literal]) -> bool {
+    fn propagate(&mut self, control: &mut PropagateControl, changes: &[SolverLiteral]) -> bool {
         // get the thread specific state
         let mut state = self.states[control.thread_id() as usize].borrow_mut();
 
@@ -177,7 +177,7 @@ impl Propagator for PropagatorT {
                 // create a conflicting clause and propagate it
                 Some(x) => {
                     // current and previous literal must not hold together
-                    let clause: &[Literal] = &[lit.negate(), x.negate()];
+                    let clause: &[SolverLiteral] = &[lit.negate(), x.negate()];
                     // stores the result when adding a clause or propagationg
                     // if result is false propagation must stop for the solver to backtrack
 
@@ -199,7 +199,7 @@ impl Propagator for PropagatorT {
         true
     }
 
-    fn undo(&mut self, control: &mut PropagateControl, changes: &[Literal]) {
+    fn undo(&mut self, control: &mut PropagateControl, changes: &[SolverLiteral]) {
         // get the thread specific state
         let mut state = self.states[control.thread_id() as usize].borrow_mut();
 

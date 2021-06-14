@@ -7,7 +7,7 @@ use test_case::test_case;
 struct StateT {
     // assignment of pigeons to holes
     // (hole number -> pigeon placement literal or zero)
-    holes: Vec<Option<Literal>>,
+    holes: Vec<Option<SolverLiteral>>,
 }
 
 // returns the offset'th numeric argument of the function symbol sym
@@ -50,7 +50,7 @@ impl Propagator for PigeonPropagator {
             return true;
         }
 
-        let s1_holes: Vec<Option<Literal>> = vec![];
+        let s1_holes: Vec<Option<SolverLiteral>> = vec![];
         let state1 = Rc::new(RefCell::new(StateT { holes: s1_holes }));
         self.states = vec![state1];
 
@@ -120,7 +120,7 @@ impl Propagator for PigeonPropagator {
         true
     }
 
-    fn propagate(&mut self, control: &mut PropagateControl, changes: &[Literal]) -> bool {
+    fn propagate(&mut self, control: &mut PropagateControl, changes: &[SolverLiteral]) -> bool {
         // get the thread specific state
         let mut state = (*self.states[control.thread_id() as usize]).borrow_mut();
 
@@ -139,7 +139,7 @@ impl Propagator for PigeonPropagator {
                 // create a conflicting clause and propagate it
                 Some(x) => {
                     // current and previous literal must not hold together
-                    let clause: &[Literal] = &[lit.negate(), x.negate()];
+                    let clause: &[SolverLiteral] = &[lit.negate(), x.negate()];
                     // stores the result when adding a clause or propagationg
                     // if result is false propagation must stop for the solver to backtrack
 
@@ -161,7 +161,7 @@ impl Propagator for PigeonPropagator {
         true
     }
 
-    fn undo(&mut self, control: &mut PropagateControl, changes: &[Literal]) {
+    fn undo(&mut self, control: &mut PropagateControl, changes: &[SolverLiteral]) {
         // get the thread specific state
         let mut state = (*self.states[control.thread_id() as usize]).borrow_mut();
 
@@ -256,9 +256,9 @@ fn pigeon_propagator(holes: i32, pigeons: i32, number_of_models: usize) {
 }
 
 struct TestAssignment {
-    a: Option<Literal>,
-    b: Option<Literal>,
-    c: Option<Literal>,
+    a: Option<SolverLiteral>,
+    b: Option<SolverLiteral>,
+    c: Option<SolverLiteral>,
     count: usize,
 }
 impl Propagator for TestAssignment {
@@ -272,26 +272,33 @@ impl Propagator for TestAssignment {
             .unwrap()
             .literal()
             .unwrap();
-        self.a = Some(a1);
+        self.a = Some(init.solver_literal(a1).unwrap());
         let b1 = init
             .symbolic_atoms()
             .unwrap()
             .iter()
             .unwrap()
-            .find(|x| x.symbol().unwrap().to_string() == "b");
-        self.b = Some(b1.unwrap().literal().unwrap());
+            .find(|x| x.symbol().unwrap().to_string() == "b")
+            .unwrap()
+            .literal()
+            .unwrap();
+        self.b = Some(init.solver_literal(b1).unwrap());
         let c1 = init
             .symbolic_atoms()
             .unwrap()
             .iter()
             .unwrap()
-            .find(|x| x.symbol().unwrap().to_string() == "c");
-        self.c = Some(c1.unwrap().literal().unwrap());
+            .find(|x| x.symbol().unwrap().to_string() == "c")
+            .unwrap()
+            .literal()
+            .unwrap();
+        self.c = Some(init.solver_literal(c1).unwrap());
+
         init.add_watch(self.a.unwrap()).unwrap();
         init.add_watch(self.b.unwrap()).unwrap();
         true
     }
-    fn propagate(&mut self, ctl: &mut PropagateControl, changes: &[Literal]) -> bool {
+    fn propagate(&mut self, ctl: &mut PropagateControl, changes: &[SolverLiteral]) -> bool {
         let ass = ctl.assignment().unwrap();
         self.count += changes.len();
         let a_ = self.a.unwrap();
@@ -323,7 +330,7 @@ impl Propagator for TestAssignment {
         }
         true
     }
-    fn undo(&mut self, _ctl: &mut PropagateControl, undo: &[Literal]) {
+    fn undo(&mut self, _ctl: &mut PropagateControl, undo: &[SolverLiteral]) {
         self.count -= undo.len();
     }
 }
@@ -353,7 +360,7 @@ fn assignment_propagator() {
 }
 
 struct TestMode {
-    lits: Vec<Literal>,
+    lits: Vec<SolverLiteral>,
 }
 impl Propagator for TestMode {
     fn init(&mut self, init: &mut PropagateInit) -> bool {
@@ -402,9 +409,9 @@ fn mode_propagator() {
 use std::collections::HashSet;
 use std::sync::{Condvar, Mutex};
 struct TestAddWatch {
-    propagated: HashSet<Literal>,
-    a: Option<Literal>,
-    b: Option<Literal>,
+    propagated: HashSet<SolverLiteral>,
+    a: Option<SolverLiteral>,
+    b: Option<SolverLiteral>,
 }
 struct TestPropagator {
     inner: Rc<RefCell<TestAddWatch>>,
@@ -471,7 +478,7 @@ impl Propagator for TestPropagator {
         self.done = false;
         true
     }
-    fn propagate(&mut self, ctl: &mut PropagateControl, changes: &[Literal]) -> bool {
+    fn propagate(&mut self, ctl: &mut PropagateControl, changes: &[SolverLiteral]) -> bool {
         if ctl.thread_id() == 0 {
             // wait for thread 1 to propagate b
             while !self.done {
@@ -544,8 +551,8 @@ fn add_watch_propagator() {
 struct TestAddClause {
     clause_type: ClauseType,
     enable: bool,
-    a: Option<Literal>,
-    b: Option<Literal>,
+    a: Option<SolverLiteral>,
+    b: Option<SolverLiteral>,
     count: usize,
 }
 struct TestPropagator2 {
@@ -578,7 +585,7 @@ impl Propagator for TestPropagator2 {
         init.add_watch(s.b.unwrap()).unwrap();
         true
     }
-    fn propagate(&mut self, ctl: &mut PropagateControl, changes: &[Literal]) -> bool {
+    fn propagate(&mut self, ctl: &mut PropagateControl, changes: &[SolverLiteral]) -> bool {
         let mut s = (*self.inner).borrow_mut();
         s.count += changes.len();
         if s.enable && s.count == 2 {
@@ -595,7 +602,7 @@ impl Propagator for TestPropagator2 {
         }
         true
     }
-    fn undo(&mut self, _ctl: &mut PropagateControl, undo: &[Literal]) {
+    fn undo(&mut self, _ctl: &mut PropagateControl, undo: &[SolverLiteral]) {
         let mut s = (*self.inner).borrow_mut();
         s.count -= undo.len();
     }
