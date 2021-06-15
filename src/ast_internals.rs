@@ -12,10 +12,7 @@ impl<'a> Iterator for Body<'a> {
 
     fn next(&mut self) -> Option<BodyLiteral<'a>> {
         let ast = self.0.next()?;
-        Some(BodyLiteral {
-            ast,
-            _lifetime: PhantomData,
-        })
+        Some(BodyLiteral { ast })
     }
 }
 impl<'a> Body<'a> {
@@ -25,7 +22,7 @@ impl<'a> Body<'a> {
 }
 #[derive(Debug, Clone)]
 struct ASTArray<'a> {
-    ast: &'a AST,
+    ast: &'a AST<'a>,
     index: usize,
 }
 impl<'a> ASTArray<'a> {
@@ -41,7 +38,7 @@ impl<'a> ASTArray<'a> {
         let mut size: usize = 0;
         if !unsafe {
             clingo_ast_attribute_size_ast_array(
-                self.ast.0.as_ptr(),
+                self.ast.ptr.as_ptr(),
                 ASTAttribute::Body as i32,
                 &mut size,
             )
@@ -54,9 +51,9 @@ impl<'a> ASTArray<'a> {
     }
 }
 impl<'a> Iterator for ASTArray<'a> {
-    type Item = AST;
+    type Item = AST<'a>;
 
-    fn next(&mut self) -> Option<AST> {
+    fn next(&mut self) -> Option<AST<'a>> {
         let size = self.size().unwrap(); //Err->None
 
         if size == self.index {
@@ -66,7 +63,7 @@ impl<'a> Iterator for ASTArray<'a> {
         let mut ast = std::ptr::null_mut();
         if !unsafe {
             clingo_ast_attribute_get_ast_at(
-                self.ast.0.as_ptr(),
+                self.ast.ptr.as_ptr(),
                 ASTAttribute::Body as i32,
                 self.index,
                 &mut ast,
@@ -75,7 +72,10 @@ impl<'a> Iterator for ASTArray<'a> {
             return None;
         }
         self.index += 1;
-        NonNull::new(ast).map(|x| AST(x))
+        NonNull::new(ast).map(|x| AST {
+            ptr: x,
+            _lifetime: PhantomData,
+        })
     }
 }
 
@@ -341,15 +341,18 @@ pub enum ASTAttribute {
 
 /// This struct provides a view to nodes in the AST.
 #[derive(Debug)]
-pub(crate) struct AST(pub NonNull<clingo_ast_t>);
-
-impl Clone for AST {
-    fn clone(&self) -> AST {
+pub struct AST<'a> {
+    pub(crate) ptr: NonNull<clingo_ast_t>,
+    pub(crate) _lifetime: PhantomData<&'a ()>,
+}
+// pub(crate) struct AST(pub NonNull<clingo_ast_t>);
+impl<'a> Clone for AST<'a> {
+    fn clone(&self) -> AST<'a> {
         self.deep_copy().unwrap()
     }
 }
 use std::fmt;
-impl fmt::Display for AST {
+impl<'a> fmt::Display for AST<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let x = self.to_string();
         match x {
@@ -362,45 +365,33 @@ impl fmt::Display for AST {
     }
 }
 
-impl Drop for AST {
+impl<'a> Drop for AST<'a> {
     fn drop(&mut self) {
         self.release()
     }
 }
-impl AST {
+impl<'a> AST<'a> {
     pub fn body(&self) -> Body {
         Body(ASTArray {
             ast: &self,
             index: 0,
         })
     }
-    pub fn head<'a>(&'a self) -> Head<'a> {
+    pub fn head(&self) -> Head<'a> {
         let ast = self.get_attribute_ast(ASTAttribute::Head).unwrap();
-        Head {
-            ast,
-            _lifetime: PhantomData,
-        }
+        Head { ast }
     }
-    pub fn term<'a>(&self) -> Term<'a> {
+    pub fn term(&self) -> Term<'a> {
         let ast = self.get_attribute_ast(ASTAttribute::Term).unwrap();
-        Term {
-            ast,
-            _lifetime: PhantomData,
-        }
+        Term { ast }
     }
-    pub fn left<'a>(&self) -> crate::ast::Term<'a> {
+    pub fn left(&self) -> crate::ast::Term<'a> {
         let ast = self.get_attribute_ast(ASTAttribute::Left).unwrap();
-        crate::ast::Term {
-            ast,
-            _lifetime: PhantomData,
-        }
+        crate::ast::Term { ast }
     }
-    pub fn right<'a>(&self) -> crate::ast::Term<'a> {
+    pub fn right(&self) -> crate::ast::Term<'a> {
         let ast = self.get_attribute_ast(ASTAttribute::Right).unwrap();
-        crate::ast::Term {
-            ast,
-            _lifetime: PhantomData,
-        }
+        crate::ast::Term { ast }
     }
 
     // extern "C" {
@@ -416,7 +407,7 @@ impl AST {
         // println!("acquire");
         // println!("ast: {:?}", self);
         // println!("ast: {}", self.to_string().unwrap());
-        unsafe { clingo_ast_acquire(self.0.as_ptr()) }
+        unsafe { clingo_ast_acquire(self.ptr.as_ptr()) }
     }
     // extern "C" {
     //     #[doc = "! Decrement the reference count of an AST node."]
@@ -430,7 +421,7 @@ impl AST {
         // println!("release");
         // println!("ast: {:?}", self);
         // println!("ast: {}", self.to_string().unwrap());
-        unsafe { clingo_ast_release(self.0.as_ptr()) }
+        unsafe { clingo_ast_release(self.ptr.as_ptr()) }
     }
     // extern "C" {
     // #[doc = "! Create a shallow copy of an AST node."]
@@ -443,14 +434,17 @@ impl AST {
     // }
     fn copy(&self) -> Result<AST, ClingoError> {
         let mut cpy = std::ptr::null_mut();
-        if !unsafe { clingo_ast_copy(self.0.as_ptr(), &mut cpy) } {
+        if !unsafe { clingo_ast_copy(self.ptr.as_ptr(), &mut cpy) } {
             eprintln!("Call to clingo_ast_copy() failed");
             return Err(ClingoError::new_internal(
                 "Call to clingo_ast_copy() failed.",
             ));
         }
         match NonNull::new(cpy) {
-            Some(cpy) => Ok(AST(cpy)),
+            Some(cpy) => Ok(AST {
+                ptr: cpy,
+                _lifetime: PhantomData,
+            }),
             None => Err(ClingoError::FFIError {
                 msg: "Tried creating NonNull from a null pointer.",
             })?,
@@ -465,16 +459,19 @@ impl AST {
     //     #[doc = "! - ::clingo_error_bad_alloc"]
     //     pub fn clingo_ast_deep_copy(ast: *mut clingo_ast_t, copy: *mut *mut clingo_ast_t) -> bool;
     // }
-    fn deep_copy(&self) -> Result<AST, ClingoError> {
+    fn deep_copy(&self) -> Result<AST<'a>, ClingoError> {
         let mut cpy = std::ptr::null_mut();
-        if !unsafe { clingo_ast_deep_copy(self.0.as_ptr(), &mut cpy) } {
+        if !unsafe { clingo_ast_deep_copy(self.ptr.as_ptr(), &mut cpy) } {
             eprintln!("Call to clingo_ast_deep_copy() failed");
             return Err(ClingoError::new_internal(
                 "Call to clingo_ast_deep_copy() failed.",
             ));
         }
         match NonNull::new(cpy) {
-            Some(cpy) => Ok(AST(cpy)),
+            Some(cpy) => Ok(AST {
+                ptr: cpy,
+                _lifetime: self._lifetime,
+            }),
             None => Err(ClingoError::FFIError {
                 msg: "Tried creating NonNull from a null pointer.",
             })?,
@@ -529,7 +526,7 @@ impl AST {
     // }
     pub fn to_string(&self) -> Result<String, ClingoError> {
         let mut size: usize = 0;
-        if !unsafe { clingo_ast_to_string_size(self.0.as_ptr(), &mut size) } {
+        if !unsafe { clingo_ast_to_string_size(self.ptr.as_ptr(), &mut size) } {
             eprintln!("Call to clingo_ast_to_string_size() failed");
             return Err(ClingoError::new_internal(
                 "Call to clingo_ast_to_string_size() failed.",
@@ -537,7 +534,7 @@ impl AST {
         }
         let mut string = Vec::with_capacity(size);
         let string_ptr = string.as_mut_ptr();
-        if !unsafe { clingo_ast_to_string(self.0.as_ptr(), string_ptr, size) } {
+        if !unsafe { clingo_ast_to_string(self.ptr.as_ptr(), string_ptr, size) } {
             eprintln!("Call to clingo_ast_to_string() failed");
             return Err(ClingoError::new_internal(
                 "Call to clingo_ast_to_string() failed.",
@@ -562,7 +559,7 @@ impl AST {
     /// - ::clingo_error_runtime
     pub(crate) fn get_type(&self) -> Result<ASTType, ClingoError> {
         let mut ast_type = 0;
-        if !unsafe { clingo_ast_get_type(self.0.as_ptr(), &mut ast_type) } {
+        if !unsafe { clingo_ast_get_type(self.ptr.as_ptr(), &mut ast_type) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_ast_get_type() failed.",
             ));
@@ -595,7 +592,7 @@ impl AST {
     fn get_attribute_type(&self, attribute: ASTAttribute) -> Result<ASTAttributeType, ClingoError> {
         let mut attribute_type = 0;
         if !unsafe {
-            clingo_ast_attribute_type(self.0.as_ptr(), attribute as i32, &mut attribute_type)
+            clingo_ast_attribute_type(self.ptr.as_ptr(), attribute as i32, &mut attribute_type)
         } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_ast_attribute_type() failed.",
@@ -643,8 +640,9 @@ impl AST {
     fn get_symbol(&self) -> Result<Symbol, ClingoError> {
         let mut sym = 0;
         let attribute = ASTAttributeType::Symbol;
-        if !unsafe { clingo_ast_attribute_get_symbol(self.0.as_ptr(), attribute as i32, &mut sym) }
-        {
+        if !unsafe {
+            clingo_ast_attribute_get_symbol(self.ptr.as_ptr(), attribute as i32, &mut sym)
+        } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_ast_attribute_get_symbol() failed.",
             ));
@@ -742,15 +740,18 @@ impl AST {
     // #[doc = "! @param[out] type the resulting type"]
     // #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
     // #[doc = "! - ::clingo_error_runtime"]
-    fn get_attribute_ast(&self, attribute: ASTAttribute) -> Result<AST, ClingoError> {
+    fn get_attribute_ast(&self, attribute: ASTAttribute) -> Result<AST<'a>, ClingoError> {
         let mut ast = std::ptr::null_mut();
-        if !unsafe { clingo_ast_attribute_get_ast(self.0.as_ptr(), attribute as i32, &mut ast) } {
+        if !unsafe { clingo_ast_attribute_get_ast(self.ptr.as_ptr(), attribute as i32, &mut ast) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_ast_attribute_get_ast() failed.",
             ));
         }
         match NonNull::new(ast) {
-            Some(x) => Ok(AST(x)),
+            Some(x) => Ok(AST {
+                ptr: x,
+                _lifetime: PhantomData,
+            }),
             None => Err(ClingoError::FFIError {
                 msg: "Tried creating NonNull from a null pointer.",
             })?,
@@ -911,14 +912,17 @@ impl AST {
     ) -> Result<AST, ClingoError> {
         let mut ast = std::ptr::null_mut();
         if !unsafe {
-            clingo_ast_attribute_get_ast_at(self.0.as_ptr(), attribute as i32, index, &mut ast)
+            clingo_ast_attribute_get_ast_at(self.ptr.as_ptr(), attribute as i32, index, &mut ast)
         } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_ast_attribute_get_ast_at() failed.",
             ));
         }
         match NonNull::new(ast) {
-            Some(x) => Ok(AST(x)),
+            Some(x) => Ok(AST {
+                ptr: x,
+                _lifetime: PhantomData,
+            }),
             None => Err(ClingoError::FFIError {
                 msg: "Tried creating NonNull from a null pointer.",
             })?,

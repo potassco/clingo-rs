@@ -57,7 +57,7 @@ impl<'a> ProgramBuilder<'a> {
     /// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) for statements of invalid form
     /// or [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     pub fn add(&mut self, stm: &Statement) -> Result<(), ClingoError> {
-        if !unsafe { clingo_program_builder_add(self.theref, stm.ast.0.as_ptr()) } {
+        if !unsafe { clingo_program_builder_add(self.theref, stm.ast.ptr.as_ptr()) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_program_builder_add() failed",
             ));
@@ -178,63 +178,27 @@ unsafe extern "C" fn unsafe_ast_callback<T: StatementHandler>(
     let event_handler = &mut *(event_handler as *mut T);
 
     let ast = match NonNull::new(ast) {
-        Some(x) => AST(x),
+        Some(x) => AST {
+            ptr: x,
+            _lifetime: PhantomData,
+        },
         None => panic!("NonNull::new(ast) returned None"),
     };
     ast.acquire();
     let mut stm = match ast.get_type() {
-        Ok(ASTType::Rule) => Statement {
-            ast,
-            _lifetime: PhantomData,
-        },
-        Ok(ASTType::Definition) => Statement {
-            ast,
-            _lifetime: PhantomData,
-        },
-        Ok(ASTType::ShowSignature) => Statement {
-            ast,
-            _lifetime: PhantomData,
-        },
-        Ok(ASTType::Defined) => Statement {
-            ast,
-            _lifetime: PhantomData,
-        },
-        Ok(ASTType::ShowTerm) => Statement {
-            ast,
-            _lifetime: PhantomData,
-        },
-        Ok(ASTType::Minimize) => Statement {
-            ast,
-            _lifetime: PhantomData,
-        },
-        Ok(ASTType::Script) => Statement {
-            ast,
-            _lifetime: PhantomData,
-        },
-        Ok(ASTType::Program) => Statement {
-            ast,
-            _lifetime: PhantomData,
-        },
-        Ok(ASTType::External) => Statement {
-            ast,
-            _lifetime: PhantomData,
-        },
-        Ok(ASTType::Edge) => Statement {
-            ast,
-            _lifetime: PhantomData,
-        },
-        Ok(ASTType::Heuristic) => Statement {
-            ast,
-            _lifetime: PhantomData,
-        },
-        Ok(ASTType::ProjectAtom) => Statement {
-            ast,
-            _lifetime: PhantomData,
-        },
-        Ok(ASTType::ProjectSignature) => Statement {
-            ast,
-            _lifetime: PhantomData,
-        },
+        Ok(ASTType::Rule) => Statement { ast },
+        Ok(ASTType::Definition) => Statement { ast },
+        Ok(ASTType::ShowSignature) => Statement { ast },
+        Ok(ASTType::Defined) => Statement { ast },
+        Ok(ASTType::ShowTerm) => Statement { ast },
+        Ok(ASTType::Minimize) => Statement { ast },
+        Ok(ASTType::Script) => Statement { ast },
+        Ok(ASTType::Program) => Statement { ast },
+        Ok(ASTType::External) => Statement { ast },
+        Ok(ASTType::Edge) => Statement { ast },
+        Ok(ASTType::Heuristic) => Statement { ast },
+        Ok(ASTType::ProjectAtom) => Statement { ast },
+        Ok(ASTType::ProjectSignature) => Statement { ast },
         x => panic!("unexpected ASTType: {:?}", x),
     };
     event_handler.on_statement(&mut stm)
@@ -353,40 +317,22 @@ pub enum TheoryAtomType {
 
 #[derive(Debug, Clone)]
 pub struct Term<'a> {
-    pub(crate) ast: AST,
-    pub(crate) _lifetime: PhantomData<&'a ()>,
+    pub(crate) ast: AST<'a>,
 }
 impl<'a> Term<'a> {
     pub fn is_a(self) -> Result<TermIsA<'a>, ClingoError> {
         match self.ast.get_type()? {
-            ASTType::Variable => Ok(TermIsA::Variable(Variable {
-                ast: self.ast,
-                _lifetime: self._lifetime,
-            })),
-            ASTType::SymbolicTerm => Ok(TermIsA::SymbolicTerm(SymbolicTerm {
-                ast: self.ast,
-                _lifetime: self._lifetime,
-            })),
-            ASTType::UnaryOperation => Ok(TermIsA::UnaryOperation(UnaryOperation {
-                ast: self.ast,
-                _lifetime: self._lifetime,
-            })),
-            ASTType::BinaryOperation => Ok(TermIsA::BinaryOperation(BinaryOperation {
-                ast: self.ast,
-                _lifetime: self._lifetime,
-            })),
-            ASTType::Interval => Ok(TermIsA::Interval(Interval {
-                ast: self.ast,
-                _lifetime: self._lifetime,
-            })),
-            ASTType::Function => Ok(TermIsA::Function(Function {
-                ast: self.ast,
-                _lifetime: self._lifetime,
-            })),
-            ASTType::Pool => Ok(TermIsA::Pool(Pool {
-                ast: self.ast,
-                _lifetime: self._lifetime,
-            })),
+            ASTType::Variable => Ok(TermIsA::Variable(Variable { ast: self.ast })),
+            ASTType::SymbolicTerm => Ok(TermIsA::SymbolicTerm(SymbolicTerm { ast: self.ast })),
+            ASTType::UnaryOperation => {
+                Ok(TermIsA::UnaryOperation(UnaryOperation { ast: self.ast }))
+            }
+            ASTType::BinaryOperation => {
+                Ok(TermIsA::BinaryOperation(BinaryOperation { ast: self.ast }))
+            }
+            ASTType::Interval => Ok(TermIsA::Interval(Interval { ast: self.ast })),
+            ASTType::Function => Ok(TermIsA::Function(Function { ast: self.ast })),
+            ASTType::Pool => Ok(TermIsA::Pool(Pool { ast: self.ast })),
             x => panic!("unexpected ASTType: {:?}", x),
         }
     }
@@ -396,34 +342,22 @@ impl<'a> Term<'a> {
 }
 impl<'a> From<Variable<'a>> for Term<'a> {
     fn from(x: Variable<'a>) -> Self {
-        Term {
-            ast: x.ast,
-            _lifetime: x._lifetime,
-        }
+        Term { ast: x.ast }
     }
 }
 impl<'a> From<SymbolicTerm<'a>> for Term<'a> {
     fn from(x: SymbolicTerm<'a>) -> Self {
-        Term {
-            ast: x.ast,
-            _lifetime: x._lifetime,
-        }
+        Term { ast: x.ast }
     }
 }
 impl<'a> From<Function<'a>> for Term<'a> {
     fn from(x: Function<'a>) -> Self {
-        Term {
-            ast: x.ast,
-            _lifetime: x._lifetime,
-        }
+        Term { ast: x.ast }
     }
 }
 impl<'a> From<UnaryOperation<'a>> for Term<'a> {
     fn from(x: UnaryOperation<'a>) -> Self {
-        Term {
-            ast: x.ast,
-            _lifetime: x._lifetime,
-        }
+        Term { ast: x.ast }
     }
 }
 // impl<'a> From<&'a UnaryOperation<'a>> for Term<'a> {
@@ -436,26 +370,17 @@ impl<'a> From<UnaryOperation<'a>> for Term<'a> {
 // }
 impl<'a> From<BinaryOperation<'a>> for Term<'a> {
     fn from(x: BinaryOperation<'a>) -> Self {
-        Term {
-            ast: x.ast,
-            _lifetime: x._lifetime,
-        }
+        Term { ast: x.ast }
     }
 }
 impl<'a> From<Interval<'a>> for Term<'a> {
     fn from(x: Interval<'a>) -> Self {
-        Term {
-            ast: x.ast,
-            _lifetime: x._lifetime,
-        }
+        Term { ast: x.ast }
     }
 }
 impl<'a> From<Pool<'a>> for Term<'a> {
     fn from(x: Pool<'a>) -> Self {
-        Term {
-            ast: x.ast,
-            _lifetime: x._lifetime,
-        }
+        Term { ast: x.ast }
     }
 }
 #[derive(Debug, Clone)]
@@ -470,20 +395,13 @@ pub enum TermIsA<'a> {
 }
 #[derive(Debug, Clone)]
 pub struct Literal<'a> {
-    ast: AST,
-    _lifetime: PhantomData<&'a ()>,
+    ast: AST<'a>,
 }
 impl<'a> Literal<'a> {
     pub fn is_a(self) -> Result<TLiteral<'a>, ClingoError> {
         match self.ast.get_type()? {
-            ASTType::Literal => Ok(TLiteral::BasicLiteral(BasicLiteral {
-                ast: self.ast,
-                _lifetime: self._lifetime,
-            })),
-            ASTType::CspLiteral => Ok(TLiteral::CspLiteral(CspLiteral {
-                ast: self.ast,
-                _lifetime: self._lifetime,
-            })),
+            ASTType::Literal => Ok(TLiteral::BasicLiteral(BasicLiteral { ast: self.ast })),
+            ASTType::CspLiteral => Ok(TLiteral::CspLiteral(CspLiteral { ast: self.ast })),
             x => panic!("unexpected ASTType: {:?}", x),
         }
     }
@@ -554,26 +472,17 @@ impl<'a> fmt::Display for Statement<'a> {
 }
 impl<'a> From<BasicLiteral<'a>> for Literal<'a> {
     fn from(x: BasicLiteral<'a>) -> Self {
-        Literal {
-            ast: x.ast,
-            _lifetime: x._lifetime,
-        }
+        Literal { ast: x.ast }
     }
 }
 impl<'a> From<AtomicLiteral<'a>> for Literal<'a> {
     fn from(x: AtomicLiteral<'a>) -> Self {
-        Literal {
-            ast: x.ast,
-            _lifetime: x._lifetime,
-        }
+        Literal { ast: x.ast }
     }
 }
 impl<'a> From<CspLiteral<'a>> for Literal<'a> {
     fn from(x: CspLiteral<'a>) -> Self {
-        Literal {
-            ast: x.ast,
-            _lifetime: x._lifetime,
-        }
+        Literal { ast: x.ast }
     }
 }
 #[derive(Debug, Clone)]
@@ -583,96 +492,56 @@ pub enum TLiteral<'a> {
 }
 #[derive(Debug, Clone)]
 pub struct Head<'a> {
-    pub(crate) ast: AST,
-    pub(crate) _lifetime: PhantomData<&'a ()>,
+    pub(crate) ast: AST<'a>,
 }
 impl<'a> From<BasicLiteral<'a>> for Head<'a> {
     fn from(x: BasicLiteral<'a>) -> Self {
-        Head {
-            ast: x.ast,
-            _lifetime: x._lifetime,
-        }
+        Head { ast: x.ast }
     }
 }
 impl<'a> From<AtomicLiteral<'a>> for Head<'a> {
     fn from(x: AtomicLiteral<'a>) -> Self {
-        Head {
-            ast: x.ast,
-            _lifetime: x._lifetime,
-        }
+        Head { ast: x.ast }
     }
 }
 impl<'a> From<CspLiteral<'a>> for Head<'a> {
     fn from(x: CspLiteral<'a>) -> Self {
-        Head {
-            ast: x.ast,
-            _lifetime: x._lifetime,
-        }
+        Head { ast: x.ast }
     }
 }
 impl<'a> From<Literal<'a>> for Head<'a> {
     fn from(x: Literal<'a>) -> Self {
-        Head {
-            ast: x.ast,
-            _lifetime: x._lifetime,
-        }
+        Head { ast: x.ast }
     }
 }
 impl<'a> From<Aggregate<'a>> for Head<'a> {
     fn from(x: Aggregate<'a>) -> Self {
-        Head {
-            ast: x.ast,
-            _lifetime: x._lifetime,
-        }
+        Head { ast: x.ast }
     }
 }
 impl<'a> From<HeadAggregate<'a>> for Head<'a> {
     fn from(x: HeadAggregate<'a>) -> Self {
-        Head {
-            ast: x.ast,
-            _lifetime: x._lifetime,
-        }
+        Head { ast: x.ast }
     }
 }
 impl<'a> From<Disjunction<'a>> for Head<'a> {
     fn from(x: Disjunction<'a>) -> Self {
-        Head {
-            ast: x.ast,
-            _lifetime: x._lifetime,
-        }
+        Head { ast: x.ast }
     }
 }
 impl<'a> From<TheoryAtom<'a>> for Head<'a> {
     fn from(x: TheoryAtom<'a>) -> Self {
-        Head {
-            ast: x.ast,
-            _lifetime: x._lifetime,
-        }
+        Head { ast: x.ast }
     }
 }
 impl<'a> Head<'a> {
     pub fn is_a(self) -> Result<HeadIsA<'a>, ClingoError> {
         match self.ast.get_type()? {
-            ASTType::Literal => Ok(HeadIsA::Literal(Literal {
-                ast: self.ast,
-                _lifetime: self._lifetime,
-            })),
-            ASTType::CspLiteral => Ok(HeadIsA::Aggregate(Aggregate {
-                ast: self.ast,
-                _lifetime: self._lifetime,
-            })),
-            ASTType::HeadAggregate => Ok(HeadIsA::HeadAggregate(HeadAggregate {
-                ast: self.ast,
-                _lifetime: self._lifetime,
-            })),
-            ASTType::Disjunction => Ok(HeadIsA::Disjunction(Disjunction {
-                ast: self.ast,
-                _lifetime: self._lifetime,
-            })),
-            ASTType::TheoryAtom => Ok(HeadIsA::TheoryAtom(TheoryAtom {
-                ast: self.ast,
-                _lifetime: self._lifetime,
-            })),
+            ASTType::Literal => Ok(HeadIsA::Literal(Literal { ast: self.ast })),
+            ASTType::CspLiteral => Ok(HeadIsA::Aggregate(Aggregate { ast: self.ast })),
+            ASTType::HeadAggregate => Ok(HeadIsA::HeadAggregate(HeadAggregate { ast: self.ast })),
+            ASTType::Disjunction => Ok(HeadIsA::Disjunction(Disjunction { ast: self.ast })),
+            ASTType::TheoryAtom => Ok(HeadIsA::TheoryAtom(TheoryAtom { ast: self.ast })),
             x => panic!("unexpected ASTType: {:?}", x),
         }
     }
@@ -690,201 +559,117 @@ pub enum HeadIsA<'a> {
 }
 #[derive(Debug, Clone)]
 pub struct BodyLiteral<'a> {
-    pub(crate) ast: AST,
-    pub(crate) _lifetime: PhantomData<&'a ()>,
+    pub(crate) ast: AST<'a>,
 }
 impl<'a> From<BasicLiteral<'a>> for BodyLiteral<'a> {
     fn from(x: BasicLiteral<'a>) -> Self {
-        BodyLiteral {
-            ast: x.ast,
-            _lifetime: x._lifetime,
-        }
+        BodyLiteral { ast: x.ast }
     }
 }
 impl<'a> From<CspLiteral<'a>> for BodyLiteral<'a> {
     fn from(x: CspLiteral<'a>) -> Self {
-        BodyLiteral {
-            ast: x.ast,
-            _lifetime: x._lifetime,
-        }
+        BodyLiteral { ast: x.ast }
     }
 }
 impl<'a> From<Literal<'a>> for BodyLiteral<'a> {
     fn from(x: Literal<'a>) -> Self {
-        BodyLiteral {
-            ast: x.ast,
-            _lifetime: x._lifetime,
-        }
+        BodyLiteral { ast: x.ast }
     }
 }
 impl<'a> From<ConditionalLiteral<'a>> for BodyLiteral<'a> {
     fn from(x: ConditionalLiteral<'a>) -> Self {
-        BodyLiteral {
-            ast: x.ast,
-            _lifetime: x._lifetime,
-        }
+        BodyLiteral { ast: x.ast }
     }
 }
 impl<'a> From<AtomicLiteral<'a>> for BodyLiteral<'a> {
     fn from(x: AtomicLiteral<'a>) -> Self {
-        BodyLiteral {
-            ast: x.ast,
-            _lifetime: x._lifetime,
-        }
+        BodyLiteral { ast: x.ast }
     }
 }
 impl<'a> From<TheoryAtom<'a>> for BodyLiteral<'a> {
     fn from(x: TheoryAtom<'a>) -> Self {
-        BodyLiteral {
-            ast: x.ast,
-            _lifetime: x._lifetime,
-        }
+        BodyLiteral { ast: x.ast }
     }
 }
 
 #[derive(Debug, Clone)]
 pub struct BodyAtom<'a> {
-    ast: AST,
-    _lifetime: PhantomData<&'a ()>,
+    ast: AST<'a>,
 }
 impl<'a> From<Aggregate<'a>> for BodyAtom<'a> {
     fn from(x: Aggregate<'a>) -> Self {
-        BodyAtom {
-            ast: x.ast,
-            _lifetime: x._lifetime,
-        }
+        BodyAtom { ast: x.ast }
     }
 }
 impl<'a> From<BodyAggregate<'a>> for BodyAtom<'a> {
     fn from(x: BodyAggregate<'a>) -> Self {
-        BodyAtom {
-            ast: x.ast,
-            _lifetime: x._lifetime,
-        }
+        BodyAtom { ast: x.ast }
     }
 }
 impl<'a> From<Disjoint<'a>> for BodyAtom<'a> {
     fn from(x: Disjoint<'a>) -> Self {
-        BodyAtom {
-            ast: x.ast,
-            _lifetime: x._lifetime,
-        }
+        BodyAtom { ast: x.ast }
     }
 }
 impl<'a> From<TheoryAtom<'a>> for BodyAtom<'a> {
     fn from(x: TheoryAtom<'a>) -> Self {
-        BodyAtom {
-            ast: x.ast,
-            _lifetime: x._lifetime,
-        }
+        BodyAtom { ast: x.ast }
     }
 }
 
 #[derive(Debug, Clone)]
 pub struct TheoryTerm<'a> {
-    ast: AST,
-    _lifetime: PhantomData<&'a ()>,
+    ast: AST<'a>,
 }
 impl<'a> From<SymbolicTerm<'a>> for TheoryTerm<'a> {
     fn from(x: SymbolicTerm<'a>) -> Self {
-        TheoryTerm {
-            ast: x.ast,
-            _lifetime: x._lifetime,
-        }
+        TheoryTerm { ast: x.ast }
     }
 }
 impl<'a> From<Variable<'a>> for TheoryTerm<'a> {
     fn from(x: Variable<'a>) -> Self {
-        TheoryTerm {
-            ast: x.ast,
-            _lifetime: x._lifetime,
-        }
+        TheoryTerm { ast: x.ast }
     }
 }
 impl<'a> From<TheorySequence<'a>> for TheoryTerm<'a> {
     fn from(x: TheorySequence<'a>) -> Self {
-        TheoryTerm {
-            ast: x.ast,
-            _lifetime: x._lifetime,
-        }
+        TheoryTerm { ast: x.ast }
     }
 }
 impl<'a> From<TheoryFunction<'a>> for TheoryTerm<'a> {
     fn from(x: TheoryFunction<'a>) -> Self {
-        TheoryTerm {
-            ast: x.ast,
-            _lifetime: x._lifetime,
-        }
+        TheoryTerm { ast: x.ast }
     }
 }
 impl<'a> From<TheoryUnparsedTerm<'a>> for TheoryTerm<'a> {
     fn from(x: TheoryUnparsedTerm<'a>) -> Self {
-        TheoryTerm {
-            ast: x.ast,
-            _lifetime: x._lifetime,
-        }
+        TheoryTerm { ast: x.ast }
     }
 }
 
 #[derive(Debug, Clone)]
 pub struct Statement<'a> {
-    pub(crate) ast: AST,
-    _lifetime: PhantomData<&'a ()>,
+    pub(crate) ast: AST<'a>,
 }
 impl<'a> Statement<'a> {
     pub fn is_a(self) -> Result<StatementIsA<'a>, ClingoError> {
         match self.ast.get_type()? {
-            ASTType::Rule => Ok(StatementIsA::Rule(Rule {
-                ast: self.ast,
-                _lifetime: self._lifetime,
-            })),
-            ASTType::Definition => Ok(StatementIsA::Definition(Definition {
-                ast: self.ast,
-                _lifetime: self._lifetime,
-            })),
-            ASTType::ShowSignature => Ok(StatementIsA::ShowSignature(ShowSignature {
-                ast: self.ast,
-                _lifetime: self._lifetime,
-            })),
-            ASTType::Defined => Ok(StatementIsA::Defined(Defined {
-                ast: self.ast,
-                _lifetime: self._lifetime,
-            })),
-            ASTType::ShowTerm => Ok(StatementIsA::ShowTerm(ShowTerm {
-                ast: self.ast,
-                _lifetime: self._lifetime,
-            })),
-            ASTType::Minimize => Ok(StatementIsA::Minimize(Minimize {
-                ast: self.ast,
-                _lifetime: self._lifetime,
-            })),
-            ASTType::Script => Ok(StatementIsA::Script(Script {
-                ast: self.ast,
-                _lifetime: self._lifetime,
-            })),
-            ASTType::Program => Ok(StatementIsA::Program(Program {
-                ast: self.ast,
-                _lifetime: self._lifetime,
-            })),
-            ASTType::External => Ok(StatementIsA::External(External {
-                ast: self.ast,
-                _lifetime: self._lifetime,
-            })),
-            ASTType::Edge => Ok(StatementIsA::Edge(Edge {
-                ast: self.ast,
-                _lifetime: self._lifetime,
-            })),
-            ASTType::Heuristic => Ok(StatementIsA::Heuristic(Heuristic {
-                ast: self.ast,
-                _lifetime: self._lifetime,
-            })),
-            ASTType::ProjectAtom => Ok(StatementIsA::ProjectAtom(ProjectAtom {
-                ast: self.ast,
-                _lifetime: self._lifetime,
-            })),
+            ASTType::Rule => Ok(StatementIsA::Rule(Rule { ast: self.ast })),
+            ASTType::Definition => Ok(StatementIsA::Definition(Definition { ast: self.ast })),
+            ASTType::ShowSignature => {
+                Ok(StatementIsA::ShowSignature(ShowSignature { ast: self.ast }))
+            }
+            ASTType::Defined => Ok(StatementIsA::Defined(Defined { ast: self.ast })),
+            ASTType::ShowTerm => Ok(StatementIsA::ShowTerm(ShowTerm { ast: self.ast })),
+            ASTType::Minimize => Ok(StatementIsA::Minimize(Minimize { ast: self.ast })),
+            ASTType::Script => Ok(StatementIsA::Script(Script { ast: self.ast })),
+            ASTType::Program => Ok(StatementIsA::Program(Program { ast: self.ast })),
+            ASTType::External => Ok(StatementIsA::External(External { ast: self.ast })),
+            ASTType::Edge => Ok(StatementIsA::Edge(Edge { ast: self.ast })),
+            ASTType::Heuristic => Ok(StatementIsA::Heuristic(Heuristic { ast: self.ast })),
+            ASTType::ProjectAtom => Ok(StatementIsA::ProjectAtom(ProjectAtom { ast: self.ast })),
             ASTType::ProjectSignature => Ok(StatementIsA::ProjectSignature(ProjectSignature {
                 ast: self.ast,
-                _lifetime: self._lifetime,
             })),
             x => panic!("unexpected ASTType: {:?}", x),
         }
@@ -912,126 +697,82 @@ pub enum StatementIsA<'a> {
 }
 impl<'a> From<Rule<'a>> for Statement<'a> {
     fn from(x: Rule<'a>) -> Self {
-        Statement {
-            ast: x.ast,
-            _lifetime: x._lifetime,
-        }
+        Statement { ast: x.ast }
     }
 }
 impl<'a> From<Definition<'a>> for Statement<'a> {
     fn from(x: Definition<'a>) -> Self {
-        Statement {
-            ast: x.ast,
-            _lifetime: x._lifetime,
-        }
+        Statement { ast: x.ast }
     }
 }
 impl<'a> From<ShowSignature<'a>> for Statement<'a> {
     fn from(x: ShowSignature<'a>) -> Self {
-        Statement {
-            ast: x.ast,
-            _lifetime: x._lifetime,
-        }
+        Statement { ast: x.ast }
     }
 }
 impl<'a> From<Defined<'a>> for Statement<'a> {
     fn from(x: Defined<'a>) -> Self {
-        Statement {
-            ast: x.ast,
-            _lifetime: x._lifetime,
-        }
+        Statement { ast: x.ast }
     }
 }
 impl<'a> From<ShowTerm<'a>> for Statement<'a> {
     fn from(x: ShowTerm<'a>) -> Self {
-        Statement {
-            ast: x.ast,
-            _lifetime: x._lifetime,
-        }
+        Statement { ast: x.ast }
     }
 }
 impl<'a> From<Minimize<'a>> for Statement<'a> {
     fn from(x: Minimize<'a>) -> Self {
-        Statement {
-            ast: x.ast,
-            _lifetime: x._lifetime,
-        }
+        Statement { ast: x.ast }
     }
 }
 impl<'a> From<Script<'a>> for Statement<'a> {
     fn from(x: Script<'a>) -> Self {
-        Statement {
-            ast: x.ast,
-            _lifetime: x._lifetime,
-        }
+        Statement { ast: x.ast }
     }
 }
 impl<'a> From<Program<'a>> for Statement<'a> {
     fn from(x: Program<'a>) -> Self {
-        Statement {
-            ast: x.ast,
-            _lifetime: x._lifetime,
-        }
+        Statement { ast: x.ast }
     }
 }
 impl<'a> From<External<'a>> for Statement<'a> {
     fn from(x: External<'a>) -> Self {
-        Statement {
-            ast: x.ast,
-            _lifetime: x._lifetime,
-        }
+        Statement { ast: x.ast }
     }
 }
 impl<'a> From<Edge<'a>> for Statement<'a> {
     fn from(x: Edge<'a>) -> Self {
-        Statement {
-            ast: x.ast,
-            _lifetime: x._lifetime,
-        }
+        Statement { ast: x.ast }
     }
 }
 impl<'a> From<Heuristic<'a>> for Statement<'a> {
     fn from(x: Heuristic<'a>) -> Self {
-        Statement {
-            ast: x.ast,
-            _lifetime: x._lifetime,
-        }
+        Statement { ast: x.ast }
     }
 }
 impl<'a> From<ProjectAtom<'a>> for Statement<'a> {
     fn from(x: ProjectAtom<'a>) -> Self {
-        Statement {
-            ast: x.ast,
-            _lifetime: x._lifetime,
-        }
+        Statement { ast: x.ast }
     }
 }
 impl<'a> From<ProjectSignature<'a>> for Statement<'a> {
     fn from(x: ProjectSignature<'a>) -> Self {
-        Statement {
-            ast: x.ast,
-            _lifetime: x._lifetime,
-        }
+        Statement { ast: x.ast }
     }
 }
 impl<'a> From<TheoryDefinition<'a>> for Statement<'a> {
     fn from(x: TheoryDefinition<'a>) -> Self {
-        Statement {
-            ast: x.ast,
-            _lifetime: x._lifetime,
-        }
+        Statement { ast: x.ast }
     }
 }
 #[derive(Debug, Clone)]
 pub struct Id<'a> {
-    ast: AST,
-    _lifetime: PhantomData<&'a ()>,
+    ast: AST<'a>,
 }
 
 #[derive(Debug, Clone)]
 pub struct Variable<'a> {
-    ast: AST,
-    _lifetime: PhantomData<&'a ()>,
+    ast: AST<'a>,
 }
 
 impl<'a> Variable<'a> {
@@ -1041,8 +782,7 @@ impl<'a> Variable<'a> {
 }
 #[derive(Debug, Clone)]
 pub struct SymbolicTerm<'a> {
-    ast: AST,
-    _lifetime: PhantomData<&'a ()>,
+    ast: AST<'a>,
 }
 
 impl<'a> SymbolicTerm<'a> {
@@ -1053,8 +793,7 @@ impl<'a> SymbolicTerm<'a> {
 
 #[derive(Debug, Clone)]
 pub struct Function<'a> {
-    ast: AST,
-    _lifetime: PhantomData<&'a ()>,
+    ast: AST<'a>,
 }
 impl<'a> Function<'a> {
     pub fn to_string(&self) -> Result<String, ClingoError> {
@@ -1063,14 +802,12 @@ impl<'a> Function<'a> {
 }
 #[derive(Debug, Clone)]
 pub struct UnaryOperation<'a> {
-    ast: AST,
-    _lifetime: PhantomData<&'a ()>,
+    ast: AST<'a>,
 }
 impl<'a> UnaryOperation<'a> {}
 #[derive(Debug, Clone)]
 pub struct BinaryOperation<'a> {
-    ast: AST,
-    _lifetime: PhantomData<&'a ()>,
+    ast: AST<'a>,
 }
 impl<'a> BinaryOperation<'a> {
     // pub fn operator_type(&self) -> BinaryOperator {
@@ -1085,8 +822,7 @@ impl<'a> BinaryOperation<'a> {
 }
 #[derive(Debug, Clone)]
 pub struct Interval<'a> {
-    ast: AST,
-    _lifetime: PhantomData<&'a ()>,
+    ast: AST<'a>,
 }
 impl<'a> Interval<'a> {
     pub fn left(&self) -> Term {
@@ -1098,50 +834,40 @@ impl<'a> Interval<'a> {
 }
 #[derive(Debug, Clone)]
 pub struct Pool<'a> {
-    ast: AST,
-    _lifetime: PhantomData<&'a ()>,
+    ast: AST<'a>,
 }
 
 #[derive(Debug, Clone)]
 pub struct CspProduct<'a> {
-    ast: AST,
-    _lifetime: PhantomData<&'a ()>,
+    ast: AST<'a>,
 }
 
 #[derive(Debug, Clone)]
 pub struct CspSum<'a> {
-    ast: AST,
-    _lifetime: PhantomData<&'a ()>,
+    ast: AST<'a>,
 }
 
 pub struct CspTerm<'a> {
-    ast: AST,
-    _lifetime: PhantomData<&'a ()>,
+    ast: AST<'a>,
 }
 impl<'a> From<CspSum<'a>> for CspTerm<'a> {
     fn from(x: CspSum<'a>) -> Self {
-        CspTerm {
-            ast: x.ast,
-            _lifetime: x._lifetime,
-        }
+        CspTerm { ast: x.ast }
     }
 }
 #[derive(Debug, Clone)]
 pub struct CspGuard<'a> {
-    ast: AST,
-    _lifetime: PhantomData<&'a ()>,
+    ast: AST<'a>,
 }
 
 #[derive(Debug, Clone)]
 struct BooleanConstant<'a> {
-    ast: AST,
-    _lifetime: PhantomData<&'a ()>,
+    ast: AST<'a>,
 }
 
 #[derive(Debug, Clone)]
 pub struct SymbolicAtom<'a> {
-    ast: AST,
-    _lifetime: PhantomData<&'a ()>,
+    ast: AST<'a>,
 }
 impl<'a> SymbolicAtom<'a> {
     pub fn to_string(&self) -> Result<String, ClingoError> {
@@ -1150,32 +876,27 @@ impl<'a> SymbolicAtom<'a> {
 }
 #[derive(Debug, Clone)]
 pub struct Comparison<'a> {
-    ast: AST,
-    _lifetime: PhantomData<&'a ()>,
+    ast: AST<'a>,
 }
 
 #[derive(Debug, Clone)]
 pub struct CspLiteral<'a> {
-    ast: AST,
-    _lifetime: PhantomData<&'a ()>,
+    ast: AST<'a>,
 }
 
 #[derive(Debug, Clone)]
 pub struct AggregateGuard<'a> {
-    ast: AST,
-    _lifetime: PhantomData<&'a ()>,
+    ast: AST<'a>,
 }
 
 #[derive(Debug, Clone)]
 pub struct ConditionalLiteral<'a> {
-    ast: AST,
-    _lifetime: PhantomData<&'a ()>,
+    ast: AST<'a>,
 }
 
 #[derive(Debug, Clone)]
 pub struct Aggregate<'a> {
-    ast: AST,
-    _lifetime: PhantomData<&'a ()>,
+    ast: AST<'a>,
 }
 
 impl<'a> Aggregate<'a> {
@@ -1185,86 +906,72 @@ impl<'a> Aggregate<'a> {
 }
 #[derive(Debug, Clone)]
 pub struct BodyAggregateElement<'a> {
-    ast: AST,
-    _lifetime: PhantomData<&'a ()>,
+    ast: AST<'a>,
 }
 
 #[derive(Debug, Clone)]
 pub struct BodyAggregate<'a> {
-    ast: AST,
-    _lifetime: PhantomData<&'a ()>,
+    ast: AST<'a>,
 }
 
 #[derive(Debug, Clone)]
 pub struct HeadAggregateElement<'a> {
-    ast: AST,
-    _lifetime: PhantomData<&'a ()>,
+    ast: AST<'a>,
 }
 
 #[derive(Debug, Clone)]
 pub struct HeadAggregate<'a> {
-    ast: AST,
-    _lifetime: PhantomData<&'a ()>,
+    ast: AST<'a>,
 }
 
 #[derive(Debug, Clone)]
 pub struct Disjunction<'a> {
-    ast: AST,
-    _lifetime: PhantomData<&'a ()>,
+    ast: AST<'a>,
 }
 
 #[derive(Debug, Clone)]
 pub struct DisjointElement<'a> {
-    ast: AST,
-    _lifetime: PhantomData<&'a ()>,
+    ast: AST<'a>,
 }
 
 #[derive(Debug, Clone)]
 pub struct Disjoint<'a> {
-    ast: AST,
-    _lifetime: PhantomData<&'a ()>,
+    ast: AST<'a>,
 }
 
 #[derive(Debug, Clone)]
 pub struct TheorySequence<'a> {
-    ast: AST,
-    _lifetime: PhantomData<&'a ()>,
+    ast: AST<'a>,
 }
 
 #[derive(Debug, Clone)]
 pub struct TheoryFunction<'a> {
-    ast: AST,
-    _lifetime: PhantomData<&'a ()>,
+    ast: AST<'a>,
 }
 
 #[derive(Debug, Clone)]
 pub struct TheoryUnparsedTermElement<'a> {
-    ast: AST,
-    _lifetime: PhantomData<&'a ()>,
+    ast: AST<'a>,
 }
 
 #[derive(Debug, Clone)]
 pub struct TheoryUnparsedTerm<'a> {
-    ast: AST,
-    _lifetime: PhantomData<&'a ()>,
+    ast: AST<'a>,
 }
 
 #[derive(Debug, Clone)]
 pub struct TheoryGuard<'a> {
-    ast: AST,
-    _lifetime: PhantomData<&'a ()>,
+    ast: AST<'a>,
 }
 
 #[derive(Debug, Clone)]
 pub struct TheoryAtomElement<'a> {
-    ast: AST,
-    _lifetime: PhantomData<&'a ()>,
+    ast: AST<'a>,
 }
 
 #[derive(Debug, Clone)]
 pub struct TheoryAtom<'a> {
-    ast: AST,
-    _lifetime: PhantomData<&'a ()>,
+    ast: AST<'a>,
 }
 impl<'a> TheoryAtom<'a> {
     pub fn to_string(&self) -> Result<String, ClingoError> {
@@ -1276,14 +983,12 @@ impl<'a> TheoryAtom<'a> {
 }
 #[derive(Debug, Clone)]
 pub struct AtomicLiteral<'a> {
-    ast: AST,
-    _lifetime: PhantomData<&'a ()>,
+    ast: AST<'a>,
 }
 
 #[derive(Debug, Clone)]
 pub struct BasicLiteral<'a> {
-    ast: AST,
-    _lifetime: PhantomData<&'a ()>,
+    ast: AST<'a>,
 }
 
 impl<'a> BasicLiteral<'a> {
@@ -1294,32 +999,27 @@ impl<'a> BasicLiteral<'a> {
 
 #[derive(Debug, Clone)]
 pub struct TheoryOperatorDefinition<'a> {
-    ast: AST,
-    _lifetime: PhantomData<&'a ()>,
+    ast: AST<'a>,
 }
 
 #[derive(Debug, Clone)]
 pub struct TheoryTermDefinition<'a> {
-    ast: AST,
-    _lifetime: PhantomData<&'a ()>,
+    ast: AST<'a>,
 }
 
 #[derive(Debug, Clone)]
 pub struct TheoryGuardDefinition<'a> {
-    ast: AST,
-    _lifetime: PhantomData<&'a ()>,
+    ast: AST<'a>,
 }
 
 #[derive(Debug, Clone)]
 pub struct TheoryAtomDefinition<'a> {
-    ast: AST,
-    _lifetime: PhantomData<&'a ()>,
+    ast: AST<'a>,
 }
 
 #[derive(Debug, Clone)]
 pub struct Rule<'a> {
-    ast: AST,
-    _lifetime: PhantomData<&'a ()>,
+    ast: AST<'a>,
 }
 
 impl<'a> Rule<'a> {
@@ -1333,75 +1033,62 @@ impl<'a> Rule<'a> {
 
 #[derive(Debug, Clone)]
 pub struct Definition<'a> {
-    ast: AST,
-    _lifetime: PhantomData<&'a ()>,
+    ast: AST<'a>,
 }
 
 #[derive(Debug, Clone)]
 pub struct ShowSignature<'a> {
-    ast: AST,
-    _lifetime: PhantomData<&'a ()>,
+    ast: AST<'a>,
 }
 
 #[derive(Debug, Clone)]
 pub struct ShowTerm<'a> {
-    ast: AST,
-    _lifetime: PhantomData<&'a ()>,
+    ast: AST<'a>,
 }
 
 #[derive(Debug, Clone)]
 pub struct Minimize<'a> {
-    ast: AST,
-    _lifetime: PhantomData<&'a ()>,
+    ast: AST<'a>,
 }
 
 #[derive(Debug, Clone)]
 pub struct Script<'a> {
-    ast: AST,
-    _lifetime: PhantomData<&'a ()>,
+    ast: AST<'a>,
 }
 #[derive(Debug, Clone)]
 pub struct Program<'a> {
-    pub(crate) ast: AST,
-    _lifetime: PhantomData<&'a ()>,
+    pub(crate) ast: AST<'a>,
 }
 
 #[derive(Debug, Clone)]
 pub struct External<'a> {
-    pub(crate) ast: AST,
-    _lifetime: PhantomData<&'a ()>,
+    pub(crate) ast: AST<'a>,
 }
 
 #[derive(Debug, Clone)]
 pub struct Edge<'a> {
-    ast: AST,
-    _lifetime: PhantomData<&'a ()>,
+    ast: AST<'a>,
 }
 #[derive(Debug, Clone)]
 pub struct Heuristic<'a> {
-    ast: AST,
-    _lifetime: PhantomData<&'a ()>,
+    ast: AST<'a>,
 }
 #[derive(Debug, Clone)]
 pub struct ProjectAtom<'a> {
-    ast: AST,
-    _lifetime: PhantomData<&'a ()>,
+    ast: AST<'a>,
 }
 
 #[derive(Debug, Clone)]
 pub struct ProjectSignature<'a> {
-    ast: AST,
-    _lifetime: PhantomData<&'a ()>,
+    ast: AST<'a>,
 }
 #[derive(Debug, Clone)]
 pub struct Defined<'a> {
-    ast: AST,
-    _lifetime: PhantomData<&'a ()>,
+    ast: AST<'a>,
 }
 #[derive(Debug, Clone)]
 pub struct TheoryDefinition<'a> {
-    ast: AST,
-    _lifetime: PhantomData<&'a ()>,
+    ast: AST<'a>,
 }
 
 // extern "C" {
@@ -1435,8 +1122,10 @@ pub fn id<'a>(location: &Location, name: &str) -> Result<Id<'a>, ClingoError> {
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(Id {
-            ast: AST(ast),
-            _lifetime: PhantomData,
+            ast: AST {
+                ptr: ast,
+                _lifetime: PhantomData,
+            },
         }),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
@@ -1462,8 +1151,10 @@ pub fn variable<'a>(location: &Location, name: &str) -> Result<Variable<'a>, Cli
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(Variable {
-            ast: AST(ast),
-            _lifetime: PhantomData,
+            ast: AST {
+                ptr: ast,
+                _lifetime: PhantomData,
+            },
         }),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
@@ -1491,8 +1182,10 @@ pub fn symbolic_term<'a>(
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(SymbolicTerm {
-            ast: AST(ast),
-            _lifetime: PhantomData,
+            ast: AST {
+                ptr: ast,
+                _lifetime: PhantomData,
+            },
         }),
 
         None => Err(ClingoError::FFIError {
@@ -1533,8 +1226,10 @@ pub fn function<'a>(
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(Function {
-            ast: AST(ast),
-            _lifetime: PhantomData,
+            ast: AST {
+                ptr: ast,
+                _lifetime: PhantomData,
+            },
         }),
         None => Err(ClingoError::FFIError {
             msg: "tried casting a null pointer to &mut clingo_ast.",
@@ -1569,8 +1264,10 @@ where
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(UnaryOperation {
-            ast: AST(ast),
-            _lifetime: PhantomData,
+            ast: AST {
+                ptr: ast,
+                _lifetime: PhantomData,
+            },
         }),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
@@ -1608,8 +1305,10 @@ where
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(BinaryOperation {
-            ast: AST(ast),
-            _lifetime: PhantomData,
+            ast: AST {
+                ptr: ast,
+                _lifetime: PhantomData,
+            },
         }),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
@@ -1645,8 +1344,10 @@ where
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(Interval {
-            ast: AST(ast),
-            _lifetime: PhantomData,
+            ast: AST {
+                ptr: ast,
+                _lifetime: PhantomData,
+            },
         }),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
@@ -1672,8 +1373,10 @@ pub fn pool<'a>(location: &Location, arguments: &'a [Term]) -> Result<Pool<'a>, 
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(Pool {
-            ast: AST(ast),
-            _lifetime: PhantomData,
+            ast: AST {
+                ptr: ast,
+                _lifetime: PhantomData,
+            },
         }),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
@@ -1703,7 +1406,7 @@ where
                 &mut ast,
                 location,
                 coefficient.ast,
-                variable.ast.0.as_ptr(),
+                variable.ast.ptr.as_ptr(),
             )
         } {
             return Err(ClingoError::new_internal(
@@ -1725,8 +1428,10 @@ where
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(CspProduct {
-            ast: AST(ast),
-            _lifetime: PhantomData,
+            ast: AST {
+                ptr: ast,
+                _lifetime: PhantomData,
+            },
         }),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
@@ -1757,8 +1462,10 @@ pub fn csp_sum<'a>(
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(CspSum {
-            ast: AST(ast),
-            _lifetime: PhantomData,
+            ast: AST {
+                ptr: ast,
+                _lifetime: PhantomData,
+            },
         }),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
@@ -1793,8 +1500,10 @@ where
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(CspGuard {
-            ast: AST(ast),
-            _lifetime: PhantomData,
+            ast: AST {
+                ptr: ast,
+                _lifetime: PhantomData,
+            },
         }),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
@@ -1818,8 +1527,10 @@ fn boolean_constant<'a>(value: bool) -> Result<BooleanConstant<'a>, ClingoError>
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(BooleanConstant {
-            ast: AST(ast),
-            _lifetime: PhantomData,
+            ast: AST {
+                ptr: ast,
+                _lifetime: PhantomData,
+            },
         }),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
@@ -1847,8 +1558,10 @@ where
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(SymbolicAtom {
-            ast: AST(ast),
-            _lifetime: PhantomData,
+            ast: AST {
+                ptr: ast,
+                _lifetime: PhantomData,
+            },
         }),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
@@ -1884,8 +1597,10 @@ where
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(Comparison {
-            ast: AST(ast),
-            _lifetime: PhantomData,
+            ast: AST {
+                ptr: ast,
+                _lifetime: PhantomData,
+            },
         }),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
@@ -1917,8 +1632,10 @@ pub fn csp_literal<'a>(
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(CspLiteral {
-            ast: AST(ast),
-            _lifetime: PhantomData,
+            ast: AST {
+                ptr: ast,
+                _lifetime: PhantomData,
+            },
         }),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
@@ -1950,8 +1667,10 @@ where
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(AggregateGuard {
-            ast: AST(ast),
-            _lifetime: PhantomData,
+            ast: AST {
+                ptr: ast,
+                _lifetime: PhantomData,
+            },
         }),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
@@ -1987,8 +1706,10 @@ where
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(ConditionalLiteral {
-            ast: AST(ast),
-            _lifetime: PhantomData,
+            ast: AST {
+                ptr: ast,
+                _lifetime: PhantomData,
+            },
         }),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
@@ -2005,11 +1726,11 @@ pub fn aggregate<'a>(
 ) -> Result<Aggregate<'a>, ClingoError> {
     let mut ast = std::ptr::null_mut();
     let left_guard = match &left_guard {
-        Some(left_guard) => left_guard.ast.0.as_ptr(),
+        Some(left_guard) => left_guard.ast.ptr.as_ptr(),
         None => std::ptr::null(),
     };
     let right_guard = match &right_guard {
-        Some(right_guard) => right_guard.ast.0.as_ptr(),
+        Some(right_guard) => right_guard.ast.ptr.as_ptr(),
         None => std::ptr::null(),
     };
 
@@ -2030,8 +1751,10 @@ pub fn aggregate<'a>(
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(Aggregate {
-            ast: AST(ast),
-            _lifetime: PhantomData,
+            ast: AST {
+                ptr: ast,
+                _lifetime: PhantomData,
+            },
         }),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
@@ -2060,8 +1783,10 @@ pub fn body_aggregate_element<'a>(
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(BodyAggregateElement {
-            ast: AST(ast),
-            _lifetime: PhantomData,
+            ast: AST {
+                ptr: ast,
+                _lifetime: PhantomData,
+            },
         }),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
@@ -2080,11 +1805,11 @@ pub fn body_aggregate<'a>(
     let mut ast = std::ptr::null_mut();
 
     let left_guard = match &left_guard {
-        Some(left_guard) => left_guard.ast.0.as_ptr(),
+        Some(left_guard) => left_guard.ast.ptr.as_ptr(),
         None => std::ptr::null(),
     };
     let right_guard = match &right_guard {
-        Some(right_guard) => right_guard.ast.0.as_ptr(),
+        Some(right_guard) => right_guard.ast.ptr.as_ptr(),
         None => std::ptr::null(),
     };
     if !unsafe {
@@ -2104,9 +1829,11 @@ pub fn body_aggregate<'a>(
         ));
     }
     match NonNull::new(ast) {
-        Some(ast_ref) => Ok(BodyAggregate {
-            ast: AST(ast_ref),
-            _lifetime: PhantomData,
+        Some(ast) => Ok(BodyAggregate {
+            ast: AST {
+                ptr: ast,
+                _lifetime: PhantomData,
+            },
         }),
         None => Err(ClingoError::FFIError {
             msg: "tried casting a null pointer to &mut clingo_ast.",
@@ -2134,9 +1861,11 @@ pub fn head_aggregate_element<'a>(
         ));
     }
     match NonNull::new(ast) {
-        Some(ast_ref) => Ok(HeadAggregateElement {
-            ast: AST(ast_ref),
-            _lifetime: PhantomData,
+        Some(ast) => Ok(HeadAggregateElement {
+            ast: AST {
+                ptr: ast,
+                _lifetime: PhantomData,
+            },
         }),
         None => Err(ClingoError::FFIError {
             msg: "tried casting a null pointer to &mut clingo_ast.",
@@ -2154,11 +1883,11 @@ pub fn head_aggregate<'a>(
 ) -> Result<HeadAggregate<'a>, ClingoError> {
     let mut ast = std::ptr::null_mut();
     let left_guard = match &left_guard {
-        Some(left_guard) => left_guard.ast.0.as_ptr(),
+        Some(left_guard) => left_guard.ast.ptr.as_ptr(),
         None => std::ptr::null(),
     };
     let right_guard = match &right_guard {
-        Some(right_guard) => right_guard.ast.0.as_ptr(),
+        Some(right_guard) => right_guard.ast.ptr.as_ptr(),
         None => std::ptr::null(),
     };
 
@@ -2180,8 +1909,10 @@ pub fn head_aggregate<'a>(
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(HeadAggregate {
-            ast: AST(ast),
-            _lifetime: PhantomData,
+            ast: AST {
+                ptr: ast,
+                _lifetime: PhantomData,
+            },
         }),
         None => Err(ClingoError::FFIError {
             msg: "tried casting a null pointer to &mut clingo_ast.",
@@ -2211,8 +1942,10 @@ pub fn disjunction<'a>(
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(Disjunction {
-            ast: AST(ast),
-            _lifetime: PhantomData,
+            ast: AST {
+                ptr: ast,
+                _lifetime: PhantomData,
+            },
         }),
         None => Err(ClingoError::FFIError {
             msg: "tried casting a null pointer to &mut clingo_ast.",
@@ -2251,8 +1984,10 @@ where
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(DisjointElement {
-            ast: AST(ast),
-            _lifetime: PhantomData,
+            ast: AST {
+                ptr: ast,
+                _lifetime: PhantomData,
+            },
         }),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
@@ -2281,8 +2016,10 @@ pub fn disjoint<'a>(
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(Disjoint {
-            ast: AST(ast),
-            _lifetime: PhantomData,
+            ast: AST {
+                ptr: ast,
+                _lifetime: PhantomData,
+            },
         }),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
@@ -2314,8 +2051,10 @@ pub fn theory_sequence<'a>(
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(TheorySequence {
-            ast: AST(ast),
-            _lifetime: PhantomData,
+            ast: AST {
+                ptr: ast,
+                _lifetime: PhantomData,
+            },
         }),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
@@ -2347,8 +2086,10 @@ pub fn theory_function<'a>(
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(TheoryFunction {
-            ast: AST(ast),
-            _lifetime: PhantomData,
+            ast: AST {
+                ptr: ast,
+                _lifetime: PhantomData,
+            },
         }),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
@@ -2378,8 +2119,10 @@ pub fn theory_unparsed_term_element<'a>(
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(TheoryUnparsedTermElement {
-            ast: AST(ast),
-            _lifetime: PhantomData,
+            ast: AST {
+                ptr: ast,
+                _lifetime: PhantomData,
+            },
         }),
         None => Err(ClingoError::FFIError {
             msg: "tried casting a null pointer to &mut clingo_ast.",
@@ -2409,8 +2152,10 @@ pub fn theory_unparsed_term<'a>(
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(TheoryUnparsedTerm {
-            ast: AST(ast),
-            _lifetime: PhantomData,
+            ast: AST {
+                ptr: ast,
+                _lifetime: PhantomData,
+            },
         }),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
@@ -2440,8 +2185,10 @@ where
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(TheoryGuard {
-            ast: AST(ast),
-            _lifetime: PhantomData,
+            ast: AST {
+                ptr: ast,
+                _lifetime: PhantomData,
+            },
         }),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
@@ -2471,8 +2218,10 @@ pub fn theory_atom_element<'a>(
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(TheoryAtomElement {
-            ast: AST(ast),
-            _lifetime: PhantomData,
+            ast: AST {
+                ptr: ast,
+                _lifetime: PhantomData,
+            },
         }),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
@@ -2494,7 +2243,7 @@ where
     let mut ast = std::ptr::null_mut();
 
     let guard = match &guard {
-        Some(guard) => guard.ast.0.as_ptr(),
+        Some(guard) => guard.ast.ptr.as_ptr(),
         None => std::ptr::null(),
     };
     if !unsafe {
@@ -2514,8 +2263,10 @@ where
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(TheoryAtom {
-            ast: AST(ast),
-            _lifetime: PhantomData,
+            ast: AST {
+                ptr: ast,
+                _lifetime: PhantomData,
+            },
         }),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
@@ -2536,7 +2287,7 @@ pub fn atomic_literal_from_body_atom<'a>(
             &mut ast,
             location,
             sign as i32,
-            atom.ast.0,
+            atom.ast.ptr,
         )
     } {
         return Err(ClingoError::new_internal(
@@ -2545,8 +2296,10 @@ pub fn atomic_literal_from_body_atom<'a>(
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(AtomicLiteral {
-            ast: AST(ast),
-            _lifetime: PhantomData,
+            ast: AST {
+                ptr: ast,
+                _lifetime: PhantomData,
+            },
         }),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
@@ -2567,7 +2320,7 @@ pub fn basic_literal_from_symbolic_atom<'a>(
             &mut ast,
             location,
             sign as i32,
-            atom.ast.0,
+            atom.ast.ptr,
         )
     } {
         return Err(ClingoError::new_internal(
@@ -2576,8 +2329,10 @@ pub fn basic_literal_from_symbolic_atom<'a>(
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(BasicLiteral {
-            ast: AST(ast),
-            _lifetime: PhantomData,
+            ast: AST {
+                ptr: ast,
+                _lifetime: PhantomData,
+            },
         }),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
@@ -2600,7 +2355,7 @@ pub fn basic_literal_from_boolean_constant(
             &mut ast,
             location,
             sign as i32,
-            atom.ast.0,
+            atom.ast.ptr,
         )
     } {
         return Err(ClingoError::new_internal(
@@ -2609,8 +2364,10 @@ pub fn basic_literal_from_boolean_constant(
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(BasicLiteral {
-            ast: AST(ast),
-            _lifetime: PhantomData,
+            ast: AST {
+                ptr: ast,
+                _lifetime: PhantomData,
+            },
         }),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
@@ -2631,7 +2388,7 @@ pub fn basic_literal_from_comparison<'a>(
             &mut ast,
             location,
             sign as i32,
-            atom.ast.0,
+            atom.ast.ptr,
         )
     } {
         return Err(ClingoError::new_internal(
@@ -2640,8 +2397,10 @@ pub fn basic_literal_from_comparison<'a>(
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(BasicLiteral {
-            ast: AST(ast),
-            _lifetime: PhantomData,
+            ast: AST {
+                ptr: ast,
+                _lifetime: PhantomData,
+            },
         }),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
@@ -2675,8 +2434,10 @@ pub fn theory_operator_definition<'a>(
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(TheoryOperatorDefinition {
-            ast: AST(ast),
-            _lifetime: PhantomData,
+            ast: AST {
+                ptr: ast,
+                _lifetime: PhantomData,
+            },
         }),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
@@ -2709,8 +2470,10 @@ pub fn theory_term_definition<'a>(
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(TheoryTermDefinition {
-            ast: AST(ast),
-            _lifetime: PhantomData,
+            ast: AST {
+                ptr: ast,
+                _lifetime: PhantomData,
+            },
         }),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
@@ -2749,8 +2512,10 @@ pub fn theory_guard_definition<'a>(
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(TheoryGuardDefinition {
-            ast: AST(ast),
-            _lifetime: PhantomData,
+            ast: AST {
+                ptr: ast,
+                _lifetime: PhantomData,
+            },
         }),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
@@ -2771,7 +2536,7 @@ pub fn theory_atom_definition<'a>(
     let name = internalize_string(name)?;
     let term = internalize_string(term)?;
     let guard = match &guard {
-        Some(guard) => guard.ast.0.as_ptr(),
+        Some(guard) => guard.ast.ptr.as_ptr(),
         None => std::ptr::null(),
     };
 
@@ -2793,8 +2558,10 @@ pub fn theory_atom_definition<'a>(
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(TheoryAtomDefinition {
-            ast: AST(ast),
-            _lifetime: PhantomData,
+            ast: AST {
+                ptr: ast,
+                _lifetime: PhantomData,
+            },
         }),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
@@ -2830,8 +2597,10 @@ where
 
     match NonNull::new(ast) {
         Some(ast) => Ok(Rule {
-            ast: AST(ast),
-            _lifetime: PhantomData,
+            ast: AST {
+                ptr: ast,
+                _lifetime: PhantomData,
+            },
         }),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
@@ -2869,8 +2638,10 @@ where
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(Definition {
-            ast: AST(ast),
-            _lifetime: PhantomData,
+            ast: AST {
+                ptr: ast,
+                _lifetime: PhantomData,
+            },
         }),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
@@ -2906,8 +2677,10 @@ pub fn show_signature<'a>(
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(ShowSignature {
-            ast: AST(ast),
-            _lifetime: PhantomData,
+            ast: AST {
+                ptr: ast,
+                _lifetime: PhantomData,
+            },
         }),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
@@ -2944,8 +2717,10 @@ where
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(ShowTerm {
-            ast: AST(ast),
-            _lifetime: PhantomData,
+            ast: AST {
+                ptr: ast,
+                _lifetime: PhantomData,
+            },
         }),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
@@ -2988,8 +2763,10 @@ where
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(Minimize {
-            ast: AST(ast),
-            _lifetime: PhantomData,
+            ast: AST {
+                ptr: ast,
+                _lifetime: PhantomData,
+            },
         }),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
@@ -3017,8 +2794,10 @@ pub fn script<'a>(location: &Location, name: &str, code: &str) -> Result<Script<
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(Script {
-            ast: AST(ast),
-            _lifetime: PhantomData,
+            ast: AST {
+                ptr: ast,
+                _lifetime: PhantomData,
+            },
         }),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
@@ -3051,8 +2830,10 @@ pub fn program<'a>(
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(Program {
-            ast: AST(ast),
-            _lifetime: PhantomData,
+            ast: AST {
+                ptr: ast,
+                _lifetime: PhantomData,
+            },
         }),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
@@ -3103,8 +2884,10 @@ pub fn external<'a>(
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(External {
-            ast: AST(ast),
-            _lifetime: PhantomData,
+            ast: AST {
+                ptr: ast,
+                _lifetime: PhantomData,
+            },
         }),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
@@ -3144,8 +2927,10 @@ where
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(Edge {
-            ast: AST(ast),
-            _lifetime: PhantomData,
+            ast: AST {
+                ptr: ast,
+                _lifetime: PhantomData,
+            },
         }),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
@@ -3191,8 +2976,10 @@ where
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(Heuristic {
-            ast: AST(ast),
-            _lifetime: PhantomData,
+            ast: AST {
+                ptr: ast,
+                _lifetime: PhantomData,
+            },
         }),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
@@ -3224,8 +3011,10 @@ pub fn project_atom<'a>(
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(ProjectAtom {
-            ast: AST(ast),
-            _lifetime: PhantomData,
+            ast: AST {
+                ptr: ast,
+                _lifetime: PhantomData,
+            },
         }),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
@@ -3259,8 +3048,10 @@ pub fn project_signature<'a>(
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(ProjectSignature {
-            ast: AST(ast),
-            _lifetime: PhantomData,
+            ast: AST {
+                ptr: ast,
+                _lifetime: PhantomData,
+            },
         }),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
@@ -3294,8 +3085,10 @@ pub fn defined<'a>(
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(Defined {
-            ast: AST(ast),
-            _lifetime: PhantomData,
+            ast: AST {
+                ptr: ast,
+                _lifetime: PhantomData,
+            },
         }),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
@@ -3331,8 +3124,10 @@ pub fn theory_definition<'a>(
     }
     match NonNull::new(ast) {
         Some(ast) => Ok(TheoryDefinition {
-            ast: AST(ast),
-            _lifetime: PhantomData,
+            ast: AST {
+                ptr: ast,
+                _lifetime: PhantomData,
+            },
         }),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
@@ -3352,11 +3147,11 @@ impl<'a> From<&mut ProgramBuilder<'a>> for *mut clingo_program_builder_t {
 }
 impl<'a> From<Statement<'a>> for NonNull<clingo_ast> {
     fn from(stmt: Statement) -> Self {
-        stmt.ast.0
+        stmt.ast.ptr
     }
 }
 impl<'a> From<&Statement<'a>> for NonNull<clingo_ast> {
     fn from(stmt: &Statement<'a>) -> Self {
-        stmt.ast.0
+        stmt.ast.ptr
     }
 }
