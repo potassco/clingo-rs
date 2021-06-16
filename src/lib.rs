@@ -894,7 +894,7 @@ pub trait FunctionHandler {
     /// ```ignore
     /// fn on_external_function(
     ///     &mut self,
-    ///     _location: &Location,
+    ///     _location: &ast::Location,
     ///     name: &str,
     ///     arguments: &[Symbol],
     /// ) -> Result<Vec<Symbol>,Error> {
@@ -908,7 +908,7 @@ pub trait FunctionHandler {
     /// ```
     fn on_external_function(
         &mut self,
-        location: &Location,
+        location: &ast::Location,
         name: &str,
         arguments: &[Symbol],
     ) -> Result<Vec<Symbol>, ExternalError>;
@@ -934,7 +934,7 @@ unsafe extern "C" fn unsafe_ground_callback<T: FunctionHandler>(
         );
         return false;
     }
-    let location = &*(location as *const Location);
+    let location = &*(location as *const ast::Location);
     let name = CStr::from_ptr(name);
     let arguments = std::slice::from_raw_parts(arguments as *const Symbol, arguments_size);
     let event_handler = &mut *(event_handler as *mut T);
@@ -960,7 +960,7 @@ unsafe extern "C" fn unsafe_ground_callback<T: FunctionHandler>(
 }
 unsafe fn try_symbol_callback<T: FunctionHandler>(
     efh: &mut T,
-    location: &Location,
+    location: &ast::Location,
     name: &CStr,
     arguments: &[Symbol],
     symbol_callback: clingo_symbol_callback_t,
@@ -1035,96 +1035,6 @@ impl WeightedLiteral {
     }
     pub fn weight(self) -> i32 {
         self.0.weight
-    }
-}
-
-/// Represents a source code location marking its beginning and end.
-///
-/// **Note:** Not all locations refer to physical files.
-/// By convention, such locations use a name put in angular brackets as filename.
-/// The string members of a location object are internalized and valid for the duration of the process.
-#[derive(Debug, Copy, Clone)]
-pub struct Location(clingo_location);
-impl Location {
-    /// Create a default location.
-    pub fn default() -> Location {
-        let file = CString::new("").unwrap();
-        Location(clingo_location {
-            begin_line: 0,
-            end_line: 0,
-            begin_column: 0,
-            end_column: 0,
-            begin_file: file.as_ptr(),
-            end_file: file.as_ptr(),
-        })
-    }
-    /// Create a new location.
-    ///
-    /// # Arguments
-    ///
-    /// - `begin_file` - the file where the location begins
-    /// - `end_file` -  the file where the location ends
-    /// - `begin_line` -  the line where the location begins
-    /// - `end_line` -  the line where the location ends
-    /// - `begin_column` -  the column where the location begins
-    /// - `end_column` -  the column where the location ends
-    ///
-    /// # Errors
-    ///
-    /// - [`ClingoError::NulError`](enum.ClingoError.html#variant.NulError) - if `begin_file` `end_file` or contain a nul byte
-    pub fn new(
-        begin_file: &str,
-        end_file: &str,
-        begin_line: usize,
-        end_line: usize,
-        begin_column: usize,
-        end_column: usize,
-    ) -> Result<Location, NulError> {
-        let begin_file = CString::new(begin_file)?;
-        let end_file = CString::new(end_file)?;
-        let loc = clingo_location {
-            begin_line,
-            end_line,
-            begin_column,
-            end_column,
-            begin_file: begin_file.as_ptr(),
-            end_file: end_file.as_ptr(),
-        };
-        Ok(Location(loc))
-    }
-    /// the file where the location begins
-    pub fn begin_file(&self) -> Result<&'static str, Utf8Error> {
-        if self.0.begin_file.is_null() {
-            Ok("")
-        } else {
-            let c_str = unsafe { CStr::from_ptr(self.0.begin_file) };
-            c_str.to_str()
-        }
-    }
-    /// the file where the location ends
-    pub fn end_file(&self) -> Result<&'static str, Utf8Error> {
-        if self.0.end_file.is_null() {
-            Ok("")
-        } else {
-            let c_str = unsafe { CStr::from_ptr(self.0.end_file) };
-            c_str.to_str()
-        }
-    }
-    /// the line where the location begins
-    pub fn begin_line(&self) -> usize {
-        self.0.begin_line
-    }
-    /// the line where the location ends
-    pub fn end_line(&self) -> usize {
-        self.0.end_line
-    }
-    /// the column where the location begins
-    pub fn begin_column(&self) -> usize {
-        self.0.begin_column
-    }
-    /// the column where the location ends
-    pub fn end_column(&self) -> usize {
-        self.0.end_column
     }
 }
 
@@ -1788,8 +1698,9 @@ unsafe extern "C" fn unsafe_decide<T: Propagator>(
     propagator.decide(Id(thread_id), assignment, fallback, decision)
 }
 pub mod defaults {
+    use crate::ast::Location;
     use crate::{
-        ExternalError, FunctionHandler, GroundProgramObserver, Location, Logger, Propagator,
+        ExternalError, FunctionHandler, GroundProgramObserver, Logger, Propagator,
         SolveEventHandler, Symbol,
     };
     /// Default implementation for Logger, Propagator, GroundProgramObserver, FunctionHandler and SolveEventHandler
@@ -2466,7 +2377,7 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
 
     pub fn add_facts(&mut self, facts: &FactBase) -> Result<(), ClingoError> {
         for sym in facts.iter() {
-            let loc = Location::default();
+            let loc = ast::Location::default();
             // initilize atom to add
             let symbolic_term = ast::symbolic_term(&loc, sym)?;
             let atom = ast::symbolic_atom(symbolic_term)?;

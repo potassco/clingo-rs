@@ -1,11 +1,14 @@
 use crate::{
     internalize_string, set_internal_error, ClingoError, ErrorType, ExternalType, FunctionHandler,
-    GenericControl, GroundProgramObserver, Location, Logger, Propagator, Symbol,
+    GenericControl, GroundProgramObserver, Logger, Propagator, Symbol,
 };
 
 use crate::ast_internals::Body;
 use crate::ast_internals::{ASTType, AST};
 use clingo_sys::*;
+use std::ffi::CStr;
+use std::ffi::NulError;
+use std::str::Utf8Error;
 use std::{
     ffi::CString,
     marker::PhantomData,
@@ -13,6 +16,97 @@ use std::{
     ptr::NonNull,
 };
 use vec1::Vec1;
+
+/// Represents a source code location marking its beginning and end.
+///
+/// **Note:** Not all locations refer to physical files.
+/// By convention, such locations use a name put in angular brackets as filename.
+/// The string members of a location object are internalized and valid for the duration of the process.
+#[derive(Debug, Copy, Clone)]
+pub struct Location(pub(crate) clingo_location);
+impl Location {
+    /// Create a default location.
+    pub fn default() -> Location {
+        let file = CString::new("").unwrap();
+        Location(clingo_location {
+            begin_line: 0,
+            end_line: 0,
+            begin_column: 0,
+            end_column: 0,
+            begin_file: file.as_ptr(),
+            end_file: file.as_ptr(),
+        })
+    }
+    /// Create a new location.
+    ///
+    /// # Arguments
+    ///
+    /// - `begin_file` - the file where the location begins
+    /// - `end_file` -  the file where the location ends
+    /// - `begin_line` -  the line where the location begins
+    /// - `end_line` -  the line where the location ends
+    /// - `begin_column` -  the column where the location begins
+    /// - `end_column` -  the column where the location ends
+    ///
+    /// # Errors
+    ///
+    /// - [`ClingoError::NulError`](enum.ClingoError.html#variant.NulError) - if `begin_file` `end_file` or contain a nul byte
+    pub fn new(
+        begin_file: &str,
+        end_file: &str,
+        begin_line: usize,
+        end_line: usize,
+        begin_column: usize,
+        end_column: usize,
+    ) -> Result<Location, NulError> {
+        let begin_file = CString::new(begin_file)?;
+        let end_file = CString::new(end_file)?;
+        let loc = clingo_location {
+            begin_line,
+            end_line,
+            begin_column,
+            end_column,
+            begin_file: begin_file.as_ptr(),
+            end_file: end_file.as_ptr(),
+        };
+        Ok(Location(loc))
+    }
+    /// the file where the location begins
+    pub fn begin_file(&self) -> Result<&'static str, Utf8Error> {
+        if self.0.begin_file.is_null() {
+            Ok("")
+        } else {
+            let c_str = unsafe { CStr::from_ptr(self.0.begin_file) };
+            c_str.to_str()
+        }
+    }
+    /// the file where the location ends
+    pub fn end_file(&self) -> Result<&'static str, Utf8Error> {
+        if self.0.end_file.is_null() {
+            Ok("")
+        } else {
+            let c_str = unsafe { CStr::from_ptr(self.0.end_file) };
+            c_str.to_str()
+        }
+    }
+    /// the line where the location begins
+    pub fn begin_line(&self) -> usize {
+        self.0.begin_line
+    }
+    /// the line where the location ends
+    pub fn end_line(&self) -> usize {
+        self.0.end_line
+    }
+    /// the column where the location begins
+    pub fn begin_column(&self) -> usize {
+        self.0.begin_column
+    }
+    /// the column where the location ends
+    pub fn end_column(&self) -> usize {
+        self.0.end_column
+    }
+}
+
 /// Object to build non-ground programs.
 pub struct ProgramBuilder<'a> {
     pub(crate) theref: &'a mut clingo_program_builder_t,
@@ -339,6 +433,9 @@ impl<'a> Term<'a> {
     pub fn to_string(&self) -> Result<String, ClingoError> {
         self.ast.to_string()
     }
+    pub fn location(&self) -> Location {
+        self.ast.location().unwrap()
+    }
 }
 impl<'a> From<Variable<'a>> for Term<'a> {
     fn from(x: Variable<'a>) -> Self {
@@ -542,7 +639,8 @@ impl<'a> Head<'a> {
             ASTType::HeadAggregate => Ok(HeadIsA::HeadAggregate(HeadAggregate { ast: self.ast })),
             ASTType::Disjunction => Ok(HeadIsA::Disjunction(Disjunction { ast: self.ast })),
             ASTType::TheoryAtom => Ok(HeadIsA::TheoryAtom(TheoryAtom { ast: self.ast })),
-            x => panic!("unexpected ASTType: {:?}", x),
+            ASTType::Aggregate => Ok(HeadIsA::Aggregate(Aggregate { ast: self.ast })),
+            x => panic!("unexpected ASTType for Head: {:?}", x),
         }
     }
     pub fn to_string(&self) -> Result<String, ClingoError> {
@@ -589,6 +687,32 @@ impl<'a> From<AtomicLiteral<'a>> for BodyLiteral<'a> {
 impl<'a> From<TheoryAtom<'a>> for BodyLiteral<'a> {
     fn from(x: TheoryAtom<'a>) -> Self {
         BodyLiteral { ast: x.ast }
+    }
+}
+#[derive(Debug, Clone)]
+pub enum BodyLiteralIsA<'a> {
+    CspLiteral(CspLiteral<'a>),
+    Literal(Literal<'a>),
+    ConditionalLiteral(ConditionalLiteral<'a>),
+    TheoryAtom(TheoryAtom<'a>),
+}
+impl<'a> BodyLiteral<'a> {
+    pub fn is_a(self) -> Result<BodyLiteralIsA<'a>, ClingoError> {
+        match self.ast.get_type()? {
+            ASTType::CspLiteral => Ok(BodyLiteralIsA::CspLiteral(CspLiteral { ast: self.ast })),
+            ASTType::Literal => Ok(BodyLiteralIsA::Literal(Literal { ast: self.ast })),
+            // ASTType::Literal covers BasicLiteral and AtomicLiteral
+            ASTType::ConditionalLiteral => {
+                Ok(BodyLiteralIsA::ConditionalLiteral(ConditionalLiteral {
+                    ast: self.ast,
+                }))
+            }
+            ASTType::TheoryAtom => Ok(BodyLiteralIsA::TheoryAtom(TheoryAtom { ast: self.ast })),
+            x => panic!("unexpected ASTType for BodyLiteral: {:?}", x),
+        }
+    }
+    pub fn to_string(&self) -> Result<String, ClingoError> {
+        self.ast.to_string()
     }
 }
 
@@ -793,11 +917,15 @@ impl<'a> SymbolicTerm<'a> {
 
 #[derive(Debug, Clone)]
 pub struct Function<'a> {
-    ast: AST<'a>,
+    pub(crate) ast: AST<'a>,
 }
 impl<'a> Function<'a> {
     pub fn to_string(&self) -> Result<String, ClingoError> {
         self.ast.to_string()
+    }
+
+    pub fn name(&self) -> String {
+        self.ast.name().unwrap()
     }
 }
 #[derive(Debug, Clone)]
@@ -961,7 +1089,7 @@ pub struct TheoryUnparsedTerm<'a> {
 
 #[derive(Debug, Clone)]
 pub struct TheoryGuard<'a> {
-    ast: AST<'a>,
+    pub(crate) ast: AST<'a>,
 }
 
 #[derive(Debug, Clone)]
@@ -974,13 +1102,26 @@ pub struct TheoryAtom<'a> {
     ast: AST<'a>,
 }
 impl<'a> TheoryAtom<'a> {
+    pub fn location(&self) -> Location {
+        self.ast.location().unwrap()
+    }
     pub fn to_string(&self) -> Result<String, ClingoError> {
         self.ast.to_string()
     }
-    pub fn term(&'a self) -> Term<'a> {
+    pub fn term(&self) -> Term {
         self.ast.term()
     }
+    pub fn set_term(&mut self, term: Term) {
+        self.ast.set_term(term)
+    }
+    pub fn guard(&self) -> TheoryGuard {
+        self.ast.guard()
+    }
+    pub fn elements(&self) -> &[TheoryAtomElement] {
+        self.ast.elements()
+    }
 }
+
 #[derive(Debug, Clone)]
 pub struct AtomicLiteral<'a> {
     ast: AST<'a>,
@@ -1023,10 +1164,13 @@ pub struct Rule<'a> {
 }
 
 impl<'a> Rule<'a> {
+    pub fn location(&self) -> Location {
+        self.ast.location().unwrap()
+    }
     pub fn body(&self) -> Body {
         self.ast.body()
     }
-    pub fn head(&'a self) -> Head<'a> {
+    pub fn head(&self) -> Head {
         self.ast.head()
     }
 }

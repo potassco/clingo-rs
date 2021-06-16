@@ -1,6 +1,6 @@
+use clingo::ast::Location;
 use clingo::{
-    ast, control, Control, ExternalType, Location, Model, Part, ShowType, SolveMode, Symbol,
-    TruthValue,
+    ast, control, Control, ExternalType, Model, Part, ShowType, SolveMode, Symbol, TruthValue,
 };
 use std::env;
 

@@ -20,7 +20,7 @@ struct MyEFH;
 impl FunctionHandler for MyEFH {
     fn on_external_function(
         &mut self,
-        _location: &Location,
+        _location: &ast::Location,
         name: &str,
         arguments: &[Symbol],
     ) -> Result<Vec<Symbol>, ExternalError> {

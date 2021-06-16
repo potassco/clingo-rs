@@ -1,5 +1,5 @@
 use clingo::ast::*;
-use clingo::{Location, Symbol};
+use clingo::Symbol;
 
 fn main() {
     let loc = Location::default();
