@@ -171,16 +171,6 @@ impl<'a> ProgramBuilder<'a> {
     }
 }
 
-#[doc(hidden)]
-#[cfg(feature = "dl-theory")]
-pub(crate) unsafe extern "C" fn unsafe_program_builder_add(
-    statement: *const clingo_ast_t,
-    data: *mut ::std::os::raw::c_void,
-) -> bool {
-    let builder = data as *mut clingo_program_builder;
-    clingo_program_builder_add(builder, statement)
-}
-
 // #[doc = "! Callback function to intercept AST nodes."]
 // #[doc = "!"]
 // #[doc = "! @param[in] ast the AST"]
@@ -279,7 +269,7 @@ unsafe extern "C" fn unsafe_ast_callback<T: StatementHandler>(
         None => panic!("NonNull::new(ast) returned None"),
     };
     ast.acquire();
-    let mut stm = match ast.get_type() {
+    let stm = match ast.get_type() {
         Ok(ASTType::Rule) => Statement { ast },
         Ok(ASTType::Definition) => Statement { ast },
         Ok(ASTType::ShowSignature) => Statement { ast },
@@ -295,7 +285,7 @@ unsafe extern "C" fn unsafe_ast_callback<T: StatementHandler>(
         Ok(ASTType::ProjectSignature) => Statement { ast },
         x => panic!("unexpected ASTType: {:?}", x),
     };
-    event_handler.on_statement(&mut stm)
+    event_handler.on_statement(&stm)
 }
 
 #[derive(Debug, Copy, Clone, PartialEq)]
