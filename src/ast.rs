@@ -182,40 +182,6 @@ impl<'a> ProgramBuilder<'a> {
 
 type ASTCallback = unsafe extern "C" fn(ast: *mut clingo_ast_t, data: *mut c_void) -> bool;
 
-/// Parse the given program and return an abstract syntax tree for each statement via a callback.
-///
-/// # Arguments
-///
-/// * `program` - the program in gringo syntax
-/// * `handler` - implementing the trait [`StatementHandler`](trait.StatementHandler.html)
-///
-/// # Errors
-///
-/// - [`ClingoError::NulError`](enum.ClingoError.html#variant.NulError) - if `program` contains a nul byte
-/// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if parsing fails
-///  or with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
-
-pub fn parse_string(program: &str) -> Result<(), ClingoError> {
-    let program = CString::new(program)?;
-    println!("in parse_string");
-    println!("{:?}", program);
-    if !unsafe {
-        clingo_ast_parse_string(
-            program.as_ptr(),
-            None,
-            std::ptr::null_mut() as *mut c_void,
-            None,
-            std::ptr::null_mut(),
-            0,
-        )
-    } {
-        return Err(ClingoError::new_internal(
-            "Call to clingo_ast_parse_string() failed",
-        ));
-    }
-    println!("out parse_string");
-    Ok(())
-}
 pub fn parse_string_with_statement_handler<T: StatementHandler>(
     program: &str,
     handler: &mut T,
