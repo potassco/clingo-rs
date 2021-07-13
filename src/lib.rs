@@ -911,13 +911,13 @@ impl Literal {
     }
 }
 impl From<Atom> for Literal{
-    pub fn from(atom: Atom) -> Literal {
-        Literal(atom.0)
+    fn from(atom: Atom) -> Literal {
+        Literal(atom.0 as i32)
     }
 }
 impl From<Literal> for Atom{
     fn from(lit: Literal) -> Self {
-        Atom(lit.0)
+        Atom(lit.0 as u32)
     }
 }
 /// Unsigned integer type used for aspif atoms.
