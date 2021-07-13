@@ -74,6 +74,7 @@ fn main() {
 
             // get the atom's id
             let lit = item.literal().unwrap();
+            let atom :Atom = lit.into();
             atom_ids.push(lit);
         }
     }
