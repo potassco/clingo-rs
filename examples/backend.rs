@@ -93,7 +93,7 @@ fn main() {
 
         // add rule: :- not d, c.
         let head = vec![];
-        let body = vec![Literal::from(atom_d).negate(), atom_ids[2]];
+        let body = vec![SolverLiteral::from(atom_d).negate(), atom_ids[2]];
 
         backend
             .rule(false, &head, &body)

@@ -980,20 +980,20 @@ unsafe fn try_symbol_callback<T: FunctionHandler>(
         Ok(true)
     }
 }
-/// Signed integer type used for aspif.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub struct Literal(clingo_literal_t);
-impl Literal {
-    pub fn negate(self) -> Literal {
-        Literal(-(self.0))
-    }
-    pub fn from(Atom(atom): Atom) -> Literal {
-        Literal(atom as clingo_literal_t)
-    }
-    pub fn get_integer(self) -> i32 {
-        self.0
-    }
-}
+// /// Signed integer type used for aspif.
+// #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+// pub struct Literal(clingo_literal_t);
+// impl Literal {
+//     pub fn negate(self) -> Literal {
+//         Literal(-(self.0))
+//     }
+//     pub fn from(Atom(atom): Atom) -> Literal {
+//         Literal(atom as clingo_literal_t)
+//     }
+//     pub fn get_integer(self) -> i32 {
+//         self.0
+//     }
+// }
 /// Signed integer type used for solver literals.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub struct SolverLiteral(clingo_literal_t);
@@ -1001,18 +1001,24 @@ impl SolverLiteral {
     pub fn negate(self) -> SolverLiteral {
         SolverLiteral(-(self.0))
     }
-    // pub fn from(Atom(atom): Atom) -> Literal {
-    //     Literal(atom as clingo_literal_t)
-    // }
+    // TODO: remove get_integer ?
     pub fn get_integer(self) -> i32 {
         self.0
     }
 }
-
+impl From<Atom> for SolverLiteral{
+    fn from(atom: Atom) -> Self {
+        SolverLiteral(atom.0 as i32)
+    }
+}
 /// Unsigned integer type used for aspif atoms.
 #[derive(Debug, Copy, Clone)]
 pub struct Atom(clingo_atom_t);
-
+impl From<SolverLiteral> for Atom{
+    fn from(literal: SolverLiteral) -> Self {
+        Atom(literal.0 as u32)
+    }
+}
 /// Unsigned integer type used in various places.
 #[derive(Debug, Copy, Clone)]
 pub struct Id(clingo_id_t);
@@ -3978,14 +3984,14 @@ impl TheoryAtoms {
     /// # Arguments
     ///
     /// * `atom` id of the atom
-    pub fn atom_literal(&self, Id(atom): Id) -> Result<Literal, ClingoError> {
+    pub fn atom_literal(&self, Id(atom): Id) -> Result<SolverLiteral, ClingoError> {
         let mut literal = 0;
         if !unsafe { clingo_theory_atoms_atom_literal(&self.0, atom, &mut literal) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_theory_atoms_atom_literal() failed",
             ));
         }
-        Ok(Literal(literal))
+        Ok(SolverLiteral(literal))
     }
 
     // NODO: fn clingo_theory_atoms_atom_to_string_size()

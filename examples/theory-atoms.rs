@@ -40,7 +40,7 @@ fn solve(ctl: Control) {
     handle.close().expect("Failed to close solve handle.");
 }
 
-fn get_theory_atom_literal(ctl: &mut Control) -> Option<Literal> {
+fn get_theory_atom_literal(ctl: &mut Control) -> Option<SolverLiteral> {
     // get the theory atoms container
     let atoms = ctl.theory_atoms().unwrap();
 
