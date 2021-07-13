@@ -7,7 +7,7 @@ fn main() {
             Ok(_lib) => {println!("cargo:rustc-link-lib=dylib=clingo");},
             Err(e) => {
                 println!("\nError: {}", e);
-                panic!(e);
+                panic!("{}", e);
             }
         }
         

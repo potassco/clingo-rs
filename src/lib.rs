@@ -4914,7 +4914,7 @@ impl<'a, 'b> Iterator for OptimalModels<'a> {
                 Ok(None) => {
                     return None;
                 }
-                Err(e) => panic!(e),
+                Err(e) => panic!("{}", e),
             }
         }
     }
@@ -4940,7 +4940,7 @@ impl<'a, 'b> Iterator for AllModels<'a> {
                 Ok(None) => {
                     return None;
                 }
-                Err(e) => panic!(e),
+                Err(e) => panic!("{}", e),
             }
         }
     }
