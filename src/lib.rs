@@ -906,14 +906,20 @@ impl Literal {
     pub fn negate(self) -> Literal {
         Literal(-(self.0))
     }
-    pub fn from(Atom(atom): Atom) -> Literal {
-        Literal(atom as clingo_literal_t)
-    }
     pub fn get_integer(self) -> i32 {
         self.0
     }
 }
-
+impl From<Atom> for Literal{
+    pub fn from(atom: Atom) -> Literal {
+        Literal(atom.0)
+    }
+}
+impl From<Literal> for Atom{
+    fn from(lit: Literal) -> Self {
+        Atom(lit.0)
+    }
+}
 /// Unsigned integer type used for aspif atoms.
 #[derive(Debug, Copy, Clone)]
 pub struct Atom(clingo_atom_t);
