@@ -1036,8 +1036,8 @@ impl fmt::Display for Id {
 #[derive(Debug, Copy, Clone)]
 pub struct WeightedLiteral(clingo_weighted_literal);
 impl WeightedLiteral {
-    pub fn literal(self) -> Literal {
-        Literal(self.0.literal)
+    pub fn literal(self) -> SolverLiteral {
+        SolverLiteral(self.0.literal)
     }
     pub fn weight(self) -> i32 {
         self.0.weight
@@ -1834,7 +1834,7 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
     pub fn solve(
         self,
         mode: SolveMode,
-        assumptions: &[Literal],
+        assumptions: &[SolverLiteral],
     ) -> Result<GenericSolveHandle<L, P, O, F, defaults::Non>, ClingoError> {
         let mut handle = std::ptr::null_mut();
         let event_handler = std::ptr::null_mut();
@@ -1880,7 +1880,7 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
     pub fn solve_with_event_handler<T: SolveEventHandler>(
         self,
         mode: SolveMode,
-        assumptions: &[Literal],
+        assumptions: &[SolverLiteral],
         event_handler: T,
     ) -> Result<GenericSolveHandle<L, P, O, F, T>, ClingoError> {
         let mut handle = std::ptr::null_mut();
@@ -2002,7 +2002,7 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     pub fn assign_external(
         &mut self,
-        literal: Literal,
+        literal:SolverLiteral,
         value: TruthValue,
     ) -> Result<(), ClingoError> {
         if !unsafe {
@@ -2033,7 +2033,7 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
     /// # Errors
     ///
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
-    pub fn release_external(&mut self, Literal(literal): Literal) -> Result<(), ClingoError> {
+    pub fn release_external(&mut self,SolverLiteral(literal):SolverLiteral) -> Result<(), ClingoError> {
         if !unsafe { clingo_control_release_external(self.ctl.as_ptr(), literal) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_control_release_external() failed",
@@ -2917,7 +2917,7 @@ impl<'a> Backend<'a> {
         &mut self,
         choice: bool,
         head: &[Atom],
-        body: &[Literal],
+        body: &[SolverLiteral],
     ) -> Result<(), ClingoError> {
         if !unsafe {
             clingo_backend_rule(
@@ -3058,7 +3058,7 @@ impl<'a> Backend<'a> {
     /// # Errors
     ///
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
-    pub fn assume(&mut self, literals: &[Literal]) -> Result<(), ClingoError> {
+    pub fn assume(&mut self, literals: &[SolverLiteral]) -> Result<(), ClingoError> {
         let size = literals.len();
         if !unsafe {
             clingo_backend_assume(
@@ -3093,7 +3093,7 @@ impl<'a> Backend<'a> {
         htype: HeuristicType,
         bias: i32,
         priority: u32,
-        condition: &[Literal],
+        condition: &[SolverLiteral],
     ) -> Result<(), ClingoError> {
         let size = condition.len();
         if !unsafe {
@@ -3129,7 +3129,7 @@ impl<'a> Backend<'a> {
         &mut self,
         node_u: i32,
         node_v: i32,
-        condition: &[Literal],
+        condition: &[SolverLiteral],
     ) -> Result<(), ClingoError> {
         let size = condition.len();
         if !unsafe {
@@ -3647,14 +3647,14 @@ impl<'a> SymbolicAtom<'a> {
     ///
     /// Such a literal can be mapped to a solver literal (see [`Propagator`](struct.Propagator)).
     /// or be used in rules in aspif format (see [`ProgramBuilder`](struct.ProgramBuilder.html)).
-    pub fn literal(&self) -> Result<Literal, ClingoError> {
+    pub fn literal(&self) -> Result<SolverLiteral, ClingoError> {
         let mut literal = 0;
         if !unsafe { clingo_symbolic_atoms_literal(self.atoms, self.cur, &mut literal) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_symbolic_atoms_literal() failed",
             ));
         }
-        Ok(Literal(literal))
+        Ok(SolverLiteral(literal))
     }
 }
 
@@ -3828,7 +3828,7 @@ impl TheoryAtoms {
     /// # Arguments
     ///
     /// * `element` - id of the element
-    pub fn element_condition(&self, Id(element): Id) -> Result<&[Literal], ClingoError> {
+    pub fn element_condition(&self, Id(element): Id) -> Result<&[SolverLiteral], ClingoError> {
         let mut size = 0;
         let mut condition_ptr = std::ptr::null();
         if !unsafe {
@@ -3839,7 +3839,7 @@ impl TheoryAtoms {
             ));
         }
         let condition_ref =
-            unsafe { std::slice::from_raw_parts(condition_ptr as *const Literal, size) };
+            unsafe { std::slice::from_raw_parts(condition_ptr as *const SolverLiteral, size) };
         Ok(condition_ref)
     }
 
@@ -3853,7 +3853,7 @@ impl TheoryAtoms {
     /// # Arguments
     ///
     /// * `element` - id of the element
-    pub fn element_condition_id(&self, Id(element): Id) -> Result<Literal, ClingoError> {
+    pub fn element_condition_id(&self, Id(element): Id) -> Result<SolverLiteral, ClingoError> {
         let condition_ptr = std::ptr::null_mut();
         if !unsafe { clingo_theory_atoms_element_condition_id(&self.0, element, condition_ptr) } {
             return Err(ClingoError::new_internal(
@@ -3865,7 +3865,7 @@ impl TheoryAtoms {
                 msg: "clingo_theory_atoms_element_condition_id() returned a null pointer.",
             });
         }
-        Ok(Literal(unsafe { *condition_ptr }))
+        Ok(SolverLiteral(unsafe { *condition_ptr }))
     }
 
     // NODO: fn clingo_theory_atoms_element_to_string_size()
@@ -4133,7 +4133,7 @@ impl Model {
     /// # Arguments
     ///
     /// * `literal` - the literal to lookup
-    pub fn is_true(&self, literal: Literal) -> Result<bool, ClingoError> {
+    pub fn is_true(&self, literal:SolverLiteral) -> Result<bool, ClingoError> {
         let mut is_true = false;
         if !unsafe { clingo_model_is_true(&self.0, literal.0, &mut is_true) } {
             return Err(ClingoError::new_internal(
@@ -4461,7 +4461,7 @@ impl Assignment {
     /// Returns the offset of the decision literal with the given decision level in
     /// the trail.
     ///
-    /// **Note:** Literals in the trail are ordered by decision levels, where the first
+    /// **Note:**SolverLiterals in the trail are ordered by decision levels, where the first
     /// literal with a larger level than the previous literals is a decision; the
     /// following literals with same level are implied by this decision literal.
     /// Each decision level up to and including the current decision level has a
@@ -4701,7 +4701,7 @@ impl PropagateInit {
     /// **Returns** the corresponding solver literal
     pub fn solver_literal(
         &self,
-        Literal(aspif_literal): Literal,
+       SolverLiteral(aspif_literal):SolverLiteral,
     ) -> Result<SolverLiteral, ClingoError> {
         let mut solver_literal = 0;
         if !unsafe {
@@ -4856,7 +4856,7 @@ impl PropagateInit {
         match unsafe { (literal_ptr as *mut SolverLiteral).as_mut() } {
             Some(x) => Ok(x),
             None => Err(ClingoError::FFIError {
-                msg: "Tried casting a null pointer to &mut Literal.",
+                msg: "Tried casting a null pointer to &mutSolverLiteral.",
             }),
         }
     }
@@ -5653,7 +5653,7 @@ pub trait GroundProgramObserver {
     /// * `body` - the body literals
     ///
     /// **Returns** whether the call was successful
-    fn rule(&mut self, _choice: bool, _head: &[Atom], _body: &[Literal]) -> bool {
+    fn rule(&mut self, _choice: bool, _head: &[Atom], _body: &[SolverLiteral]) -> bool {
         true
     }
     /// Observe weight rules passed to the solver.
@@ -5721,7 +5721,7 @@ pub trait GroundProgramObserver {
     /// * `condition` - the literals of the condition
     ///
     /// **Returns** whether the call was successful
-    fn output_term(&mut self, _symbol: Symbol, _condition: &[Literal]) -> bool {
+    fn output_term(&mut self, _symbol: Symbol, _condition: &[SolverLiteral]) -> bool {
         true
     }
     /// Observe shown csp variables passed to the solver.
@@ -5733,7 +5733,7 @@ pub trait GroundProgramObserver {
     /// * `condition` - the literals of the condition
     ///
     /// **Returns** whether the call was successful
-    fn output_csp(&mut self, _symbol: Symbol, _value: i32, _condition: &[Literal]) -> bool {
+    fn output_csp(&mut self, _symbol: Symbol, _value: i32, _condition: &[SolverLiteral]) -> bool {
         true
     }
 
@@ -5757,7 +5757,7 @@ pub trait GroundProgramObserver {
     /// false for the next solve call)
     ///
     /// **Returns** whether the call was successful
-    fn assume(&mut self, _literals: &[Literal]) -> bool {
+    fn assume(&mut self, _literals: &[SolverLiteral]) -> bool {
         true
     }
 
@@ -5778,7 +5778,7 @@ pub trait GroundProgramObserver {
         _type_: HeuristicType,
         _bias: i32,
         _priority: u32,
-        _condition: &[Literal],
+        _condition: &[SolverLiteral],
     ) -> bool {
         true
     }
@@ -5791,7 +5791,7 @@ pub trait GroundProgramObserver {
     /// * `condition` - the condition under which the edge is part of the graph
     ///
     /// **Returns** whether the call was successful
-    fn acyc_edge(&mut self, _node_u: i32, _node_v: i32, _condition: &[Literal]) -> bool {
+    fn acyc_edge(&mut self, _node_u: i32, _node_v: i32, _condition: &[SolverLiteral]) -> bool {
         true
     }
     /// Observe numeric theory terms.
@@ -5850,7 +5850,7 @@ pub trait GroundProgramObserver {
     /// * `condition` - the condition of the element
     ///
     /// **Returns** whether the call was successful
-    fn theory_element(&mut self, _element_id: Id, _terms: &[Id], _condition: &[Literal]) -> bool {
+    fn theory_element(&mut self, _element_id: Id, _terms: &[Id], _condition: &[SolverLiteral]) -> bool {
         true
     }
     /// Observe theory atoms without guard.
@@ -5937,7 +5937,7 @@ unsafe extern "C" fn unsafe_rule<T: GroundProgramObserver>(
         return false;
     }
     let head = std::slice::from_raw_parts(head as *const Atom, head_size);
-    let body = std::slice::from_raw_parts(body as *const Literal, body_size);
+    let body = std::slice::from_raw_parts(body as *const SolverLiteral, body_size);
     let gpo = &mut *(gpo as *mut T);
 
     gpo.rule(choice, head, body)
@@ -6025,7 +6025,7 @@ unsafe extern "C" fn unsafe_output_term<T: GroundProgramObserver>(
         );
         return false;
     }
-    let condition = std::slice::from_raw_parts(condition as *const Literal, size);
+    let condition = std::slice::from_raw_parts(condition as *const SolverLiteral, size);
     let gpo = &mut *(gpo as *mut T);
 
     gpo.output_term(Symbol(symbol), condition)
@@ -6045,7 +6045,7 @@ unsafe extern "C" fn unsafe_output_csp<T: GroundProgramObserver>(
         );
         return false;
     }
-    let condition = std::slice::from_raw_parts(condition as *const Literal, size);
+    let condition = std::slice::from_raw_parts(condition as *const SolverLiteral, size);
     let gpo = &mut *(gpo as *mut T);
 
     gpo.output_csp(Symbol(symbol), value, condition)
@@ -6081,7 +6081,7 @@ unsafe extern "C" fn unsafe_assume<T: GroundProgramObserver>(
         set_internal_error(ErrorType::Runtime, "unsafe_assume() got a null pointer.");
         return false;
     }
-    let literals = std::slice::from_raw_parts(literals as *const Literal, size);
+    let literals = std::slice::from_raw_parts(literals as *const SolverLiteral, size);
     let gpo = &mut *(gpo as *mut T);
 
     gpo.assume(literals)
@@ -6100,7 +6100,7 @@ unsafe extern "C" fn unsafe_heuristic<T: GroundProgramObserver>(
         set_internal_error(ErrorType::Runtime, "unsafe_heuristic() got a null pointer.");
         return false;
     }
-    let condition = std::slice::from_raw_parts(condition as *const Literal, size);
+    let condition = std::slice::from_raw_parts(condition as *const SolverLiteral, size);
     let gpo = &mut *(gpo as *mut T);
 
     match HeuristicType::try_from(htype as u32) {
@@ -6124,7 +6124,7 @@ unsafe extern "C" fn unsafe_acyc_edge<T: GroundProgramObserver>(
         set_internal_error(ErrorType::Runtime, "unsafe_heuristic() got a null pointer.");
         return false;
     }
-    let condition = std::slice::from_raw_parts(condition as *const Literal, size);
+    let condition = std::slice::from_raw_parts(condition as *const SolverLiteral, size);
     let gpo = &mut *(gpo as *mut T);
 
     gpo.acyc_edge(node_u, node_v, condition)
@@ -6212,7 +6212,7 @@ unsafe extern "C" fn unsafe_theory_element<T: GroundProgramObserver>(
         return false;
     }
     let terms = std::slice::from_raw_parts(terms as *const Id, terms_size);
-    let condition = std::slice::from_raw_parts(condition as *const Literal, condition_size);
+    let condition = std::slice::from_raw_parts(condition as *const SolverLiteral, condition_size);
     let gpo = &mut *(gpo as *mut T);
 
     gpo.theory_element(Id(element_id), terms, condition)
