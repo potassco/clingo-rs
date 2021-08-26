@@ -9,19 +9,18 @@ fn print_model(model: &Model) {
 
     print!("Model:");
 
-    for atom in atoms {
-        // retrieve and print the symbol's string
-        print!(" {}", atom.to_string().unwrap());
+    for symbol in atoms {
+        print!(" {}", symbol);
     }
     println!();
 }
 
 struct MyEFH;
 
-impl ExternalFunctionHandler for MyEFH {
+impl FunctionHandler for MyEFH {
     fn on_external_function(
         &mut self,
-        _location: &Location,
+        _location: &ast::Location,
         name: &str,
         arguments: &[Symbol],
     ) -> Result<Vec<Symbol>, ExternalError> {
@@ -40,22 +39,19 @@ fn main() {
     let options = env::args().skip(1).collect();
 
     // create a control object and pass command line arguments
-    let mut ctl = Control::new(options).expect("Failed creating clingo_control.");
+    let mut ctl = control(options).expect("Failed creating clingo_control.");
 
     // add a logic program to the base part
     ctl.add("base", &[], "p(@c()). p(d). p(e).")
         .expect("Failed to add a logic program.");
 
-    // declare extern function handler
-    let mut efh = MyEFH;
-
     // ground the base part
-    let part = Part::new("base", &[]).unwrap();
+    let part = Part::new("base", vec![]).unwrap();
     let parts = vec![part];
-    ctl.ground_with_event_handler(&parts, &mut efh)
-        .unwrap_or_else(|e| {
-            panic!("Failed to ground a logic program. {:?}", e);
-        });
+    let mut ctl = ctl.register_function_handler(MyEFH);
+    ctl.ground(&parts).unwrap_or_else(|e| {
+        panic!("Failed to ground a logic program. {:?}", e);
+    });
 
     // solve
     let mut handle = ctl

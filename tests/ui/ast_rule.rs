@@ -1,15 +1,16 @@
-use clingo::*;
+use clingo::ast::*;
+use clingo::Symbol;
 
 fn main() {
+    let loc = Location::default();
     let sym = Symbol::create_id("test", true).unwrap();
-    let term = ast::Term::from(sym);
-    let mut lit = ast::Literal::from_term(ast::Sign::None, &term);
-    let hlit = ast::HeadLiteral::from(&lit);
-    let mut blit = ast::BodyLiteral::from_literal(ast::Sign::None, &lit);
+    let term = symbolic_term(&loc, &sym).unwrap();
+    let atom = symbolic_atom(term).unwrap();
+    let lit = basic_literal_from_symbolic_atom(&loc, Sign::NoSign, atom).unwrap();
+    let hlit: Head = lit.clone().into();
+    let blit: BodyLiteral = lit.into();
     let body = vec![blit];
-    let rule = ast::Rule::new(hlit, &body);
-    blit = ast::BodyLiteral::from_literal(ast::Sign::None, &lit);
+    let rule = rule(&loc, hlit, &body);
     drop(body);
-    lit = ast::Literal::from_term(ast::Sign::None, &term);
-    let _end = (rule, lit, blit);
+    let _end = rule;
 }
