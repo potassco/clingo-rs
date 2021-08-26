@@ -5100,7 +5100,7 @@ impl<
     pub fn wait(&mut self, timeout: Duration) -> bool {
         let mut result = false;
         let timeout_secs = timeout.as_secs_f64();
-        unsafe { clingo_solve_handle_wait(self.theref, timeout_secs, &mut result) }
+        unsafe { clingo_solve_handle_wait(self.handle.as_ptr(), timeout_secs, &mut result) }
 
         result
     }
