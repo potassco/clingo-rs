@@ -3,8 +3,8 @@ error[E0506]: cannot assign to `lit` because it is borrowed
    |
 10 |     let cond = ast::ConditionalLiteral::new(&lit, &args);
    |                                             ---- borrow of `lit` occurs here
-11 |     lit = ast::Literal::from_term(ast::Sign::None, &term1);
-   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ assignment to borrowed `lit` occurs here
+11 |     lit = ast::Literal::from_term(ast::Sign::NoSign, &term1);
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ assignment to borrowed `lit` occurs here
 12 |     drop(args);
 13 |     let _end = (lit, cond);
    |                      ---- borrow later used here
@@ -14,7 +14,7 @@ error[E0505]: cannot move out of `args` because it is borrowed
    |
 10 |     let cond = ast::ConditionalLiteral::new(&lit, &args);
    |                                                   ----- borrow of `args` occurs here
-11 |     lit = ast::Literal::from_term(ast::Sign::None, &term1);
+11 |     lit = ast::Literal::from_term(ast::Sign::NoSign, &term1);
 12 |     drop(args);
    |          ^^^^ move out of `args` occurs here
 13 |     let _end = (lit, cond);

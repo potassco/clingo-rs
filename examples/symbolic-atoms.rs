@@ -6,14 +6,14 @@ fn main() {
     let options = env::args().skip(1).collect();
 
     // create a control object and pass command line arguments
-    let mut ctl = Control::new(options).expect("Failed creating Control.");
+    let mut ctl = control(options).expect("Failed creating Control.");
 
     // add a logic program to the base part
     ctl.add("base", &[], "a. {b}. #external c.")
         .expect("Failed to add a logic program.");
 
     // ground the base part
-    let part = Part::new("base", &[]).unwrap();
+    let part = Part::new("base", vec![]).unwrap();
     let parts = vec![part];
     ctl.ground(&parts)
         .expect("Failed to ground a logic program.");
@@ -26,7 +26,7 @@ fn main() {
     let mut atoms_iterator = atoms.iter().unwrap();
     while let Some(item) = atoms_iterator.next() {
         let symbol = item.symbol().unwrap();
-        print!("  {}", symbol.to_string().unwrap());
+        print!("  {}", symbol);
 
         if item.is_fact().unwrap() {
             print!(", fact");

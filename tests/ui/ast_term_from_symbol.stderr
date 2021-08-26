@@ -1,7 +1,7 @@
 error[E0505]: cannot move out of `term` because it is borrowed
  --> $DIR/ast_term_from_symbol.rs:7:10
   |
-6 |     let lit = term.literal(ast::Sign::None);
+6 |     let lit = term.literal(ast::Sign::NoSign);
   |               ---- borrow of `term` occurs here
 7 |     drop(term);
   |          ^^^^ move out of `term` occurs here

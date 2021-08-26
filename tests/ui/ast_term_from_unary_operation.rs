@@ -1,10 +1,13 @@
+use clingo::ast::*;
 use clingo::*;
 
 fn main() {
+    let loc = Location::default();
     let sym = Symbol::create_id("test", true).unwrap();
-    let term = ast::Term::from(sym);
-    let op = ast::UnaryOperation::minus(term);
-    let term2 = ast::Term::from(&op);
+    let term = symbolic_term(&loc, &sym).unwrap();
+    let minus = UnaryOperator::Minus;
+    let op = unary_operation(&loc, minus, term).unwrap();
+    let term2: Term = op.into();
     drop(op);
     let _end = term2;
 }

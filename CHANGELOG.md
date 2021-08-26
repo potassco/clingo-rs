@@ -2,6 +2,34 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.7.0-dev - Unreleased
+
+- Add Theory trait
+- Control::solve() now consumes the control object and returns a SolveHandle
+- SolveHandle::close() consumes the solve handle and returns the corresponding Control object
+- Properly use solve event data
+  - remove SolveEventType
+  - add SolveEvent
+  - change SolveEventHandler::on_solve_event(...)
+- return &'static str for internalized strings in
+  - Location::begin_file()
+  - Location::end_file()
+  - Signature::name()
+  - Symbol::name()
+  - Symbol::string()
+- add FromSymbol trait
+- update clingo-sys to 0.5.2
+- add functions to PropagateInit
+  - PropagateInit::add_literal()
+  - PropagateInit::add_weight_constraint()
+  - PropagateInit::add_minimize()
+  - PropagateInit::propagate()
+- remove Control::use_enumeration_assumption() from Control
+- add Control::get_enable_enumeration_assumption()
+- add Control::set_enable_enumeration_assumption()
+- add Control::get_enable_cleanup()
+- add Control::set_enable_cleanup()
+
 ## v0.6.0 - Jan 3, 2020
 
 ### Changed
@@ -21,7 +49,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
-- remove optimality check from AllModels Iterator 
+- remove optimality check from AllModels Iterator
 
 ## v0.4.2 - Jun 28, 2019
 

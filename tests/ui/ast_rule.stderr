@@ -1,25 +1,9 @@
 error[E0505]: cannot move out of `body` because it is borrowed
-  --> $DIR/ast_rule.rs:12:10
+  --> $DIR/ast_rule.rs:14:10
    |
-10 |     let rule = ast::Rule::new(hlit, &body);
-   |                                     ----- borrow of `body` occurs here
-11 |     blit = ast::BodyLiteral::from_literal(ast::Sign::None, &lit);
-12 |     drop(body);
+13 |     let rule = rule(&loc, hlit, &body);
+   |                                 ----- borrow of `body` occurs here
+14 |     drop(body);
    |          ^^^^ move out of `body` occurs here
-13 |     lit = ast::Literal::from_term(ast::Sign::None, &term);
-14 |     let _end = (rule, lit, blit);
-   |                 ---- borrow later used here
-
-error[E0506]: cannot assign to `lit` because it is borrowed
-  --> $DIR/ast_rule.rs:13:5
-   |
-7  |     let hlit = ast::HeadLiteral::from(&lit);
-   |                                       ---- borrow of `lit` occurs here
-...
-13 |     lit = ast::Literal::from_term(ast::Sign::None, &term);
-   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ assignment to borrowed `lit` occurs here
-14 |     let _end = (rule, lit, blit);
-   |                 ---- borrow later used here
-
-Some errors have detailed explanations: E0505, E0506.
-For more information about an error, try `rustc --explain E0505`.
+15 |     let _end = rule;
+   |                ---- borrow later used here

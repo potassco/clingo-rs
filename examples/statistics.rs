@@ -71,14 +71,13 @@ fn print_model(model: &Model) {
 
     print!("Model:");
 
-    for atom in atoms {
-        // retrieve and print the symbol's string
-        print!(" {}", atom.to_string().unwrap());
+    for symbol in atoms {
+        print!(" {}", symbol);
     }
     println!();
 }
 
-fn solve(ctl: &mut Control) {
+fn solve(ctl: Control) -> Control {
     // get a solve handle
     let mut handle = ctl
         .solve(SolveMode::YIELD, &[])
@@ -100,7 +99,7 @@ fn solve(ctl: &mut Control) {
     handle
         .get()
         .expect("Failed to get result from solve handle.");
-    handle.close().expect("Failed to close solve handle.");
+    handle.close().expect("Failed to close solve handle.")
 }
 
 fn main() {
@@ -108,7 +107,7 @@ fn main() {
     let options = env::args().skip(1).collect();
 
     // create a control object and pass command line arguments
-    let mut ctl = Control::new(options).expect("Failed creating Control.");
+    let mut ctl = control(options).expect("Failed creating Control.");
 
     {
         // get the configuration object and its root key
@@ -125,12 +124,12 @@ fn main() {
     ctl.add("base", &[], "a :- not b. b :- not a.").unwrap();
 
     // ground the base part
-    let part = Part::new("base", &[]).unwrap();
+    let part = Part::new("base", vec![]).unwrap();
     let parts = vec![part];
     ctl.ground(&parts).unwrap();
 
     // solve
-    solve(&mut ctl);
+    let ctl = solve(ctl);
 
     // get the statistics object, get the root key, then print the statistics recursively
     let stats = ctl.statistics().unwrap();

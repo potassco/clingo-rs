@@ -2,7 +2,6 @@ use clingo::*;
 use std::cell::RefCell;
 use std::env;
 use std::rc::Rc;
-use std::vec::Vec;
 
 fn print_model(model: &Model) {
     // retrieve the symbols in the model
@@ -12,14 +11,13 @@ fn print_model(model: &Model) {
 
     print!("Model:");
 
-    for atom in atoms {
-        // retrieve and print the symbol's string
-        print!(" {}", atom.to_string().unwrap());
+    for symbol in atoms {
+        print!(" {}", symbol);
     }
     println!();
 }
 
-fn solve(ctl: &mut Control) {
+fn solve<P: Propagator>(ctl: ControlWithPropagator<P>) {
     // get a solve handle
     let mut handle = ctl
         .solve(SolveMode::YIELD, &[])
@@ -46,7 +44,7 @@ fn solve(ctl: &mut Control) {
 struct StateT {
     // assignment of pigeons to holes
     // (hole number -> pigeon placement literal or zero)
-    holes: Vec<Option<Literal>>,
+    holes: Vec<Option<SolverLiteral>>,
 }
 
 // state information for the propagator
@@ -90,7 +88,7 @@ impl Propagator for PropagatorT {
             return true;
         }
 
-        let s1_holes: Vec<Option<Literal>> = vec![];
+        let s1_holes: Vec<Option<SolverLiteral>> = vec![];
         let state1 = Rc::new(RefCell::new(StateT { holes: s1_holes }));
         self.states = vec![state1];
 
@@ -109,7 +107,7 @@ impl Propagator for PropagatorT {
 
                 // get an iterator for place/2 atoms
                 // (atom order corresponds to grounding order (and is unpredictable))
-                let mut atoms_iterator = atoms.iter_with_signature(&sig).unwrap();
+                let mut atoms_iterator = atoms.iter_with_signature(sig).unwrap();
 
                 if pass == 1 {
                     // allocate memory for the assignment literal -> hole mapping
@@ -160,7 +158,7 @@ impl Propagator for PropagatorT {
         true
     }
 
-    fn propagate(&mut self, control: &mut PropagateControl, changes: &[Literal]) -> bool {
+    fn propagate(&mut self, control: &mut PropagateControl, changes: &[SolverLiteral]) -> bool {
         // get the thread specific state
         let mut state = self.states[control.thread_id() as usize].borrow_mut();
 
@@ -179,7 +177,7 @@ impl Propagator for PropagatorT {
                 // create a conflicting clause and propagate it
                 Some(x) => {
                     // current and previous literal must not hold together
-                    let clause: &[Literal] = &[lit.negate(), x.negate()];
+                    let clause: &[SolverLiteral] = &[lit.negate(), x.negate()];
                     // stores the result when adding a clause or propagationg
                     // if result is false propagation must stop for the solver to backtrack
 
@@ -201,7 +199,7 @@ impl Propagator for PropagatorT {
         true
     }
 
-    fn undo(&mut self, control: &mut PropagateControl, changes: &[Literal]) -> bool {
+    fn undo(&mut self, control: &mut PropagateControl, changes: &[SolverLiteral]) {
         // get the thread specific state
         let mut state = self.states[control.thread_id() as usize].borrow_mut();
 
@@ -216,7 +214,6 @@ impl Propagator for PropagatorT {
                 }
             }
         }
-        true
     }
 }
 
@@ -226,18 +223,18 @@ fn main() {
 
     // create a propagator with the functions above
     // using the default implementation for the model check
-    let mut prop = PropagatorT {
+    let prop = PropagatorT {
         pigeons: vec![],
         states: vec![],
     };
 
     // create a control object and pass command line arguments
-    match Control::new(options) {
-        Ok(mut ctl) => {
+    match control(options) {
+        Ok(ctl) => {
             // register the propagator
-            ctl.register_propagator(&mut prop, false)
+            let mut ctl = ctl
+                .register_propagator(prop, false)
                 .expect("Failed to register propagator.");
-
             // add a logic program to the pigeon part
             // parameters for the pigeon part
             ctl.add(
@@ -250,20 +247,20 @@ fn main() {
             // ground the pigeon part
 
             // set the number of holes
-            let arg0 = Symbol::create_number(7);
+            let arg0 = Symbol::create_number(3);
             // set the number of pigeons
-            let arg1 = Symbol::create_number(8);
+            let arg1 = Symbol::create_number(2);
 
             let args = vec![arg0, arg1];
 
             // the pigeon program part having the number of holes and pigeons as parameters
-            let part = Part::new("pigeon", &args).unwrap();
+            let part = Part::new("pigeon", args).unwrap();
             let parts = vec![part];
             ctl.ground(&parts)
                 .expect("Failed to ground a logic program.");
 
             // solve using a model callback
-            solve(&mut ctl);
+            solve(ctl);
         }
         Err(e) => {
             panic!("Error: {}", e);

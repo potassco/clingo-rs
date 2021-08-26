@@ -2,14 +2,15 @@ use clingo::*;
 use rand::distributions::Distribution;
 use rand::distributions::Uniform;
 use std::env;
+use std::rc::Rc;
 use std::sync::atomic::{AtomicBool, Ordering};
 
 struct MySEHandler {
-    atom: AtomicBool,
+    atom: Rc<AtomicBool>,
 }
 impl SolveEventHandler for MySEHandler {
-    fn on_solve_event(&mut self, type_: SolveEventType, _goon: &mut bool) -> bool {
-        if type_ == SolveEventType::Finish {
+    fn on_solve_event(&mut self, event: SolveEvent, _goon: &mut bool) -> bool {
+        if let SolveEvent::Finish(_result) = event {
             self.atom.store(false, Ordering::SeqCst);
         }
         true
@@ -21,7 +22,7 @@ fn main() {
     let options = env::args().skip(1).collect();
 
     // create a control object and pass command line arguments
-    let mut ctl = Control::new(options).expect("Failed creating Control.");
+    let mut ctl = control(options).expect("Failed creating Control.");
 
     // add a logic program to the base part
     ctl.add(
@@ -35,18 +36,22 @@ fn main() {
     .expect("Failed to add a logic program.");
 
     // ground the base part
-    let part = Part::new("base", &[]).unwrap();
+    let part = Part::new("base", vec![]).unwrap();
     let parts = vec![part];
     ctl.ground(&parts)
         .expect("Failed to ground a logic program.");
 
-    let mut running = MySEHandler {
-        atom: AtomicBool::new(true),
-    };
+    let running = Rc::new(AtomicBool::new(true));
 
     // create a solve handle with an attached event handler
     let mut handle = ctl
-        .solve_with_event_handler(SolveMode::ASYNC | SolveMode::YIELD, &[], &mut running)
+        .solve_with_event_handler(
+            SolveMode::ASYNC | SolveMode::YIELD,
+            &[],
+            MySEHandler {
+                atom: running.clone(),
+            },
+        )
         .expect("Failed to retrieve solve handle.");
 
     // let's approximate pi
@@ -54,7 +59,7 @@ fn main() {
     let mut in_circle = 0.;
     let mut rng = rand::thread_rng();
     let between = Uniform::new_inclusive(-1f64, 1.);
-    while running.atom.load(Ordering::SeqCst) {
+    while running.load(Ordering::SeqCst) {
         samples += 1.;
         let x = between.sample(&mut rng);
         let y = between.sample(&mut rng);
