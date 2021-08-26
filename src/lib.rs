@@ -86,6 +86,7 @@ use std::os::raw::c_void;
 use std::ptr::NonNull;
 use std::str::Utf8Error;
 use thiserror::Error;
+use std::time::Duration;
 
 /// Functions and data structures to work with program ASTs.
 pub mod ast;
@@ -5096,9 +5097,11 @@ impl<
     /// # Arguments
     ///
     /// * `timeout` - the maximum time to wait
-    pub fn wait(&mut self, timeout: f64) -> bool {
+    pub fn wait(&mut self, timeout: Duration) -> bool {
         let mut result = false;
-        unsafe { clingo_solve_handle_wait(self.handle.as_ptr(), timeout, &mut result) }
+        let timeout_secs = timeout.as_secs_f64();
+        unsafe { clingo_solve_handle_wait(self.theref, timeout_secs, &mut result) }
+
         result
     }
     /// Get the next model or None if there are no more models.
