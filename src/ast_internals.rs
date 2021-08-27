@@ -28,13 +28,10 @@ struct ASTArray<'a> {
 impl<'a> ASTArray<'a> {
     /// Get the size of an ASTArray
     ///
-    /// @param[in] ast the target ASTArray
-    /// @param[in] attribute the target attribute"]
-    /// @param[out] size the resulting size"]
-    /// @return whether the call was successful; might set one of the following error codes:"]
-    /// - ::clingo_error_runtime"]
+    /// might set one of the following error codes:
+    /// - ::clingo_error_runtime
 
-    pub fn size(&self) -> Result<usize, ClingoError> {
+    pub(crate) fn size(&self) -> Result<usize, ClingoError> {
         let mut size: usize = 0;
         if !unsafe {
             clingo_ast_attribute_size_ast_array(
@@ -60,22 +57,15 @@ impl<'a> Iterator for ASTArray<'a> {
             return None;
         }
 
-        let mut ast = std::ptr::null_mut();
-        if !unsafe {
-            clingo_ast_attribute_get_ast_at(
-                self.ast.ptr.as_ptr(),
-                ASTAttribute::Body as i32,
-                self.index,
-                &mut ast,
-            )
-        } {
-            return None;
+        if let Ok(ast) = self
+            .ast
+            .get_attribute_ast_at(ASTAttribute::Body, self.index)
+        {
+            self.index += 1;
+            Some(ast)
+        } else {
+            None
         }
-        self.index += 1;
-        NonNull::new(ast).map(|x| AST {
-            ptr: x,
-            _lifetime: PhantomData,
-        })
     }
 }
 
@@ -341,11 +331,10 @@ pub enum ASTAttribute {
 
 /// This struct provides a view to nodes in the AST.
 #[derive(Debug)]
-pub struct AST<'a> {
+pub(crate) struct AST<'a> {
     pub(crate) ptr: NonNull<clingo_ast_t>,
     pub(crate) _lifetime: PhantomData<&'a ()>,
 }
-// pub(crate) struct AST(pub NonNull<clingo_ast_t>);
 impl<'a> Clone for AST<'a> {
     fn clone(&self) -> AST<'a> {
         self.deep_copy().unwrap()
@@ -371,92 +360,73 @@ impl<'a> Drop for AST<'a> {
     }
 }
 impl<'a> AST<'a> {
-    pub fn body(&self) -> Body {
+    pub(crate) fn body(&self) -> Body {
         Body(ASTArray {
             ast: &self,
             index: 0,
         })
     }
-    pub fn head(&self) -> Head {
+    pub(crate) fn head(&self) -> Head {
         let ast = self.get_attribute_ast(ASTAttribute::Head).unwrap();
         Head { ast }
     }
-    pub fn term(&self) -> Term {
-        let t = self.get_type().unwrap();
-        eprintln!("{:?}", t);
-        let t = self.get_attribute_type(ASTAttribute::Symbol).unwrap();
-        eprintln!("{:?}", t);
+    pub(crate) fn term(&self) -> Term {
+        let ast_type = self.get_type().unwrap();
+        dbg!(ast_type);
+        let ast_attr_type = self.get_attribute_type(ASTAttribute::Symbol).unwrap();
+        dbg!(ast_attr_type);
         // TODO: This is a hack attribute should be ASTAttribute::Term
+        dbg!("Here is a hack attribute should be ASTAttribute::Term");
         let ast = self.get_attribute_ast(ASTAttribute::Symbol).unwrap();
-        let t = ast.get_type().unwrap();
-        eprintln!("{:?}", t);
+        let ast_type = ast.get_type().unwrap();
+        dbg!(ast_type);
         let ret = Function { ast };
         let name = ret.to_string().unwrap();
-        eprintln!("name {}", name);
+        dbg!(name);
         ret.into()
     }
-    pub fn set_term(&mut self, term: Term) {
+    pub(crate) fn set_term(&mut self, term: Term) {
         let term = term.ast;
         // TODO: This is a hack attribute should be ASTAttribute::Term
         self.set_attribute_ast(ASTAttribute::Symbol, term).unwrap();
     }
-    pub fn guard(&self) -> TheoryGuard {
-        // Todo: check
+    pub(crate) fn guard(&self) -> TheoryGuard {
+        // TODO: check
         let ast = self.get_attribute_ast(ASTAttribute::Guard).unwrap();
         TheoryGuard { ast }
     }
-    pub fn elements(&self) -> &[TheoryAtomElement] {
+    pub(crate) fn elements(&self) -> &[TheoryAtomElement] {
         unimplemented!()
         // let ast = self.get_attribute_ast(ASTAttribute::Elements).unwrap();
         // &[]
     }
-    pub fn left(&self) -> Term<'a> {
+    pub(crate) fn left(&self) -> Term<'a> {
         let ast = self.get_attribute_ast(ASTAttribute::Left).unwrap();
         Term { ast }
     }
-    pub fn right(&self) -> Term<'a> {
+    pub(crate) fn right(&self) -> Term<'a> {
         let ast = self.get_attribute_ast(ASTAttribute::Right).unwrap();
         Term { ast }
     }
 
-    // extern "C" {
-    //     #[doc = "! Increment the reference count of an AST node."]
-    //     #[doc = "!"]
-    //     #[doc = "! @note All functions that return AST nodes already increment the reference count."]
-    //     #[doc = "! The reference count of callback arguments is not incremented."]
-    //     #[doc = "!"]
-    //     #[doc = "! @param[in] ast the target AST"]
-    //     pub fn clingo_ast_acquire(ast: *mut clingo_ast_t);
-    // }
-    pub fn acquire(&self) {
-        // println!("acquire");
-        // println!("ast: {:?}", self);
-        // println!("ast: {}", self.to_string().unwrap());
+    /// Increment the reference count of an AST node.
+    ///
+    /// *Note:* All functions that return AST nodes already increment the reference count.
+    /// The reference count of callback arguments is not incremented.
+    pub(crate) fn acquire(&self) {
         unsafe { clingo_ast_acquire(self.ptr.as_ptr()) }
     }
-    // extern "C" {
-    //     #[doc = "! Decrement the reference count of an AST node."]
-    //     #[doc = "!"]
-    //     #[doc = "! @note The node is deleted if the reference count reaches zero."]
-    //     #[doc = "!"]
-    //     #[doc = "! @param[in] ast the target AST"]
-    //     pub fn clingo_ast_release(ast: *mut clingo_ast_t);
-    // }
+    /// Decrement the reference count of an AST node.
+    /// *Note:* The node is deleted if the reference count reaches zero.
     fn release(&self) {
         // println!("release");
         // println!("ast: {:?}", self);
         // println!("ast: {}", self.to_string().unwrap());
         unsafe { clingo_ast_release(self.ptr.as_ptr()) }
     }
-    // extern "C" {
-    // #[doc = "! Create a shallow copy of an AST node."]
-    // #[doc = "!"]
-    // #[doc = "! @param[in] ast the AST to copy"]
-    // #[doc = "! @param[out] copy the resulting AST"]
-    // #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
-    // #[doc = "! - ::clingo_error_bad_alloc"]
-    // pub fn clingo_ast_copy(ast: *mut clingo_ast_t, copy: *mut *mut clingo_ast_t) -> bool;
-    // }
+    /// Create a shallow copy of an AST node.
+    /// might set one of the following error codes:
+    /// - ::clingo_error_bad_alloc
     fn copy(&self) -> Result<AST, ClingoError> {
         let mut cpy = std::ptr::null_mut();
         if !unsafe { clingo_ast_copy(self.ptr.as_ptr(), &mut cpy) } {
@@ -475,15 +445,9 @@ impl<'a> AST<'a> {
             })?,
         }
     }
-    // extern "C" {
-    //     #[doc = "! Create a deep copy of an AST node."]
-    //     #[doc = "!"]
-    //     #[doc = "! @param[in] ast the AST to copy"]
-    //     #[doc = "! @param[out] copy the resulting AST"]
-    //     #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
-    //     #[doc = "! - ::clingo_error_bad_alloc"]
-    //     pub fn clingo_ast_deep_copy(ast: *mut clingo_ast_t, copy: *mut *mut clingo_ast_t) -> bool;
-    // }
+    /// Create a deep copy of an AST node.
+    /// might set one of the following error codes:
+    /// - ::clingo_error_bad_alloc
     fn deep_copy(&self) -> Result<AST<'a>, ClingoError> {
         let mut cpy = std::ptr::null_mut();
         if !unsafe { clingo_ast_deep_copy(self.ptr.as_ptr(), &mut cpy) } {
@@ -535,21 +499,10 @@ impl<'a> AST<'a> {
     //     #[doc = "! - ::clingo_error_runtime"]
     //     pub fn clingo_ast_to_string_size(ast: *mut clingo_ast_t, size: *mut usize) -> bool;
     // }
-    // extern "C" {
-    //     #[doc = "! Get the string representation of an AST node."]
-    //     #[doc = "!"]
-    //     #[doc = "! @param[in] ast the target AST"]
-    //     #[doc = "! @param[out] string the string representation"]
-    //     #[doc = "! @param[out] size the size of the string representation"]
-    //     #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
-    //     #[doc = "! - ::clingo_error_runtime"]
-    //     pub fn clingo_ast_to_string(
-    //         ast: *mut clingo_ast_t,
-    //         string: *mut ::std::os::raw::c_char,
-    //         size: usize,
-    //     ) -> bool;
-    // }
-    pub fn to_string(&self) -> Result<String, ClingoError> {
+    /// Get the string representation of an AST node.
+    /// might set one of the following error codes:
+    /// - ::clingo_error_runtime
+    pub(crate) fn to_string(&self) -> Result<String, ClingoError> {
         let mut size: usize = 0;
         if !unsafe { clingo_ast_to_string_size(self.ptr.as_ptr(), &mut size) } {
             eprintln!("Call to clingo_ast_to_string_size() failed");
@@ -577,10 +530,7 @@ impl<'a> AST<'a> {
     }
 
     /// Get the type of an AST node.
-    ///
-    /// @param[in] ast the target AST
-    /// @param[out] type the resulting type
-    /// @return whether the call was successful; might set one of the following error codes:
+    /// might set one of the following error codes:
     /// - ::clingo_error_runtime
     pub(crate) fn get_type(&self) -> Result<ASTType, ClingoError> {
         let mut ast_type = 0;
@@ -607,13 +557,10 @@ impl<'a> AST<'a> {
     //     ) -> bool;
     // }
 
-    // Get the type of the given AST node.
-    //
-    // #[doc = "! @param[in] ast the target AST"]
-    // #[doc = "! @param[in] attribute the target attribute"]
-    // #[doc = "! @param[out] type the resulting type"]
-    // #[doc = "! @return whether the call was successful; might set one of the following error codes:"]
-    // #[doc = "! - ::clingo_error_runtime"]
+    /// Get the type of the given AST node.
+    ///
+    /// might set one of the following error codes:
+    /// - ::clingo_error_runtime
     fn get_attribute_type(&self, attribute: ASTAttribute) -> Result<ASTAttributeType, ClingoError> {
         let mut attribute_type = 0;
         if !unsafe {
@@ -657,10 +604,7 @@ impl<'a> AST<'a> {
 
     /// Get the value of an attribute of type ASTAttributeType::Symbol
     ///
-    /// @param[in] ast the target AST
-    /// @param[in] attribute the target attribute
-    /// @param[out] type the resulting type
-    /// @return whether the call was successful; might set one of the following error codes:
+    /// ; might set one of the following error codes:
     /// - ::clingo_error_runtime
     fn symbol(&self) -> Result<Symbol, ClingoError> {
         let mut sym = 0;
@@ -691,10 +635,7 @@ impl<'a> AST<'a> {
 
     /// Get the value of an attribute of type \"clingo_ast_attribute_type_location\".
     ///
-    /// @param[in] ast the target AST
-    /// @param[in] attribute the target attribute
-    /// @param[out] value the resulting value
-    /// @return whether the call was successful; might set one of the following error codes:
+    /// might set one of the following error codes:
     /// - ::clingo_error_runtime
     pub(crate) fn location(&self) -> Result<Location, ClingoError> {
         let mut loc: clingo_location = Location::default().0;
@@ -739,10 +680,10 @@ impl<'a> AST<'a> {
     // }
     pub(crate) fn name(&self) -> Result<String, ClingoError> {
         let attribute = ASTAttribute::Name;
-        let t = self.get_attribute_type(attribute).unwrap();
-        eprintln!("name ASTAttributeType: {:?}", t);
+        let ast_attribute_type = self.get_attribute_type(attribute).unwrap();
+        dbg!(ast_attribute_type);
         self.to_string()
-
+        // TODO
         // let c_str = std::ptr::null_mut();
         // if !unsafe { clingo_ast_attribute_get_string(self.ptr.as_ptr(), attribute as i32, c_str) } {
         //     return Err(ClingoError::new_internal(
@@ -792,10 +733,7 @@ impl<'a> AST<'a> {
 
     /// Get the value of an attribute of type ASTAttributeType
     ///
-    /// @param[in] ast the target AST
-    /// @param[in] attribute the target attribute
-    /// @param[out] type the resulting type
-    /// @return whether the call was successful; might set one of the following error codes:
+    /// might set one of the following error codes:
     /// - ::clingo_error_runtime
     fn get_attribute_ast(&self, attribute: ASTAttribute) -> Result<AST<'a>, ClingoError> {
         let mut ast = std::ptr::null_mut();
@@ -817,12 +755,9 @@ impl<'a> AST<'a> {
 
     /// Set the value of an attribute of type \"clingo_ast_attribute_type_ast\".
     ///
-    /// @param[in] ast the target AST
-    /// @param[in] attribute the target attribute
-    /// @param[in] value the value
-    /// @return whether the call was successful; might set one of the following error codes:
+    /// might set one of the following error codes:
     /// - ::clingo_error_runtime
-    pub fn set_attribute_ast(
+    pub(crate) fn set_attribute_ast(
         &self,
         attribute: ASTAttribute,
         value: AST,
@@ -966,12 +901,9 @@ impl<'a> AST<'a> {
 
     /// Get the value of an attribute of type ASTAttributeType::ASTArray at the given index.
     ///
-    ///  @param[in] ast the target AST
-    ///  @param[in] attribute the target attribute
-    ///  @param[out] type the resulting type
-    ///  @return whether the call was successful; might set one of the following error codes:
+    /// ; might set one of the following error codes:
     ///  - ::clingo_error_runtime
-    pub fn get_attribute_ast_at(
+    fn get_attribute_ast_at(
         &self,
         attribute: ASTAttribute,
         index: usize,
@@ -1094,7 +1026,7 @@ impl<'a> AST<'a> {
 
 #[derive(Debug, Copy, Clone)]
 /// Enum to configure unpooling.
-pub enum Unpooling {
+pub(crate) enum Unpooling {
     /// To only unpool conditions of conditional literals.
     Condition = clingo_ast_unpool_type_e_clingo_ast_unpool_type_condition as isize,
     /// To unpool everything except conditions of conditional literals.

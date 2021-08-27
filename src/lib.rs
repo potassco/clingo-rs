@@ -81,8 +81,8 @@ use std::os::raw::c_char;
 use std::os::raw::c_void;
 use std::ptr::NonNull;
 use std::str::Utf8Error;
-use thiserror::Error;
 use std::time::Duration;
+use thiserror::Error;
 
 /// Functions and data structures to work with program ASTs.
 pub mod ast;
@@ -1003,7 +1003,7 @@ impl SolverLiteral {
         self.0
     }
 }
-impl From<Atom> for SolverLiteral{
+impl From<Atom> for SolverLiteral {
     fn from(atom: Atom) -> Self {
         SolverLiteral(atom.0 as i32)
     }
@@ -1011,7 +1011,7 @@ impl From<Atom> for SolverLiteral{
 /// Unsigned integer type used for aspif atoms.
 #[derive(Debug, Copy, Clone)]
 pub struct Atom(clingo_atom_t);
-impl From<SolverLiteral> for Atom{
+impl From<SolverLiteral> for Atom {
     fn from(literal: SolverLiteral) -> Self {
         Atom(literal.0 as u32)
     }
@@ -1999,7 +1999,7 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     pub fn assign_external(
         &mut self,
-        literal:SolverLiteral,
+        literal: SolverLiteral,
         value: TruthValue,
     ) -> Result<(), ClingoError> {
         if !unsafe {
@@ -2030,7 +2030,10 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
     /// # Errors
     ///
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
-    pub fn release_external(&mut self,SolverLiteral(literal):SolverLiteral) -> Result<(), ClingoError> {
+    pub fn release_external(
+        &mut self,
+        SolverLiteral(literal): SolverLiteral,
+    ) -> Result<(), ClingoError> {
         if !unsafe { clingo_control_release_external(self.ctl.as_ptr(), literal) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_control_release_external() failed",
@@ -4130,7 +4133,7 @@ impl Model {
     /// # Arguments
     ///
     /// * `literal` - the literal to lookup
-    pub fn is_true(&self, literal:SolverLiteral) -> Result<bool, ClingoError> {
+    pub fn is_true(&self, literal: SolverLiteral) -> Result<bool, ClingoError> {
         let mut is_true = false;
         if !unsafe { clingo_model_is_true(&self.0, literal.0, &mut is_true) } {
             return Err(ClingoError::new_internal(
@@ -4698,7 +4701,7 @@ impl PropagateInit {
     /// **Returns** the corresponding solver literal
     pub fn solver_literal(
         &self,
-       SolverLiteral(aspif_literal):SolverLiteral,
+        SolverLiteral(aspif_literal): SolverLiteral,
     ) -> Result<SolverLiteral, ClingoError> {
         let mut solver_literal = 0;
         if !unsafe {
@@ -5849,7 +5852,12 @@ pub trait GroundProgramObserver {
     /// * `condition` - the condition of the element
     ///
     /// **Returns** whether the call was successful
-    fn theory_element(&mut self, _element_id: Id, _terms: &[Id], _condition: &[SolverLiteral]) -> bool {
+    fn theory_element(
+        &mut self,
+        _element_id: Id,
+        _terms: &[Id],
+        _condition: &[SolverLiteral],
+    ) -> bool {
         true
     }
     /// Observe theory atoms without guard.
