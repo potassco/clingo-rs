@@ -604,7 +604,7 @@ impl<'a> AST<'a> {
 
     /// Get the value of an attribute of type ASTAttributeType::Symbol
     ///
-    /// ; might set one of the following error codes:
+    /// might set one of the following error codes:
     /// - ::clingo_error_runtime
     fn symbol(&self) -> Result<Symbol, ClingoError> {
         let mut sym = 0;
