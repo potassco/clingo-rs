@@ -25,7 +25,7 @@
 //!
 //! ```toml
 //! [dependencies]
-//! clingo = { version = "0.7.0-beta.1", features = ["derive"] }
+//! clingo = { version = "0.7.0", features = ["derive"] }
 //! ```
 //!
 //! In your source write:
@@ -56,16 +56,12 @@
 //!
 //! *Attention: currently `static-linking` does not work with `dl-theory`.*
 //!
-//! ```sh
-//! export CLINGO_LIBRARY_PATH=/scratch/miniconda3/envs/test/lib
-//! ```
-//!
 //! The recommended way to use the optional static linking support is as
 //! follows.
 //!
 //! ```toml
 //! [dependencies]
-//! clingo = { version = "0.7.0-beta.1", features = ["static-linking"] }
+//! clingo = { version = "0.7.0", features = ["static-linking"] }
 //! ```
 //!
 #![allow(non_upper_case_globals)]

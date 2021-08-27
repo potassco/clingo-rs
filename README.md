@@ -46,7 +46,7 @@ In your `Cargo.toml` add:
 
 ```toml
 [dependencies]
-clingo = { version = "0.7.0-beta.1", features = ["derive"] }
+clingo = { version = "0.7.0", features = ["derive"] }
 ```
 
 In your source write:
@@ -69,7 +69,6 @@ fb.insert(p);
 
 The macro performs a conversion to snake case. This means the corresponing fact for `MyPoint{x:4,y:2}` is `my_point(4,2)`.
 
-
 ### Using `static-linking`
 
 You can use the clingo library via static linking.
@@ -79,9 +78,8 @@ follows.
 
 ```toml
 [dependencies]
-clingo = { version = "0.7.0-beta.1", features = ["static-linking"] }
+clingo = { version = "0.7.0", features = ["static-linking"] }
 ```
-
 
 ## Contribution
 
