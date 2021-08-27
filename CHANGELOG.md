@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## v0.7.0-dev - Unreleased
+## v0.7.0
 
 - Add Theory trait
 - Control::solve() now consumes the control object and returns a SolveHandle
