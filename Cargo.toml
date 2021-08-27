@@ -1,7 +1,7 @@
 [package]
 name = "clingo"
 version = "0.7.0"
-publish = false
+publish = ["crates-io"]
 authors = ["sthiele <sthiele78@gmail.com>"]
 edition = "2018"
 description = "Rust idiomatic bindings to the clingo library"
