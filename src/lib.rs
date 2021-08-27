@@ -1,4 +1,4 @@
-#![doc(html_root_url = "https://docs.rs/clingo/0.7.1")]
+#![doc(html_root_url = "https://docs.rs/clingo/0.7.2")]
 #![doc = include_str!("../README.md")]
 #![allow(non_upper_case_globals)]
 #![allow(clippy::try_err)]
@@ -6728,7 +6728,6 @@ impl FactBase {
 // Re-export #[derive(ToSymbol)].
 #[cfg(feature = "derive")]
 #[allow(unused_imports)]
-#[cfg_attr(docsrs, doc(cfg(feature = "derive")))]
 pub use clingo_derive::*;
 
 impl From<Symbol> for clingo_symbol_t {
