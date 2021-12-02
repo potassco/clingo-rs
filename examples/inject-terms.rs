@@ -16,7 +16,6 @@ fn print_model(model: &Model) {
 }
 
 struct MyEFH;
-
 impl FunctionHandler for MyEFH {
     fn on_external_function(
         &mut self,
@@ -34,12 +33,40 @@ impl FunctionHandler for MyEFH {
     }
 }
 
+struct CtrlCtx {
+    non: defaults::Non,
+    function_handler: MyEFH,
+}
+impl ControlCtx for CtrlCtx {
+    type L = defaults::Non;
+    type P = defaults::Non;
+    type O = defaults::Non;
+    type F = MyEFH;
+
+    fn logger(&mut self) -> (&mut Self::L, u32) {
+        (&mut self.non, 0)
+    }
+    fn propagator(&mut self) -> (&mut Self::P, bool) {
+        (&mut self.non, false)
+    }
+    fn observer(&mut self) -> (&mut Self::O, bool) {
+        (&mut self.non, false)
+    }
+    fn function_handler(&mut self) -> &mut Self::F {
+        &mut self.function_handler
+    }
+}
+
 fn main() {
     // collect clingo options from the command line
     let options = env::args().skip(1).collect();
 
+    let ctrl_ctx = CtrlCtx {
+        non: defaults::Non,
+        function_handler: MyEFH,
+    };
     // create a control object and pass command line arguments
-    let mut ctl = control(options).expect("Failed creating clingo_control.");
+    let mut ctl = control_with_context(options, ctrl_ctx).expect("Failed creating clingo_control.");
 
     // add a logic program to the base part
     ctl.add("base", &[], "p(@c()). p(d). p(e).")
@@ -48,7 +75,6 @@ fn main() {
     // ground the base part
     let part = Part::new("base", vec![]).unwrap();
     let parts = vec![part];
-    let mut ctl = ctl.register_function_handler(MyEFH);
     ctl.ground(&parts).unwrap_or_else(|e| {
         panic!("Failed to ground a logic program. {:?}", e);
     });

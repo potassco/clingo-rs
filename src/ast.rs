@@ -1,6 +1,6 @@
 use crate::{
-    internalize_string, set_internal_error, ClingoError, ErrorType, ExternalType, FunctionHandler,
-    GenericControl, GroundProgramObserver, Logger, Propagator, Symbol,
+    internalize_string, set_internal_error, ClingoError, ControlCtx, ErrorType, ExternalType,
+    GenericControl, Symbol,
 };
 
 use crate::ast_internals::Body;
@@ -113,8 +113,8 @@ pub struct ProgramBuilder<'a> {
 }
 impl<'a> ProgramBuilder<'a> {
     /// Get an object to add non-ground directives to the program.
-    pub fn from<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>(
-        ctl: &'a mut GenericControl<L, P, O, F>,
+    pub fn from<C: ControlCtx>(
+        ctl: &'a mut GenericControl<C>,
     ) -> Result<ProgramBuilder<'a>, ClingoError> {
         let mut builder = std::ptr::null_mut();
         if !unsafe { clingo_control_program_builder(ctl.ctl.as_mut(), &mut builder) } {
