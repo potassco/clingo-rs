@@ -17,7 +17,7 @@ fn print_model(model: &Model) {
     println!();
 }
 
-fn solve<P: Propagator>(ctl: ControlWithPropagator<P>) {
+fn solve(ctl: GenericControl<CtrlCtx>) {
     // get a solve handle
     let mut handle = ctl
         .solve(SolveMode::YIELD, &[])
@@ -39,6 +39,14 @@ fn solve<P: Propagator>(ctl: ControlWithPropagator<P>) {
     handle.close().expect("Failed to close solve handle.");
 }
 
+// returns the offset'th numeric argument of the function symbol sym
+fn get_arg(sym: &Symbol, offset: usize) -> Result<i32, ClingoError> {
+    // get the arguments of the function symbol
+    let args = sym.arguments().unwrap();
+    // get the requested numeric argument
+    args[offset as usize].number()
+}
+
 // state information for individual solving threads
 #[derive(Debug)]
 struct StateT {
@@ -55,15 +63,6 @@ struct PropagatorT {
     // array of states
     states: Vec<Rc<RefCell<StateT>>>,
 }
-
-// returns the offset'th numeric argument of the function symbol sym
-fn get_arg(sym: &Symbol, offset: usize) -> Result<i32, ClingoError> {
-    // get the arguments of the function symbol
-    let args = sym.arguments().unwrap();
-    // get the requested numeric argument
-    args[offset as usize].number()
-}
-
 impl Propagator for PropagatorT {
     fn init(&mut self, init: &mut PropagateInit) -> bool {
         // stores the (numeric) maximum of the solver literals capturing pigeon placements
@@ -217,24 +216,49 @@ impl Propagator for PropagatorT {
     }
 }
 
+struct CtrlCtx {
+    non: defaults::Non,
+    propagator: PropagatorT,
+}
+impl ControlCtx for CtrlCtx {
+    type L = defaults::Non;
+    type P = PropagatorT;
+    type O = defaults::Non;
+    type F = defaults::Non;
+
+    fn logger(&mut self) -> (&mut Self::L, u32) {
+        (&mut self.non, 0)
+    }
+    fn propagator(&mut self) -> (&mut Self::P, bool) {
+        (&mut self.propagator, false)
+    }
+    fn observer(&mut self) -> (&mut Self::O, bool) {
+        (&mut self.non, false)
+    }
+    fn function_handler(&mut self) -> &mut Self::F {
+        &mut self.non
+    }
+}
+
 fn main() {
     // collect clingo options from the command line
     let options = env::args().skip(1).collect();
 
     // create a propagator with the functions above
     // using the default implementation for the model check
-    let prop = PropagatorT {
+    let propagator = PropagatorT {
         pigeons: vec![],
         states: vec![],
     };
 
+    // create a control context with the propagator
+    let ctrl_ctx = CtrlCtx {
+        non: defaults::Non,
+        propagator,
+    };
     // create a control object and pass command line arguments
-    match control(options) {
-        Ok(ctl) => {
-            // register the propagator
-            let mut ctl = ctl
-                .register_propagator(prop, false)
-                .expect("Failed to register propagator.");
+    match control_with_context(options, ctrl_ctx) {
+        Ok(mut ctl) => {
             // add a logic program to the pigeon part
             // parameters for the pigeon part
             ctl.add(
