@@ -6,7 +6,7 @@ fn version() {
     let (ma, mi, re) = clingo::version();
     assert!(ma == 5);
     assert!(mi == 5);
-    assert!(re == 0);
+    assert!(re == 1);
 }
 #[test]
 fn signature() {
@@ -103,7 +103,7 @@ fn backend() {
     ctl.add("base", &[], "{a; b; c}.").unwrap();
 
     let part = Part::new("base", vec![]).unwrap();
-    let parts = vec![part];
+    let parts = [part];
     ctl.ground(&parts).unwrap();
 
     let sa = ctl.symbolic_atoms().unwrap();
@@ -173,7 +173,7 @@ fn test_statement(stmt: &Statement, string: &str) {
 
     // ground the base part
     let part = Part::new("base", vec![]).unwrap();
-    let parts = vec![part];
+    let parts = [part];
     ctl.ground(&parts)
         .expect("Failed to ground a logic program.");
 
@@ -222,33 +222,19 @@ fn ast_term() {
 
     let negation = UnaryOperator::Negation;
     let uop = unary_operation(&loc, negation, term1.clone()).unwrap();
-    // let op = uop.unary_operator();
-    // assert_eq!(format!("{:?}", op), "Negation");
-    // let arg = uop.argument();
-    // assert_eq!(format!("{:?}", arg), "Term { symbol: 42 }");
     let uop = Term::from(uop);
     assert_eq!(format!("{}", uop), "~42");
 
     let xor = BinaryOperator::Xor;
     let bop = binary_operation(&loc, xor, term1.clone(), term2.clone()).unwrap();
-    // let op = bop.binary_operator();
-    // assert_eq!(format!("{:?}", op), "Xor");
-    // let arg = bop.left();
-    // assert_eq!(format!("{:?}", arg), "Term { symbol: 42 }");
-    // let arg = bop.right();
-    // assert_eq!(format!("{:?}", arg), "Term { symbol: \"test\" }");
     let bop = Term::from(bop);
     assert_eq!(format!("{}", bop), "(42^\"test\")");
 
     let interval = interval(&loc, term1.clone(), term2.clone()).unwrap();
-    // let arg = interval.left();
-    // assert_eq!(format!("{:?}", arg), "Term { symbol: 42 }");
-    // let arg = interval.right();
-    // assert_eq!(format!("{:?}", arg), "Term { symbol: \"test\" }");
     let interval = Term::from(interval);
     assert_eq!(format!("{}", interval), "(42..\"test\")");
 
-    let args = vec![term1, term2];
+    let args = [term1, term2];
     let fun = function(&loc, "fun2", &args, false).unwrap();
     let fun = Term::from(fun);
     assert_eq!(format!("{}", fun), "fun2(42,\"test\")");
@@ -284,25 +270,26 @@ fn ast_literal() {
     let lit = ast::basic_literal_from_comparison(&loc, Sign::NoSign, comp).unwrap();
     assert_eq!(format!("{}", lit), "\"test\" > fun1(42,\"test\")");
 
-    // TODO: activate these test when the bug in libclingo is fixed
-    // let sym4 = Symbol::create_supremum();
-    // let term4 = symbolic_term(&loc, &sym4).unwrap();
-    // let csp_prod_term1 = csp_product(&loc, term1, Some(term2)).unwrap();
-    // let csp_prod_term2 = csp_product(&loc, term3, Some(term4)).unwrap();
-    // let csp_prod_terms1 = vec![csp_prod_term1];
-    // let csp_prod_terms2 = vec![csp_prod_term2];
+    let csp_prod_term1 = csp_product(&loc, term1, Some(term2)).unwrap();
+    assert_eq!(format!("{}", csp_prod_term1), "42$*$\"test\"");
+    let csp_prod_term2 = csp_product::<SymbolicTerm, SymbolicTerm>(&loc, term3, None).unwrap();
+    assert_eq!(format!("{}", csp_prod_term2), "fun1(42,\"test\")");
+    let csp_prod_terms1 = [csp_prod_term1.into()];
+    let csp_prod_terms2 = [csp_prod_term2.into()];
 
-    // let csp_sum_term1 = csp_sum(&loc,csp_prod_terms1);
-    // let csp_sum_term2 = csp_sum(&loc,csp_prod_terms2);
+    let csp_sum_term1 = csp_sum(&loc, &csp_prod_terms1).unwrap();
+    assert_eq!(format!("{}", csp_sum_term1), "42$*$\"test\"");
+    let csp_sum_term2 = csp_sum(&loc, &csp_prod_terms2).unwrap();
+    assert_eq!(format!("{}", csp_sum_term2), "fun1(42,\"test\")");
 
-    // let csp_guard = CspGuard::gt(csp_sum_term1);
-    // let csp_guards = vec![csp_guard];
-    // let csp_lit = CspLiteral::new(csp_sum_term2, &csp_guards);
+    let csp_guard = csp_guard(ComparisonOperator::GreaterThan, csp_sum_term1).unwrap();
+    assert_eq!(format!("{}", csp_guard), " $> 42$*$\"test\"");
+    let csp_guards = vec![csp_guard];
+    let csp_lit = csp_literal(&loc, csp_sum_term2, &csp_guards).unwrap();
+    assert_eq!(format!("{}", csp_lit), "fun1(42,\"test\") $> 42$*$\"test\"");
 
-    // let lit = ast::Literal::from_csp_literal(Sign::NoSign, &csp_lit);
-    // assert_eq!(format!("{:?}",lit), "Literal { sign: NoSign csp_literal: CspLiteral { term: CspSumTerm { terms: [CspProductTerm { coefficient: Term { symbol: fun1(42,\"test\") } variable: Term { symbol: #sup } }] } guards: [CspGuard { comparison: GreaterThan term: CspSumTerm { terms: [CspProductTerm { coefficient: Term { symbol: 42 } variable: Term { symbol: \"test\" } }] } }] } }");
-    // let lt = lit.literal_type();
-    // assert_eq!(format!("{:?}", lt), "CSP(CspLiteral { term: CspSumTerm { terms: [CspProductTerm { coefficient: Term { symbol: fun1(42,\"test\") } variable: Term { symbol: #sup } }] } guards: [CspGuard { comparison: GreaterThan term: CspSumTerm { terms: [CspProductTerm { coefficient: Term { symbol: 42 } variable: Term { symbol: \"test\" } }] } }] })");
+    let lit: ast::Literal = csp_lit.into();
+    assert_eq!(format!("{}", lit), "fun1(42,\"test\") $> 42$*$\"test\"");
 }
 
 #[test]
@@ -317,7 +304,7 @@ fn ast_head_literal() {
     let lit2 = basic_literal_from_symbolic_atom(&loc, Sign::NoSign, atom2).unwrap();
     let condition: Vec<ast::Literal> = vec![lit2.into()];
     let cond = conditional_literal(&loc, lit.clone(), &condition).unwrap();
-    let elements = vec![cond.clone()];
+    let elements = [cond.clone()];
     let dis = disjunction(&loc, &elements).unwrap();
 
     let term3 = symbolic_term(&loc, &sym).unwrap();
@@ -325,9 +312,9 @@ fn ast_head_literal() {
     let guard = aggregate_guard(gt, term3).unwrap();
     let agg = aggregate(&loc, Some(guard.clone()), &elements, Some(guard.clone())).unwrap();
 
-    let tuple = vec![term1.clone().into()];
+    let tuple = [term1.clone().into()];
     let helem = head_aggregate_element(&tuple, cond).unwrap();
-    let elements = vec![helem];
+    let elements = [helem];
     let hagg = head_aggregate(
         &loc,
         Some(guard.clone()),
@@ -337,9 +324,9 @@ fn ast_head_literal() {
     )
     .unwrap();
 
-    let tuple = vec![term1.clone().into()];
+    let tuple = [term1.clone().into()];
     let element = theory_atom_element(&tuple, &condition).unwrap();
-    let elements = vec![element];
+    let elements = [element];
     let guard = theory_guard("theory_operator", term1.clone()).unwrap();
     let tatom = theory_atom(&loc, term1, &elements, Some(guard)).unwrap();
 
@@ -374,18 +361,18 @@ fn ast_body_literal() {
     let atom2 = symbolic_atom(term2.clone()).unwrap();
     let lit = basic_literal_from_symbolic_atom(&loc, Sign::NoSign, atom1).unwrap();
     let lit2 = basic_literal_from_symbolic_atom(&loc, Sign::NoSign, atom2).unwrap();
-    let condition = vec![lit2.into()];
+    let condition = [lit2.into()];
     let cond = conditional_literal(&loc, lit.clone(), &condition).unwrap();
-    let elements = vec![cond.clone()];
+    let elements = [cond.clone()];
 
     let term3 = symbolic_term(&loc, &sym).unwrap();
     let gt = ComparisonOperator::GreaterThan;
     let guard = aggregate_guard(gt, term3).unwrap();
     let agg = aggregate(&loc, Some(guard.clone()), &elements, Some(guard.clone())).unwrap();
 
-    let tuple = vec![term1.clone().into()];
+    let tuple = [term1.clone().into()];
     let element = body_aggregate_element(&tuple, &condition).unwrap();
-    let elements = vec![element];
+    let elements = [element];
     let bagg = body_aggregate(
         &loc,
         Some(guard.clone()),
@@ -396,9 +383,9 @@ fn ast_body_literal() {
     .unwrap();
 
     let th_term = symbolic_term(&loc, &sym).unwrap();
-    let tuple = vec![th_term.clone().into()];
+    let tuple = [th_term.clone().into()];
     let element = theory_atom_element(&tuple, &condition).unwrap();
-    let elements = vec![element.into()];
+    let elements = [element.into()];
     let guard = theory_guard("theory_operator", th_term).unwrap();
     let tatom = theory_atom(&loc, term1.clone(), &elements, Some(guard)).unwrap();
     let blit: BodyLiteral = lit.into();
@@ -420,21 +407,18 @@ fn ast_body_literal() {
         format!("{}", blit),
         "&test { test: test } theory_operator test"
     );
-    // TODO activate test when clingo bug fixed
-    // let tuple = vec![term1.clone()];
-    // let csp_prod_term1 = csp_product(&loc, term1, Some(term2));
-    // let csp_prod_terms1 = vec![csp_prod_term1];
+    let tuple = [term1.clone().into()];
 
-    // let csp_sum_term1 = csp_sum(&loc, &csp_prod_terms1);
-    // let element = DisjointElement::new(&tuple, csp_sum_term1, &condition);
-    // let elements = vec![element];
-    // let dis = disjoint(&loc,&elements);
+    let sym4 = Symbol::create_supremum();
+    let term4 = symbolic_term(&loc, &sym4).unwrap();
+    let element = disjoint_element::<_>(&loc, &tuple, term4, &condition).unwrap();
+    let elements = [element];
+    let dis = disjoint(&loc, &elements).unwrap();
 
-    // let blit : BodyLiteral= dis.into();
-    // assert_eq!(
-    //     format!("{}", blit),
-    //     "BodyLiteral { sign: NoSign disjoint: Disjoint { elements: [DisjointElement { tuple: [Term { symbol: test }] term: CspSumTerm { terms: [CspProductTerm { coefficient: Term { symbol: test } variable: Term { symbol: test } }] } condition: [Literal { sign: NoSign symbol: Term { symbol: test } }] }] } }"
-    // );
+    let body_atom: BodyAtom = dis.into();
+    let alit = atomic_literal_from_body_atom(&loc, Sign::NoSign, body_atom).unwrap();
+    let blit: BodyLiteral = alit.into();
+    assert_eq!(format!("{}", blit), "#disjoint { test:#sup: test }");
 }
 #[test]
 fn ast_theory_term() {
@@ -445,7 +429,7 @@ fn ast_theory_term() {
     let th_term1: TheoryTerm = th_term1.into();
     assert_eq!(format!("{}", th_term1), "test");
 
-    let arr = vec![th_term1];
+    let arr = [th_term1];
     let th_fun = theory_function(&loc, "fun1", &arr).unwrap();
 
     let th_term = theory_sequence(&loc, TheoryTermSequenceType::Tuple, &arr).unwrap();
@@ -472,7 +456,7 @@ fn ast_edge() {
     let term2 = symbolic_term(&loc, &sym2).unwrap();
     let atom2 = symbolic_atom(term2.clone()).unwrap();
     let lit = ast::basic_literal_from_symbolic_atom(&loc, Sign::NoSign, atom2).unwrap();
-    let body = vec![lit.into()];
+    let body = [lit.into()];
     let edge = edge(&loc, term1, term2, &body).unwrap();
     let stm: Statement = edge.into();
     test_statement(&stm, "#edge (test1,test2) : test2.");
@@ -485,9 +469,9 @@ fn ast_minimize() {
     let weight_atom = symbolic_atom(weight.clone()).unwrap();
     let sym2 = Symbol::create_id("test2", true).unwrap();
     let priority = symbolic_term(&loc, &sym2).unwrap();
-    let tuple = vec![weight.clone().into(), priority.clone().into()];
+    let tuple = [weight.clone().into(), priority.clone().into()];
     let lit = basic_literal_from_symbolic_atom(&loc, Sign::NoSign, weight_atom).unwrap();
-    let body = vec![lit.into()];
+    let body = [lit.into()];
     let mini = minimize(&loc, weight, priority, &tuple, &body).unwrap();
     let stm: Statement = mini.into();
     test_statement(&stm, ":~ test1. [test1@test2,test1,test2]");
@@ -501,7 +485,7 @@ fn ast_show_term() {
     let term2 = symbolic_term(&loc, &sym2).unwrap();
     let atom2 = symbolic_atom(term2).unwrap();
     let lit = basic_literal_from_symbolic_atom(&loc, Sign::NoSign, atom2).unwrap();
-    let body = vec![lit.into()];
+    let body = [lit.into()];
     let term = show_term(&loc, term1, &body, true).unwrap();
     let stm: Statement = term.into();
     test_statement(&stm, "#show $test1 : test2.");
@@ -541,12 +525,12 @@ fn ast_theory_definition() {
     let loc = Location::default();
     let op_def =
         theory_operator_definition(&loc, "operator_name", 2, TheoryOperatorType::Unary).unwrap();
-    let operators = vec![op_def];
+    let operators = [op_def];
     let termdef = theory_term_definition(&loc, "def_name", &operators).unwrap();
-    let terms = vec![termdef];
+    let terms = [termdef];
     let op1 = "operator1";
     let op2 = "operator2";
-    let operators = vec![op1, op2];
+    let operators = [op1, op2];
     let guard = theory_guard_definition(&operators, "guard_term").unwrap();
     let atom_def = theory_atom_definition(
         &loc,
@@ -557,8 +541,7 @@ fn ast_theory_definition() {
         Some(guard),
     )
     .unwrap();
-    let atoms = vec![atom_def];
-    // let atoms = vec![];
+    let atoms = [atom_def];
     let def = theory_definition(&loc, "theory_name", &terms, &atoms).unwrap();
     let stm: Statement = def.into();
     test_statement(
@@ -594,9 +577,9 @@ fn ast_rule_head_aggregate() {
     let term = symbolic_term(&loc, &sym).unwrap();
     let atom = symbolic_atom(term.clone()).unwrap();
     let lit = basic_literal_from_symbolic_atom(&loc, Sign::NoSign, atom).unwrap();
-    let condition = vec![lit.clone().into()];
+    let condition = [lit.clone().into()];
     let cond = conditional_literal(&loc, lit, &condition).unwrap();
-    let elements = vec![cond];
+    let elements = [cond];
     let gt = ComparisonOperator::GreaterThan;
     let left_guard = aggregate_guard(gt, term.clone()).unwrap();
     let lt = ComparisonOperator::LessThan;
@@ -614,11 +597,11 @@ fn ast_rule_head_head_aggregate() {
     let term = symbolic_term(&loc, &sym).unwrap();
     let atom = symbolic_atom(term.clone()).unwrap();
     let lit = basic_literal_from_symbolic_atom(&loc, Sign::NoSign, atom).unwrap();
-    let condition = vec![lit.clone().into()];
+    let condition = [lit.clone().into()];
     let cond = conditional_literal(&loc, lit, &condition).unwrap();
-    let tuple = vec![term.clone().into()];
+    let tuple = [term.clone().into()];
     let helem = head_aggregate_element(&tuple, cond).unwrap();
-    let elements = vec![helem];
+    let elements = [helem];
     let gt = ComparisonOperator::GreaterThan;
     let guard = aggregate_guard(gt, term).unwrap();
     let hagg = head_aggregate(
@@ -664,41 +647,40 @@ fn ast_rule() {
     let xor = BinaryOperator::Xor;
     let bop1 = binary_operation(&loc, xor, term9, term10).unwrap();
 
-    let mut args = vec![bop1.into()];
+    let mut args = [bop1.into()];
     let fun1 = function(&loc, "fun1", &mut args, false).unwrap();
 
     let gt = ComparisonOperator::GreaterThan;
     let comp = comparison(gt, term2, term3).unwrap();
 
-    // TODO activate one the bug in clingo is fixed
-    // let id4 = String::from("test4");
-    // let id5 = String::from("test5");
-    // let id6 = String::from("test6");
-    // let id7 = String::from("test7");
-    // let sym4 = Symbol::create_id(&id4, true).unwrap();
-    // let sym5 = Symbol::create_id(&id5, true).unwrap();
-    // let sym6 = Symbol::create_id(&id6, true).unwrap();
-    // let sym7 = Symbol::create_id(&id7, true).unwrap();
-    // let term4 = symbolic_term(&loc, &sym4).unwrap();
-    // let term5 = symbolic_term(&loc, &sym5).unwrap();
-    // let term6 = symbolic_term(&loc, &sym6).unwrap();
-    // let term7 = symbolic_term(&loc, &sym7).unwrap();
-    // let csp_prod_term1 = csp_product(&loc, term4, Some(term5)).unwrap();
-    // let csp_prod_term2 = csp_product(&loc, term6, Some(term7)).unwrap();
-    // let csp_prod_terms1 = vec![csp_prod_term1];
-    // let csp_prod_terms2 = vec![csp_prod_term2];
+    let id4 = String::from("test4");
+    let id5 = String::from("test5");
+    let id6 = String::from("test6");
+    let id7 = String::from("test7");
+    let sym4 = Symbol::create_id(&id4, true).unwrap();
+    let sym5 = Symbol::create_id(&id5, true).unwrap();
+    let sym6 = Symbol::create_id(&id6, true).unwrap();
+    let sym7 = Symbol::create_id(&id7, true).unwrap();
+    let term4 = symbolic_term(&loc, &sym4).unwrap();
+    let term5 = symbolic_term(&loc, &sym5).unwrap();
+    let term6 = symbolic_term(&loc, &sym6).unwrap();
+    let term7 = symbolic_term(&loc, &sym7).unwrap();
+    let csp_prod_term1 = csp_product(&loc, term4, Some(term5)).unwrap();
+    let csp_prod_term2 = csp_product(&loc, term6, Some(term7)).unwrap();
+    let csp_prod_terms1 = [csp_prod_term1];
+    let csp_prod_terms2 = [csp_prod_term2];
 
-    // let csp_sum_term1 = csp_sum(&loc, &csp_prod_terms1);
-    // let csp_sum_term2 = csp_sum(&loc, &csp_prod_terms2);
-    //
-    // let csp_guard = csp_guard(&loc, gt, csp_sum_term1);
-    // let csp_guards = vec![csp_guard];
-    // let csp_lit = CspLiteral::new(csp_sum_term2, &csp_guards);
-    // let lit4: ast::Literal = csp_lit.into();
+    let csp_sum_term1 = csp_sum(&loc, &csp_prod_terms1).unwrap();
+    let csp_sum_term2 = csp_sum(&loc, &csp_prod_terms2).unwrap();
 
-    // let rule4 = rule(&loc, lit4.into(), &[]).unwrap();
-    // let stm = rule4.into();
-    // test_statement(&stm, "Statement { rule: Rule { head: HeadLiteral { literal: Literal { sign: NoSign csp_literal: CspLiteral { term: CspSumTerm { terms: [CspProductTerm { coefficient: Term { symbol: test6 } variable: Term { symbol: test7 } }] } guards: [CspGuard { comparison: GreaterThan term: CspSumTerm { terms: [CspProductTerm { coefficient: Term { symbol: test4 } variable: Term { symbol: test5 } }] } }] } } }, body: [] } }");
+    let csp_guard = csp_guard(gt, csp_sum_term1).unwrap();
+    let csp_guards = [csp_guard];
+    let csp_lit = csp_literal(&loc, csp_sum_term2, &csp_guards).unwrap();
+    let lit4: ast::Literal = csp_lit.into();
+
+    let rule4 = rule::<Head>(&loc, lit4.into(), &[]).unwrap();
+    let stm = rule4.into();
+    test_statement(&stm, "test6$*$test7 $> test4$*$test5.");
 
     let lit1 = basic_literal_from_boolean_constant(&loc, Sign::NoSign, true).unwrap();
     let lit2 = basic_literal_from_symbolic_atom(&loc, Sign::NoSign, atom1).unwrap();
@@ -741,7 +723,7 @@ fn ast_rule_body() {
     let term = symbolic_term(&loc, &sym).unwrap();
     let atom = symbolic_atom(term).unwrap();
     let lit = basic_literal_from_symbolic_atom(&loc, Sign::NoSign, atom).unwrap();
-    let body = vec![lit.clone().into()];
+    let body = [lit.clone().into()];
     let rule = rule(&loc, lit, &body).unwrap();
     // drop(body);
     drop(sym);
@@ -755,8 +737,7 @@ fn ast_rule_body() {
 #[test]
 fn ast_program() {
     let loc = Location::default();
-    let parameters = vec![];
-    let prg = program(&loc, "base", &parameters).unwrap();
+    let prg = program(&loc, "base", &[]).unwrap();
     let stm = prg.into();
     test_statement(&stm, "#program base.");
 }
