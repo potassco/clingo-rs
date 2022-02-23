@@ -35,7 +35,7 @@ bitflags = "1.2"
 rand = "0.8"
 trybuild = "1.0"
 clingo-derive = { version = "0.2.0" }
-test-case = "1.1"
+test-case = "2.0"
 
 [package.metadata.docs.rs]
 all-features = false
