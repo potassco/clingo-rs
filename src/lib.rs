@@ -6789,3 +6789,175 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
         control.ctl
     }
 }
+
+
+/// Search handle to a solve call that is based on mutable reference to `clingo_solve_handle_t`.
+#[derive(Debug)]
+pub struct SolveHandleMutRef<'a> {
+    theref: &'a mut clingo_solve_handle_t,
+}
+impl<'a> SolveHandleMutRef<'a> {
+    /// Get the next solve result.
+    ///
+    /// Blocks until the result is ready.
+    /// When yielding partial solve results can be obtained, i.e.,
+    /// when a model is ready, the result will be satisfiable but neither the search exhausted nor the optimality proven.
+    ///
+    /// # Errors
+    ///
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if solving fails
+    pub fn get(&mut self) -> Result<SolveResult, ClingoError> {
+        let mut result = 0;
+        if !unsafe { clingo_solve_handle_get(self.theref, &mut result) } {
+            return Err(ClingoError::new_internal(
+                "Call to clingo_solve_handle_get() failed",
+            ));
+        }
+        if let Some(res) = SolveResult::from_bits(result) {
+            Ok(res)
+        } else {
+            eprintln!("Unknown bitflag in clingo_solve_result: {}.", result);
+            Err(ClingoError::FFIError {
+                msg: "Unknown bitflag in clingo_solve_result.",
+            })
+        }
+    }
+
+    /// Wait for the specified amount of time to check if the next result is ready.
+    ///
+    /// If the time is set to zero, this function can be used to poll if the search is still active.
+    /// If the time is negative, the function blocks until the search is finished.
+    ///
+    /// # Arguments
+    ///
+    /// * `timeout` - the maximum time to wait
+    pub fn wait(&mut self, timeout: f64) -> bool {
+        let mut result = false;
+        unsafe { clingo_solve_handle_wait(self.theref, timeout, &mut result) }
+        result
+    }
+
+    /// Get the next model or None if there are no more models.
+    ///
+    /// # Errors
+    ///
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if solving fails
+    pub fn model(&mut self) -> Result<Option<&Model>, ClingoError> {
+        let mut model = std::ptr::null_mut() as *const clingo_model_t;
+        if !unsafe { clingo_solve_handle_model(self.theref, &mut model) } {
+            return Err(ClingoError::new_internal(
+                "Call to clingo_solve_handle_model() failed",
+            ));
+        }
+        Ok(unsafe { (model as *const Model).as_ref() })
+    }
+
+    /// Get the next model or None if there are no more models.
+    ///
+    /// # Errors
+    ///
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if solving fails
+    pub fn model_mut(&mut self) -> Result<&mut Model, ClingoError> {
+        let mut model = std::ptr::null_mut() as *const clingo_model_t;
+        if !unsafe { clingo_solve_handle_model(self.theref, &mut model) } {
+            return Err(ClingoError::new_internal(
+                "Call to clingo_solve_handle_model() failed",
+            ));
+        }
+        match unsafe { (model as *mut Model).as_mut() } {
+            Some(x) => Ok(x),
+            None => Err(ClingoError::FFIError {
+                msg: "Tried casting a null pointer to &mut Model.",
+            }),
+        }
+    }
+    /// Discards the last model and starts the search for the next one.
+    ///
+    /// If the search has been started asynchronously, this function continues the search in the
+    /// background.
+    ///
+    /// **Note:** This function does not block.
+    ///
+    /// # Errors
+    ///
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if solving fails
+    pub fn resume(&mut self) -> Result<(), ClingoError> {
+        if !unsafe { clingo_solve_handle_resume(self.theref) } {
+            return Err(ClingoError::new_internal(
+                "Call to clingo_solve_handle_resume() failed",
+            ));
+        }
+        Ok(())
+    }
+
+    /// Stop the running search and block until done.
+    ///
+    /// # Errors
+    ///
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if solving fails
+    pub fn cancel(&mut self) -> Result<(), ClingoError> {
+        if !unsafe { clingo_solve_handle_cancel(self.theref) } {
+            return Err(ClingoError::new_internal(
+                "Call to clingo_solve_handle_cancel() failed",
+            ));
+        }
+        Ok(())
+    }
+
+    /// Stops the running search and releases the handle.
+    ///
+    /// Blocks until the search is stopped (as if an implicit cancel was called before the handle is
+    /// released).
+    ///
+    /// # Errors
+    ///
+    /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+    /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if solving fails
+    pub fn close(self) -> Result<(), ClingoError> {
+        if !unsafe { clingo_solve_handle_close(self.theref) } {
+            return Err(ClingoError::new_internal(
+                "Call to clingo_solve_handle_close() failed",
+            ));
+        }
+        Ok(())
+    }
+}
+
+impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
+    GenericControl<L, P, O, F>
+{
+    pub fn solve_mut_ref(
+        &mut self,
+        mode: SolveMode,
+        assumptions: &[SolverLiteral],
+    ) -> Result<SolveHandleMutRef, ClingoError> {
+        let mut handle = std::ptr::null_mut();
+        if !unsafe {
+            clingo_control_solve(
+                self.ctl.as_ptr(),
+                mode.bits(),
+                assumptions.as_ptr() as *const clingo_literal_t,
+                assumptions.len(),
+                None,
+                std::ptr::null_mut(),
+                &mut handle,
+            )
+        } {
+            return Err(ClingoError::new_internal(
+                "Call to clingo_control_solve() failed",
+            ));
+        }
+        match unsafe { handle.as_mut() } {
+            Some(handle_ref) => Ok(SolveHandleMutRef { theref: handle_ref }),
+            None => Err(ClingoError::FFIError {
+                msg: "Tried casting a null pointer to &mut clingo_solve_handle.",
+            }),
+        }
+    }
+}
+
