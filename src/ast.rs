@@ -1476,7 +1476,6 @@ where
 {
     let term: Term = term.into();
     let mut ast = std::ptr::null_mut();
-    // let operator_name = internalize_string(operator_name)?;
     if !unsafe {
         clingo_ast_build(
             clingo_ast_type_e_clingo_ast_type_guard as i32,
@@ -1503,10 +1502,9 @@ where
 }
 
 /// Construct an AST node of type `ASTType.Comparison`.
-pub fn comparison<'a, T1, T2>(term: T1, guards: &'a [T2]) -> Result<Comparison<'a>, ClingoError>
+pub fn comparison<'a, T1>(term: T1, guards: &'a [Guard]) -> Result<Comparison<'a>, ClingoError>
 where
     T1: Into<Term<'a>>,
-    T2: Into<Guard<'a>>,
 {
     let term: Term = term.into();
     let mut ast = std::ptr::null_mut();
@@ -1578,7 +1576,7 @@ where
 /// Construct an AST node of type `ASTType.Aggregate`.
 pub fn aggregate<'a>(
     location: &Location,
-    left_guard: Option<Guard<'a>>,
+    left_guard: Option<Guard>,
     elements: &'a [ConditionalLiteral],
     right_guard: Option<Guard>,
 ) -> Result<Aggregate<'a>, ClingoError> {
