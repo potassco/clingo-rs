@@ -32,14 +32,14 @@ All notable changes to this project will be documented in this file.
 
 ## v0.6.0 - Jan 3, 2020
 
-### Changed
+**Changed:**
 
 - refactor ClingoError
 - use clingo-sys 0.5.1 which includes clingo via git submodule
 
 ## v0.5.0 - Nov 4, 2019
 
-### Changed
+**Changed:**
 
 - use clingo-sys 0.5.0
 - improve API added functions for the AST
@@ -47,13 +47,13 @@ All notable changes to this project will be documented in this file.
 
 ## v0.4.3 - Jul 10, 2019
 
-### Fixed
+**Fixed:**
 
 - remove optimality check from AllModels Iterator
 
 ## v0.4.2 - Jun 28, 2019
 
-### Added
+**Added:**
 
 - added the possiblibity to create HeadLiterals ast::HeadLiteral::new()
 - added clingo::ToSymbol trait
@@ -64,16 +64,16 @@ All notable changes to this project will be documented in this file.
 
 ## v0.4.0 - Feb 2, 2019
 
-### Fixed
+**Fixed:**
 
 - removed copy derive for opaque types
 
-### Changed
+**Changed:**
 
 - use libclingo 5.3.0
 - use rust stable
 
-### Added
+**Added:**
 
 - more tests
 - this CHANGELOG file
