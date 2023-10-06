@@ -267,7 +267,7 @@ impl TryFrom<u32> for ASTAttributeType {
 }
 #[derive(Debug, Copy, Clone)]
 /// Enumeration of attributes used by the AST.
-pub(crate) enum ASTAttribute {
+enum ASTAttribute {
     Argument = clingo_ast_attribute_e_clingo_ast_attribute_argument as isize,
     Arguments = clingo_ast_attribute_e_clingo_ast_attribute_arguments as isize,
     Arity = clingo_ast_attribute_e_clingo_ast_attribute_arity as isize,
@@ -742,7 +742,7 @@ impl<'a> AST<'a> {
     ///
     /// might set one of the following error codes:
     /// - ::clingo_error_runtime
-    pub(crate) fn set_attribute_ast(
+    fn set_attribute_ast(
         &self,
         attribute: ASTAttribute,
         value: AST,
