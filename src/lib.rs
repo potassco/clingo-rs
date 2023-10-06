@@ -1642,7 +1642,7 @@ pub mod defaults {
         SolveEventHandler, Symbol,
     };
     /// Default implementation for Logger, Propagator, GroundProgramObserver, FunctionHandler and SolveEventHandler
-    #[derive(Debug)]
+    #[derive(Debug, Clone, Copy)]
     pub struct Non;
     impl Logger for Non {}
     impl Propagator for Non {}
