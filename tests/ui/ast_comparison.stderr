@@ -1,3 +1,20 @@
+error[E0716]: temporary value dropped while borrowed
+  --> tests/ui/ast_comparison.rs:10:40
+   |
+10 |     let comp = ast::comparison(term2, &[guard]);
+   |                                        ^^^^^^^ - temporary value is freed at the end of this statement
+   |                                        |
+   |                                        creates a temporary value which is freed while still in use
+...
+14 |     let _end = comp;
+   |                ---- borrow later used here
+   |
+help: consider using a `let` binding to create a longer lived value
+   |
+10 ~     let binding = [guard];
+11 ~     let comp = ast::comparison(term2, &binding);
+   |
+
 error[E0382]: use of moved value: `term1`
   --> tests/ui/ast_comparison.rs:12:10
    |
