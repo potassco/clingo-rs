@@ -269,6 +269,7 @@ fn ast_literal() {
     let guard = guard(gt, term2).unwrap();
     let guards = [guard];
     let comp = comparison(term3, &guards).unwrap();
+    assert_eq!(comp.to_string().unwrap(), "fun1(42,\"test\") > \"test\"");
     let lit = ast::basic_literal_from_comparison(&loc, Sign::NoSign, comp).unwrap();
     assert_eq!(format!("{}", lit), "fun1(42,\"test\") > \"test\"");
 }
