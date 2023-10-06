@@ -1,4 +1,4 @@
-# clingo-rs [![Build Status](https://travis-ci.org/potassco/clingo-rs.svg?branch=master)](https://travis-ci.org/potassco/clingo-rs) [![Latest Version](https://img.shields.io/crates/v/clingo.svg)](https://crates.io/crates/clingo) [![Rust Documentation](https://docs.rs/clingo/badge.svg)](https://docs.rs/clingo)
+# clingo-rs [![Build Status](https://github.com/potassco/clingo-rs/actions/workflows/test-ci.yml/badge.svg)](https://github.com/potassco/clingo-rs/actions/workflows/test-ci.yml) [![Latest Version](https://img.shields.io/crates/v/clingo.svg)](https://crates.io/crates/clingo) [![Rust Documentation](https://docs.rs/clingo/badge.svg)](https://docs.rs/clingo)
 
 Rust bindings to the [clingo](https://github.com/potassco/clingo) library.
 Clingo version 5.5.0.
