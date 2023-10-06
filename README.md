@@ -41,7 +41,7 @@ In your `Cargo.toml` add:
 
 ```toml
 [dependencies]
-clingo = { version = "0.7.3", features = ["derive"] }
+clingo = { version = "0.8.0-dev", features = ["derive"] }
 ```
 
 In your source write:
@@ -73,7 +73,7 @@ follows.
 
 ```toml
 [dependencies]
-clingo = { version = "0.7.3", features = ["static-linking"] }
+clingo = { version = "0.8.0-dev", features = ["static-linking"] }
 ```
 
 To build clingo for static linking you need the following tools installed:
