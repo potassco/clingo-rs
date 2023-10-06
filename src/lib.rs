@@ -617,8 +617,6 @@ bitflags! {
     pub struct ShowType: u32 {
         /// Select symbols added by theory.
         const THEORY = clingo_show_type_e_clingo_show_type_theory;
-        /// Select CSP assignments.
-        const CSP  = clingo_show_type_e_clingo_show_type_csp;
         /// Select shown atoms and terms.
         const SHOWN = clingo_show_type_e_clingo_show_type_shown;
         /// Select all atoms.
@@ -2249,7 +2247,6 @@ impl<C: ControlCtx> GenericControl<C> {
             project: Some(unsafe_project::<C::O>),
             output_atom: Some(unsafe_output_atom::<C::O>),
             output_term: Some(unsafe_output_term::<C::O>),
-            output_csp: Some(unsafe_output_csp::<C::O>),
             external: Some(unsafe_external::<C::O>),
             assume: Some(unsafe_assume::<C::O>),
             heuristic: Some(unsafe_heuristic::<C::O>),
@@ -5909,26 +5906,6 @@ unsafe extern "C" fn unsafe_output_term<T: GroundProgramObserver>(
     let gpo = &mut *(gpo as *mut T);
 
     gpo.output_term(Symbol(symbol), condition)
-}
-unsafe extern "C" fn unsafe_output_csp<T: GroundProgramObserver>(
-    symbol: clingo_symbol_t,
-    value: ::std::os::raw::c_int,
-    condition: *const clingo_literal_t,
-    size: usize,
-    gpo: *mut c_void,
-) -> bool {
-    // check for null pointers
-    if (size > 0 && condition.is_null()) | gpo.is_null() {
-        set_internal_error(
-            ErrorType::Runtime,
-            "unsafe_output_csp() got a null pointer.",
-        );
-        return false;
-    }
-    let condition = std::slice::from_raw_parts(condition as *const SolverLiteral, size);
-    let gpo = &mut *(gpo as *mut T);
-
-    gpo.output_csp(Symbol(symbol), value, condition)
 }
 unsafe extern "C" fn unsafe_external<T: GroundProgramObserver>(
     atom: clingo_atom_t,
