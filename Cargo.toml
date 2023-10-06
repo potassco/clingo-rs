@@ -32,7 +32,7 @@ thiserror = "1.0"
 bitflags = "1.2"
 
 [dev-dependencies]
-rand = "=0.8.5"
+rand = "0.8.5"
 trybuild = "1.0"
 clingo-derive = { version = "=0.2.0" }
 test-case = "1.1"
