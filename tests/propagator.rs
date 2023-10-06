@@ -18,6 +18,30 @@ fn get_arg(sym: &Symbol, offset: usize) -> Result<i32, ClingoError> {
     args[offset as usize].number()
 }
 
+struct CtrlCtx<P: Propagator> {
+    non: defaults::Non,
+    propagator: P,
+}
+impl<P: Propagator> ControlCtx for CtrlCtx<P> {
+    type L = defaults::Non;
+    type P = P;
+    type O = defaults::Non;
+    type F = defaults::Non;
+
+    fn logger(&mut self) -> (&mut Self::L, u32) {
+        (&mut self.non, 0)
+    }
+    fn propagator(&mut self) -> (&mut Self::P, bool) {
+        (&mut self.propagator, false)
+    }
+    fn observer(&mut self) -> (&mut Self::O, bool) {
+        (&mut self.non, false)
+    }
+    fn function_handler(&mut self) -> &mut Self::F {
+        &mut self.non
+    }
+}
+
 struct PigeonPropagator {
     // mapping from solver literals capturing pigeon placements to hole numbers
     // (solver literal -> hole number or zero)
@@ -180,8 +204,8 @@ impl Propagator for PigeonPropagator {
 }
 
 fn solve<P: Propagator>(
-    ctl: ControlWithPropagator<P>,
-) -> Result<(Vec<Vec<String>>, ControlWithPropagator<P>), ClingoError> {
+    ctl: GenericControl<CtrlCtx<P>>,
+) -> Result<(Vec<Vec<String>>, GenericControl<CtrlCtx<P>>), ClingoError> {
     let mut ret = Vec::<Vec<String>>::new();
     // get a solve handle
     let mut handle = ctl
@@ -218,14 +242,16 @@ fn string_model(model: &Model) -> Vec<String> {
 #[test_case(2, 2, 2; "sat")]
 #[test_case(5, 6, 0; "unsat")]
 fn pigeon_propagator(holes: i32, pigeons: i32, number_of_models: usize) {
-    let ctl = control(vec!["0".into()]).unwrap();
-    let prop = PigeonPropagator {
-        pigeons: vec![],
-        states: vec![],
+    // create a control context with propagator
+    let ctrl_ctx = CtrlCtx {
+        non: defaults::Non,
+        propagator: PigeonPropagator {
+            pigeons: vec![],
+            states: vec![],
+        },
     };
-    let mut ctl = ctl
-        .register_propagator(prop, false)
-        .expect("Failed to register propagator.");
+    let mut ctl = control_with_context(vec!["0".into()], ctrl_ctx).unwrap();
+
     ctl.add(
         "pigeon",
         &vec!["h", "p"],
@@ -337,16 +363,18 @@ impl Propagator for TestAssignment {
 
 #[test]
 fn assignment_propagator() {
-    let ctl = control(vec!["0".into()]).unwrap();
-    let p = TestAssignment {
-        a: None,
-        b: None,
-        c: None,
-        count: 0,
+    // create a control context with propagator
+    let ctrl_ctx = CtrlCtx {
+        non: defaults::Non,
+        propagator: TestAssignment {
+            a: None,
+            b: None,
+            c: None,
+            count: 0,
+        },
     };
-    let mut ctl = ctl
-        .register_propagator(p, false)
-        .expect("Failed to register propagator.");
+    let mut ctl = control_with_context(vec!["0".into()], ctrl_ctx).unwrap();
+
     ctl.add("base", &[], "{a; b}. c.")
         .expect("Failed to add a logic program.");
 
@@ -386,11 +414,13 @@ impl Propagator for TestMode {
 
 #[test]
 fn mode_propagator() {
-    let ctl = control(vec!["0".into()]).unwrap();
-    let p = TestMode { lits: vec![] };
-    let mut ctl = ctl
-        .register_propagator(p, false)
-        .expect("Failed to register propagator.");
+    // create a control context with propagator
+    let ctrl_ctx = CtrlCtx {
+        non: defaults::Non,
+        propagator: TestMode { lits: vec![] },
+    };
+    let mut ctl = control_with_context(vec!["0".into()], ctrl_ctx).unwrap();
+
     ctl.add("base", &[], "{p(1..9)}.")
         .expect("Failed to add a logic program.");
 
@@ -503,26 +533,29 @@ impl Propagator for TestPropagator {
 
 #[test]
 fn add_watch_propagator() {
-    let mut ctl = control(vec!["0".into()]).unwrap();
     let p = Rc::new(RefCell::new(TestAddWatch {
         propagated: HashSet::new(),
         a: None,
         b: None,
     }));
-    let pr = TestPropagator {
-        inner: p.clone(),
-        mutex: Mutex::new(0),
-        cv: Condvar::new(),
-        done: false,
+
+    // create a control context with propagator
+    let ctrl_ctx = CtrlCtx {
+        non: defaults::Non,
+        propagator: TestPropagator {
+            inner: p.clone(),
+            mutex: Mutex::new(0),
+            cv: Condvar::new(),
+            done: false,
+        },
     };
+    let mut ctl = control_with_context(vec!["0".into()], ctrl_ctx).unwrap();
+
     let conf = ctl.configuration_mut().unwrap();
     let root_key = conf.root().unwrap();
     let sub_key = conf.map_at(root_key, "solve.parallel_mode").unwrap();
     conf.value_set(sub_key, "2")
         .expect("Failed to set solve.parallel_mode to 2.");
-    let mut ctl = ctl
-        .register_propagator(pr, false)
-        .expect("Failed to register propagator.");
     ctl.add("base", &[], "{a;b;c;d}. c. :- d.")
         .expect("Failed to add a logic program.");
 
@@ -613,7 +646,6 @@ impl Propagator for TestPropagator2 {
 #[test_case(ClauseType::Volatile, 3, 4; "volatile")]
 #[test_case(ClauseType::VolatileStatic, 3, 4; "volatile_static")]
 fn add_clause(clause_type: ClauseType, m1: usize, m2: usize) {
-    let ctl = control(vec!["0".into()]).unwrap();
     let data = Rc::new(RefCell::new(TestAddClause {
         clause_type,
         enable: true,
@@ -621,12 +653,16 @@ fn add_clause(clause_type: ClauseType, m1: usize, m2: usize) {
         b: None,
         count: 0,
     }));
-    let p = TestPropagator2 {
-        inner: data.clone(),
+
+    // create a control context with propagator
+    let ctrl_ctx = CtrlCtx {
+        non: defaults::Non,
+        propagator: TestPropagator2 {
+            inner: data.clone(),
+        },
     };
-    let mut ctl = ctl
-        .register_propagator(p, false)
-        .expect("Failed to register propagator.");
+    let mut ctl = control_with_context(vec!["0".into()], ctrl_ctx).unwrap();
+
     ctl.add("base", &[], "{a; b}.")
         .expect("Failed to add a logic program.");
 
