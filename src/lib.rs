@@ -1,4 +1,4 @@
-#![doc(html_root_url = "https://docs.rs/clingo/0.7.3-dev")]
+#![doc(html_root_url = "https://docs.rs/clingo/0.7.3")]
 #![doc = include_str!("../README.md")]
 #![allow(non_upper_case_globals)]
 #![allow(clippy::try_err)]
