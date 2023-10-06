@@ -24,9 +24,9 @@ use vec1::Vec1;
 /// The string members of a location object are internalized and valid for the duration of the process.
 #[derive(Debug, Copy, Clone)]
 pub struct Location(pub(crate) clingo_location);
-impl Location {
+impl Default for Location {
     /// Create a default location.
-    pub fn default() -> Location {
+    fn default() -> Self {
         let file = CString::new("").unwrap();
         Location(clingo_location {
             begin_line: 0,
@@ -37,6 +37,8 @@ impl Location {
             end_file: file.as_ptr(),
         })
     }
+}
+impl Location {
     /// Create a new location.
     ///
     /// # Arguments
@@ -2289,7 +2291,7 @@ pub fn theory_guard_definition<'a>(
         clingo_ast_build(
             clingo_ast_type_e_clingo_ast_type_theory_guard_definition as i32,
             &mut ast,
-            c_operators.as_ptr() as *const *const c_char,
+            c_operators.as_ptr(),
             c_operators.len(),
             term,
         )

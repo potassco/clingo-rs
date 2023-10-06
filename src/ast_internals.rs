@@ -347,7 +347,7 @@ impl<'a> Drop for AST<'a> {
 impl<'a> AST<'a> {
     pub(crate) fn body(&self) -> Body {
         Body(ASTArray {
-            ast: &self,
+            ast: self,
             index: 0,
         })
     }
