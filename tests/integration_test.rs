@@ -265,15 +265,15 @@ fn ast_literal() {
     let lit = ast::basic_literal_from_symbolic_atom(&loc, Sign::NoSign, sterm1).unwrap();
     assert_eq!(format!("{}", lit), "42");
 
-    let gt = ComparisonOperator::GreaterThan;
-    let guard = guard(gt, term2).unwrap();
-    assert_eq!(guard.to_string().unwrap(), " > \"test\"");
+    let lt = ComparisonOperator::LessThan;
+    let guard = guard(lt, term2).unwrap();
+    assert_eq!(guard.to_string().unwrap(), " < \"test\"");
 
     let guards = [guard];
     let comp = comparison(term3, &guards).unwrap();
-    assert_eq!(comp.to_string().unwrap(), "fun1(42,\"test\") > \"test\"");
+    assert_eq!(comp.to_string().unwrap(), "fun1(42,\"test\") < \"test\"");
     let lit = ast::basic_literal_from_comparison(&loc, Sign::NoSign, comp).unwrap();
-    assert_eq!(format!("{}", lit), "fun1(42,\"test\") > \"test\"");
+    assert_eq!(format!("{}", lit), "fun1(42,\"test\") < \"test\"");
 }
 
 #[test]
