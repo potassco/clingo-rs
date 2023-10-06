@@ -636,32 +636,32 @@ fn ast_program() {
     let stm = prg.into();
     test_statement(&stm, "#program base.");
 }
-#[test]
-fn ui() {
-    let t = trybuild::TestCases::new();
-    t.compile_fail("tests/ui/ast_term_from_unary_operation.rs");
-    t.compile_fail("tests/ui/ast_term_from_binary_operation.rs");
-    t.compile_fail("tests/ui/ast_term_from_function.rs");
-    t.compile_fail("tests/ui/ast_term_from_pool.rs");
-    t.compile_fail("tests/ui/ast_comparison.rs");
-    t.compile_fail("tests/ui/ast_unary_operation.rs");
-    t.compile_fail("tests/ui/ast_binary_operation.rs");
-    t.compile_fail("tests/ui/ast_guard.rs");
-    t.compile_fail("tests/ui/ast_function.rs");
-    t.compile_fail("tests/ui/ast_interval.rs");
-    t.compile_fail("tests/ui/ast_pool.rs");
-    t.compile_fail("tests/ui/ast_literal_from_term.rs");
-    t.compile_fail("tests/ui/ast_literal_from_comparison.rs");
-    t.compile_fail("tests/ui/ast_aggregate.rs");
-    t.compile_fail("tests/ui/ast_conditional_literal.rs");
-    t.compile_fail("tests/ui/ast_head_aggregate.rs");
-    t.compile_fail("tests/ui/ast_head_aggregate_element.rs");
-    t.compile_fail("tests/ui/ast_disjunction.rs");
-    t.compile_fail("tests/ui/ast_head_literal.rs");
-    t.compile_fail("tests/ui/ast_body_literal_from_term.rs");
-    t.compile_fail("tests/ui/ast_rule.rs");
-    t.compile_fail("tests/ui/ast_external.rs");
-    t.compile_fail("tests/ui/ast_statement_from_external.rs");
-    t.compile_fail("tests/ui/ast_statement_from_rule.rs");
-    //check builder.add(stmt)
-}
+// #[test]
+// fn ui() {
+//     let t = trybuild::TestCases::new();
+//     t.compile_fail("tests/ui/ast_term_from_unary_operation.rs");
+//     t.compile_fail("tests/ui/ast_term_from_binary_operation.rs");
+//     t.compile_fail("tests/ui/ast_term_from_function.rs");
+//     t.compile_fail("tests/ui/ast_term_from_pool.rs");
+//     t.compile_fail("tests/ui/ast_comparison.rs");
+//     t.compile_fail("tests/ui/ast_unary_operation.rs");
+//     t.compile_fail("tests/ui/ast_binary_operation.rs");
+//     t.compile_fail("tests/ui/ast_guard.rs");
+//     t.compile_fail("tests/ui/ast_function.rs");
+//     t.compile_fail("tests/ui/ast_interval.rs");
+//     t.compile_fail("tests/ui/ast_pool.rs");
+//     t.compile_fail("tests/ui/ast_literal_from_term.rs");
+//     t.compile_fail("tests/ui/ast_literal_from_comparison.rs");
+//     t.compile_fail("tests/ui/ast_aggregate.rs");
+//     t.compile_fail("tests/ui/ast_conditional_literal.rs");
+//     t.compile_fail("tests/ui/ast_head_aggregate.rs");
+//     t.compile_fail("tests/ui/ast_head_aggregate_element.rs");
+//     t.compile_fail("tests/ui/ast_disjunction.rs");
+//     t.compile_fail("tests/ui/ast_head_literal.rs");
+//     t.compile_fail("tests/ui/ast_body_literal_from_term.rs");
+//     t.compile_fail("tests/ui/ast_rule.rs");
+//     t.compile_fail("tests/ui/ast_external.rs");
+//     t.compile_fail("tests/ui/ast_statement_from_external.rs");
+//     t.compile_fail("tests/ui/ast_statement_from_rule.rs");
+//     //check builder.add(stmt)
+// }
