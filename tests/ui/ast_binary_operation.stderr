@@ -1,23 +1,31 @@
 error[E0382]: use of moved value: `term1`
- --> $DIR/ast_binary_operation.rs:8:10
-  |
-5 |     let term1 = ast::Term::from(sym);
-  |         ----- move occurs because `term1` has type `clingo::ast::Term<'_>`, which does not implement the `Copy` trait
-6 |     let term2 = ast::Term::from(sym);
-7 |     let op = ast::BinaryOperation::xor(term1, term2);
-  |                                        ----- value moved here
-8 |     drop(term1);
-  |          ^^^^^ value used here after move
+  --> tests/ui/ast_binary_operation.rs:10:10
+   |
+7  |     let term1: ast::Term = ast::symbolic_term(&loc, &sym).unwrap().into();
+   |         ----- move occurs because `term1` has type `Term<'_>`, which does not implement the `Copy` trait
+8  |     let term2: ast::Term = ast::symbolic_term(&loc, &sym).unwrap().into();
+9  |     let op = ast::binary_operation(&loc, ast::BinaryOperator::Xor,term1, term2);
+   |                                                                   ----- value moved here
+10 |     drop(term1);
+   |          ^^^^^ value used here after move
+   |
+help: consider cloning the value if the performance cost is acceptable
+   |
+9  |     let op = ast::binary_operation(&loc, ast::BinaryOperator::Xor,term1.clone(), term2);
+   |                                                                        ++++++++
 
 error[E0382]: use of moved value: `term2`
- --> $DIR/ast_binary_operation.rs:9:10
-  |
-6 |     let term2 = ast::Term::from(sym);
-  |         ----- move occurs because `term2` has type `clingo::ast::Term<'_>`, which does not implement the `Copy` trait
-7 |     let op = ast::BinaryOperation::xor(term1, term2);
-  |                                               ----- value moved here
-8 |     drop(term1);
-9 |     drop(term2);
-  |          ^^^^^ value used here after move
-
-For more information about this error, try `rustc --explain E0382`.
+  --> tests/ui/ast_binary_operation.rs:11:10
+   |
+8  |     let term2: ast::Term = ast::symbolic_term(&loc, &sym).unwrap().into();
+   |         ----- move occurs because `term2` has type `Term<'_>`, which does not implement the `Copy` trait
+9  |     let op = ast::binary_operation(&loc, ast::BinaryOperator::Xor,term1, term2);
+   |                                                                          ----- value moved here
+10 |     drop(term1);
+11 |     drop(term2);
+   |          ^^^^^ value used here after move
+   |
+help: consider cloning the value if the performance cost is acceptable
+   |
+9  |     let op = ast::binary_operation(&loc, ast::BinaryOperator::Xor,term1, term2.clone());
+   |                                                                               ++++++++

@@ -1,15 +1,25 @@
+// ast_disjunction
 use clingo::*;
 
 fn main() {
+    let loc = ast::Location::default();
     let sym = Symbol::create_id("test", true).unwrap();
-    let term1 = ast::Term::from(sym);
-    let lit = ast::Literal::from_term(ast::Sign::NoSign, &term1);
-    let term2 = ast::Term::from(sym);
-    let lit2 = ast::Literal::from_term(ast::Sign::NoSign, &term2);
-    let args = vec![lit2];
-    let cond = ast::ConditionalLiteral::new(&lit, &args);
-    let args2 = vec![cond];
-    let dis = ast::Disjunction::new(&args2);
-    drop(args2);
+    let term1: ast::Term = ast::symbolic_term(&loc, &sym).unwrap().into();
+    let term2: ast::Term = ast::symbolic_term(&loc, &sym).unwrap().into();
+
+    let atom1 = ast::symbolic_atom(term1).unwrap();
+    let lit = ast::basic_literal_from_symbolic_atom(&loc, ast::Sign::NoSign, atom1).unwrap();
+
+    let atom2 = ast::symbolic_atom(term2).unwrap();
+    let lit2 = ast::basic_literal_from_symbolic_atom(&loc, ast::Sign::NoSign, atom2)
+        .unwrap()
+        .into();
+
+    let condition = vec![lit2];
+    let cond = ast::conditional_literal(&loc, lit, &condition).unwrap();
+    let elements = vec![cond];
+    let dis = ast::disjunction(&loc, &elements);
+    
+    drop(elements);
     let _end = dis;
 }

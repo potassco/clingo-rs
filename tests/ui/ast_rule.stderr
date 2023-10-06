@@ -1,11 +1,11 @@
 error[E0505]: cannot move out of `body` because it is borrowed
-  --> tests/ui/ast_rule.rs:14:10
+  --> tests/ui/ast_rule.rs:13:10
    |
-12 |     let body = vec![blit];
+11 |     let body = vec![blit];
    |         ---- binding `body` declared here
-13 |     let rule = rule(&loc, hlit, &body);
-   |                                 ----- borrow of `body` occurs here
-14 |     drop(body);
+12 |     let rule = rule(&loc, lit, &body);
+   |                                ----- borrow of `body` occurs here
+13 |     drop(body);
    |          ^^^^ move out of `body` occurs here
-15 |     let _end = rule;
+14 |     let _end = rule;
    |                ---- borrow later used here

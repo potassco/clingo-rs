@@ -1,19 +1,26 @@
+// ast_head_aggregate_element
 use clingo::*;
 
 fn main() {
+    let loc = ast::Location::default();
     let sym = Symbol::create_id("test", true).unwrap();
-    let mut term1 = ast::Term::from(sym);
-    let mut term2 = ast::Term::from(sym);
-    let tuple = vec![term1];
-    let lit = ast::Literal::from_term(ast::Sign::NoSign, &term1);
-    let lit2 = ast::Literal::from_term(ast::Sign::NoSign, &term2);
+    let term1: ast::Term = ast::symbolic_term(&loc, &sym).unwrap().into();
+    let term2: ast::Term = ast::symbolic_term(&loc, &sym).unwrap().into();
+    let term3: ast::Term = ast::symbolic_term(&loc, &sym).unwrap().into();
+
+    let atom1 = ast::symbolic_atom(term1).unwrap();
+    let lit = ast::basic_literal_from_symbolic_atom(&loc, ast::Sign::NoSign, atom1).unwrap();
+
+    let atom2 = ast::symbolic_atom(term2).unwrap();
+    let lit2: ast::Literal = ast::basic_literal_from_symbolic_atom(&loc, ast::Sign::NoSign, atom2)
+        .unwrap()
+        .into();
+
     let condition = vec![lit2];
-    let cond = ast::ConditionalLiteral::new(&lit, &condition);
-    let helem = ast::HeadAggregateElement::new(&tuple,cond);
-    
-    term1 =  ast::Term::from(sym);
-    term2 =  ast::Term::from(sym);
-    lit = ast::Literal::from_term(ast::Sign::NoSign, &term1);
+    let cond = ast::conditional_literal(&loc, lit, &condition).unwrap();
+    let tuple = vec![term3];
+    let helem = ast::head_aggregate_element(&tuple, cond);
+
     drop(tuple);
-    let _end = (term1, term2, lit, helem);
+    let _end = helem;
 }

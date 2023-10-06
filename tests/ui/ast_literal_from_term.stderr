@@ -1,10 +1,15 @@
-error[E0506]: cannot assign to `term` because it is borrowed
- --> $DIR/ast_literal_from_term.rs:8:5
-  |
-6 |     let lit = ast::Literal::from_term(ast::Sign::NoSign, &term);
-  |                                                          ----- borrow of `term` occurs here
-7 |     
-8 |     term = ast::Term::from(sym);
-  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^ assignment to borrowed `term` occurs here
-9 |     let _end = (lit,term);
-  |                 --- borrow later used here
+error[E0382]: use of moved value: `term`
+  --> tests/ui/ast_literal_from_term.rs:11:28
+   |
+7  |     let term: ast::Term = ast::symbolic_term(&loc, &sym).unwrap().into();
+   |         ---- move occurs because `term` has type `Term<'_>`, which does not implement the `Copy` trait
+8  |     let atom = ast::symbolic_atom(term).unwrap();
+   |                                   ---- value moved here
+...
+11 |     let term2: ast::Term = term;
+   |                            ^^^^ value used here after move
+   |
+help: consider cloning the value if the performance cost is acceptable
+   |
+8  |     let atom = ast::symbolic_atom(term.clone()).unwrap();
+   |                                       ++++++++

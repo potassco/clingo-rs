@@ -1,0 +1,31 @@
+error[E0382]: use of moved value: `term1`
+  --> tests/ui/ast_comparison.rs:12:10
+   |
+7  |     let term1: ast::Term = ast::symbolic_term(&loc, &sym).unwrap().into();
+   |         ----- move occurs because `term1` has type `Term<'_>`, which does not implement the `Copy` trait
+8  |     let guard = ast::guard(ast::ComparisonOperator::GreaterThan, term1).unwrap();
+   |                                                                  ----- value moved here
+...
+12 |     drop(term1);
+   |          ^^^^^ value used here after move
+   |
+help: consider cloning the value if the performance cost is acceptable
+   |
+8  |     let guard = ast::guard(ast::ComparisonOperator::GreaterThan, term1.clone()).unwrap();
+   |                                                                       ++++++++
+
+error[E0382]: use of moved value: `term2`
+  --> tests/ui/ast_comparison.rs:13:10
+   |
+9  |     let term2: ast::Term = ast::symbolic_term(&loc, &sym).unwrap().into();
+   |         ----- move occurs because `term2` has type `Term<'_>`, which does not implement the `Copy` trait
+10 |     let comp = ast::comparison(term2, &[guard]);
+   |                                ----- value moved here
+...
+13 |     drop(term2);
+   |          ^^^^^ value used here after move
+   |
+help: consider cloning the value if the performance cost is acceptable
+   |
+10 |     let comp = ast::comparison(term2.clone(), &[guard]);
+   |                                     ++++++++

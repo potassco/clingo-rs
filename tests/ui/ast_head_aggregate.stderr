@@ -1,22 +1,13 @@
-error[E0506]: cannot assign to `guard` because it is borrowed
-  --> $DIR/ast_head_aggregate.rs:14:5
-   |
-11 |         Some(&guard),
-   |              ------ borrow of `guard` occurs here
-...
-14 |     guard =  ast::AggregateGuard::gt(term);
-   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ assignment to borrowed `guard` occurs here
-15 |     drop(elements);
-16 |     let _end = (guard, hagg);
-   |                        ---- borrow later used here
-
 error[E0505]: cannot move out of `elements` because it is borrowed
-  --> $DIR/ast_head_aggregate.rs:15:10
+  --> tests/ui/ast_head_aggregate.rs:19:10
    |
-10 |         &elements,
+11 |     let elements = vec![];
+   |         -------- binding `elements` declared here
+...
+16 |         &elements,
    |         --------- borrow of `elements` occurs here
 ...
-15 |     drop(elements);
+19 |     drop(elements);
    |          ^^^^^^^^ move out of `elements` occurs here
-16 |     let _end = (guard, hagg);
-   |                        ---- borrow later used here
+20 |     let _end = hagg;
+   |                ---- borrow later used here

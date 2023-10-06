@@ -346,11 +346,11 @@ fn ast_body_literal() {
     let blit: BodyLiteral = cond.into();
     assert_eq!(format!("{}", blit), "test: test");
 
-    let blit = atomic_literal_from_body_atom(&loc, Sign::NoSign, agg.into()).unwrap();
+    let blit = atomic_literal_from_body_atom(&loc, Sign::NoSign, agg).unwrap();
     let blit: BodyLiteral = blit.into();
     assert_eq!(format!("{}", blit), "{ test: test }");
 
-    let blit = atomic_literal_from_body_atom(&loc, Sign::NoSign, bagg.into()).unwrap();
+    let blit = atomic_literal_from_body_atom(&loc, Sign::NoSign, bagg).unwrap();
     let blit: BodyLiteral = blit.into();
     assert_eq!(format!("{}", blit), "#count { test: test }");
 
@@ -639,32 +639,29 @@ fn ast_program() {
 #[test]
 fn ui() {
     let t = trybuild::TestCases::new();
-    //     // t.compile_fail("tests/ui/ast_term_from_symbol.rs");
-    // t.compile_fail("tests/ui/ast_term_from_unary_operation.rs");
-    //     t.compile_fail("tests/ui/ast_term_from_binary_operation.rs");
-    //     t.compile_fail("tests/ui/ast_term_from_function.rs");
-    //     t.compile_fail("tests/ui/ast_term_from_pool.rs");
-    //     t.compile_fail("tests/ui/ast_csp_product_term.rs");
-    //     // t.compile_fail("tests/ui/ast_comparison.rs"); // terms are copied
-    //     // t.compile_fail("tests/ui/ast_unary_operation.rs"); // terms are copied
-    //     // t.compile_fail("tests/ui/ast_binary_operation.rs");// terms are copied
-    //     // t.compile_fail("tests/ui/ast_aggregate_guard.rs");// terms are copied
-    //     t.compile_fail("tests/ui/ast_function.rs");
-    //     // t.compile_fail("tests/ui/ast_interval.rs");// terms are copied
-    //     t.compile_fail("tests/ui/ast_pool.rs");
-    //     // t.compile_fail("tests/ui/ast_literal_from_boolean.rs"); //bool is copy
-    //     t.compile_fail("tests/ui/ast_literal_from_term.rs");
-    //     t.compile_fail("tests/ui/ast_literal_from_comparison.rs");
-    //     t.compile_fail("tests/ui/ast_aggregate.rs");
-    //     t.compile_fail("tests/ui/ast_conditional_literal.rs");
-    //     t.compile_fail("tests/ui/ast_head_aggregate.rs");
-    //     t.compile_fail("tests/ui/ast_head_aggregate_element.rs");
-    //     t.compile_fail("tests/ui/ast_disjunction.rs");
-    //     t.compile_fail("tests/ui/ast_head_literal.rs");
-    //     t.compile_fail("tests/ui/ast_body_literal_from_term.rs");
+    t.compile_fail("tests/ui/ast_term_from_unary_operation.rs");
+    t.compile_fail("tests/ui/ast_term_from_binary_operation.rs");
+    t.compile_fail("tests/ui/ast_term_from_function.rs");
+    t.compile_fail("tests/ui/ast_term_from_pool.rs");
+    t.compile_fail("tests/ui/ast_comparison.rs");
+    t.compile_fail("tests/ui/ast_unary_operation.rs");
+    t.compile_fail("tests/ui/ast_binary_operation.rs");
+    t.compile_fail("tests/ui/ast_guard.rs");
+    t.compile_fail("tests/ui/ast_function.rs");
+    t.compile_fail("tests/ui/ast_interval.rs");
+    t.compile_fail("tests/ui/ast_pool.rs");
+    t.compile_fail("tests/ui/ast_literal_from_term.rs");
+    t.compile_fail("tests/ui/ast_literal_from_comparison.rs");
+    t.compile_fail("tests/ui/ast_aggregate.rs");
+    t.compile_fail("tests/ui/ast_conditional_literal.rs");
+    t.compile_fail("tests/ui/ast_head_aggregate.rs");
+    t.compile_fail("tests/ui/ast_head_aggregate_element.rs");
+    t.compile_fail("tests/ui/ast_disjunction.rs");
+    t.compile_fail("tests/ui/ast_head_literal.rs");
+    t.compile_fail("tests/ui/ast_body_literal_from_term.rs");
     t.compile_fail("tests/ui/ast_rule.rs");
-    //     // t.compile_fail("tests/ui/ast_external.rs");// terms are copied
-    //     t.compile_fail("tests/ui/ast_statement_from_external.rs");
-    //     t.compile_fail("tests/ui/ast_statement_from_rule.rs");
-    //     //check builder.add(stmt)
+    t.compile_fail("tests/ui/ast_external.rs");
+    t.compile_fail("tests/ui/ast_statement_from_external.rs");
+    t.compile_fail("tests/ui/ast_statement_from_rule.rs");
+    //check builder.add(stmt)
 }
