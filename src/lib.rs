@@ -899,7 +899,7 @@ unsafe fn try_symbol_callback(
     let name = name.to_str()?;
     let symbols = efh.on_external_function(location, name, arguments)?;
     if let Some(symbol_callback) = symbol_callback {
-        let v: Vec<clingo_symbol_t> = symbols.iter().map(|symbol| (*symbol).0).collect();
+        let v: Vec<clingo_symbol_t> = symbols.iter().map(|symbol| symbol.0).collect();
         Ok(symbol_callback(
             v.as_slice().as_ptr(),
             v.len(),
@@ -3595,7 +3595,7 @@ impl TheoryAtoms {
     pub fn iter(&self) -> TheoryAtomsIterator {
         TheoryAtomsIterator {
             count: 0,
-            atoms: &self,
+            atoms: self,
         }
     }
 
@@ -6544,7 +6544,7 @@ impl FactBase {
     }
     pub fn print(&self) {
         for fact in &self.facts {
-            print!("{}.", fact.to_string());
+            print!("{fact}.");
         }
         println!();
     }
