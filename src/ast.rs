@@ -493,6 +493,16 @@ impl<'a> fmt::Display for CspProduct<'a> {
         self.ast.fmt(f)
     }
 }
+impl<'a> fmt::Display for CspSum<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.ast.fmt(f)
+    }
+}
+impl<'a> fmt::Display for CspGuard<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.ast.fmt(f)
+    }
+}
 impl<'a> fmt::Display for TheoryTerm<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.ast.fmt(f)
@@ -509,6 +519,11 @@ impl<'a> fmt::Display for Head<'a> {
     }
 }
 impl<'a> fmt::Display for BodyLiteral<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.ast.fmt(f)
+    }
+}
+impl<'a> fmt::Display for AtomicLiteral<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.ast.fmt(f)
     }
@@ -931,6 +946,7 @@ pub struct CspSum<'a> {
     ast: AST<'a>,
 }
 
+#[derive(Debug, Clone)]
 pub struct CspTerm<'a> {
     ast: AST<'a>,
 }
@@ -939,6 +955,7 @@ impl<'a> From<CspSum<'a>> for CspTerm<'a> {
         CspTerm { ast: x.ast }
     }
 }
+
 #[derive(Debug, Clone)]
 pub struct CspGuard<'a> {
     ast: AST<'a>,
@@ -1484,9 +1501,8 @@ pub fn pool<'a>(location: &Location, arguments: &'a [Term]) -> Result<Pool<'a>, 
     }
 }
 
-// TODO: make pub once the clingo bug is fixed
 /// Construct an AST node of type `ASTType.CspProduct`.
-fn csp_product<'a, T1, T2>(
+pub fn csp_product<'a, T1, T2>(
     location: &Location,
     coefficient: T1,
     variable: Option<T2>,
@@ -1542,8 +1558,7 @@ where
 /// Construct an AST node of type `ASTType.CspSum`.
 pub fn csp_sum<'a>(
     location: &Location,
-    coefficient: Term,
-    variable: Term,
+    terms: &'a [CspProduct],
 ) -> Result<CspSum<'a>, ClingoError> {
     let mut ast = std::ptr::null_mut();
 
@@ -1552,8 +1567,8 @@ pub fn csp_sum<'a>(
             clingo_ast_type_e_clingo_ast_type_csp_sum as i32,
             &mut ast,
             location,
-            coefficient.ast,
-            variable.ast,
+            terms.as_ptr() as *const clingo_ast_t,
+            terms.len(),
         )
     } {
         return Err(ClingoError::new_internal(
@@ -1575,10 +1590,9 @@ pub fn csp_sum<'a>(
 
 /// Construct an AST node of type `ASTType.CspGuard`.
 pub fn csp_guard<'a, T>(
-    location: &Location,
     comparison: ComparisonOperator,
     term: T,
-) -> Result<CspGuard, ClingoError>
+) -> Result<CspGuard<'a>, ClingoError>
 where
     T: Into<CspTerm<'a>>,
 {
@@ -1589,7 +1603,6 @@ where
         clingo_ast_build(
             clingo_ast_type_e_clingo_ast_type_csp_guard as i32,
             &mut ast,
-            location,
             comparison as i32,
             term.ast,
         )
@@ -1709,11 +1722,15 @@ where
 }
 
 /// Construct an AST node of type `ASTType.CspLiteral`.
-pub fn csp_literal<'a>(
+pub fn csp_literal<'a, T>(
     location: &Location,
-    term: CspTerm<'a>,
+    term: T,
     guards: &'a [CspGuard],
-) -> Result<CspLiteral<'a>, ClingoError> {
+) -> Result<CspLiteral<'a>, ClingoError>
+where
+    T: Into<CspTerm<'a>>,
+{
+    let term: CspTerm = term.into();
     let mut ast = std::ptr::null_mut();
 
     if !unsafe {
