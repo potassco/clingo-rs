@@ -891,8 +891,8 @@ unsafe extern "C" fn unsafe_ground_callback<T: FunctionHandler>(
         }
     }
 }
-unsafe fn try_symbol_callback<T: FunctionHandler>(
-    efh: &mut T,
+unsafe fn try_symbol_callback(
+    efh: &mut dyn FunctionHandler,
     location: &ast::Location,
     name: &CStr,
     arguments: &[Symbol],
@@ -1659,32 +1659,64 @@ pub mod defaults {
     }
     impl SolveEventHandler for Non {}
 }
+pub trait ControlCtx {
+    type L: Logger;
+    type P: Propagator;
+    type O: GroundProgramObserver;
+    type F: FunctionHandler;
+    /// Return a logger and the maximum number of times the logger callback is called
+    fn logger(&mut self) -> (&mut Self::L, u32);
+    /// Return a propagator and boolean flag sequential
+    ///
+    /// If the sequential flag is true, the propagator is called
+    /// sequentially when solving with multiple threads.
+    fn propagator(&mut self) -> (&mut Self::P, bool);
+    /// Return a program observer and boolean flag for replace
+    ///
+    /// If the replace flag is true, the grounding is passed to the observer but not the solver
+    fn observer(&mut self) -> (&mut Self::O, bool);
+    /// Return a function handler
+    fn function_handler(&mut self) -> &mut Self::F;
+}
+pub struct DefaultCtx {
+    non: defaults::Non,
+}
+impl ControlCtx for DefaultCtx {
+    type L = defaults::Non;
+    type P = defaults::Non;
+    type O = defaults::Non;
+    type F = defaults::Non;
+
+    fn logger(&mut self) -> (&mut Self::L, u32) {
+        (&mut self.non, 0)
+    }
+    fn propagator(&mut self) -> (&mut Self::P, bool) {
+        (&mut self.non, false)
+    }
+    fn observer(&mut self) -> (&mut Self::O, bool) {
+        (&mut self.non, false)
+    }
+    fn function_handler(&mut self) -> &mut Self::F {
+        &mut self.non
+    }
+}
+
 /// Control object holding grounding and solving state.
 #[derive(Debug)]
-pub struct GenericControl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler> {
+pub struct GenericControl<C: ControlCtx> {
     ctl: NonNull<clingo_control_t>,
     copied: bool,
-    logger: Option<Box<L>>,
-    propagator: Option<Box<P>>,
-    observer: Option<Box<O>>,
-    function_handler: Option<Box<F>>,
+    context: Box<C>,
 }
-impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler> Drop
-    for GenericControl<L, P, O, F>
-{
+pub type Control = GenericControl<DefaultCtx>;
+impl<C: ControlCtx> Drop for GenericControl<C> {
     fn drop(&mut self) {
         if !self.copied {
             unsafe { clingo_control_free(self.ctl.as_ptr()) }
         }
     }
 }
-pub type ControlWithLogger<L> = GenericControl<L, defaults::Non, defaults::Non, defaults::Non>;
-pub type ControlWithPropagator<P> = GenericControl<defaults::Non, P, defaults::Non, defaults::Non>;
-pub type Control = GenericControl<defaults::Non, defaults::Non, defaults::Non, defaults::Non>;
-
-impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
-    GenericControl<L, P, O, F>
-{
+impl<C: ControlCtx> GenericControl<C> {
     /// Ground the selected [parts](struct.Part.html) of the current (non-ground) logic
     /// program.
     ///
@@ -1707,51 +1739,36 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
             .iter()
             .map(|arg| arg.part)
             .collect::<Vec<clingo_part>>();
-        match &mut self.function_handler {
-            Some(function_handler) => {
-                if !unsafe {
-                    clingo_control_ground(
-                        self.ctl.as_ptr(),
-                        parts.as_ptr(),
-                        parts_size,
-                        Some(unsafe_ground_callback::<F> as GroundCallback),
-                        function_handler.as_mut() as *mut F as *mut c_void,
-                    )
-                } {
-                    return Err(ClingoError::new_internal(
-                        "Call to clingo_control_ground() failed",
-                    ));
-                }
-                Ok(())
-            }
-            None => unreachable!(),
+        let function_handler = self.context.function_handler();
+        if !unsafe {
+            clingo_control_ground(
+                self.ctl.as_ptr(),
+                parts.as_ptr(),
+                parts_size,
+                Some(unsafe_ground_callback::<C::F> as GroundCallback),
+                function_handler as *mut C::F as *mut c_void,
+            )
+        } {
+            return Err(ClingoError::new_internal(
+                "Call to clingo_control_ground() failed",
+            ));
         }
+        Ok(())
     }
-    /// Register a handler for external functions
+    /// Register a control context
     ///
     /// # Arguments
     ///
-    /// * `function_handler` - implementing the trait [`FunctionHandler`](trait.FunctionHandler.html)
-    pub fn register_function_handler<T: FunctionHandler>(
-        mut self,
-        function_handler: T,
-    ) -> GenericControl<L, P, O, T> {
-        let function_handler = Some(Box::new(function_handler));
-        let logger = self.logger.take();
-        let propagator = self.propagator.take();
-        let observer = self.observer.take();
-
+    /// * `context` - implementing the trait [`ControlCtx`](trait.ControlCtx.html)
+    pub fn register_control_context<T: ControlCtx>(mut self, context: T) -> GenericControl<T> {
+        let context = Box::new(context);
         self.copied = true;
         GenericControl {
             ctl: self.ctl,
             copied: false,
-            logger,
-            propagator,
-            observer,
-            function_handler,
+            context,
         }
     }
-
     /// Solve the currently [grounded](struct.Control.html#method.ground) logic program
     /// enumerating its models.
     ///
@@ -1768,7 +1785,7 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
         self,
         mode: SolveMode,
         assumptions: &[SolverLiteral],
-    ) -> Result<GenericSolveHandle<L, P, O, F, defaults::Non>, ClingoError> {
+    ) -> Result<GenericSolveHandle<C, defaults::Non>, ClingoError> {
         let mut handle = std::ptr::null_mut();
         let event_handler = std::ptr::null_mut();
         if !unsafe {
@@ -1815,7 +1832,7 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
         mode: SolveMode,
         assumptions: &[SolverLiteral],
         event_handler: T,
-    ) -> Result<GenericSolveHandle<L, P, O, F, T>, ClingoError> {
+    ) -> Result<GenericSolveHandle<C, T>, ClingoError> {
         let mut handle = std::ptr::null_mut();
         let mut event_handler = Box::new(event_handler);
         if !unsafe {
@@ -1979,38 +1996,23 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
     }
     /// Register a custom propagator with the control object.
     ///
-    /// If the sequential flag is set to true, the propagator is called
-    /// sequentially when solving with multiple threads.
-    ///
-    /// # Arguments
-    ///
-    /// * `propagator` - implementing the trait [`Propagator`](trait.Propagator.html)
-    /// * `sequential` - whether the propagator should be called sequentially
-    ///
     /// # Errors
     ///
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
-    pub fn register_propagator<T: Propagator>(
-        mut self,
-        propagator: T,
-        sequential: bool,
-    ) -> Result<GenericControl<L, T, O, F>, ClingoError> {
-        let mut propagator = Box::new(propagator);
-        let logger = self.logger.take();
-        let observer = self.observer.take();
-        let function_handler = self.function_handler.take();
+    fn register_propagator(&mut self) -> Result<(), ClingoError> {
+        let (propagator, sequential) = self.context.propagator();
         let clingo_propagator = clingo_propagator_t {
-            init: Some(unsafe_init::<T>),
-            propagate: Some(unsafe_propagate::<T>),
-            undo: Some(unsafe_undo::<T>),
-            check: Some(unsafe_check::<T>),
-            decide: Some(unsafe_decide::<T>),
+            init: Some(unsafe_init::<C::P>),
+            propagate: Some(unsafe_propagate::<C::P>),
+            undo: Some(unsafe_undo::<C::P>),
+            check: Some(unsafe_check::<C::P>),
+            decide: Some(unsafe_decide::<C::P>),
         };
         if !unsafe {
             clingo_control_register_propagator(
                 self.ctl.as_ptr(),
                 &clingo_propagator,
-                propagator.as_mut() as *mut T as *mut c_void,
+                propagator as *mut C::P as *mut c_void,
                 sequential,
             )
         } {
@@ -2019,14 +2021,7 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
             ));
         }
         self.copied = true;
-        Ok(GenericControl {
-            ctl: self.ctl,
-            copied: false,
-            logger,
-            propagator: Some(propagator),
-            observer,
-            function_handler,
-        })
+        Ok(())
     }
 
     /// Check if the solver has determined that the internal program representation is conflicting.
@@ -2231,49 +2226,37 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
     }
     /// Register a program observer with the control object.
     ///
-    /// # Arguments
-    ///
-    /// * `observer` - the observer to register
-    /// * `replace` - just pass the grounding to the observer but not the solver
-    ///
     /// **Returns** whether the call was successful
-    pub fn register_observer<T: GroundProgramObserver>(
-        mut self,
-        observer: T,
-        replace: bool,
-    ) -> Result<GenericControl<L, P, T, F>, ClingoError> {
-        let mut observer = Box::new(observer);
-        let logger = self.logger.take();
-        let propagator = self.propagator.take();
-        let function_handler = self.function_handler.take();
+    fn register_observer(&mut self) -> Result<(), ClingoError> {
+        let (observer, replace) = self.context.observer();
         let gpo = clingo_ground_program_observer_t {
-            init_program: Some(unsafe_init_program::<T>),
-            begin_step: Some(unsafe_begin_step::<T>),
-            end_step: Some(unsafe_end_step::<T>),
-            rule: Some(unsafe_rule::<T>),
-            weight_rule: Some(unsafe_weight_rule::<T>),
-            minimize: Some(unsafe_minimize::<T>),
-            project: Some(unsafe_project::<T>),
-            output_atom: Some(unsafe_output_atom::<T>),
-            output_term: Some(unsafe_output_term::<T>),
-            output_csp: Some(unsafe_output_csp::<T>),
-            external: Some(unsafe_external::<T>),
-            assume: Some(unsafe_assume::<T>),
-            heuristic: Some(unsafe_heuristic::<T>),
-            acyc_edge: Some(unsafe_acyc_edge::<T>),
-            theory_term_number: Some(unsafe_theory_term_number::<T>),
-            theory_term_string: Some(unsafe_theory_term_string::<T>),
-            theory_term_compound: Some(unsafe_theory_term_compound::<T>),
-            theory_element: Some(unsafe_theory_element::<T>),
-            theory_atom: Some(unsafe_theory_atom::<T>),
-            theory_atom_with_guard: Some(unsafe_theory_atom_with_guard::<T>),
+            init_program: Some(unsafe_init_program::<C::O>),
+            begin_step: Some(unsafe_begin_step::<C::O>),
+            end_step: Some(unsafe_end_step::<C::O>),
+            rule: Some(unsafe_rule::<C::O>),
+            weight_rule: Some(unsafe_weight_rule::<C::O>),
+            minimize: Some(unsafe_minimize::<C::O>),
+            project: Some(unsafe_project::<C::O>),
+            output_atom: Some(unsafe_output_atom::<C::O>),
+            output_term: Some(unsafe_output_term::<C::O>),
+            output_csp: Some(unsafe_output_csp::<C::O>),
+            external: Some(unsafe_external::<C::O>),
+            assume: Some(unsafe_assume::<C::O>),
+            heuristic: Some(unsafe_heuristic::<C::O>),
+            acyc_edge: Some(unsafe_acyc_edge::<C::O>),
+            theory_term_number: Some(unsafe_theory_term_number::<C::O>),
+            theory_term_string: Some(unsafe_theory_term_string::<C::O>),
+            theory_term_compound: Some(unsafe_theory_term_compound::<C::O>),
+            theory_element: Some(unsafe_theory_element::<C::O>),
+            theory_atom: Some(unsafe_theory_atom::<C::O>),
+            theory_atom_with_guard: Some(unsafe_theory_atom_with_guard::<C::O>),
         };
-        if unsafe {
+        if !unsafe {
             clingo_control_register_observer(
                 self.ctl.as_ptr(),
                 &gpo,
                 replace,
-                observer.as_mut() as *mut T as *mut c_void,
+                observer as *mut C::O as *mut c_void,
             )
         } {
             return Err(ClingoError::new_internal(
@@ -2281,14 +2264,7 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
             ));
         }
         self.copied = true;
-        Ok(GenericControl {
-            ctl: self.ctl,
-            copied: false,
-            logger,
-            propagator,
-            observer: Some(observer),
-            function_handler,
-        })
+        Ok(())
     }
     /// Get an object to add ground directives to the program.
     ///
@@ -2348,7 +2324,7 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
     ///
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if solving could not be started
-    pub fn all_models(self) -> Result<AllModels<L, P, O, F, defaults::Non>, ClingoError> {
+    pub fn all_models(self) -> Result<AllModels<C, defaults::Non>, ClingoError> {
         let mut handle = std::ptr::null_mut();
         let event_handler = std::ptr::null_mut();
         if !unsafe {
@@ -2385,7 +2361,7 @@ impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
     ///
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if solving could not be started
-    pub fn optimal_models(self) -> Result<OptimalModels<L, P, O, F, defaults::Non>, ClingoError> {
+    pub fn optimal_models(self) -> Result<OptimalModels<C, defaults::Non>, ClingoError> {
         let mut handle = std::ptr::null_mut();
         let event_handler = std::ptr::null_mut();
         if !unsafe {
@@ -2469,10 +2445,7 @@ pub fn control(arguments: std::vec::Vec<String>) -> Result<Control, ClingoError>
         Some(ctl) => Ok(GenericControl {
             ctl,
             copied: false,
-            logger: Some(Box::new(defaults::Non)),
-            propagator: Some(Box::new(defaults::Non)),
-            observer: Some(Box::new(defaults::Non)),
-            function_handler: Some(Box::new(defaults::Non)),
+            context: Box::new(DefaultCtx { non: defaults::Non }),
         }),
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
@@ -2491,18 +2464,16 @@ pub fn control(arguments: std::vec::Vec<String>) -> Result<Control, ClingoError>
 ///
 /// * `arguments` - string array of command line arguments
 /// * `logger` - callback functions for warnings and info messages
-/// * `message_limit` - maximum number of times the logger callback is called
 ///
 /// # Errors
 ///
 /// - [`ClingoError::NulError`](enum.ClingoError.html#variant.NulError) - if an argument contains a nul byte
 /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
 /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if argument parsing fails
-pub fn control_with_logger<L: Logger>(
+pub fn control_with_context<C: ControlCtx>(
     arguments: Vec<String>,
-    logger: L,
-    message_limit: u32,
-) -> Result<ControlWithLogger<L>, ClingoError> {
+    mut context: C,
+) -> Result<GenericControl<C>, ClingoError> {
     let mut args = vec![];
     for arg in arguments {
         args.push(CString::new(arg)?);
@@ -2515,14 +2486,14 @@ pub fn control_with_logger<L: Logger>(
         .collect::<Vec<*const c_char>>();
 
     let mut ctl_ptr = std::ptr::null_mut();
-    let mut logger = Box::new(logger);
+    let (logger, message_limit) = context.logger();
 
     if !unsafe {
         clingo_control_new(
             c_args.as_ptr(),
             c_args.len(),
-            Some(unsafe_logging_callback::<L> as LoggingCallback),
-            logger.as_mut() as *mut L as *mut c_void,
+            Some(unsafe_logging_callback::<C::L> as LoggingCallback),
+            logger as *mut C::L as *mut c_void,
             message_limit,
             &mut ctl_ptr,
         )
@@ -2532,14 +2503,16 @@ pub fn control_with_logger<L: Logger>(
         ));
     }
     match NonNull::new(ctl_ptr) {
-        Some(ctl) => Ok(GenericControl {
-            ctl,
-            copied: false,
-            logger: Some(logger),
-            propagator: Some(Box::new(defaults::Non)),
-            observer: Some(Box::new(defaults::Non)),
-            function_handler: Some(Box::new(defaults::Non)),
-        }),
+        Some(ctl) => {
+            let mut control = GenericControl {
+                ctl,
+                copied: false,
+                context: Box::new(context),
+            };
+            control.register_observer()?;
+            control.register_propagator()?;
+            Ok(control)
+        }
         None => Err(ClingoError::FFIError {
             msg: "Tried creating NonNull from a null pointer.",
         })?,
@@ -4971,33 +4944,13 @@ impl PropagateInit {
 
 /// Search handle to a solve call.
 #[derive(Debug)]
-pub struct GenericSolveHandle<
-    L: Logger,
-    P: Propagator,
-    O: GroundProgramObserver,
-    F: FunctionHandler,
-    E: SolveEventHandler,
-> {
+pub struct GenericSolveHandle<C: ControlCtx, E: SolveEventHandler> {
     handle: NonNull<clingo_solve_handle_t>,
-    ctl: GenericControl<L, P, O, F>,
+    ctl: GenericControl<C>,
     _event_handler: Box<E>,
 }
-pub type SolveHandleWithLogger<L> =
-    GenericSolveHandle<L, defaults::Non, defaults::Non, defaults::Non, defaults::Non>;
-pub type SolveHandleWithPropagator<P> =
-    GenericSolveHandle<defaults::Non, P, defaults::Non, defaults::Non, defaults::Non>;
-pub type SolveHandleWithEventHandler<E> =
-    GenericSolveHandle<defaults::Non, defaults::Non, defaults::Non, defaults::Non, E>;
-pub type SolveHandle =
-    GenericSolveHandle<defaults::Non, defaults::Non, defaults::Non, defaults::Non, defaults::Non>;
-impl<
-        L: Logger,
-        P: Propagator,
-        O: GroundProgramObserver,
-        F: FunctionHandler,
-        E: SolveEventHandler,
-    > GenericSolveHandle<L, P, O, F, E>
-{
+pub type SolveHandle = GenericSolveHandle<DefaultCtx, defaults::Non>;
+impl<C: ControlCtx, E: SolveEventHandler> GenericSolveHandle<C, E> {
     /// Get the next solve result.
     ///
     /// Blocks until the result is ready.
@@ -5143,7 +5096,7 @@ impl<
     ///
     /// - [`ClingoError::InternalError`](enum.ClingoError.html#variant.InternalError) with [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
     /// or [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) if solving fails
-    pub fn close(self) -> Result<GenericControl<L, P, O, F>, ClingoError> {
+    pub fn close(self) -> Result<GenericControl<C>, ClingoError> {
         if !unsafe { clingo_solve_handle_close(self.handle.as_ptr()) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_solve_handle_close() failed",
@@ -5152,21 +5105,8 @@ impl<
         Ok(self.ctl)
     }
 }
-pub struct OptimalModels<
-    L: Logger,
-    P: Propagator,
-    O: GroundProgramObserver,
-    F: FunctionHandler,
-    E: SolveEventHandler,
->(GenericSolveHandle<L, P, O, F, E>);
-impl<
-        L: Logger,
-        P: Propagator,
-        O: GroundProgramObserver,
-        F: FunctionHandler,
-        E: SolveEventHandler,
-    > Iterator for OptimalModels<L, P, O, F, E>
-{
+pub struct OptimalModels<C: ControlCtx, E: SolveEventHandler>(GenericSolveHandle<C, E>);
+impl<C: ControlCtx, E: SolveEventHandler> Iterator for OptimalModels<C, E> {
     type Item = MModel;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -5193,21 +5133,8 @@ impl<
         }
     }
 }
-pub struct AllModels<
-    L: Logger,
-    P: Propagator,
-    O: GroundProgramObserver,
-    F: FunctionHandler,
-    E: SolveEventHandler,
->(GenericSolveHandle<L, P, O, F, E>);
-impl<
-        L: Logger,
-        P: Propagator,
-        O: GroundProgramObserver,
-        F: FunctionHandler,
-        E: SolveEventHandler,
-    > Iterator for AllModels<L, P, O, F, E>
-{
+pub struct AllModels<C: ControlCtx, E: SolveEventHandler>(GenericSolveHandle<C, E>);
+impl<C: ControlCtx, E: SolveEventHandler> Iterator for AllModels<C, E> {
     type Item = MModel;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -6775,17 +6702,13 @@ impl From<&mut Model> for *mut clingo_model {
         &mut model.0
     }
 }
-impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
-    From<GenericControl<L, P, O, F>> for NonNull<clingo_control>
-{
-    fn from(control: GenericControl<L, P, O, F>) -> Self {
+impl<C: ControlCtx> From<GenericControl<C>> for NonNull<clingo_control> {
+    fn from(control: GenericControl<C>) -> Self {
         control.ctl
     }
 }
-impl<L: Logger, P: Propagator, O: GroundProgramObserver, F: FunctionHandler>
-    From<&mut GenericControl<L, P, O, F>> for NonNull<clingo_control>
-{
-    fn from(control: &mut GenericControl<L, P, O, F>) -> Self {
+impl<C: ControlCtx> From<&mut GenericControl<C>> for NonNull<clingo_control> {
+    fn from(control: &mut GenericControl<C>) -> Self {
         control.ctl
     }
 }
