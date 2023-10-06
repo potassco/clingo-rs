@@ -926,6 +926,11 @@ impl<'a> SymbolicAtom<'a> {
 pub struct Guard<'a> {
     ast: AST<'a>,
 }
+impl<'a> Guard<'a> {
+    pub fn to_string(&self) -> Result<String, ClingoError> {
+        self.ast.to_string()
+    }
+}
 #[derive(Debug, Clone)]
 pub struct Comparison<'a> {
     ast: AST<'a>,
