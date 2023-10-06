@@ -1,0 +1,14 @@
+error[E0382]: use of moved value: `term`
+ --> tests/ui/ast_guard.rs:9:10
+  |
+7 |     let term: ast::Term = ast::symbolic_term(&loc, &sym).unwrap().into();
+  |         ---- move occurs because `term` has type `Term<'_>`, which does not implement the `Copy` trait
+8 |     let op = ast::guard(ast::ComparisonOperator::LessEqual,term);
+  |                                                            ---- value moved here
+9 |     drop(term);
+  |          ^^^^ value used here after move
+  |
+help: consider cloning the value if the performance cost is acceptable
+  |
+8 |     let op = ast::guard(ast::ComparisonOperator::LessEqual,term.clone());
+  |                                                                ++++++++

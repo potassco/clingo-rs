@@ -1,22 +1,12 @@
-error[E0506]: cannot assign to `pool` because it is borrowed
-  --> $DIR/ast_term_from_pool.rs:11:5
-   |
-9  |     let term3 = ast::Term::from(&pool);
-   |                                 ----- borrow of `pool` occurs here
-10 | 
-11 |     pool = ast::Pool::new(&args);
-   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ assignment to borrowed `pool` occurs here
-12 |     drop(args);
-13 |     let _end= (pool, term3);
-   |                      ----- borrow later used here
-
 error[E0505]: cannot move out of `args` because it is borrowed
-  --> $DIR/ast_term_from_pool.rs:12:10
+  --> tests/ui/ast_term_from_pool.rs:14:10
    |
-8  |     let mut pool = ast::Pool::new(&args);
-   |                                   ----- borrow of `args` occurs here
+9  |     let args = vec![term1, term2];
+   |         ---- binding `args` declared here
+10 |     let mut pool = ast::pool(&loc, &args).unwrap();
+   |                                    ----- borrow of `args` occurs here
 ...
-12 |     drop(args);
+14 |     drop(args);
    |          ^^^^ move out of `args` occurs here
-13 |     let _end= (pool, term3);
-   |                ---- borrow later used here
+15 |     let _end = (pool, term3);
+   |                 ---- borrow later used here

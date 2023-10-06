@@ -1,20 +1,29 @@
 use clingo::*;
 
 fn main() {
+    let loc = ast::Location::default();
     let sym = Symbol::create_id("test", true).unwrap();
-    let term1 = ast::Term::from(sym);
-    let term2 = ast::Term::from(sym);
-    let term3 = ast::Term::from(sym);
-    let mut lit = ast::Literal::from_term(ast::Sign::NoSign, &term1);
-    let lit2 = ast::Literal::from_term(ast::Sign::NoSign, &term2);
+    let term1: ast::Term = ast::symbolic_term(&loc, &sym).unwrap().into();
+    let term2: ast::Term = ast::symbolic_term(&loc, &sym).unwrap().into();
+    let term3: ast::Term = ast::symbolic_term(&loc, &sym).unwrap().into();
+    let term4: ast::Term = ast::symbolic_term(&loc, &sym).unwrap().into();
+
+    let atom1 = ast::symbolic_atom(term1).unwrap();
+    let lit = ast::basic_literal_from_symbolic_atom(&loc, ast::Sign::NoSign, atom1).unwrap();
+
+    let atom2 = ast::symbolic_atom(term2).unwrap();
+    let lit2: ast::Literal = ast::basic_literal_from_symbolic_atom(&loc, ast::Sign::NoSign, atom2)
+        .unwrap()
+        .into();
+
     let condition = vec![lit2];
-    let cond = ast::ConditionalLiteral::new(&lit, &condition);
+    let cond = ast::conditional_literal(&loc, lit, &condition).unwrap();
     let elements = vec![cond];
-    let mut guard = ast::AggregateGuard::gt(term3);
-    let agg = ast::Aggregate::new( &elements, Some(&guard), Some(&guard));
-    
-    guard =  ast::AggregateGuard::gt(term1);
-    lit = ast::Literal::from_term(ast::Sign::NoSign, &term1);
+
+    let guard_l = ast::guard(ast::ComparisonOperator::GreaterThan, term3).unwrap();
+    let guard_r = ast::guard(ast::ComparisonOperator::GreaterThan, term4).unwrap();
+    let agg = ast::aggregate(&loc, Some(guard_l), &elements, Some(guard_r)).unwrap();
+
     drop(elements);
-    let _end = (guard, lit, agg);
+    let _end = agg;
 }

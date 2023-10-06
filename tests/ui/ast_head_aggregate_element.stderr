@@ -1,46 +1,12 @@
-error[E0506]: cannot assign to `term1` because it is borrowed
-  --> $DIR/ast_head_aggregate_element.rs:14:5
-   |
-8  |     let lit = ast::Literal::from_term(ast::Sign::NoSign, &term1);
-   |                                                          ------ borrow of `term1` occurs here
-...
-14 |     term1 =  ast::Term::from(sym);
-   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ assignment to borrowed `term1` occurs here
-...
-18 |     let _end = (term1, term2, lit, helem);
-   |                                    ----- borrow later used here
-
-error[E0506]: cannot assign to `term2` because it is borrowed
-  --> $DIR/ast_head_aggregate_element.rs:15:5
-   |
-9  |     let lit2 = ast::Literal::from_term(ast::Sign::NoSign, &term2);
-   |                                                           ------ borrow of `term2` occurs here
-...
-15 |     term2 =  ast::Term::from(sym);
-   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ assignment to borrowed `term2` occurs here
-...
-18 |     let _end = (term1, term2, lit, helem);
-   |                                    ----- borrow later used here
-
-error[E0384]: cannot assign twice to immutable variable `lit`
-  --> $DIR/ast_head_aggregate_element.rs:16:5
-   |
-8  |     let lit = ast::Literal::from_term(ast::Sign::NoSign, &term1);
-   |         ---
-   |         |
-   |         first assignment to `lit`
-   |         help: consider making this binding mutable: `mut lit`
-...
-16 |     lit = ast::Literal::from_term(ast::Sign::NoSign, &term1);
-   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ cannot assign twice to immutable variable
-
 error[E0505]: cannot move out of `tuple` because it is borrowed
-  --> $DIR/ast_head_aggregate_element.rs:17:10
+  --> tests/ui/ast_head_aggregate_element.rs:24:10
    |
-12 |     let helem = ast::HeadAggregateElement::new(&tuple,cond);
-   |                                                ------ borrow of `tuple` occurs here
-...
-17 |     drop(tuple);
+21 |     let tuple = vec![term3];
+   |         ----- binding `tuple` declared here
+22 |     let helem = ast::head_aggregate_element(&tuple, cond);
+   |                                             ------ borrow of `tuple` occurs here
+23 |
+24 |     drop(tuple);
    |          ^^^^^ move out of `tuple` occurs here
-18 |     let _end = (term1, term2, lit, helem);
-   |                                    ----- borrow later used here
+25 |     let _end = helem;
+   |                ----- borrow later used here

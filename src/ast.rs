@@ -436,14 +436,6 @@ impl<'a> From<UnaryOperation<'a>> for Term<'a> {
         Term { ast: x.ast }
     }
 }
-// impl<'a> From<&'a UnaryOperation<'a>> for Term<'a> {
-//     fn from(x: &'a UnaryOperation<'a>) -> Self {
-//         Term {
-//             ast: x.ast,
-//             _lifetime: x._lifetime,
-//         }
-//     }
-// }
 impl<'a> From<BinaryOperation<'a>> for Term<'a> {
     fn from(x: BinaryOperation<'a>) -> Self {
         Term { ast: x.ast }
@@ -474,9 +466,9 @@ pub struct Literal<'a> {
     ast: AST<'a>,
 }
 impl<'a> Literal<'a> {
-    pub fn is_a(self) -> Result<TLiteral<'a>, ClingoError> {
+    pub fn is_a(self) -> Result<BasicLiteral<'a>, ClingoError> {
         match self.ast.get_type()? {
-            ASTType::Literal => Ok(TLiteral::BasicLiteral(BasicLiteral { ast: self.ast })),
+            ASTType::Literal => Ok(BasicLiteral { ast: self.ast }),
             x => panic!("unexpected ASTType: {:?}", x),
         }
     }
@@ -501,26 +493,6 @@ impl<'a> fmt::Display for Literal<'a> {
     }
 }
 impl<'a> fmt::Display for BasicLiteral<'a> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        self.ast.fmt(f)
-    }
-}
-impl<'a> fmt::Display for CspLiteral<'a> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        self.ast.fmt(f)
-    }
-}
-impl<'a> fmt::Display for CspProduct<'a> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        self.ast.fmt(f)
-    }
-}
-impl<'a> fmt::Display for CspSum<'a> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        self.ast.fmt(f)
-    }
-}
-impl<'a> fmt::Display for CspGuard<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.ast.fmt(f)
     }
@@ -570,16 +542,6 @@ impl<'a> From<AtomicLiteral<'a>> for Literal<'a> {
         Literal { ast: x.ast }
     }
 }
-impl<'a> From<CspLiteral<'a>> for Literal<'a> {
-    fn from(x: CspLiteral<'a>) -> Self {
-        Literal { ast: x.ast }
-    }
-}
-#[derive(Debug, Clone)]
-pub enum TLiteral<'a> {
-    BasicLiteral(BasicLiteral<'a>),
-    CspLiteral(CspLiteral<'a>),
-}
 #[derive(Debug, Clone)]
 pub struct Head<'a> {
     pub(crate) ast: AST<'a>,
@@ -591,11 +553,6 @@ impl<'a> From<BasicLiteral<'a>> for Head<'a> {
 }
 impl<'a> From<AtomicLiteral<'a>> for Head<'a> {
     fn from(x: AtomicLiteral<'a>) -> Self {
-        Head { ast: x.ast }
-    }
-}
-impl<'a> From<CspLiteral<'a>> for Head<'a> {
-    fn from(x: CspLiteral<'a>) -> Self {
         Head { ast: x.ast }
     }
 }
@@ -656,11 +613,6 @@ impl<'a> From<BasicLiteral<'a>> for BodyLiteral<'a> {
         BodyLiteral { ast: x.ast }
     }
 }
-impl<'a> From<CspLiteral<'a>> for BodyLiteral<'a> {
-    fn from(x: CspLiteral<'a>) -> Self {
-        BodyLiteral { ast: x.ast }
-    }
-}
 impl<'a> From<Literal<'a>> for BodyLiteral<'a> {
     fn from(x: Literal<'a>) -> Self {
         BodyLiteral { ast: x.ast }
@@ -683,7 +635,6 @@ impl<'a> From<TheoryAtom<'a>> for BodyLiteral<'a> {
 }
 #[derive(Debug, Clone)]
 pub enum BodyLiteralIsA<'a> {
-    CspLiteral(CspLiteral<'a>),
     Literal(Literal<'a>),
     ConditionalLiteral(ConditionalLiteral<'a>),
     TheoryAtom(TheoryAtom<'a>),
@@ -956,31 +907,6 @@ pub struct Pool<'a> {
 }
 
 #[derive(Debug, Clone)]
-pub struct CspProduct<'a> {
-    ast: AST<'a>,
-}
-
-#[derive(Debug, Clone)]
-pub struct CspSum<'a> {
-    ast: AST<'a>,
-}
-
-#[derive(Debug, Clone)]
-pub struct CspTerm<'a> {
-    ast: AST<'a>,
-}
-impl<'a> From<CspSum<'a>> for CspTerm<'a> {
-    fn from(x: CspSum<'a>) -> Self {
-        CspTerm { ast: x.ast }
-    }
-}
-
-#[derive(Debug, Clone)]
-pub struct CspGuard<'a> {
-    ast: AST<'a>,
-}
-
-#[derive(Debug, Clone)]
 struct BooleanConstant<'a> {
     ast: AST<'a>,
 }
@@ -1002,27 +928,14 @@ pub struct Guard<'a> {
 pub struct Comparison<'a> {
     ast: AST<'a>,
 }
-
-#[derive(Debug, Clone)]
-pub struct CspLiteral<'a> {
-    ast: AST<'a>,
-}
-
-#[derive(Debug, Clone)]
-pub struct AggregateGuard<'a> {
-    ast: AST<'a>,
-}
-
 #[derive(Debug, Clone)]
 pub struct ConditionalLiteral<'a> {
     ast: AST<'a>,
 }
-
 #[derive(Debug, Clone)]
 pub struct Aggregate<'a> {
     ast: AST<'a>,
 }
-
 impl<'a> Aggregate<'a> {
     pub fn to_string(&self) -> Result<String, ClingoError> {
         self.ast.to_string()
@@ -1032,22 +945,18 @@ impl<'a> Aggregate<'a> {
 pub struct BodyAggregateElement<'a> {
     ast: AST<'a>,
 }
-
 #[derive(Debug, Clone)]
 pub struct BodyAggregate<'a> {
     ast: AST<'a>,
 }
-
 #[derive(Debug, Clone)]
 pub struct HeadAggregateElement<'a> {
     ast: AST<'a>,
 }
-
 #[derive(Debug, Clone)]
 pub struct HeadAggregate<'a> {
     ast: AST<'a>,
 }
-
 #[derive(Debug, Clone)]
 pub struct Disjunction<'a> {
     ast: AST<'a>,
@@ -1057,7 +966,6 @@ pub struct Disjunction<'a> {
 pub struct DisjointElement<'a> {
     ast: AST<'a>,
 }
-
 #[derive(Debug, Clone)]
 pub struct Disjoint<'a> {
     ast: AST<'a>,
@@ -1067,32 +975,26 @@ pub struct Disjoint<'a> {
 pub struct TheorySequence<'a> {
     ast: AST<'a>,
 }
-
 #[derive(Debug, Clone)]
 pub struct TheoryFunction<'a> {
     ast: AST<'a>,
 }
-
 #[derive(Debug, Clone)]
 pub struct TheoryUnparsedTermElement<'a> {
     ast: AST<'a>,
 }
-
 #[derive(Debug, Clone)]
 pub struct TheoryUnparsedTerm<'a> {
     ast: AST<'a>,
 }
-
 #[derive(Debug, Clone)]
 pub struct TheoryGuard<'a> {
     pub(crate) ast: AST<'a>,
 }
-
 #[derive(Debug, Clone)]
 pub struct TheoryAtomElement<'a> {
     ast: AST<'a>,
 }
-
 #[derive(Debug, Clone)]
 pub struct TheoryAtom<'a> {
     ast: AST<'a>,
@@ -1117,48 +1019,39 @@ impl<'a> TheoryAtom<'a> {
         self.ast.elements()
     }
 }
-
 #[derive(Debug, Clone)]
 pub struct AtomicLiteral<'a> {
     ast: AST<'a>,
 }
-
 #[derive(Debug, Clone)]
 pub struct BasicLiteral<'a> {
     ast: AST<'a>,
 }
-
 impl<'a> BasicLiteral<'a> {
     pub fn to_string(&self) -> Result<String, ClingoError> {
         self.ast.to_string()
     }
 }
-
 #[derive(Debug, Clone)]
 pub struct TheoryOperatorDefinition<'a> {
     ast: AST<'a>,
 }
-
 #[derive(Debug, Clone)]
 pub struct TheoryTermDefinition<'a> {
     ast: AST<'a>,
 }
-
 #[derive(Debug, Clone)]
 pub struct TheoryGuardDefinition<'a> {
     ast: AST<'a>,
 }
-
 #[derive(Debug, Clone)]
 pub struct TheoryAtomDefinition<'a> {
     ast: AST<'a>,
 }
-
 #[derive(Debug, Clone)]
 pub struct Rule<'a> {
     ast: AST<'a>,
 }
-
 impl<'a> Rule<'a> {
     pub fn location(&self) -> Location {
         self.ast.location().unwrap()
@@ -1170,27 +1063,22 @@ impl<'a> Rule<'a> {
         self.ast.head()
     }
 }
-
 #[derive(Debug, Clone)]
 pub struct Definition<'a> {
     ast: AST<'a>,
 }
-
 #[derive(Debug, Clone)]
 pub struct ShowSignature<'a> {
     ast: AST<'a>,
 }
-
 #[derive(Debug, Clone)]
 pub struct ShowTerm<'a> {
     ast: AST<'a>,
 }
-
 #[derive(Debug, Clone)]
 pub struct Minimize<'a> {
     ast: AST<'a>,
 }
-
 #[derive(Debug, Clone)]
 pub struct Script<'a> {
     ast: AST<'a>,
@@ -1199,12 +1087,10 @@ pub struct Script<'a> {
 pub struct Program<'a> {
     pub(crate) ast: AST<'a>,
 }
-
 #[derive(Debug, Clone)]
 pub struct External<'a> {
     pub(crate) ast: AST<'a>,
 }
-
 #[derive(Debug, Clone)]
 pub struct Edge<'a> {
     ast: AST<'a>,
@@ -1217,7 +1103,6 @@ pub struct Heuristic<'a> {
 pub struct ProjectAtom<'a> {
     ast: AST<'a>,
 }
-
 #[derive(Debug, Clone)]
 pub struct ProjectSignature<'a> {
     ast: AST<'a>,
@@ -1585,9 +1470,9 @@ where
 /// Construct an AST node of type `ASTType.Guard`.
 pub fn guard<'a, T>(operator: ComparisonOperator, term: T) -> Result<Guard<'a>, ClingoError>
 where
-    T: Into<TheoryTerm<'a>>,
+    T: Into<Term<'a>>,
 {
-    let term: TheoryTerm = term.into();
+    let term: Term = term.into();
     let mut ast = std::ptr::null_mut();
     // let operator_name = internalize_string(operator_name)?;
     if !unsafe {
@@ -1691,9 +1576,9 @@ where
 /// Construct an AST node of type `ASTType.Aggregate`.
 pub fn aggregate<'a>(
     location: &Location,
-    left_guard: Option<AggregateGuard<'a>>,
+    left_guard: Option<Guard<'a>>,
     elements: &'a [ConditionalLiteral],
-    right_guard: Option<AggregateGuard>,
+    right_guard: Option<Guard>,
 ) -> Result<Aggregate<'a>, ClingoError> {
     let mut ast = std::ptr::null_mut();
     let left_guard = match &left_guard {
@@ -1732,6 +1617,7 @@ pub fn aggregate<'a>(
         })?,
     }
 }
+
 /// Construct an AST node of type `ASTType.BodyAggregateElement`.
 pub fn body_aggregate_element<'a>(
     terms: &'a [Term],
@@ -1768,10 +1654,10 @@ pub fn body_aggregate_element<'a>(
 /// Construct an AST node of type `ASTType.BodyAggregate`.
 pub fn body_aggregate<'a>(
     location: &Location,
-    left_guard: Option<AggregateGuard<'a>>,
+    left_guard: Option<Guard<'a>>,
     function: AggregateFunction,
     elements: &'a [BodyAggregateElement],
-    right_guard: Option<AggregateGuard<'a>>,
+    right_guard: Option<Guard<'a>>,
 ) -> Result<BodyAggregate<'a>, ClingoError> {
     let mut ast = std::ptr::null_mut();
 
@@ -1847,10 +1733,10 @@ pub fn head_aggregate_element<'a>(
 /// Construct an AST node of type `ASTType.HeadAggregate`.
 pub fn head_aggregate<'a>(
     location: &Location,
-    left_guard: Option<AggregateGuard<'a>>,
+    left_guard: Option<Guard<'a>>,
     function: AggregateFunction,
     elements: &'a [HeadAggregateElement],
-    right_guard: Option<AggregateGuard<'a>>,
+    right_guard: Option<Guard<'a>>,
 ) -> Result<HeadAggregate<'a>, ClingoError> {
     let mut ast = std::ptr::null_mut();
     let left_guard = match &left_guard {
@@ -2030,7 +1916,7 @@ pub fn theory_unparsed_term_element<'a>(
 /// Construct an AST node of type `ASTType.TheoryUnparsedTerm`.
 pub fn theory_unparsed_term<'a>(
     location: &Location,
-    elements: Vec1<TheoryUnparsedTermElement>, //TODO NonEmptyList
+    elements: Vec1<TheoryUnparsedTermElement>,
 ) -> Result<TheoryUnparsedTerm<'a>, ClingoError> {
     let mut ast = std::ptr::null_mut();
 
@@ -2171,11 +2057,15 @@ where
     }
 }
 /// Construct an AST node of type `ASTType.Literal`.
-pub fn atomic_literal_from_body_atom<'a>(
+pub fn atomic_literal_from_body_atom<'a, BA>(
     location: &Location,
     sign: Sign,
-    atom: BodyAtom<'a>,
-) -> Result<AtomicLiteral<'a>, ClingoError> {
+    atom: BA,
+) -> Result<AtomicLiteral<'a>, ClingoError>
+where
+    BA: Into<BodyAtom<'a>>,
+{
+    let atom: BodyAtom = atom.into();
     let mut ast = std::ptr::null_mut();
 
     if !unsafe {
@@ -2203,6 +2093,7 @@ pub fn atomic_literal_from_body_atom<'a>(
         })?,
     }
 }
+
 /// Construct an AST node of type `ASTType.Literal`.
 pub fn basic_literal_from_symbolic_atom<'a>(
     location: &Location,

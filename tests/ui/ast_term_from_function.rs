@@ -1,18 +1,18 @@
+// ast_term_from_function
 use clingo::*;
 
 fn main() {
+    let loc = ast::Location::default();
     let sym = Symbol::create_id("test", true).unwrap();
-    let term1 = ast::Term::from(sym);
-    let term2 = ast::Term::from(sym);
-    let args = vec![term1,term2];
-    let mut fun = ast::Function::new("name", &args).unwrap();
-    let term3 = ast::Term::from(&fun);
+    let term1: ast::Term = ast::symbolic_term(&loc, &sym).unwrap().into();
+    let term2: ast::Term = ast::symbolic_term(&loc, &sym).unwrap().into();
+    let args = vec![term1, term2];
+    let fun = ast::function(&loc, "name", &args, false).unwrap();
+    let term3: ast::Term = fun.into();
 
-    let mut fun2 = ast::Function::new("name2", &args).unwrap();
-    let term4 = ast::Term::external_function(&fun2);
+    let fun2 = ast::function(&loc, "name2", &args, true).unwrap();
+    let term4: ast::Term = fun2.into();
 
-    fun = ast::Function::new("name", &args).unwrap();
-    fun2 = ast::Function::new("name", & args).unwrap();
     drop(args);
-    let _end = (term3, term4, fun, fun2);
+    let _end = (term3, term4);
 }

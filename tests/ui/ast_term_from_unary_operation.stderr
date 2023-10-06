@@ -1,11 +1,19 @@
-error[E0505]: cannot move out of `op` because it is borrowed
- --> $DIR/ast_term_from_unary_operation.rs:8:10
-  |
-7 |     let term2 = ast::Term::from(&op);
-  |                                 --- borrow of `op` occurs here
-8 |     drop(op);
-  |          ^^ move out of `op` occurs here
-9 |     let _end = term2;
-  |                ----- borrow later used here
-
-For more information about this error, try `rustc --explain E0505`.
+error[E0382]: use of moved value: `op`
+  --> tests/ui/ast_term_from_unary_operation.rs:12:10
+   |
+10 |     let op = unary_operation(&loc, minus, term).unwrap();
+   |         -- move occurs because `op` has type `clingo::ast::UnaryOperation<'_>`, which does not implement the `Copy` trait
+11 |     let term2: Term = op.into();
+   |                          ------ `op` moved due to this method call
+12 |     drop(op);
+   |          ^^ value used here after move
+   |
+note: `into` takes ownership of the receiver `self`, which moves `op`
+  --> $RUST/core/src/convert/mod.rs
+   |
+   |     fn into(self) -> T;
+   |             ^^^^
+help: you can `clone` the value and consume it, but this might not be your desired behavior
+   |
+11 |     let term2: Term = op.clone().into();
+   |                          ++++++++

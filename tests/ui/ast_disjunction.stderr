@@ -1,11 +1,12 @@
-error[E0505]: cannot move out of `args2` because it is borrowed
-  --> $DIR/ast_disjunction.rs:13:10
+error[E0505]: cannot move out of `elements` because it is borrowed
+  --> tests/ui/ast_disjunction.rs:23:10
    |
-12 |     let dis = ast::Disjunction::new(&args2);
-   |                                     ------ borrow of `args2` occurs here
-13 |     drop(args2);
-   |          ^^^^^ move out of `args2` occurs here
-14 |     let _end = dis;
+20 |     let elements = vec![cond];
+   |         -------- binding `elements` declared here
+21 |     let dis = ast::disjunction(&loc, &elements);
+   |                                      --------- borrow of `elements` occurs here
+22 |
+23 |     drop(elements);
+   |          ^^^^^^^^ move out of `elements` occurs here
+24 |     let _end = dis;
    |                --- borrow later used here
-
-For more information about this error, try `rustc --explain E0505`.

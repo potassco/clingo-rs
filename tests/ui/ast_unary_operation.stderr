@@ -1,11 +1,14 @@
 error[E0382]: use of moved value: `term`
- --> $DIR/ast_unary_operation.rs:7:10
+ --> tests/ui/ast_unary_operation.rs:9:10
   |
-5 |     let term = ast::Term::from(sym);
-  |         ---- move occurs because `term` has type `clingo::ast::Term<'_>`, which does not implement the `Copy` trait
-6 |     let op = ast::UnaryOperation::minus(term);
-  |                                         ---- value moved here
-7 |     drop(term);
+7 |     let term: ast::Term = ast::symbolic_term(&loc, &sym).unwrap().into();
+  |         ---- move occurs because `term` has type `Term<'_>`, which does not implement the `Copy` trait
+8 |     let op = ast::unary_operation(&loc, ast::UnaryOperator::Minus, term);
+  |                                                                    ---- value moved here
+9 |     drop(term);
   |          ^^^^ value used here after move
-
-For more information about this error, try `rustc --explain E0382`.
+  |
+help: consider cloning the value if the performance cost is acceptable
+  |
+8 |     let op = ast::unary_operation(&loc, ast::UnaryOperator::Minus, term.clone());
+  |                                                                        ++++++++
