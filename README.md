@@ -1,14 +1,9 @@
 # clingo-rs [![Build Status](https://github.com/potassco/clingo-rs/actions/workflows/test-ci.yml/badge.svg)](https://github.com/potassco/clingo-rs/actions/workflows/test-ci.yml) [![Latest Version](https://img.shields.io/crates/v/clingo.svg)](https://crates.io/crates/clingo) [![Rust Documentation](https://docs.rs/clingo/badge.svg)](https://docs.rs/clingo)
 
 Rust bindings to the [clingo](https://github.com/potassco/clingo) library.
-Clingo version 5.5.0.
+Clingo version 5.6.2.
 
 ## Requirements
-
-- a c++14 conforming compiler
-  - *at least* [gcc](https://gcc.gnu.org/) version 4.9
-  - [clang](http://clang.llvm.org/) version 3.1 (using either libstdc++
-    provided by gcc 4.9 or libc++)
 
 Per default the crate uses the clingo library via dynamic linking.
 It is assumed that a clingo dynamic library is installed on the system.
@@ -80,6 +75,18 @@ follows.
 [dependencies]
 clingo = { version = "0.7.3", features = ["static-linking"] }
 ```
+
+To build clingo for static linking you need the following tools installed:
+
+- a C++14 conforming compiler
+  - *at least* [GCC](https://gcc.gnu.org/) version 4.9
+  - [Clang](http://clang.llvm.org/) version 3.1 (using either libstdc++
+    provided by gcc 4.9 or libc++)
+  - *at least* MSVC 15.0 ([Visual Studio](https://www.visualstudio.com/) 2017)
+  - other compilers might work
+- the [cmake](https://www.cmake.org/) build system
+  - at least version 3.18 is recommended
+  - at least version 3.1 is *required*
 
 ## Contribution
 
