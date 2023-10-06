@@ -117,7 +117,7 @@ impl<'a> ProgramBuilder<'a> {
         ctl: &'a mut GenericControl<C>,
     ) -> Result<ProgramBuilder<'a>, ClingoError> {
         let mut builder = std::ptr::null_mut();
-        if !unsafe { clingo_control_program_builder(ctl.ctl.as_mut(), &mut builder) } {
+        if !unsafe { clingo_program_builder_init(ctl.ctl.as_mut(), &mut builder) } {
             return Err(ClingoError::new_internal(
                 "Call to clingo_control_program_builder() failed.",
             ));
@@ -182,7 +182,28 @@ impl<'a> ProgramBuilder<'a> {
 
 type ASTCallback = unsafe extern "C" fn(ast: *mut clingo_ast_t, data: *mut c_void) -> bool;
 
-pub fn parse_string_with_statement_handler<T: StatementHandler>(
+// Parse the given program and return an abstract syntax tree for each statement via a callback.
+//
+// **Note** The control object can be set to a NULL to disable reading input in aspif format.
+//
+// - program: the program in gringo syntax
+// - callback: the callback reporting statements
+// - callback_data: user data for the callback
+// - control: object to add ground statements to
+// - logger: callback to report messages during parsing
+// - logger_data: user data for the logger
+// - message_limit: the maximum number of times the logger is called
+// *Returns* whether the call was successful
+//
+// # Errors
+//
+// - [`ClingoError`](struct.ClingoError.html) with [`ErrorCode::Runtime`](enum.ErrorCode.html#variant.Runtime) for statements of invalid form
+// or [`ErrorCode::BadAlloc`](enum.ErrorCode.html#variant.BadAlloc)
+pub fn parse_string_with_statement_handler<
+    // C: ControlCtx,
+    T: StatementHandler,
+>(
+    // ctl: &mut GenericControl<C>,
     program: &str,
     handler: &mut T,
 ) -> Result<(), ClingoError> {
@@ -195,6 +216,8 @@ pub fn parse_string_with_statement_handler<T: StatementHandler>(
             program.as_ptr(),
             Some(unsafe_ast_callback::<T> as ASTCallback),
             handler as *mut c_void,
+            // ctl.ctl.as_mut(),
+            std::ptr::null_mut(),
             logger,
             logger_data,
             0,
@@ -454,7 +477,6 @@ impl<'a> Literal<'a> {
     pub fn is_a(self) -> Result<TLiteral<'a>, ClingoError> {
         match self.ast.get_type()? {
             ASTType::Literal => Ok(TLiteral::BasicLiteral(BasicLiteral { ast: self.ast })),
-            ASTType::CspLiteral => Ok(TLiteral::CspLiteral(CspLiteral { ast: self.ast })),
             x => panic!("unexpected ASTType: {:?}", x),
         }
     }
@@ -606,7 +628,6 @@ impl<'a> Head<'a> {
     pub fn is_a(self) -> Result<HeadIsA<'a>, ClingoError> {
         match self.ast.get_type()? {
             ASTType::Literal => Ok(HeadIsA::Literal(Literal { ast: self.ast })),
-            ASTType::CspLiteral => Ok(HeadIsA::Aggregate(Aggregate { ast: self.ast })),
             ASTType::HeadAggregate => Ok(HeadIsA::HeadAggregate(HeadAggregate { ast: self.ast })),
             ASTType::Disjunction => Ok(HeadIsA::Disjunction(Disjunction { ast: self.ast })),
             ASTType::TheoryAtom => Ok(HeadIsA::TheoryAtom(TheoryAtom { ast: self.ast })),
@@ -670,9 +691,7 @@ pub enum BodyLiteralIsA<'a> {
 impl<'a> BodyLiteral<'a> {
     pub fn is_a(self) -> Result<BodyLiteralIsA<'a>, ClingoError> {
         match self.ast.get_type()? {
-            ASTType::CspLiteral => Ok(BodyLiteralIsA::CspLiteral(CspLiteral { ast: self.ast })),
             ASTType::Literal => Ok(BodyLiteralIsA::Literal(Literal { ast: self.ast })),
-            // ASTType::Literal covers BasicLiteral and AtomicLiteral
             ASTType::ConditionalLiteral => {
                 Ok(BodyLiteralIsA::ConditionalLiteral(ConditionalLiteral {
                     ast: self.ast,
@@ -974,6 +993,10 @@ impl<'a> SymbolicAtom<'a> {
     pub fn to_string(&self) -> Result<String, ClingoError> {
         self.ast.to_string()
     }
+}
+#[derive(Debug, Clone)]
+pub struct Guard<'a> {
+    ast: AST<'a>,
 }
 #[derive(Debug, Clone)]
 pub struct Comparison<'a> {
@@ -1501,129 +1524,6 @@ pub fn pool<'a>(location: &Location, arguments: &'a [Term]) -> Result<Pool<'a>, 
     }
 }
 
-/// Construct an AST node of type `ASTType.CspProduct`.
-pub fn csp_product<'a, T1, T2>(
-    location: &Location,
-    coefficient: T1,
-    variable: Option<T2>,
-) -> Result<CspProduct<'a>, ClingoError>
-where
-    T1: Into<Term<'a>>,
-    T2: Into<Term<'a>>,
-{
-    let coefficient: Term = coefficient.into();
-    let mut ast = std::ptr::null_mut();
-
-    if let Some(variable) = variable {
-        let variable: Term = variable.into();
-        if !unsafe {
-            clingo_ast_build(
-                clingo_ast_type_e_clingo_ast_type_csp_product as i32,
-                &mut ast,
-                location,
-                coefficient.ast,
-                variable.ast.ptr.as_ptr(),
-            )
-        } {
-            return Err(ClingoError::new_internal(
-                "Call to clingo_ast_build() failed.",
-            ));
-        }
-    } else if !unsafe {
-        clingo_ast_build(
-            clingo_ast_type_e_clingo_ast_type_csp_product as i32,
-            &mut ast,
-            location,
-            coefficient.ast,
-            std::ptr::null() as *const clingo_ast_t,
-        )
-    } {
-        return Err(ClingoError::new_internal(
-            "Call to clingo_ast_build() failed.",
-        ));
-    }
-    match NonNull::new(ast) {
-        Some(ast) => Ok(CspProduct {
-            ast: AST {
-                ptr: ast,
-                _lifetime: PhantomData,
-            },
-        }),
-        None => Err(ClingoError::FFIError {
-            msg: "Tried creating NonNull from a null pointer.",
-        })?,
-    }
-}
-
-/// Construct an AST node of type `ASTType.CspSum`.
-pub fn csp_sum<'a>(
-    location: &Location,
-    terms: &'a [CspProduct],
-) -> Result<CspSum<'a>, ClingoError> {
-    let mut ast = std::ptr::null_mut();
-
-    if !unsafe {
-        clingo_ast_build(
-            clingo_ast_type_e_clingo_ast_type_csp_sum as i32,
-            &mut ast,
-            location,
-            terms.as_ptr() as *const clingo_ast_t,
-            terms.len(),
-        )
-    } {
-        return Err(ClingoError::new_internal(
-            "Call to clingo_ast_build() failed.",
-        ));
-    }
-    match NonNull::new(ast) {
-        Some(ast) => Ok(CspSum {
-            ast: AST {
-                ptr: ast,
-                _lifetime: PhantomData,
-            },
-        }),
-        None => Err(ClingoError::FFIError {
-            msg: "Tried creating NonNull from a null pointer.",
-        })?,
-    }
-}
-
-/// Construct an AST node of type `ASTType.CspGuard`.
-pub fn csp_guard<'a, T>(
-    comparison: ComparisonOperator,
-    term: T,
-) -> Result<CspGuard<'a>, ClingoError>
-where
-    T: Into<CspTerm<'a>>,
-{
-    let term: CspTerm = term.into();
-    let mut ast = std::ptr::null_mut();
-
-    if !unsafe {
-        clingo_ast_build(
-            clingo_ast_type_e_clingo_ast_type_csp_guard as i32,
-            &mut ast,
-            comparison as i32,
-            term.ast,
-        )
-    } {
-        return Err(ClingoError::new_internal(
-            "Call to clingo_ast_build() failed.",
-        ));
-    }
-    match NonNull::new(ast) {
-        Some(ast) => Ok(CspGuard {
-            ast: AST {
-                ptr: ast,
-                _lifetime: PhantomData,
-            },
-        }),
-        None => Err(ClingoError::FFIError {
-            msg: "Tried creating NonNull from a null pointer.",
-        })?,
-    }
-}
-
 /// Construct an AST node of type `ASTType.BooleanConstant`.
 fn boolean_constant<'a>(value: bool) -> Result<BooleanConstant<'a>, ClingoError> {
     let mut ast = std::ptr::null_mut();
@@ -1682,26 +1582,20 @@ where
     }
 }
 
-/// Construct an AST node of type `ASTType.Comparison`.
-pub fn comparison<'a, T1, T2>(
-    comparison: ComparisonOperator,
-    left: T1,
-    right: T2,
-) -> Result<Comparison<'a>, ClingoError>
+/// Construct an AST node of type `ASTType.Guard`.
+pub fn guard<'a, T>(operator: ComparisonOperator, term: T) -> Result<Guard<'a>, ClingoError>
 where
-    T1: Into<Term<'a>>,
-    T2: Into<Term<'a>>,
+    T: Into<TheoryTerm<'a>>,
 {
-    let left: Term = left.into();
-    let right: Term = right.into();
+    let term: TheoryTerm = term.into();
     let mut ast = std::ptr::null_mut();
+    // let operator_name = internalize_string(operator_name)?;
     if !unsafe {
         clingo_ast_build(
-            clingo_ast_type_e_clingo_ast_type_comparison as i32,
+            clingo_ast_type_e_clingo_ast_type_guard as i32,
             &mut ast,
-            comparison as i32,
-            left.ast,
-            right.ast,
+            operator,
+            term.ast,
         )
     } {
         return Err(ClingoError::new_internal(
@@ -1709,7 +1603,7 @@ where
         ));
     }
     match NonNull::new(ast) {
-        Some(ast) => Ok(Comparison {
+        Some(ast) => Ok(Guard {
             ast: AST {
                 ptr: ast,
                 _lifetime: PhantomData,
@@ -1721,23 +1615,18 @@ where
     }
 }
 
-/// Construct an AST node of type `ASTType.CspLiteral`.
-pub fn csp_literal<'a, T>(
-    location: &Location,
-    term: T,
-    guards: &'a [CspGuard],
-) -> Result<CspLiteral<'a>, ClingoError>
+/// Construct an AST node of type `ASTType.Comparison`.
+pub fn comparison<'a, T1, T2>(term: T1, guards: &[T2]) -> Result<Comparison<'a>, ClingoError>
 where
-    T: Into<CspTerm<'a>>,
+    T1: Into<Term<'a>>,
+    T2: Into<Guard<'a>>,
 {
-    let term: CspTerm = term.into();
+    let term: Term = term.into();
     let mut ast = std::ptr::null_mut();
-
     if !unsafe {
         clingo_ast_build(
-            clingo_ast_type_e_clingo_ast_type_csp_literal as i32,
+            clingo_ast_type_e_clingo_ast_type_comparison as i32,
             &mut ast,
-            location,
             term.ast,
             guards.as_ptr() as *const clingo_ast_t,
             guards.len(),
@@ -1748,42 +1637,7 @@ where
         ));
     }
     match NonNull::new(ast) {
-        Some(ast) => Ok(CspLiteral {
-            ast: AST {
-                ptr: ast,
-                _lifetime: PhantomData,
-            },
-        }),
-        None => Err(ClingoError::FFIError {
-            msg: "Tried creating NonNull from a null pointer.",
-        })?,
-    }
-}
-
-/// Construct an AST node of type `ASTType.AggregateGuard`.
-pub fn aggregate_guard<'a, T>(
-    comparison: ComparisonOperator,
-    term: T,
-) -> Result<AggregateGuard<'a>, ClingoError>
-where
-    T: Into<Term<'a>>,
-{
-    let term: Term = term.into();
-    let mut ast = std::ptr::null_mut();
-    if !unsafe {
-        clingo_ast_build(
-            clingo_ast_type_e_clingo_ast_type_aggregate_guard as i32,
-            &mut ast,
-            comparison as i32,
-            term.ast,
-        )
-    } {
-        return Err(ClingoError::new_internal(
-            "Call to clingo_ast_build() failed.",
-        ));
-    }
-    match NonNull::new(ast) {
-        Some(ast) => Ok(AggregateGuard {
+        Some(ast) => Ok(Comparison {
             ast: AST {
                 ptr: ast,
                 _lifetime: PhantomData,
@@ -2067,80 +1921,6 @@ pub fn disjunction<'a>(
         None => Err(ClingoError::FFIError {
             msg: "tried casting a null pointer to &mut clingo_ast.",
         }),
-    }
-}
-
-/// Construct an AST node of type `ASTType.DisjointElement`.
-pub fn disjoint_element<'a, T>(
-    location: &Location,
-    terms: &'a [Term],
-    term: T,
-    condition: &'a [Literal],
-) -> Result<DisjointElement<'a>, ClingoError>
-where
-    T: Into<Term<'a>>,
-{
-    let term: Term = term.into();
-    let mut ast = std::ptr::null_mut();
-
-    if !unsafe {
-        clingo_ast_build(
-            clingo_ast_type_e_clingo_ast_type_disjoint_element as i32,
-            &mut ast,
-            location,
-            terms.as_ptr() as *const clingo_ast_t,
-            terms.len(),
-            term.ast,
-            condition.as_ptr() as *const clingo_ast_t,
-            condition.len(),
-        )
-    } {
-        return Err(ClingoError::new_internal(
-            "Call to clingo_ast_build() failed.",
-        ));
-    }
-    match NonNull::new(ast) {
-        Some(ast) => Ok(DisjointElement {
-            ast: AST {
-                ptr: ast,
-                _lifetime: PhantomData,
-            },
-        }),
-        None => Err(ClingoError::FFIError {
-            msg: "Tried creating NonNull from a null pointer.",
-        })?,
-    }
-}
-/// Construct an AST node of type `ASTType.Disjoint`.
-pub fn disjoint<'a>(
-    location: &Location,
-    elements: &'a [DisjointElement],
-) -> Result<Disjoint<'a>, ClingoError> {
-    let mut ast = std::ptr::null_mut();
-
-    if !unsafe {
-        clingo_ast_build(
-            clingo_ast_type_e_clingo_ast_type_disjoint as i32,
-            &mut ast,
-            location,
-            elements.as_ptr() as *const clingo_ast_t,
-            elements.len(),
-        )
-    } {
-        return Err(ClingoError::new_internal(
-            "Call to clingo_ast_build() failed.",
-        ));
-    }
-    match NonNull::new(ast) {
-        Some(ast) => Ok(Disjoint {
-            ast: AST {
-                ptr: ast,
-                _lifetime: PhantomData,
-            },
-        }),
-        None => Err(ClingoError::FFIError {
-            msg: "Tried creating NonNull from a null pointer.",
-        })?,
     }
 }
 

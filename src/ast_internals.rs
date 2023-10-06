@@ -80,14 +80,9 @@ pub(crate) enum ASTType {
     Interval = clingo_ast_type_e_clingo_ast_type_interval as isize,
     Function = clingo_ast_type_e_clingo_ast_type_function as isize,
     Pool = clingo_ast_type_e_clingo_ast_type_pool as isize,
-    CspProduct = clingo_ast_type_e_clingo_ast_type_csp_product as isize,
-    CspSum = clingo_ast_type_e_clingo_ast_type_csp_sum as isize,
-    CspGuard = clingo_ast_type_e_clingo_ast_type_csp_guard as isize,
     BooleanConstant = clingo_ast_type_e_clingo_ast_type_boolean_constant as isize,
     SymbolicAtom = clingo_ast_type_e_clingo_ast_type_symbolic_atom as isize,
     Comparison = clingo_ast_type_e_clingo_ast_type_comparison as isize,
-    CspLiteral = clingo_ast_type_e_clingo_ast_type_csp_literal as isize,
-    AggregateGuard = clingo_ast_type_e_clingo_ast_type_aggregate_guard as isize,
     ConditionalLiteral = clingo_ast_type_e_clingo_ast_type_conditional_literal as isize,
     Aggregate = clingo_ast_type_e_clingo_ast_type_aggregate as isize,
     BodyAggregateElement = clingo_ast_type_e_clingo_ast_type_body_aggregate_element as isize,
@@ -95,8 +90,6 @@ pub(crate) enum ASTType {
     HeadAggregateElement = clingo_ast_type_e_clingo_ast_type_head_aggregate_element as isize,
     HeadAggregate = clingo_ast_type_e_clingo_ast_type_head_aggregate as isize,
     Disjunction = clingo_ast_type_e_clingo_ast_type_disjunction as isize,
-    DisjointElement = clingo_ast_type_e_clingo_ast_type_disjoint_element as isize,
-    Disjoint = clingo_ast_type_e_clingo_ast_type_disjoint as isize,
     TheorySequence = clingo_ast_type_e_clingo_ast_type_theory_sequence as isize,
     TheoryFunction = clingo_ast_type_e_clingo_ast_type_theory_function as isize,
     TheoryUnparsedTermElement =
@@ -138,14 +131,9 @@ impl ASTType {
             clingo_ast_type_e_clingo_ast_type_interval => Ok(ASTType::Interval),
             clingo_ast_type_e_clingo_ast_type_function => Ok(ASTType::Function),
             clingo_ast_type_e_clingo_ast_type_pool => Ok(ASTType::Pool),
-            clingo_ast_type_e_clingo_ast_type_csp_product => Ok(ASTType::CspProduct),
-            clingo_ast_type_e_clingo_ast_type_csp_sum => Ok(ASTType::CspSum),
-            clingo_ast_type_e_clingo_ast_type_csp_guard => Ok(ASTType::CspGuard),
             clingo_ast_type_e_clingo_ast_type_boolean_constant => Ok(ASTType::BooleanConstant),
             clingo_ast_type_e_clingo_ast_type_symbolic_atom => Ok(ASTType::SymbolicAtom),
             clingo_ast_type_e_clingo_ast_type_comparison => Ok(ASTType::Comparison),
-            clingo_ast_type_e_clingo_ast_type_csp_literal => Ok(ASTType::CspLiteral),
-            clingo_ast_type_e_clingo_ast_type_aggregate_guard => Ok(ASTType::AggregateGuard),
             clingo_ast_type_e_clingo_ast_type_conditional_literal => {
                 Ok(ASTType::ConditionalLiteral)
             }
@@ -159,8 +147,6 @@ impl ASTType {
             }
             clingo_ast_type_e_clingo_ast_type_head_aggregate => Ok(ASTType::HeadAggregate),
             clingo_ast_type_e_clingo_ast_type_disjunction => Ok(ASTType::Disjunction),
-            clingo_ast_type_e_clingo_ast_type_disjoint_element => Ok(ASTType::DisjointElement),
-            clingo_ast_type_e_clingo_ast_type_disjoint => Ok(ASTType::Disjoint),
             clingo_ast_type_e_clingo_ast_type_theory_sequence => Ok(ASTType::TheorySequence),
             clingo_ast_type_e_clingo_ast_type_theory_function => Ok(ASTType::TheoryFunction),
             clingo_ast_type_e_clingo_ast_type_theory_unparsed_term_element => {
@@ -281,7 +267,7 @@ impl TryFrom<u32> for ASTAttributeType {
 }
 #[derive(Debug, Copy, Clone)]
 /// Enumeration of attributes used by the AST.
-pub enum ASTAttribute {
+pub(crate) enum ASTAttribute {
     Argument = clingo_ast_attribute_e_clingo_ast_attribute_argument as isize,
     Arguments = clingo_ast_attribute_e_clingo_ast_attribute_arguments as isize,
     Arity = clingo_ast_attribute_e_clingo_ast_attribute_arity as isize,
@@ -294,7 +280,6 @@ pub enum ASTAttribute {
     Coefficient = clingo_ast_attribute_e_clingo_ast_attribute_coefficient as isize,
     Comparison = clingo_ast_attribute_e_clingo_ast_attribute_comparison as isize,
     Condition = clingo_ast_attribute_e_clingo_ast_attribute_condition as isize,
-    Csp = clingo_ast_attribute_e_clingo_ast_attribute_csp as isize,
     Elements = clingo_ast_attribute_e_clingo_ast_attribute_elements as isize,
     External = clingo_ast_attribute_e_clingo_ast_attribute_external as isize,
     ExternalType = clingo_ast_attribute_e_clingo_ast_attribute_external_type as isize,

@@ -14,7 +14,7 @@ jobs:
       - name: Conda install clingo
         shell: bash -l {0}
         run: |
-          conda install -c potassco clingo=5.5.1
+          conda install -c potassco clingo=5.6.2
           conda install -c potassco clingo-dl=1.2.0
       - name: Build
         run: |
@@ -38,7 +38,7 @@ jobs:
       - name: Conda install clingo
         shell: bash -l {0}
         run: |
-          conda install -c potassco clingo=5.5.1
+          conda install -c potassco clingo=5.6.2
           conda install -c potassco clingo-dl=1.2.0
       - name: Build
         run: |
@@ -61,7 +61,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Conda install clingo
         run: |
-          conda install -c potassco clingo=5.5.1
+          conda install -c potassco clingo=5.6.2
           conda install -c potassco clingo-dl=1.2.0
       - name: Build
         env:
