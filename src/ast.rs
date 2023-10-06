@@ -930,6 +930,11 @@ pub struct Guard<'a> {
 pub struct Comparison<'a> {
     ast: AST<'a>,
 }
+impl<'a> Comparison<'a> {
+    pub fn to_string(&self) -> Result<String, ClingoError> {
+        self.ast.to_string()
+    }
+}
 #[derive(Debug, Clone)]
 pub struct ConditionalLiteral<'a> {
     ast: AST<'a>,
