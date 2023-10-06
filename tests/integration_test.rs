@@ -267,7 +267,8 @@ fn ast_literal() {
 
     let gt = ComparisonOperator::GreaterThan;
     let guard = guard(gt, term2).unwrap();
-    let comp = comparison(term3, &[guard]).unwrap();
+    let guards = [guard];
+    let comp = comparison(term3, &guards).unwrap();
     let lit = ast::basic_literal_from_comparison(&loc, Sign::NoSign, comp).unwrap();
     assert_eq!(format!("{}", lit), "fun1(42,\"test\") > \"test\"");
 }
@@ -578,7 +579,8 @@ fn ast_rule() {
 
     let gt = ComparisonOperator::GreaterThan;
     let guard = guard(gt, term2).unwrap();
-    let comp = comparison(term3, &[guard]).unwrap();
+    let guards = [guard];
+    let comp = comparison(term3, &guards).unwrap();
 
     let lit1 = basic_literal_from_boolean_constant(&loc, Sign::NoSign, true).unwrap();
     let lit2 = basic_literal_from_symbolic_atom(&loc, Sign::NoSign, atom1).unwrap();

@@ -1503,7 +1503,7 @@ where
 }
 
 /// Construct an AST node of type `ASTType.Comparison`.
-pub fn comparison<'a, T1, T2>(term: T1, guards: &[T2]) -> Result<Comparison<'a>, ClingoError>
+pub fn comparison<'a, T1, T2>(term: T1, guards: &'a [T2]) -> Result<Comparison<'a>, ClingoError>
 where
     T1: Into<Term<'a>>,
     T2: Into<Guard<'a>>,
