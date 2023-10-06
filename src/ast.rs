@@ -836,12 +836,10 @@ impl<'a> From<TheoryDefinition<'a>> for Statement<'a> {
 pub struct Id<'a> {
     ast: AST<'a>,
 }
-
 #[derive(Debug, Clone)]
 pub struct Variable<'a> {
     ast: AST<'a>,
 }
-
 impl<'a> Variable<'a> {
     pub fn to_string(&self) -> Result<String, ClingoError> {
         self.ast.to_string()

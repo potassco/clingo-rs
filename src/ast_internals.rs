@@ -742,11 +742,7 @@ impl<'a> AST<'a> {
     ///
     /// might set one of the following error codes:
     /// - ::clingo_error_runtime
-    fn set_attribute_ast(
-        &self,
-        attribute: ASTAttribute,
-        value: AST,
-    ) -> Result<(), ClingoError> {
+    fn set_attribute_ast(&self, attribute: ASTAttribute, value: AST) -> Result<(), ClingoError> {
         if !unsafe {
             clingo_ast_attribute_set_ast(self.ptr.as_ptr(), attribute as i32, value.ptr.as_ptr())
         } {

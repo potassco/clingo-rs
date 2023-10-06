@@ -268,7 +268,7 @@ fn ast_literal() {
     let gt = ComparisonOperator::GreaterThan;
     let guard = guard(gt, term2).unwrap();
     assert_eq!(guard.to_string().unwrap(), " > \"test\"");
-    
+
     let guards = [guard];
     let comp = comparison(term3, &guards).unwrap();
     assert_eq!(comp.to_string().unwrap(), "fun1(42,\"test\") > \"test\"");
