@@ -1488,7 +1488,7 @@ where
         clingo_ast_build(
             clingo_ast_type_e_clingo_ast_type_guard as i32,
             &mut ast,
-            operator,
+            operator as isize,
             term.ast,
         )
     } {
