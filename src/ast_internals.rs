@@ -1,4 +1,4 @@
-use crate::ast::{BodyLiteral, Function, Head, Location, Term, TheoryAtomElement, TheoryGuard};
+use crate::ast::{BodyLiteral, Head, Location, Term, TheoryAtomElement, TheoryGuard};
 use crate::{ClingoError, Symbol};
 use clingo_sys::*;
 use std::marker::PhantomData;
