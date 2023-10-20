@@ -630,6 +630,7 @@ bitflags! {
     }
 }
 bitflags! {
+    #[derive(Debug)]
     /// Bit flags that describes the result of a solve call.
     pub struct SolveResult: u32 {
         /// The problem is satisfiable.
