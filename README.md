@@ -40,7 +40,7 @@ follows.
 
 ```toml
 [dependencies]
-clingo = { version = "0.8.0-dev", features = ["static-linking"] }
+clingo = { version = "0.8.0", features = ["static-linking"] }
 ```
 
 ### Using `derive` macro
@@ -51,7 +51,7 @@ In your `Cargo.toml` add:
 
 ```toml
 [dependencies]
-clingo = { version = "0.8.0-dev", features = ["derive"] }
+clingo = { version = "0.8.0", features = ["derive"] }
 ```
 
 In your source write:

@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## v0.8.0-dev
+## v0.8.0
 
 - Update to clingo-sys-0.7.2 (clingo 5.6.2)
 - Remove functions to create csp terms from the ast module
