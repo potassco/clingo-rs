@@ -356,24 +356,13 @@ impl<'a> AST<'a> {
         Head { ast }
     }
     pub(crate) fn term(&self) -> Term {
-        let ast_type = self.get_type().unwrap();
-        dbg!(ast_type);
-        let ast_attr_type = self.get_attribute_type(ASTAttribute::Symbol).unwrap();
-        dbg!(ast_attr_type);
-        // TODO: This is a hack attribute should be ASTAttribute::Term
-        dbg!("Here is a hack attribute should be ASTAttribute::Term");
-        let ast = self.get_attribute_ast(ASTAttribute::Symbol).unwrap();
-        let ast_type = ast.get_type().unwrap();
-        dbg!(ast_type);
-        let ret = Function { ast };
-        let name = ret.to_string().unwrap();
-        dbg!(name);
-        ret.into()
+        let ast = self.get_attribute_ast(ASTAttribute::Term).unwrap();
+        Term { ast }
     }
     pub(crate) fn set_term(&mut self, term: Term) {
         let term = term.ast;
-        // TODO: This is a hack attribute should be ASTAttribute::Term
-        self.set_attribute_ast(ASTAttribute::Symbol, term).unwrap();
+        // TODO: check
+        self.set_attribute_ast(ASTAttribute::Term, term).unwrap();
     }
     pub(crate) fn guard(&self) -> TheoryGuard {
         // TODO: check
