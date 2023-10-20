@@ -280,9 +280,12 @@ fn ast_literal() {
 fn ast_head_literal() {
     let loc = Location::default();
     let sym = Symbol::create_id("test", true).unwrap();
+    let sym2 = Symbol::create_id("toast", true).unwrap();
+    let sym3 = Symbol::create_id("tset", true).unwrap();
     let term1 = symbolic_term(&loc, &sym).unwrap();
+    let term2 = symbolic_term(&loc, &sym2).unwrap();
+    let term3 = symbolic_term(&loc, &sym3).unwrap();
     let atom1 = symbolic_atom(term1.clone()).unwrap();
-    let term2 = symbolic_term(&loc, &sym).unwrap();
     let atom2 = symbolic_atom(term2).unwrap();
     let lit = basic_literal_from_symbolic_atom(&loc, Sign::NoSign, atom1).unwrap();
     let lit2 = basic_literal_from_symbolic_atom(&loc, Sign::NoSign, atom2).unwrap();
@@ -300,22 +303,30 @@ fn ast_head_literal() {
     let element = theory_atom_element(&tuple, &condition).unwrap();
     let elements = [element];
     let guard = theory_guard("theory_operator", term1.clone()).unwrap();
-    let tatom = theory_atom(&loc, term1, &elements, Some(guard)).unwrap();
+    let tatom = theory_atom(&loc, term3, &elements, Some(guard)).unwrap();
 
     let hlit: ast::Head = lit.into();
     assert_eq!(format!("{}", hlit), "test");
 
     let hlit: ast::Head = dis.into();
-    assert_eq!(format!("{}", hlit), "test: test");
+    assert_eq!(format!("{}", hlit), "test: toast");
 
     let hlit: Head = hagg.into();
-    assert_eq!(format!("{}", hlit), "#count { test: test: test }");
+    assert_eq!(format!("{}", hlit), "#count { test: test: toast }");
 
-    let hlit: Head = tatom.into();
+    let hlit: Head = tatom.clone().into();
     assert_eq!(
         format!("{}", hlit),
-        "&test { test: test } theory_operator test"
+        "&tset { test: toast } theory_operator test"
     );
+    
+    let ta_term : Term = tatom.term();
+    assert_eq!(
+        format!("{}", ta_term),
+        "tset"
+    );
+
+    
 }
 #[test]
 fn ast_body_literal() {
