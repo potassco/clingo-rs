@@ -17,7 +17,7 @@ export CLINGO_LIBRARY_PATH=/scratch/miniconda3/envs/test/lib
 
 And for running the code that dynamically links to clingo make sure to have the clingo library in your `LD_LIBRARY_PATH`.
 
-Have a look a at the [clingo Readme}(https://github.com/potassco/clingo#readme) for different ways of obtaining the binary releases of clingo.
+Have a look a at the [clingo Readme](https://github.com/potassco/clingo#readme) for different ways of obtaining the binary releases of clingo.
 
 ### Using `static-linking`
 
@@ -45,7 +45,7 @@ clingo = { version = "0.8.0", features = ["static-linking"] }
 
 ### Using `derive` macro
 
-The crate provides a derive macro to help easing the use of rust data types as facts.
+The crate provides a derive macro to help ease the use of rust data types as facts.
 
 In your `Cargo.toml` add:
 
@@ -70,7 +70,7 @@ let mut fb = FactBase::new();
 fb.insert(&p);
 ```
 
-The macro performs a conversion to snake case. This means the corresponing fact for `MyPoint{x:4,y:2}` is `my_point(4,2)`.
+The macro performs a conversion to snake case. This means the corresponding fact for `MyPoint{x:4,y:2}` is `my_point(4,2)`.
 
 ## Examples
 
