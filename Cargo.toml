@@ -1,7 +1,8 @@
 [package]
 name = "clingo"
-version = "0.8.0"
-publish = ["crates-io"]
+version = "0.9.0-dev"
+publish = false
+# publish = ["crates-io"]
 authors = ["sthiele <sthiele78@gmail.com>"]
 edition = "2021"
 description = "Rust idiomatic bindings to the clingo library"
@@ -10,10 +11,7 @@ license = "MIT"
 repository = "https://github.com/potassco/clingo-rs"
 documentation = "https://docs.rs/clingo"
 readme = "README.md"
-exclude = ["/.travis.yml"]
-
-[badges]
-travis-ci = { repository = "potassco/clingo-rs" }
+exclude = ["/.github"]
 
 [lib]
 name = "clingo"
