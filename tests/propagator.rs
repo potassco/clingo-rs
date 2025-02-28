@@ -87,7 +87,7 @@ impl Propagator for PigeonPropagator {
         for pass in 0..2 {
             let mut watches = vec![];
             {
-                // the propagator monitors place/2 atoms and dectects conflicting assignments
+                // the propagator monitors place/2 atoms and detects conflicting assignments
                 // first get the symbolic atoms handle
                 let atoms = init.symbolic_atoms().unwrap();
 
