@@ -640,7 +640,7 @@ bitflags! {
             clingo_solve_result_e_clingo_solve_result_unsatisfiable;
         /// The search space was exhausted.
         const EXHAUSTED = clingo_solve_result_e_clingo_solve_result_exhausted;
-        /// The search was interupted.
+        /// The search was interrupted.
         const INTERRUPTED = clingo_solve_result_e_clingo_solve_result_interrupted;
     }
 }
@@ -1539,7 +1539,7 @@ pub trait Propagator {
     ///
     /// * `thread_id` - the solver's thread id
     /// * `assignment` -  the assignment of the solver
-    /// * `fallback` -  the literal choosen by the solver's heuristic
+    /// * `fallback` -  the literal chosen by the solver's heuristic
     /// * `decision` -  the literal to make true
     ///
     /// **Returns** whether the call was successful
@@ -2304,7 +2304,7 @@ impl<C: ControlCtx> GenericControl<C> {
     pub fn add_facts(&mut self, facts: &FactBase) -> Result<(), ClingoError> {
         for sym in facts.iter() {
             let loc = ast::Location::default();
-            // initilize atom to add
+            // initialize atom to add
             let symbolic_term = ast::symbolic_term(&loc, sym)?;
             let atom = ast::symbolic_atom(symbolic_term)?;
             // create literal
@@ -4752,8 +4752,8 @@ impl PropagateInit {
     /// To be able to use the variable in clauses during propagation or add watches to it, it has to be frozen.
     /// Otherwise, it might be removed during preprocessing.
     ///
-    /// **Attention** If varibales were added, subsequent calls to functions adding constraints or ::clingo_propagate_init_propagate() are expensive.
-    /// It is best to add varables in batches.
+    /// **Attention** If variables were added, subsequent calls to functions adding constraints or ::clingo_propagate_init_propagate() are expensive.
+    /// It is best to add variables in batches.
     ///
     /// # Arguments
     ///

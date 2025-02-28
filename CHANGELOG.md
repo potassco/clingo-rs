@@ -16,7 +16,7 @@ All notable changes to this project will be documented in this file.
 
 ## v0.7.1 and v0.7.2
 
-- Fix issues with documentaion on docs.rs
+- Fix issues with documentation on docs.rs
 
 ## v0.7.0
 

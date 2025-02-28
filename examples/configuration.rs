@@ -10,7 +10,7 @@ fn print_prefix(depth: u8) {
     }
 }
 
-// recursively print the configuartion object
+// recursively print the configuration object
 fn print_configuration(conf: &Configuration, key: Id, depth: u8) {
     // get the type of an entry and switch over its various values
     let configuration_type = conf.configuration_type(key).unwrap();
